@@ -20,19 +20,6 @@ export default function SignupPage() {
           Continue with Google
         </button>
       </form>
-      <form
-        action={async () => {
-          'use server';
-          await signIn('apple');
-        }}
-      >
-        <button
-          type="submit"
-          className="w-full rounded-lg bg-black px-4 py-3 text-white hover:bg-gray-800"
-        >
-          Continue with Apple
-        </button>
-      </form>
     </div>
   );
 }

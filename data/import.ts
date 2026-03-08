@@ -12,7 +12,8 @@
 
 import { neon } from '@neondatabase/serverless';
 import { readFileSync } from 'fs';
-import { join } from 'path';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 import { v5 as uuidv5 } from 'uuid';
 
 // Namespace UUID for deterministic ID generation
@@ -253,7 +254,9 @@ async function main() {
   }
 
   const sql = neon(databaseUrl);
-  const dataDir = join(import.meta.dirname ?? __dirname, '.');
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = dirname(__filename);
+  const dataDir = __dirname;
 
   const files = [
     join(dataDir, 'indonesian.json'),

@@ -1,3 +1,5 @@
+import dotenv from 'dotenv';
+dotenv.config({ path: '.env.local' });
 import { neon } from '@neondatabase/serverless';
 
 async function seed() {
@@ -149,9 +151,9 @@ async function seed() {
     console.log('Seeding path_words...');
     for (let i = 1; i <= 20; i++) {
       const idx = String(i).padStart(3, '0');
-      await sql`INSERT INTO path_words (path_id, word_id, sort_order) VALUES ('c1000000-0001-4000-8000-000000000001', ${'b1000000-0001-4000-8000-0000000000' + idx}, ${i}) ON CONFLICT DO NOTHING`;
-      await sql`INSERT INTO path_words (path_id, word_id, sort_order) VALUES ('c1000000-0001-4000-8000-000000000002', ${'b2000000-0001-4000-8000-0000000000' + idx}, ${i}) ON CONFLICT DO NOTHING`;
-      await sql`INSERT INTO path_words (path_id, word_id, sort_order) VALUES ('c1000000-0001-4000-8000-000000000003', ${'b3000000-0001-4000-8000-0000000000' + idx}, ${i}) ON CONFLICT DO NOTHING`;
+      await sql`INSERT INTO path_words (path_id, word_id, sort_order) VALUES ('c1000000-0001-4000-8000-000000000001', ${'b1000000-0001-4000-8000-000000000' + idx}, ${i}) ON CONFLICT DO NOTHING`;
+      await sql`INSERT INTO path_words (path_id, word_id, sort_order) VALUES ('c1000000-0001-4000-8000-000000000002', ${'b2000000-0001-4000-8000-000000000' + idx}, ${i}) ON CONFLICT DO NOTHING`;
+      await sql`INSERT INTO path_words (path_id, word_id, sort_order) VALUES ('c1000000-0001-4000-8000-000000000003', ${'b3000000-0001-4000-8000-000000000' + idx}, ${i}) ON CONFLICT DO NOTHING`;
     }
 
     // --- Scene Words ---
@@ -159,49 +161,49 @@ async function seed() {
     // Indonesian: Meeting Someone (words 1,3,4,9,10,11,20)
     const idMeeting = ['001', '003', '004', '009', '010', '011', '020'];
     for (let i = 0; i < idMeeting.length; i++) {
-      await sql`INSERT INTO scene_words (scene_id, word_id, sort_order) VALUES ('d1000000-0001-4000-8000-000000000001', ${'b1000000-0001-4000-8000-0000000000' + idMeeting[i]}, ${i + 1}) ON CONFLICT DO NOTHING`;
+      await sql`INSERT INTO scene_words (scene_id, word_id, sort_order) VALUES ('d1000000-0001-4000-8000-000000000001', ${'b1000000-0001-4000-8000-000000000' + idMeeting[i]}, ${i + 1}) ON CONFLICT DO NOTHING`;
     }
     // Indonesian: Getting Food (words 8,12,13,14,19)
     const idFood = ['008', '012', '013', '014', '019'];
     for (let i = 0; i < idFood.length; i++) {
-      await sql`INSERT INTO scene_words (scene_id, word_id, sort_order) VALUES ('d1000000-0001-4000-8000-000000000002', ${'b1000000-0001-4000-8000-0000000000' + idFood[i]}, ${i + 1}) ON CONFLICT DO NOTHING`;
+      await sql`INSERT INTO scene_words (scene_id, word_id, sort_order) VALUES ('d1000000-0001-4000-8000-000000000002', ${'b1000000-0001-4000-8000-000000000' + idFood[i]}, ${i + 1}) ON CONFLICT DO NOTHING`;
     }
     // Indonesian: Finding Your Way (words 7,15,16,17,18)
     const idDirections = ['007', '015', '016', '017', '018'];
     for (let i = 0; i < idDirections.length; i++) {
-      await sql`INSERT INTO scene_words (scene_id, word_id, sort_order) VALUES ('d1000000-0001-4000-8000-000000000003', ${'b1000000-0001-4000-8000-0000000000' + idDirections[i]}, ${i + 1}) ON CONFLICT DO NOTHING`;
+      await sql`INSERT INTO scene_words (scene_id, word_id, sort_order) VALUES ('d1000000-0001-4000-8000-000000000003', ${'b1000000-0001-4000-8000-000000000' + idDirections[i]}, ${i + 1}) ON CONFLICT DO NOTHING`;
     }
 
     // Spanish: Meeting Someone (words 1,3,4,5,11,15)
     const esMeeting = ['001', '003', '004', '005', '011', '015'];
     for (let i = 0; i < esMeeting.length; i++) {
-      await sql`INSERT INTO scene_words (scene_id, word_id, sort_order) VALUES ('d2000000-0001-4000-8000-000000000001', ${'b2000000-0001-4000-8000-0000000000' + esMeeting[i]}, ${i + 1}) ON CONFLICT DO NOTHING`;
+      await sql`INSERT INTO scene_words (scene_id, word_id, sort_order) VALUES ('d2000000-0001-4000-8000-000000000001', ${'b2000000-0001-4000-8000-000000000' + esMeeting[i]}, ${i + 1}) ON CONFLICT DO NOTHING`;
     }
     // Spanish: Getting Food (words 2,6,7,12,13,14,20)
     const esFood = ['002', '006', '007', '012', '013', '014', '020'];
     for (let i = 0; i < esFood.length; i++) {
-      await sql`INSERT INTO scene_words (scene_id, word_id, sort_order) VALUES ('d2000000-0001-4000-8000-000000000002', ${'b2000000-0001-4000-8000-0000000000' + esFood[i]}, ${i + 1}) ON CONFLICT DO NOTHING`;
+      await sql`INSERT INTO scene_words (scene_id, word_id, sort_order) VALUES ('d2000000-0001-4000-8000-000000000002', ${'b2000000-0001-4000-8000-000000000' + esFood[i]}, ${i + 1}) ON CONFLICT DO NOTHING`;
     }
     // Spanish: Finding Your Way (words 8,9,10,16)
     const esDirections = ['008', '009', '010', '016'];
     for (let i = 0; i < esDirections.length; i++) {
-      await sql`INSERT INTO scene_words (scene_id, word_id, sort_order) VALUES ('d2000000-0001-4000-8000-000000000003', ${'b2000000-0001-4000-8000-0000000000' + esDirections[i]}, ${i + 1}) ON CONFLICT DO NOTHING`;
+      await sql`INSERT INTO scene_words (scene_id, word_id, sort_order) VALUES ('d2000000-0001-4000-8000-000000000003', ${'b2000000-0001-4000-8000-000000000' + esDirections[i]}, ${i + 1}) ON CONFLICT DO NOTHING`;
     }
 
     // Japanese: Meeting Someone (words 1,2,3,4,5,6)
     const jaMeeting = ['001', '002', '003', '004', '005', '006'];
     for (let i = 0; i < jaMeeting.length; i++) {
-      await sql`INSERT INTO scene_words (scene_id, word_id, sort_order) VALUES ('d3000000-0001-4000-8000-000000000001', ${'b3000000-0001-4000-8000-0000000000' + jaMeeting[i]}, ${i + 1}) ON CONFLICT DO NOTHING`;
+      await sql`INSERT INTO scene_words (scene_id, word_id, sort_order) VALUES ('d3000000-0001-4000-8000-000000000001', ${'b3000000-0001-4000-8000-000000000' + jaMeeting[i]}, ${i + 1}) ON CONFLICT DO NOTHING`;
     }
     // Japanese: Getting Food (words 7,8,9,10,15,16)
     const jaFood = ['007', '008', '009', '010', '015', '016'];
     for (let i = 0; i < jaFood.length; i++) {
-      await sql`INSERT INTO scene_words (scene_id, word_id, sort_order) VALUES ('d3000000-0001-4000-8000-000000000002', ${'b3000000-0001-4000-8000-0000000000' + jaFood[i]}, ${i + 1}) ON CONFLICT DO NOTHING`;
+      await sql`INSERT INTO scene_words (scene_id, word_id, sort_order) VALUES ('d3000000-0001-4000-8000-000000000002', ${'b3000000-0001-4000-8000-000000000' + jaFood[i]}, ${i + 1}) ON CONFLICT DO NOTHING`;
     }
     // Japanese: Finding Your Way (words 11,12,13,14,20)
     const jaDirections = ['011', '012', '013', '014', '020'];
     for (let i = 0; i < jaDirections.length; i++) {
-      await sql`INSERT INTO scene_words (scene_id, word_id, sort_order) VALUES ('d3000000-0001-4000-8000-000000000003', ${'b3000000-0001-4000-8000-0000000000' + jaDirections[i]}, ${i + 1}) ON CONFLICT DO NOTHING`;
+      await sql`INSERT INTO scene_words (scene_id, word_id, sort_order) VALUES ('d3000000-0001-4000-8000-000000000003', ${'b3000000-0001-4000-8000-000000000' + jaDirections[i]}, ${i + 1}) ON CONFLICT DO NOTHING`;
     }
 
     console.log('Seeding complete!');
