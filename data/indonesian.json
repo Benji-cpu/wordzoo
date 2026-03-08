@@ -1,0 +1,1090 @@
+{
+  "language": "Indonesian",
+  "language_code": "id",
+  "tiers": [
+    {
+      "tier": 1,
+      "name": "Survival",
+      "scenes": [
+        {
+          "title": "Meeting Someone",
+          "narrative": "You walk into a cozy warung in Ubud. The owner smiles warmly and greets you. Time to introduce yourself and make your first connection in Indonesia.",
+          "words": [
+            { "text": "halo", "romanization": null, "meaning": "hello", "part_of_speech": "interjection", "frequency_rank": 25, "sample_sentence": "Halo, apa kabar?", "is_phrase": false },
+            { "text": "nama", "romanization": null, "meaning": "name", "part_of_speech": "noun", "frequency_rank": 9, "sample_sentence": "Nama saya Budi.", "is_phrase": false },
+            { "text": "saya", "romanization": null, "meaning": "I / me", "part_of_speech": "pronoun", "frequency_rank": 1, "sample_sentence": "Saya dari Australia.", "is_phrase": false },
+            { "text": "anda", "romanization": null, "meaning": "you (formal)", "part_of_speech": "pronoun", "frequency_rank": 12, "sample_sentence": "Anda dari mana?", "is_phrase": false },
+            { "text": "baik", "romanization": null, "meaning": "good / fine", "part_of_speech": "adjective", "frequency_rank": 10, "sample_sentence": "Saya baik-baik saja.", "is_phrase": false },
+            { "text": "selamat pagi", "romanization": null, "meaning": "good morning", "part_of_speech": "phrase", "frequency_rank": 20, "sample_sentence": "Selamat pagi, apa kabar?", "is_phrase": true },
+            { "text": "apa kabar", "romanization": null, "meaning": "how are you", "part_of_speech": "phrase", "frequency_rank": 22, "sample_sentence": "Halo! Apa kabar?", "is_phrase": true }
+          ]
+        },
+        {
+          "title": "Finding Your Way",
+          "narrative": "You're standing at a crossroads near a busy market in Yogyakarta. You need to find the kraton (palace) but the streets are winding. Time to ask for directions.",
+          "words": [
+            { "text": "di mana", "romanization": null, "meaning": "where", "part_of_speech": "phrase", "frequency_rank": 18, "sample_sentence": "Di mana toilet?", "is_phrase": true },
+            { "text": "kiri", "romanization": null, "meaning": "left", "part_of_speech": "noun", "frequency_rank": 95, "sample_sentence": "Belok kiri di perempatan.", "is_phrase": false },
+            { "text": "kanan", "romanization": null, "meaning": "right", "part_of_speech": "noun", "frequency_rank": 96, "sample_sentence": "Belok kanan setelah lampu merah.", "is_phrase": false },
+            { "text": "lurus", "romanization": null, "meaning": "straight", "part_of_speech": "adjective", "frequency_rank": 120, "sample_sentence": "Jalan lurus saja.", "is_phrase": false },
+            { "text": "dekat", "romanization": null, "meaning": "near / close", "part_of_speech": "adjective", "frequency_rank": 65, "sample_sentence": "Apakah dekat dari sini?", "is_phrase": false },
+            { "text": "jauh", "romanization": null, "meaning": "far", "part_of_speech": "adjective", "frequency_rank": 70, "sample_sentence": "Pantai masih jauh.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Getting Food",
+          "narrative": "The aroma of sate and nasi goreng fills the air as you sit down at a bustling street food stall. The cook looks at you expectantly — what will you order?",
+          "words": [
+            { "text": "makan", "romanization": null, "meaning": "eat", "part_of_speech": "verb", "frequency_rank": 12, "sample_sentence": "Saya mau makan nasi goreng.", "is_phrase": false },
+            { "text": "minum", "romanization": null, "meaning": "drink", "part_of_speech": "verb", "frequency_rank": 13, "sample_sentence": "Saya mau minum teh.", "is_phrase": false },
+            { "text": "air", "romanization": null, "meaning": "water", "part_of_speech": "noun", "frequency_rank": 35, "sample_sentence": "Minta air putih, ya.", "is_phrase": false },
+            { "text": "pedas", "romanization": null, "meaning": "spicy", "part_of_speech": "adjective", "frequency_rank": 130, "sample_sentence": "Tidak pedas, ya.", "is_phrase": false },
+            { "text": "enak", "romanization": null, "meaning": "delicious", "part_of_speech": "adjective", "frequency_rank": 85, "sample_sentence": "Makanannya sangat enak!", "is_phrase": false },
+            { "text": "nasi", "romanization": null, "meaning": "rice", "part_of_speech": "noun", "frequency_rank": 55, "sample_sentence": "Saya pesan nasi goreng.", "is_phrase": false },
+            { "text": "saya mau", "romanization": null, "meaning": "I want", "part_of_speech": "phrase", "frequency_rank": 8, "sample_sentence": "Saya mau pesan makan.", "is_phrase": true }
+          ]
+        },
+        {
+          "title": "Shopping",
+          "narrative": "You wander through a vibrant market in Bali. Colorful batik fabrics hang everywhere, wooden carvings line the stalls. The vendor waves you over — let's haggle!",
+          "words": [
+            { "text": "berapa", "romanization": null, "meaning": "how much / how many", "part_of_speech": "pronoun", "frequency_rank": 14, "sample_sentence": "Berapa harganya?", "is_phrase": false },
+            { "text": "mahal", "romanization": null, "meaning": "expensive", "part_of_speech": "adjective", "frequency_rank": 110, "sample_sentence": "Terlalu mahal!", "is_phrase": false },
+            { "text": "murah", "romanization": null, "meaning": "cheap", "part_of_speech": "adjective", "frequency_rank": 115, "sample_sentence": "Ada yang lebih murah?", "is_phrase": false },
+            { "text": "beli", "romanization": null, "meaning": "buy", "part_of_speech": "verb", "frequency_rank": 50, "sample_sentence": "Saya mau beli ini.", "is_phrase": false },
+            { "text": "uang", "romanization": null, "meaning": "money", "part_of_speech": "noun", "frequency_rank": 40, "sample_sentence": "Saya tidak punya uang kecil.", "is_phrase": false },
+            { "text": "berapa harganya", "romanization": null, "meaning": "how much does it cost", "part_of_speech": "phrase", "frequency_rank": 14, "sample_sentence": "Berapa harganya untuk satu?", "is_phrase": true }
+          ]
+        },
+        {
+          "title": "Emergency",
+          "narrative": "Something's gone wrong — maybe you've lost your bag or you're not feeling well. You need help fast. These are the words that could save the day.",
+          "words": [
+            { "text": "tolong", "romanization": null, "meaning": "help / please", "part_of_speech": "verb", "frequency_rank": 30, "sample_sentence": "Tolong bantu saya!", "is_phrase": false },
+            { "text": "sakit", "romanization": null, "meaning": "sick / pain", "part_of_speech": "adjective", "frequency_rank": 75, "sample_sentence": "Perut saya sakit.", "is_phrase": false },
+            { "text": "dokter", "romanization": null, "meaning": "doctor", "part_of_speech": "noun", "frequency_rank": 140, "sample_sentence": "Saya perlu dokter.", "is_phrase": false },
+            { "text": "polisi", "romanization": null, "meaning": "police", "part_of_speech": "noun", "frequency_rank": 145, "sample_sentence": "Panggil polisi!", "is_phrase": false },
+            { "text": "bahaya", "romanization": null, "meaning": "danger", "part_of_speech": "noun", "frequency_rank": 150, "sample_sentence": "Hati-hati, bahaya!", "is_phrase": false },
+            { "text": "tolong bantu saya", "romanization": null, "meaning": "please help me", "part_of_speech": "phrase", "frequency_rank": 30, "sample_sentence": "Tolong bantu saya, saya tersesat.", "is_phrase": true }
+          ]
+        },
+        {
+          "title": "At the Hotel",
+          "narrative": "You arrive at your guesthouse in Seminyak after a long flight. The receptionist greets you with a warm smile. Time to check in and get settled.",
+          "words": [
+            { "text": "kamar", "romanization": null, "meaning": "room", "part_of_speech": "noun", "frequency_rank": 45, "sample_sentence": "Saya sudah pesan kamar.", "is_phrase": false },
+            { "text": "kunci", "romanization": null, "meaning": "key", "part_of_speech": "noun", "frequency_rank": 100, "sample_sentence": "Di mana kunci kamar saya?", "is_phrase": false },
+            { "text": "mandi", "romanization": null, "meaning": "bathe / shower", "part_of_speech": "verb", "frequency_rank": 80, "sample_sentence": "Saya mau mandi dulu.", "is_phrase": false },
+            { "text": "tidur", "romanization": null, "meaning": "sleep", "part_of_speech": "verb", "frequency_rank": 60, "sample_sentence": "Saya mau tidur.", "is_phrase": false },
+            { "text": "pagi", "romanization": null, "meaning": "morning", "part_of_speech": "noun", "frequency_rank": 20, "sample_sentence": "Sarapan pagi jam berapa?", "is_phrase": false },
+            { "text": "malam", "romanization": null, "meaning": "night / evening", "part_of_speech": "noun", "frequency_rank": 28, "sample_sentence": "Selamat malam!", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Small Talk",
+          "narrative": "You're sitting on a shared bemo ride in Bali and the person next to you starts chatting. Keep the conversation flowing with these handy words.",
+          "words": [
+            { "text": "dari", "romanization": null, "meaning": "from", "part_of_speech": "preposition", "frequency_rank": 6, "sample_sentence": "Saya dari Amerika.", "is_phrase": false },
+            { "text": "ke", "romanization": null, "meaning": "to / toward", "part_of_speech": "preposition", "frequency_rank": 5, "sample_sentence": "Saya mau ke pantai.", "is_phrase": false },
+            { "text": "senang", "romanization": null, "meaning": "happy / pleased", "part_of_speech": "adjective", "frequency_rank": 68, "sample_sentence": "Senang bertemu dengan anda.", "is_phrase": false },
+            { "text": "tinggal", "romanization": null, "meaning": "live / stay", "part_of_speech": "verb", "frequency_rank": 42, "sample_sentence": "Anda tinggal di mana?", "is_phrase": false },
+            { "text": "kerja", "romanization": null, "meaning": "work", "part_of_speech": "noun", "frequency_rank": 38, "sample_sentence": "Anda kerja apa?", "is_phrase": false },
+            { "text": "senang bertemu", "romanization": null, "meaning": "nice to meet you", "part_of_speech": "phrase", "frequency_rank": 68, "sample_sentence": "Senang bertemu dengan anda!", "is_phrase": true }
+          ]
+        },
+        {
+          "title": "Time & Numbers",
+          "narrative": "The shopkeeper holds up fingers as he counts out your change. The bus leaves at a certain hour. Numbers and time are everywhere — here are the essentials.",
+          "words": [
+            { "text": "satu", "romanization": null, "meaning": "one", "part_of_speech": "number", "frequency_rank": 15, "sample_sentence": "Saya mau satu.", "is_phrase": false },
+            { "text": "dua", "romanization": null, "meaning": "two", "part_of_speech": "number", "frequency_rank": 16, "sample_sentence": "Dua orang, ya.", "is_phrase": false },
+            { "text": "tiga", "romanization": null, "meaning": "three", "part_of_speech": "number", "frequency_rank": 32, "sample_sentence": "Tiga hari lagi.", "is_phrase": false },
+            { "text": "jam", "romanization": null, "meaning": "hour / clock", "part_of_speech": "noun", "frequency_rank": 48, "sample_sentence": "Jam berapa sekarang?", "is_phrase": false },
+            { "text": "hari", "romanization": null, "meaning": "day", "part_of_speech": "noun", "frequency_rank": 22, "sample_sentence": "Hari ini hari apa?", "is_phrase": false },
+            { "text": "sekarang", "romanization": null, "meaning": "now", "part_of_speech": "adverb", "frequency_rank": 24, "sample_sentence": "Sekarang jam tiga.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Getting Around",
+          "narrative": "Bali's traffic is legendary. You need to catch a taxi, find the bus, or maybe just walk. Here's how to get from A to B.",
+          "words": [
+            { "text": "jalan", "romanization": null, "meaning": "road / walk", "part_of_speech": "noun", "frequency_rank": 18, "sample_sentence": "Jalan kaki saja.", "is_phrase": false },
+            { "text": "pergi", "romanization": null, "meaning": "go", "part_of_speech": "verb", "frequency_rank": 11, "sample_sentence": "Saya mau pergi ke pasar.", "is_phrase": false },
+            { "text": "datang", "romanization": null, "meaning": "come / arrive", "part_of_speech": "verb", "frequency_rank": 26, "sample_sentence": "Kapan bus datang?", "is_phrase": false },
+            { "text": "naik", "romanization": null, "meaning": "ride / go up", "part_of_speech": "verb", "frequency_rank": 44, "sample_sentence": "Naik taksi ke hotel.", "is_phrase": false },
+            { "text": "berhenti", "romanization": null, "meaning": "stop", "part_of_speech": "verb", "frequency_rank": 52, "sample_sentence": "Berhenti di sini, ya.", "is_phrase": false },
+            { "text": "cepat", "romanization": null, "meaning": "fast / quick", "part_of_speech": "adjective", "frequency_rank": 58, "sample_sentence": "Tolong cepat sedikit.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Being Polite",
+          "narrative": "Indonesians are famously warm and polite. A few well-placed courtesy words go a long way — and will earn you instant smiles.",
+          "words": [
+            { "text": "terima kasih", "romanization": null, "meaning": "thank you", "part_of_speech": "phrase", "frequency_rank": 11, "sample_sentence": "Terima kasih banyak!", "is_phrase": true },
+            { "text": "sama-sama", "romanization": null, "meaning": "you're welcome", "part_of_speech": "phrase", "frequency_rank": 90, "sample_sentence": "Sama-sama, tidak masalah.", "is_phrase": true },
+            { "text": "permisi", "romanization": null, "meaning": "excuse me", "part_of_speech": "interjection", "frequency_rank": 88, "sample_sentence": "Permisi, boleh lewat?", "is_phrase": false },
+            { "text": "maaf", "romanization": null, "meaning": "sorry", "part_of_speech": "interjection", "frequency_rank": 36, "sample_sentence": "Maaf, saya tidak mengerti.", "is_phrase": false },
+            { "text": "silakan", "romanization": null, "meaning": "please (go ahead)", "part_of_speech": "verb", "frequency_rank": 72, "sample_sentence": "Silakan duduk.", "is_phrase": false },
+            { "text": "maaf, saya tidak mengerti", "romanization": null, "meaning": "sorry, I don't understand", "part_of_speech": "phrase", "frequency_rank": 36, "sample_sentence": "Maaf, saya tidak mengerti bahasa Indonesia.", "is_phrase": true }
+          ]
+        },
+        {
+          "title": "Basic Verbs",
+          "narrative": "Actions are the engine of any language. These core verbs pop up constantly in daily Indonesian life — from asking to giving to knowing.",
+          "words": [
+            { "text": "mau", "romanization": null, "meaning": "want", "part_of_speech": "verb", "frequency_rank": 8, "sample_sentence": "Anda mau apa?", "is_phrase": false },
+            { "text": "bisa", "romanization": null, "meaning": "can / able to", "part_of_speech": "verb", "frequency_rank": 7, "sample_sentence": "Bisa bicara bahasa Inggris?", "is_phrase": false },
+            { "text": "tahu", "romanization": null, "meaning": "know", "part_of_speech": "verb", "frequency_rank": 19, "sample_sentence": "Saya tidak tahu.", "is_phrase": false },
+            { "text": "ada", "romanization": null, "meaning": "there is / have", "part_of_speech": "verb", "frequency_rank": 3, "sample_sentence": "Ada toilet di sini?", "is_phrase": false },
+            { "text": "suka", "romanization": null, "meaning": "like", "part_of_speech": "verb", "frequency_rank": 34, "sample_sentence": "Saya suka makanan Indonesia.", "is_phrase": false },
+            { "text": "lihat", "romanization": null, "meaning": "see / look", "part_of_speech": "verb", "frequency_rank": 21, "sample_sentence": "Lihat, ada monyet!", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Pronouns & Connectors",
+          "narrative": "These tiny words are the glue that holds sentences together. Without them, you'd sound like a caveman — but with them, you can start building real thoughts.",
+          "words": [
+            { "text": "dia", "romanization": null, "meaning": "he / she", "part_of_speech": "pronoun", "frequency_rank": 4, "sample_sentence": "Dia orang Indonesia.", "is_phrase": false },
+            { "text": "kamu", "romanization": null, "meaning": "you (informal)", "part_of_speech": "pronoun", "frequency_rank": 2, "sample_sentence": "Kamu mau ke mana?", "is_phrase": false },
+            { "text": "ini", "romanization": null, "meaning": "this", "part_of_speech": "pronoun", "frequency_rank": 4, "sample_sentence": "Ini apa?", "is_phrase": false },
+            { "text": "itu", "romanization": null, "meaning": "that", "part_of_speech": "pronoun", "frequency_rank": 5, "sample_sentence": "Apa itu?", "is_phrase": false },
+            { "text": "dan", "romanization": null, "meaning": "and", "part_of_speech": "conjunction", "frequency_rank": 6, "sample_sentence": "Nasi dan ayam.", "is_phrase": false },
+            { "text": "atau", "romanization": null, "meaning": "or", "part_of_speech": "conjunction", "frequency_rank": 17, "sample_sentence": "Teh atau kopi?", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Common Adjectives",
+          "narrative": "You want to describe the giant temple you saw, the tiny gecko on the wall, or the beautiful sunset. These adjectives let you paint with words.",
+          "words": [
+            { "text": "besar", "romanization": null, "meaning": "big / large", "part_of_speech": "adjective", "frequency_rank": 33, "sample_sentence": "Rumahnya besar sekali.", "is_phrase": false },
+            { "text": "kecil", "romanization": null, "meaning": "small / little", "part_of_speech": "adjective", "frequency_rank": 37, "sample_sentence": "Anak kecil itu lucu.", "is_phrase": false },
+            { "text": "bagus", "romanization": null, "meaning": "nice / beautiful", "part_of_speech": "adjective", "frequency_rank": 62, "sample_sentence": "Pemandangannya bagus!", "is_phrase": false },
+            { "text": "baru", "romanization": null, "meaning": "new", "part_of_speech": "adjective", "frequency_rank": 27, "sample_sentence": "Ini baju baru saya.", "is_phrase": false },
+            { "text": "lama", "romanization": null, "meaning": "old / long (time)", "part_of_speech": "adjective", "frequency_rank": 46, "sample_sentence": "Sudah lama tidak ketemu.", "is_phrase": false },
+            { "text": "panas", "romanization": null, "meaning": "hot", "part_of_speech": "adjective", "frequency_rank": 78, "sample_sentence": "Hari ini panas sekali.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Yes, No & Maybe",
+          "narrative": "The simplest responses can be the most powerful. Master these and you can navigate any yes-or-no situation with confidence.",
+          "words": [
+            { "text": "ya", "romanization": null, "meaning": "yes", "part_of_speech": "interjection", "frequency_rank": 2, "sample_sentence": "Ya, saya mau.", "is_phrase": false },
+            { "text": "tidak", "romanization": null, "meaning": "no / not", "part_of_speech": "adverb", "frequency_rank": 2, "sample_sentence": "Tidak, terima kasih.", "is_phrase": false },
+            { "text": "belum", "romanization": null, "meaning": "not yet", "part_of_speech": "adverb", "frequency_rank": 29, "sample_sentence": "Belum siap.", "is_phrase": false },
+            { "text": "sudah", "romanization": null, "meaning": "already", "part_of_speech": "adverb", "frequency_rank": 16, "sample_sentence": "Sudah makan?", "is_phrase": false },
+            { "text": "mungkin", "romanization": null, "meaning": "maybe / perhaps", "part_of_speech": "adverb", "frequency_rank": 56, "sample_sentence": "Mungkin besok.", "is_phrase": false },
+            { "text": "tentu", "romanization": null, "meaning": "of course / certainly", "part_of_speech": "adverb", "frequency_rank": 82, "sample_sentence": "Tentu saja!", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "People & Family",
+          "narrative": "Indonesians love talking about family. Whether you're meeting someone's kids or explaining your own family back home, these words come up constantly.",
+          "words": [
+            { "text": "orang", "romanization": null, "meaning": "person / people", "part_of_speech": "noun", "frequency_rank": 10, "sample_sentence": "Berapa orang?", "is_phrase": false },
+            { "text": "anak", "romanization": null, "meaning": "child", "part_of_speech": "noun", "frequency_rank": 23, "sample_sentence": "Anak saya dua.", "is_phrase": false },
+            { "text": "ibu", "romanization": null, "meaning": "mother / ma'am", "part_of_speech": "noun", "frequency_rank": 13, "sample_sentence": "Ibu mau pesan apa?", "is_phrase": false },
+            { "text": "bapak", "romanization": null, "meaning": "father / sir", "part_of_speech": "noun", "frequency_rank": 14, "sample_sentence": "Bapak dari mana?", "is_phrase": false },
+            { "text": "teman", "romanization": null, "meaning": "friend", "part_of_speech": "noun", "frequency_rank": 43, "sample_sentence": "Dia teman saya.", "is_phrase": false },
+            { "text": "laki-laki", "romanization": null, "meaning": "male / man", "part_of_speech": "noun", "frequency_rank": 92, "sample_sentence": "Anak laki-laki itu tinggi.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Food & Drink Essentials",
+          "narrative": "Beyond the basics — you need to know your ayam from your ikan, your teh from your kopi. This is the vocabulary of Indonesian culinary life.",
+          "words": [
+            { "text": "ayam", "romanization": null, "meaning": "chicken", "part_of_speech": "noun", "frequency_rank": 105, "sample_sentence": "Saya pesan nasi ayam.", "is_phrase": false },
+            { "text": "ikan", "romanization": null, "meaning": "fish", "part_of_speech": "noun", "frequency_rank": 108, "sample_sentence": "Ikan bakar enak sekali.", "is_phrase": false },
+            { "text": "teh", "romanization": null, "meaning": "tea", "part_of_speech": "noun", "frequency_rank": 112, "sample_sentence": "Minta teh manis.", "is_phrase": false },
+            { "text": "kopi", "romanization": null, "meaning": "coffee", "part_of_speech": "noun", "frequency_rank": 118, "sample_sentence": "Kopi Bali enak.", "is_phrase": false },
+            { "text": "manis", "romanization": null, "meaning": "sweet", "part_of_speech": "adjective", "frequency_rank": 125, "sample_sentence": "Terlalu manis.", "is_phrase": false },
+            { "text": "minta", "romanization": null, "meaning": "ask for / request", "part_of_speech": "verb", "frequency_rank": 31, "sample_sentence": "Minta air putih.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Essential Questions",
+          "narrative": "Questions are your most powerful tool as a traveler. Every one of these opens a door to understanding — and shows people you're genuinely trying.",
+          "words": [
+            { "text": "apa", "romanization": null, "meaning": "what", "part_of_speech": "pronoun", "frequency_rank": 3, "sample_sentence": "Apa ini?", "is_phrase": false },
+            { "text": "siapa", "romanization": null, "meaning": "who", "part_of_speech": "pronoun", "frequency_rank": 39, "sample_sentence": "Siapa nama anda?", "is_phrase": false },
+            { "text": "kapan", "romanization": null, "meaning": "when", "part_of_speech": "adverb", "frequency_rank": 41, "sample_sentence": "Kapan buka?", "is_phrase": false },
+            { "text": "kenapa", "romanization": null, "meaning": "why", "part_of_speech": "adverb", "frequency_rank": 47, "sample_sentence": "Kenapa toko tutup?", "is_phrase": false },
+            { "text": "bagaimana", "romanization": null, "meaning": "how", "part_of_speech": "adverb", "frequency_rank": 49, "sample_sentence": "Bagaimana cara ke bandara?", "is_phrase": false },
+            { "text": "boleh", "romanization": null, "meaning": "may / allowed", "part_of_speech": "verb", "frequency_rank": 25, "sample_sentence": "Boleh saya duduk di sini?", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Greetings & Farewells",
+          "narrative": "Every encounter begins and ends with these phrases. Indonesians will light up when they hear you use the right greeting for the right time of day.",
+          "words": [
+            { "text": "selamat siang", "romanization": null, "meaning": "good afternoon", "part_of_speech": "phrase", "frequency_rank": 20, "sample_sentence": "Selamat siang, ibu.", "is_phrase": true },
+            { "text": "selamat sore", "romanization": null, "meaning": "good evening (before dark)", "part_of_speech": "phrase", "frequency_rank": 20, "sample_sentence": "Selamat sore, bapak.", "is_phrase": true },
+            { "text": "selamat malam", "romanization": null, "meaning": "good night", "part_of_speech": "phrase", "frequency_rank": 28, "sample_sentence": "Selamat malam, mimpi indah!", "is_phrase": true },
+            { "text": "selamat tinggal", "romanization": null, "meaning": "goodbye (you're leaving)", "part_of_speech": "phrase", "frequency_rank": 86, "sample_sentence": "Selamat tinggal, sampai jumpa!", "is_phrase": true },
+            { "text": "sampai jumpa", "romanization": null, "meaning": "see you later", "part_of_speech": "phrase", "frequency_rank": 86, "sample_sentence": "Sampai jumpa lagi!", "is_phrase": true },
+            { "text": "selamat datang", "romanization": null, "meaning": "welcome", "part_of_speech": "phrase", "frequency_rank": 74, "sample_sentence": "Selamat datang di Indonesia!", "is_phrase": true }
+          ]
+        }
+      ]
+    },
+    {
+      "tier": 2,
+      "name": "Conversational",
+      "scenes": [
+        {
+          "title": "Feelings & Emotions",
+          "narrative": "Your Indonesian friend asks how you're really doing. Beyond 'baik,' here's how to express what you're actually feeling inside.",
+          "words": [
+            { "text": "senang", "romanization": null, "meaning": "happy", "part_of_speech": "adjective", "frequency_rank": 68, "sample_sentence": "Saya senang di sini.", "is_phrase": false },
+            { "text": "sedih", "romanization": null, "meaning": "sad", "part_of_speech": "adjective", "frequency_rank": 185, "sample_sentence": "Dia terlihat sedih.", "is_phrase": false },
+            { "text": "marah", "romanization": null, "meaning": "angry", "part_of_speech": "adjective", "frequency_rank": 195, "sample_sentence": "Jangan marah.", "is_phrase": false },
+            { "text": "takut", "romanization": null, "meaning": "afraid / scared", "part_of_speech": "adjective", "frequency_rank": 170, "sample_sentence": "Saya takut gelap.", "is_phrase": false },
+            { "text": "lelah", "romanization": null, "meaning": "tired", "part_of_speech": "adjective", "frequency_rank": 175, "sample_sentence": "Saya sangat lelah.", "is_phrase": false },
+            { "text": "bosan", "romanization": null, "meaning": "bored", "part_of_speech": "adjective", "frequency_rank": 280, "sample_sentence": "Saya bosan di rumah.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Opinions & Thoughts",
+          "narrative": "Now you can share what you think — about the food, the weather, the view. Indonesians love hearing visitors' opinions about their beautiful country.",
+          "words": [
+            { "text": "pikir", "romanization": null, "meaning": "think", "part_of_speech": "verb", "frequency_rank": 155, "sample_sentence": "Saya pikir ini bagus.", "is_phrase": false },
+            { "text": "rasa", "romanization": null, "meaning": "taste / feel", "part_of_speech": "noun", "frequency_rank": 160, "sample_sentence": "Rasanya enak sekali.", "is_phrase": false },
+            { "text": "setuju", "romanization": null, "meaning": "agree", "part_of_speech": "verb", "frequency_rank": 290, "sample_sentence": "Saya setuju dengan anda.", "is_phrase": false },
+            { "text": "benar", "romanization": null, "meaning": "true / correct", "part_of_speech": "adjective", "frequency_rank": 105, "sample_sentence": "Itu benar.", "is_phrase": false },
+            { "text": "salah", "romanization": null, "meaning": "wrong / mistaken", "part_of_speech": "adjective", "frequency_rank": 135, "sample_sentence": "Maaf, saya salah.", "is_phrase": false },
+            { "text": "suka", "romanization": null, "meaning": "like / enjoy", "part_of_speech": "verb", "frequency_rank": 34, "sample_sentence": "Saya suka pantai ini.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Making Plans",
+          "narrative": "Your new friends want to hang out tomorrow. Let's make plans — when, where, and what you'll do together.",
+          "words": [
+            { "text": "besok", "romanization": null, "meaning": "tomorrow", "part_of_speech": "adverb", "frequency_rank": 130, "sample_sentence": "Besok kita pergi ke pantai.", "is_phrase": false },
+            { "text": "kemarin", "romanization": null, "meaning": "yesterday", "part_of_speech": "adverb", "frequency_rank": 142, "sample_sentence": "Kemarin saya pergi ke Ubud.", "is_phrase": false },
+            { "text": "nanti", "romanization": null, "meaning": "later", "part_of_speech": "adverb", "frequency_rank": 48, "sample_sentence": "Nanti saya telepon.", "is_phrase": false },
+            { "text": "bertemu", "romanization": null, "meaning": "meet", "part_of_speech": "verb", "frequency_rank": 168, "sample_sentence": "Kita bertemu di mana?", "is_phrase": false },
+            { "text": "tunggu", "romanization": null, "meaning": "wait", "part_of_speech": "verb", "frequency_rank": 120, "sample_sentence": "Tunggu sebentar.", "is_phrase": false },
+            { "text": "siap", "romanization": null, "meaning": "ready", "part_of_speech": "adjective", "frequency_rank": 165, "sample_sentence": "Saya sudah siap.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Describing Things",
+          "narrative": "The temple is huge. The monkey is tiny. The sunset is indescribable. Expand your ability to describe the world around you.",
+          "words": [
+            { "text": "cantik", "romanization": null, "meaning": "beautiful / pretty", "part_of_speech": "adjective", "frequency_rank": 190, "sample_sentence": "Pantai ini cantik sekali.", "is_phrase": false },
+            { "text": "jelek", "romanization": null, "meaning": "ugly / bad", "part_of_speech": "adjective", "frequency_rank": 250, "sample_sentence": "Cuacanya jelek hari ini.", "is_phrase": false },
+            { "text": "tinggi", "romanization": null, "meaning": "tall / high", "part_of_speech": "adjective", "frequency_rank": 200, "sample_sentence": "Gunung itu tinggi sekali.", "is_phrase": false },
+            { "text": "rendah", "romanization": null, "meaning": "low / short", "part_of_speech": "adjective", "frequency_rank": 265, "sample_sentence": "Harganya rendah.", "is_phrase": false },
+            { "text": "berat", "romanization": null, "meaning": "heavy", "part_of_speech": "adjective", "frequency_rank": 275, "sample_sentence": "Tas ini berat sekali.", "is_phrase": false },
+            { "text": "ringan", "romanization": null, "meaning": "light (weight)", "part_of_speech": "adjective", "frequency_rank": 310, "sample_sentence": "Bahan ini ringan.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "At Work",
+          "narrative": "Maybe you're a digital nomad in Canggu, or chatting with a local about their job. Here's work vocabulary that comes up in everyday conversation.",
+          "words": [
+            { "text": "kantor", "romanization": null, "meaning": "office", "part_of_speech": "noun", "frequency_rank": 210, "sample_sentence": "Kantor saya di Jakarta.", "is_phrase": false },
+            { "text": "bekerja", "romanization": null, "meaning": "to work", "part_of_speech": "verb", "frequency_rank": 148, "sample_sentence": "Saya bekerja di hotel.", "is_phrase": false },
+            { "text": "gaji", "romanization": null, "meaning": "salary", "part_of_speech": "noun", "frequency_rank": 380, "sample_sentence": "Gajinya cukup baik.", "is_phrase": false },
+            { "text": "bos", "romanization": null, "meaning": "boss", "part_of_speech": "noun", "frequency_rank": 340, "sample_sentence": "Bos saya orang baik.", "is_phrase": false },
+            { "text": "rapat", "romanization": null, "meaning": "meeting", "part_of_speech": "noun", "frequency_rank": 350, "sample_sentence": "Ada rapat jam dua.", "is_phrase": false },
+            { "text": "sibuk", "romanization": null, "meaning": "busy", "part_of_speech": "adjective", "frequency_rank": 230, "sample_sentence": "Maaf, saya sibuk.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Technology & Internet",
+          "narrative": "Finding WiFi in Indonesia is a daily quest. Whether you're looking for a connection or trying to order a Grab, these words are essential for modern travelers.",
+          "words": [
+            { "text": "internet", "romanization": null, "meaning": "internet", "part_of_speech": "noun", "frequency_rank": 320, "sample_sentence": "Ada internet di sini?", "is_phrase": false },
+            { "text": "telepon", "romanization": null, "meaning": "phone / telephone", "part_of_speech": "noun", "frequency_rank": 155, "sample_sentence": "Nomor telepon anda berapa?", "is_phrase": false },
+            { "text": "foto", "romanization": null, "meaning": "photo", "part_of_speech": "noun", "frequency_rank": 220, "sample_sentence": "Boleh saya ambil foto?", "is_phrase": false },
+            { "text": "kirim", "romanization": null, "meaning": "send", "part_of_speech": "verb", "frequency_rank": 240, "sample_sentence": "Kirim pesan ke saya.", "is_phrase": false },
+            { "text": "pesan", "romanization": null, "meaning": "message / order", "part_of_speech": "noun", "frequency_rank": 158, "sample_sentence": "Saya terima pesan anda.", "is_phrase": false },
+            { "text": "bayar", "romanization": null, "meaning": "pay", "part_of_speech": "verb", "frequency_rank": 162, "sample_sentence": "Bisa bayar pakai kartu?", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Health & Body",
+          "narrative": "Bali belly, sunburn, or just a headache — knowing body parts and health words lets you get the help you need at a pharmacy or clinic.",
+          "words": [
+            { "text": "kepala", "romanization": null, "meaning": "head", "part_of_speech": "noun", "frequency_rank": 178, "sample_sentence": "Kepala saya pusing.", "is_phrase": false },
+            { "text": "perut", "romanization": null, "meaning": "stomach", "part_of_speech": "noun", "frequency_rank": 235, "sample_sentence": "Perut saya sakit.", "is_phrase": false },
+            { "text": "obat", "romanization": null, "meaning": "medicine", "part_of_speech": "noun", "frequency_rank": 215, "sample_sentence": "Saya perlu obat sakit kepala.", "is_phrase": false },
+            { "text": "mata", "romanization": null, "meaning": "eye", "part_of_speech": "noun", "frequency_rank": 182, "sample_sentence": "Matanya merah.", "is_phrase": false },
+            { "text": "tangan", "romanization": null, "meaning": "hand / arm", "part_of_speech": "noun", "frequency_rank": 195, "sample_sentence": "Cuci tangan dulu.", "is_phrase": false },
+            { "text": "kaki", "romanization": null, "meaning": "foot / leg", "part_of_speech": "noun", "frequency_rank": 198, "sample_sentence": "Kaki saya sakit.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Nature & Weather",
+          "narrative": "Indonesia's natural beauty is breathtaking — from volcanoes to rice terraces. Here's how to talk about the incredible world around you.",
+          "words": [
+            { "text": "hujan", "romanization": null, "meaning": "rain", "part_of_speech": "noun", "frequency_rank": 188, "sample_sentence": "Hari ini hujan.", "is_phrase": false },
+            { "text": "matahari", "romanization": null, "meaning": "sun", "part_of_speech": "noun", "frequency_rank": 260, "sample_sentence": "Matahari terbenam indah.", "is_phrase": false },
+            { "text": "pantai", "romanization": null, "meaning": "beach", "part_of_speech": "noun", "frequency_rank": 225, "sample_sentence": "Pantainya bersih.", "is_phrase": false },
+            { "text": "gunung", "romanization": null, "meaning": "mountain", "part_of_speech": "noun", "frequency_rank": 255, "sample_sentence": "Gunung Agung sangat tinggi.", "is_phrase": false },
+            { "text": "laut", "romanization": null, "meaning": "sea / ocean", "part_of_speech": "noun", "frequency_rank": 245, "sample_sentence": "Lautnya biru dan jernih.", "is_phrase": false },
+            { "text": "pohon", "romanization": null, "meaning": "tree", "part_of_speech": "noun", "frequency_rank": 270, "sample_sentence": "Pohon kelapa di pantai.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Entertainment",
+          "narrative": "Time to relax! Whether you're watching a show, playing games, or listening to music, here's your entertainment vocabulary.",
+          "words": [
+            { "text": "musik", "romanization": null, "meaning": "music", "part_of_speech": "noun", "frequency_rank": 285, "sample_sentence": "Saya suka musik ini.", "is_phrase": false },
+            { "text": "film", "romanization": null, "meaning": "movie / film", "part_of_speech": "noun", "frequency_rank": 295, "sample_sentence": "Mau nonton film?", "is_phrase": false },
+            { "text": "bermain", "romanization": null, "meaning": "play", "part_of_speech": "verb", "frequency_rank": 205, "sample_sentence": "Anak-anak bermain di taman.", "is_phrase": false },
+            { "text": "nonton", "romanization": null, "meaning": "watch (informal)", "part_of_speech": "verb", "frequency_rank": 248, "sample_sentence": "Kita nonton bareng, yuk.", "is_phrase": false },
+            { "text": "buku", "romanization": null, "meaning": "book", "part_of_speech": "noun", "frequency_rank": 172, "sample_sentence": "Saya baca buku di pantai.", "is_phrase": false },
+            { "text": "cerita", "romanization": null, "meaning": "story", "part_of_speech": "noun", "frequency_rank": 202, "sample_sentence": "Ceritanya menarik.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Relationships",
+          "narrative": "From family dynamics to new friendships, Indonesian social life revolves around connections. These words help you navigate the web of relationships.",
+          "words": [
+            { "text": "suami", "romanization": null, "meaning": "husband", "part_of_speech": "noun", "frequency_rank": 300, "sample_sentence": "Suami saya di rumah.", "is_phrase": false },
+            { "text": "istri", "romanization": null, "meaning": "wife", "part_of_speech": "noun", "frequency_rank": 305, "sample_sentence": "Istri saya orang Indonesia.", "is_phrase": false },
+            { "text": "pacar", "romanization": null, "meaning": "boyfriend / girlfriend", "part_of_speech": "noun", "frequency_rank": 330, "sample_sentence": "Anda punya pacar?", "is_phrase": false },
+            { "text": "kakak", "romanization": null, "meaning": "older sibling", "part_of_speech": "noun", "frequency_rank": 152, "sample_sentence": "Kakak saya tinggal di Jakarta.", "is_phrase": false },
+            { "text": "adik", "romanization": null, "meaning": "younger sibling", "part_of_speech": "noun", "frequency_rank": 158, "sample_sentence": "Adik saya masih sekolah.", "is_phrase": false },
+            { "text": "cinta", "romanization": null, "meaning": "love", "part_of_speech": "noun", "frequency_rank": 315, "sample_sentence": "Saya cinta Indonesia.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Daily Routine",
+          "narrative": "From waking up to going to bed, your day has a rhythm. Here are the words that describe the flow of a typical Indonesian day.",
+          "words": [
+            { "text": "bangun", "romanization": null, "meaning": "wake up / get up", "part_of_speech": "verb", "frequency_rank": 138, "sample_sentence": "Saya bangun jam enam.", "is_phrase": false },
+            { "text": "sarapan", "romanization": null, "meaning": "breakfast", "part_of_speech": "noun", "frequency_rank": 288, "sample_sentence": "Sarapan jam berapa?", "is_phrase": false },
+            { "text": "pulang", "romanization": null, "meaning": "go home / return", "part_of_speech": "verb", "frequency_rank": 128, "sample_sentence": "Saya mau pulang.", "is_phrase": false },
+            { "text": "masak", "romanization": null, "meaning": "cook", "part_of_speech": "verb", "frequency_rank": 232, "sample_sentence": "Ibu masak nasi goreng.", "is_phrase": false },
+            { "text": "cuci", "romanization": null, "meaning": "wash", "part_of_speech": "verb", "frequency_rank": 278, "sample_sentence": "Cuci tangan sebelum makan.", "is_phrase": false },
+            { "text": "istirahat", "romanization": null, "meaning": "rest / break", "part_of_speech": "noun", "frequency_rank": 268, "sample_sentence": "Saya perlu istirahat.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Home & Living",
+          "narrative": "Whether you're renting a villa in Canggu or staying with a host family, these words help you talk about the place you call home.",
+          "words": [
+            { "text": "rumah", "romanization": null, "meaning": "house / home", "part_of_speech": "noun", "frequency_rank": 52, "sample_sentence": "Rumahnya di mana?", "is_phrase": false },
+            { "text": "pintu", "romanization": null, "meaning": "door", "part_of_speech": "noun", "frequency_rank": 242, "sample_sentence": "Tutup pintunya.", "is_phrase": false },
+            { "text": "jendela", "romanization": null, "meaning": "window", "part_of_speech": "noun", "frequency_rank": 325, "sample_sentence": "Buka jendelanya.", "is_phrase": false },
+            { "text": "kursi", "romanization": null, "meaning": "chair", "part_of_speech": "noun", "frequency_rank": 298, "sample_sentence": "Silakan duduk di kursi.", "is_phrase": false },
+            { "text": "meja", "romanization": null, "meaning": "table", "part_of_speech": "noun", "frequency_rank": 282, "sample_sentence": "Taruh di atas meja.", "is_phrase": false },
+            { "text": "lantai", "romanization": null, "meaning": "floor", "part_of_speech": "noun", "frequency_rank": 335, "sample_sentence": "Lantainya bersih.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Education & Learning",
+          "narrative": "You're learning Indonesian right now! Here are words about school, studying, and the beautiful process of learning itself.",
+          "words": [
+            { "text": "belajar", "romanization": null, "meaning": "study / learn", "part_of_speech": "verb", "frequency_rank": 145, "sample_sentence": "Saya belajar bahasa Indonesia.", "is_phrase": false },
+            { "text": "sekolah", "romanization": null, "meaning": "school", "part_of_speech": "noun", "frequency_rank": 168, "sample_sentence": "Sekolahnya dekat.", "is_phrase": false },
+            { "text": "guru", "romanization": null, "meaning": "teacher", "part_of_speech": "noun", "frequency_rank": 208, "sample_sentence": "Guru saya orang Indonesia.", "is_phrase": false },
+            { "text": "bahasa", "romanization": null, "meaning": "language", "part_of_speech": "noun", "frequency_rank": 55, "sample_sentence": "Bahasa Indonesia mudah.", "is_phrase": false },
+            { "text": "mengerti", "romanization": null, "meaning": "understand", "part_of_speech": "verb", "frequency_rank": 88, "sample_sentence": "Saya mengerti sedikit.", "is_phrase": false },
+            { "text": "membaca", "romanization": null, "meaning": "read", "part_of_speech": "verb", "frequency_rank": 175, "sample_sentence": "Saya membaca buku.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Colors",
+          "narrative": "From the deep blue of the ocean to the vibrant green of the rice terraces, Indonesia is a feast of color. Name what you see.",
+          "words": [
+            { "text": "merah", "romanization": null, "meaning": "red", "part_of_speech": "adjective", "frequency_rank": 218, "sample_sentence": "Baju merah itu bagus.", "is_phrase": false },
+            { "text": "biru", "romanization": null, "meaning": "blue", "part_of_speech": "adjective", "frequency_rank": 252, "sample_sentence": "Lautnya biru.", "is_phrase": false },
+            { "text": "hijau", "romanization": null, "meaning": "green", "part_of_speech": "adjective", "frequency_rank": 258, "sample_sentence": "Sawahnya hijau.", "is_phrase": false },
+            { "text": "putih", "romanization": null, "meaning": "white", "part_of_speech": "adjective", "frequency_rank": 222, "sample_sentence": "Air putih, ya.", "is_phrase": false },
+            { "text": "hitam", "romanization": null, "meaning": "black", "part_of_speech": "adjective", "frequency_rank": 228, "sample_sentence": "Kopi hitam tanpa gula.", "is_phrase": false },
+            { "text": "kuning", "romanization": null, "meaning": "yellow", "part_of_speech": "adjective", "frequency_rank": 302, "sample_sentence": "Bunga kuning di taman.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "More Numbers",
+          "narrative": "Beyond one, two, three — you need bigger numbers for prices, addresses, and phone numbers. Indonesian numbers are beautifully logical.",
+          "words": [
+            { "text": "empat", "romanization": null, "meaning": "four", "part_of_speech": "number", "frequency_rank": 42, "sample_sentence": "Empat orang di meja.", "is_phrase": false },
+            { "text": "lima", "romanization": null, "meaning": "five", "part_of_speech": "number", "frequency_rank": 44, "sample_sentence": "Lima ribu rupiah.", "is_phrase": false },
+            { "text": "enam", "romanization": null, "meaning": "six", "part_of_speech": "number", "frequency_rank": 98, "sample_sentence": "Jam enam pagi.", "is_phrase": false },
+            { "text": "tujuh", "romanization": null, "meaning": "seven", "part_of_speech": "number", "frequency_rank": 102, "sample_sentence": "Tujuh hari seminggu.", "is_phrase": false },
+            { "text": "delapan", "romanization": null, "meaning": "eight", "part_of_speech": "number", "frequency_rank": 132, "sample_sentence": "Delapan jam tidur.", "is_phrase": false },
+            { "text": "sembilan", "romanization": null, "meaning": "nine", "part_of_speech": "number", "frequency_rank": 138, "sample_sentence": "Sembilan ribu rupiah.", "is_phrase": false },
+            { "text": "sepuluh", "romanization": null, "meaning": "ten", "part_of_speech": "number", "frequency_rank": 75, "sample_sentence": "Sepuluh menit lagi.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Clothing & Appearance",
+          "narrative": "Shopping for batik? Describing what someone's wearing? From sarongs to sandals, here's your fashion vocabulary.",
+          "words": [
+            { "text": "baju", "romanization": null, "meaning": "clothes / shirt", "part_of_speech": "noun", "frequency_rank": 212, "sample_sentence": "Baju ini bagus.", "is_phrase": false },
+            { "text": "celana", "romanization": null, "meaning": "pants / trousers", "part_of_speech": "noun", "frequency_rank": 318, "sample_sentence": "Celana pendek untuk pantai.", "is_phrase": false },
+            { "text": "sepatu", "romanization": null, "meaning": "shoes", "part_of_speech": "noun", "frequency_rank": 308, "sample_sentence": "Lepas sepatu di pintu.", "is_phrase": false },
+            { "text": "topi", "romanization": null, "meaning": "hat", "part_of_speech": "noun", "frequency_rank": 358, "sample_sentence": "Pakai topi, panasnya!", "is_phrase": false },
+            { "text": "pakai", "romanization": null, "meaning": "wear / use", "part_of_speech": "verb", "frequency_rank": 58, "sample_sentence": "Saya pakai baju batik.", "is_phrase": false },
+            { "text": "warna", "romanization": null, "meaning": "color", "part_of_speech": "noun", "frequency_rank": 272, "sample_sentence": "Warna apa yang ada?", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Giving Directions",
+          "narrative": "Now that you know how to ask for directions, it's time to learn to give them — and understand more detailed instructions from locals.",
+          "words": [
+            { "text": "belok", "romanization": null, "meaning": "turn", "part_of_speech": "verb", "frequency_rank": 262, "sample_sentence": "Belok kiri di perempatan.", "is_phrase": false },
+            { "text": "depan", "romanization": null, "meaning": "front / in front of", "part_of_speech": "noun", "frequency_rank": 142, "sample_sentence": "Di depan toko.", "is_phrase": false },
+            { "text": "belakang", "romanization": null, "meaning": "behind / back", "part_of_speech": "noun", "frequency_rank": 192, "sample_sentence": "Toiletnya di belakang.", "is_phrase": false },
+            { "text": "samping", "romanization": null, "meaning": "beside / next to", "part_of_speech": "noun", "frequency_rank": 238, "sample_sentence": "Di samping bank.", "is_phrase": false },
+            { "text": "atas", "romanization": null, "meaning": "above / up", "part_of_speech": "noun", "frequency_rank": 108, "sample_sentence": "Di atas meja.", "is_phrase": false },
+            { "text": "bawah", "romanization": null, "meaning": "below / down", "part_of_speech": "noun", "frequency_rank": 115, "sample_sentence": "Di bawah kursi.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Transportation",
+          "narrative": "Buses, motorbikes, ferries, and planes — Indonesia is a country of islands and you'll use them all. Here's how to talk about getting around.",
+          "words": [
+            { "text": "mobil", "romanization": null, "meaning": "car", "part_of_speech": "noun", "frequency_rank": 148, "sample_sentence": "Saya sewa mobil.", "is_phrase": false },
+            { "text": "motor", "romanization": null, "meaning": "motorcycle", "part_of_speech": "noun", "frequency_rank": 175, "sample_sentence": "Naik motor lebih cepat.", "is_phrase": false },
+            { "text": "bis", "romanization": null, "meaning": "bus", "part_of_speech": "noun", "frequency_rank": 312, "sample_sentence": "Bis ke Jakarta jam berapa?", "is_phrase": false },
+            { "text": "pesawat", "romanization": null, "meaning": "airplane", "part_of_speech": "noun", "frequency_rank": 322, "sample_sentence": "Pesawat ke Bali jam tiga.", "is_phrase": false },
+            { "text": "kapal", "romanization": null, "meaning": "ship / boat", "part_of_speech": "noun", "frequency_rank": 332, "sample_sentence": "Naik kapal ke Gili.", "is_phrase": false },
+            { "text": "tiket", "romanization": null, "meaning": "ticket", "part_of_speech": "noun", "frequency_rank": 288, "sample_sentence": "Beli tiket di sana.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Quantity & Size",
+          "narrative": "More rice? Less sugar? A little bit of sambal? These words help you fine-tune exactly how much of something you want.",
+          "words": [
+            { "text": "banyak", "romanization": null, "meaning": "many / a lot", "part_of_speech": "adjective", "frequency_rank": 62, "sample_sentence": "Banyak orang di pasar.", "is_phrase": false },
+            { "text": "sedikit", "romanization": null, "meaning": "a little / few", "part_of_speech": "adjective", "frequency_rank": 78, "sample_sentence": "Sedikit saja.", "is_phrase": false },
+            { "text": "semua", "romanization": null, "meaning": "all / everything", "part_of_speech": "pronoun", "frequency_rank": 52, "sample_sentence": "Semua orang senang.", "is_phrase": false },
+            { "text": "lagi", "romanization": null, "meaning": "again / more", "part_of_speech": "adverb", "frequency_rank": 15, "sample_sentence": "Satu lagi, ya.", "is_phrase": false },
+            { "text": "cukup", "romanization": null, "meaning": "enough", "part_of_speech": "adjective", "frequency_rank": 122, "sample_sentence": "Sudah cukup, terima kasih.", "is_phrase": false },
+            { "text": "lebih", "romanization": null, "meaning": "more / -er (comparative)", "part_of_speech": "adverb", "frequency_rank": 45, "sample_sentence": "Lebih murah dari itu.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Animals",
+          "narrative": "From cheeky monkeys at temples to geckos on the ceiling, Indonesian wildlife is everywhere. Name the creatures you encounter.",
+          "words": [
+            { "text": "kucing", "romanization": null, "meaning": "cat", "part_of_speech": "noun", "frequency_rank": 345, "sample_sentence": "Kucing itu lucu.", "is_phrase": false },
+            { "text": "anjing", "romanization": null, "meaning": "dog", "part_of_speech": "noun", "frequency_rank": 342, "sample_sentence": "Hati-hati ada anjing.", "is_phrase": false },
+            { "text": "burung", "romanization": null, "meaning": "bird", "part_of_speech": "noun", "frequency_rank": 355, "sample_sentence": "Burung-burung bernyanyi.", "is_phrase": false },
+            { "text": "ikan", "romanization": null, "meaning": "fish", "part_of_speech": "noun", "frequency_rank": 108, "sample_sentence": "Ikan di laut banyak.", "is_phrase": false },
+            { "text": "monyet", "romanization": null, "meaning": "monkey", "part_of_speech": "noun", "frequency_rank": 388, "sample_sentence": "Monyet di pura nakal.", "is_phrase": false },
+            { "text": "ayam", "romanization": null, "meaning": "chicken", "part_of_speech": "noun", "frequency_rank": 105, "sample_sentence": "Ayam berkokok pagi-pagi.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Days of the Week",
+          "narrative": "Planning your itinerary? Temples are closed on certain days, markets happen weekly. Know your hari Senin from hari Jumat.",
+          "words": [
+            { "text": "Senin", "romanization": null, "meaning": "Monday", "part_of_speech": "noun", "frequency_rank": 362, "sample_sentence": "Hari Senin saya kerja.", "is_phrase": false },
+            { "text": "Selasa", "romanization": null, "meaning": "Tuesday", "part_of_speech": "noun", "frequency_rank": 365, "sample_sentence": "Kita bertemu hari Selasa.", "is_phrase": false },
+            { "text": "Rabu", "romanization": null, "meaning": "Wednesday", "part_of_speech": "noun", "frequency_rank": 368, "sample_sentence": "Hari Rabu ada pasar.", "is_phrase": false },
+            { "text": "Kamis", "romanization": null, "meaning": "Thursday", "part_of_speech": "noun", "frequency_rank": 371, "sample_sentence": "Kamis besok.", "is_phrase": false },
+            { "text": "Jumat", "romanization": null, "meaning": "Friday", "part_of_speech": "noun", "frequency_rank": 374, "sample_sentence": "Jumat hari terakhir.", "is_phrase": false },
+            { "text": "Sabtu", "romanization": null, "meaning": "Saturday", "part_of_speech": "noun", "frequency_rank": 377, "sample_sentence": "Sabtu kita ke pantai.", "is_phrase": false },
+            { "text": "Minggu", "romanization": null, "meaning": "Sunday", "part_of_speech": "noun", "frequency_rank": 180, "sample_sentence": "Hari Minggu libur.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Cooking & Kitchen",
+          "narrative": "You join a cooking class in Ubud and learn to make rendang. The chef tosses ingredients and barks instructions — keep up!",
+          "words": [
+            { "text": "goreng", "romanization": null, "meaning": "fry / fried", "part_of_speech": "verb", "frequency_rank": 292, "sample_sentence": "Nasi goreng spesial.", "is_phrase": false },
+            { "text": "rebus", "romanization": null, "meaning": "boil / boiled", "part_of_speech": "verb", "frequency_rank": 395, "sample_sentence": "Telur rebus untuk sarapan.", "is_phrase": false },
+            { "text": "gula", "romanization": null, "meaning": "sugar", "part_of_speech": "noun", "frequency_rank": 348, "sample_sentence": "Tanpa gula, ya.", "is_phrase": false },
+            { "text": "garam", "romanization": null, "meaning": "salt", "part_of_speech": "noun", "frequency_rank": 385, "sample_sentence": "Tambah garam sedikit.", "is_phrase": false },
+            { "text": "sayur", "romanization": null, "meaning": "vegetable(s)", "part_of_speech": "noun", "frequency_rank": 338, "sample_sentence": "Makan sayur setiap hari.", "is_phrase": false },
+            { "text": "buah", "romanization": null, "meaning": "fruit", "part_of_speech": "noun", "frequency_rank": 252, "sample_sentence": "Buah segar dari pasar.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Feelings About Places",
+          "narrative": "Indonesia's temples, beaches, and jungles inspire awe. Here's how to express how a place makes you feel.",
+          "words": [
+            { "text": "indah", "romanization": null, "meaning": "beautiful (of places/things)", "part_of_speech": "adjective", "frequency_rank": 248, "sample_sentence": "Pemandangannya indah.", "is_phrase": false },
+            { "text": "ramai", "romanization": null, "meaning": "crowded / lively", "part_of_speech": "adjective", "frequency_rank": 275, "sample_sentence": "Pasar ramai sekali.", "is_phrase": false },
+            { "text": "sepi", "romanization": null, "meaning": "quiet / deserted", "part_of_speech": "adjective", "frequency_rank": 328, "sample_sentence": "Pantai ini sepi.", "is_phrase": false },
+            { "text": "bersih", "romanization": null, "meaning": "clean", "part_of_speech": "adjective", "frequency_rank": 295, "sample_sentence": "Kamarnya bersih.", "is_phrase": false },
+            { "text": "kotor", "romanization": null, "meaning": "dirty", "part_of_speech": "adjective", "frequency_rank": 352, "sample_sentence": "Jalannya kotor.", "is_phrase": false },
+            { "text": "nyaman", "romanization": null, "meaning": "comfortable", "part_of_speech": "adjective", "frequency_rank": 318, "sample_sentence": "Hotel ini nyaman.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Verbs of Motion",
+          "narrative": "Running, swimming, climbing — Indonesia is an adventure and these action words keep you moving through it.",
+          "words": [
+            { "text": "lari", "romanization": null, "meaning": "run", "part_of_speech": "verb", "frequency_rank": 265, "sample_sentence": "Anak-anak lari di pantai.", "is_phrase": false },
+            { "text": "berenang", "romanization": null, "meaning": "swim", "part_of_speech": "verb", "frequency_rank": 355, "sample_sentence": "Kita berenang di laut.", "is_phrase": false },
+            { "text": "duduk", "romanization": null, "meaning": "sit", "part_of_speech": "verb", "frequency_rank": 118, "sample_sentence": "Silakan duduk.", "is_phrase": false },
+            { "text": "berdiri", "romanization": null, "meaning": "stand", "part_of_speech": "verb", "frequency_rank": 205, "sample_sentence": "Berdiri di sini.", "is_phrase": false },
+            { "text": "masuk", "romanization": null, "meaning": "enter / go in", "part_of_speech": "verb", "frequency_rank": 85, "sample_sentence": "Silakan masuk.", "is_phrase": false },
+            { "text": "keluar", "romanization": null, "meaning": "exit / go out", "part_of_speech": "verb", "frequency_rank": 92, "sample_sentence": "Kita keluar sekarang.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Weather & Seasons",
+          "narrative": "Indonesia has two seasons — wet and dry. The weather shapes everything from travel plans to daily life. Here's how to talk about it.",
+          "words": [
+            { "text": "panas", "romanization": null, "meaning": "hot", "part_of_speech": "adjective", "frequency_rank": 78, "sample_sentence": "Cuacanya panas.", "is_phrase": false },
+            { "text": "dingin", "romanization": null, "meaning": "cold", "part_of_speech": "adjective", "frequency_rank": 242, "sample_sentence": "Malam ini dingin.", "is_phrase": false },
+            { "text": "angin", "romanization": null, "meaning": "wind", "part_of_speech": "noun", "frequency_rank": 308, "sample_sentence": "Anginnya kencang.", "is_phrase": false },
+            { "text": "awan", "romanization": null, "meaning": "cloud", "part_of_speech": "noun", "frequency_rank": 378, "sample_sentence": "Banyak awan hari ini.", "is_phrase": false },
+            { "text": "kering", "romanization": null, "meaning": "dry", "part_of_speech": "adjective", "frequency_rank": 345, "sample_sentence": "Musim kering di Bali.", "is_phrase": false },
+            { "text": "basah", "romanization": null, "meaning": "wet", "part_of_speech": "adjective", "frequency_rank": 358, "sample_sentence": "Jalannya basah karena hujan.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Money & Banking",
+          "narrative": "Rupiah notes come in the millions, ATMs are everywhere, and bargaining is an art. Navigate the financial side of Indonesia.",
+          "words": [
+            { "text": "harga", "romanization": null, "meaning": "price", "part_of_speech": "noun", "frequency_rank": 158, "sample_sentence": "Harganya berapa?", "is_phrase": false },
+            { "text": "bayar", "romanization": null, "meaning": "pay", "part_of_speech": "verb", "frequency_rank": 162, "sample_sentence": "Saya mau bayar.", "is_phrase": false },
+            { "text": "murah", "romanization": null, "meaning": "cheap", "part_of_speech": "adjective", "frequency_rank": 115, "sample_sentence": "Ini terlalu murah.", "is_phrase": false },
+            { "text": "gratis", "romanization": null, "meaning": "free (no cost)", "part_of_speech": "adjective", "frequency_rank": 362, "sample_sentence": "Wi-Fi gratis di sini.", "is_phrase": false },
+            { "text": "kembalian", "romanization": null, "meaning": "change (money back)", "part_of_speech": "noun", "frequency_rank": 392, "sample_sentence": "Kembaliannya untuk anda.", "is_phrase": false },
+            { "text": "kartu", "romanization": null, "meaning": "card", "part_of_speech": "noun", "frequency_rank": 298, "sample_sentence": "Bisa bayar pakai kartu?", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Communication Verbs",
+          "narrative": "Talking, writing, reading, listening — the acts of communication themselves. Essential for saying what you need to say about saying things.",
+          "words": [
+            { "text": "bicara", "romanization": null, "meaning": "speak / talk", "part_of_speech": "verb", "frequency_rank": 82, "sample_sentence": "Saya bisa bicara sedikit.", "is_phrase": false },
+            { "text": "dengar", "romanization": null, "meaning": "hear / listen", "part_of_speech": "verb", "frequency_rank": 132, "sample_sentence": "Saya dengar musik.", "is_phrase": false },
+            { "text": "tulis", "romanization": null, "meaning": "write", "part_of_speech": "verb", "frequency_rank": 225, "sample_sentence": "Tulis nama anda di sini.", "is_phrase": false },
+            { "text": "jawab", "romanization": null, "meaning": "answer", "part_of_speech": "verb", "frequency_rank": 248, "sample_sentence": "Tolong jawab pertanyaan saya.", "is_phrase": false },
+            { "text": "bilang", "romanization": null, "meaning": "say / tell (informal)", "part_of_speech": "verb", "frequency_rank": 72, "sample_sentence": "Dia bilang apa?", "is_phrase": false },
+            { "text": "tanya", "romanization": null, "meaning": "ask (a question)", "part_of_speech": "verb", "frequency_rank": 145, "sample_sentence": "Boleh saya tanya?", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Religion & Culture",
+          "narrative": "Indonesia is deeply spiritual. From Hindu temples in Bali to mosques in Java, understanding cultural vocabulary shows deep respect.",
+          "words": [
+            { "text": "agama", "romanization": null, "meaning": "religion", "part_of_speech": "noun", "frequency_rank": 382, "sample_sentence": "Agama anda apa?", "is_phrase": false },
+            { "text": "sembahyang", "romanization": null, "meaning": "pray / worship", "part_of_speech": "verb", "frequency_rank": 398, "sample_sentence": "Waktunya sembahyang.", "is_phrase": false },
+            { "text": "upacara", "romanization": null, "meaning": "ceremony", "part_of_speech": "noun", "frequency_rank": 375, "sample_sentence": "Ada upacara di pura.", "is_phrase": false },
+            { "text": "budaya", "romanization": null, "meaning": "culture", "part_of_speech": "noun", "frequency_rank": 358, "sample_sentence": "Budaya Bali sangat kaya.", "is_phrase": false },
+            { "text": "adat", "romanization": null, "meaning": "custom / tradition", "part_of_speech": "noun", "frequency_rank": 388, "sample_sentence": "Itu adat di sini.", "is_phrase": false },
+            { "text": "Tuhan", "romanization": null, "meaning": "God", "part_of_speech": "noun", "frequency_rank": 165, "sample_sentence": "Terima kasih Tuhan.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "More Useful Verbs",
+          "narrative": "Expand your action repertoire. These verbs pop up in everyday conversations and will make you sound much more fluent.",
+          "words": [
+            { "text": "cari", "romanization": null, "meaning": "look for / search", "part_of_speech": "verb", "frequency_rank": 112, "sample_sentence": "Saya cari hotel murah.", "is_phrase": false },
+            { "text": "ambil", "romanization": null, "meaning": "take / get", "part_of_speech": "verb", "frequency_rank": 125, "sample_sentence": "Ambil satu.", "is_phrase": false },
+            { "text": "bawa", "romanization": null, "meaning": "bring / carry", "part_of_speech": "verb", "frequency_rank": 98, "sample_sentence": "Bawa tas ini.", "is_phrase": false },
+            { "text": "taruh", "romanization": null, "meaning": "put / place", "part_of_speech": "verb", "frequency_rank": 188, "sample_sentence": "Taruh di sini.", "is_phrase": false },
+            { "text": "buka", "romanization": null, "meaning": "open", "part_of_speech": "verb", "frequency_rank": 102, "sample_sentence": "Buka pintunya.", "is_phrase": false },
+            { "text": "tutup", "romanization": null, "meaning": "close / shut", "part_of_speech": "verb", "frequency_rank": 135, "sample_sentence": "Toko sudah tutup.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Time Expressions",
+          "narrative": "Indonesian time culture is famously relaxed — 'jam karet' (rubber time). But you still need to know how to talk about when things happen.",
+          "words": [
+            { "text": "minggu", "romanization": null, "meaning": "week", "part_of_speech": "noun", "frequency_rank": 180, "sample_sentence": "Satu minggu di Bali.", "is_phrase": false },
+            { "text": "bulan", "romanization": null, "meaning": "month / moon", "part_of_speech": "noun", "frequency_rank": 172, "sample_sentence": "Bulan depan saya pulang.", "is_phrase": false },
+            { "text": "tahun", "romanization": null, "meaning": "year", "part_of_speech": "noun", "frequency_rank": 95, "sample_sentence": "Tahun depan saya kembali.", "is_phrase": false },
+            { "text": "dulu", "romanization": null, "meaning": "first / previously", "part_of_speech": "adverb", "frequency_rank": 38, "sample_sentence": "Makan dulu, ya.", "is_phrase": false },
+            { "text": "selalu", "romanization": null, "meaning": "always", "part_of_speech": "adverb", "frequency_rank": 165, "sample_sentence": "Dia selalu tersenyum.", "is_phrase": false },
+            { "text": "kadang-kadang", "romanization": null, "meaning": "sometimes", "part_of_speech": "adverb", "frequency_rank": 282, "sample_sentence": "Kadang-kadang hujan sore.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Shopping & Markets",
+          "narrative": "Indonesia's markets are an experience. From art markets to night markets to supermarkets, here's your expanded shopping vocabulary.",
+          "words": [
+            { "text": "toko", "romanization": null, "meaning": "shop / store", "part_of_speech": "noun", "frequency_rank": 185, "sample_sentence": "Toko itu jual apa?", "is_phrase": false },
+            { "text": "pasar", "romanization": null, "meaning": "market", "part_of_speech": "noun", "frequency_rank": 198, "sample_sentence": "Pasar buka jam enam.", "is_phrase": false },
+            { "text": "jual", "romanization": null, "meaning": "sell", "part_of_speech": "verb", "frequency_rank": 162, "sample_sentence": "Anda jual batik?", "is_phrase": false },
+            { "text": "pilih", "romanization": null, "meaning": "choose", "part_of_speech": "verb", "frequency_rank": 218, "sample_sentence": "Silakan pilih.", "is_phrase": false },
+            { "text": "ukuran", "romanization": null, "meaning": "size", "part_of_speech": "noun", "frequency_rank": 322, "sample_sentence": "Ada ukuran besar?", "is_phrase": false },
+            { "text": "diskon", "romanization": null, "meaning": "discount", "part_of_speech": "noun", "frequency_rank": 368, "sample_sentence": "Ada diskon?", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Restaurant & Ordering",
+          "narrative": "Beyond basic food words — how to navigate a menu, make requests, and handle the bill like a local.",
+          "words": [
+            { "text": "menu", "romanization": null, "meaning": "menu", "part_of_speech": "noun", "frequency_rank": 338, "sample_sentence": "Boleh lihat menu?", "is_phrase": false },
+            { "text": "pesan", "romanization": null, "meaning": "order (food)", "part_of_speech": "verb", "frequency_rank": 158, "sample_sentence": "Saya mau pesan.", "is_phrase": false },
+            { "text": "sendok", "romanization": null, "meaning": "spoon", "part_of_speech": "noun", "frequency_rank": 372, "sample_sentence": "Minta sendok, ya.", "is_phrase": false },
+            { "text": "garpu", "romanization": null, "meaning": "fork", "part_of_speech": "noun", "frequency_rank": 392, "sample_sentence": "Tidak pakai garpu, pakai tangan.", "is_phrase": false },
+            { "text": "piring", "romanization": null, "meaning": "plate", "part_of_speech": "noun", "frequency_rank": 365, "sample_sentence": "Piringnya bersih.", "is_phrase": false },
+            { "text": "gelas", "romanization": null, "meaning": "glass / cup", "part_of_speech": "noun", "frequency_rank": 355, "sample_sentence": "Satu gelas teh.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Household Verbs",
+          "narrative": "Daily life at your homestay or villa involves cleaning, fixing, and managing the space. These verbs cover the domestic basics.",
+          "words": [
+            { "text": "bersihkan", "romanization": null, "meaning": "clean (verb)", "part_of_speech": "verb", "frequency_rank": 342, "sample_sentence": "Tolong bersihkan kamar.", "is_phrase": false },
+            { "text": "perbaiki", "romanization": null, "meaning": "fix / repair", "part_of_speech": "verb", "frequency_rank": 378, "sample_sentence": "Bisa perbaiki AC?", "is_phrase": false },
+            { "text": "ganti", "romanization": null, "meaning": "change / replace", "part_of_speech": "verb", "frequency_rank": 195, "sample_sentence": "Ganti handuk, ya.", "is_phrase": false },
+            { "text": "nyalakan", "romanization": null, "meaning": "turn on", "part_of_speech": "verb", "frequency_rank": 385, "sample_sentence": "Nyalakan lampu.", "is_phrase": false },
+            { "text": "matikan", "romanization": null, "meaning": "turn off", "part_of_speech": "verb", "frequency_rank": 388, "sample_sentence": "Matikan AC sebelum keluar.", "is_phrase": false },
+            { "text": "isi", "romanization": null, "meaning": "fill / contents", "part_of_speech": "verb", "frequency_rank": 208, "sample_sentence": "Isi botol air lagi.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Body & Senses",
+          "narrative": "Your five senses guide you through Indonesia — the smells of spices, the sounds of gamelan, the sight of rice terraces.",
+          "words": [
+            { "text": "mulut", "romanization": null, "meaning": "mouth", "part_of_speech": "noun", "frequency_rank": 305, "sample_sentence": "Buka mulut.", "is_phrase": false },
+            { "text": "hidung", "romanization": null, "meaning": "nose", "part_of_speech": "noun", "frequency_rank": 352, "sample_sentence": "Hidung saya mampet.", "is_phrase": false },
+            { "text": "telinga", "romanization": null, "meaning": "ear", "part_of_speech": "noun", "frequency_rank": 365, "sample_sentence": "Telinga saya sakit.", "is_phrase": false },
+            { "text": "gigi", "romanization": null, "meaning": "tooth / teeth", "part_of_speech": "noun", "frequency_rank": 345, "sample_sentence": "Gigi saya sakit.", "is_phrase": false },
+            { "text": "rambut", "romanization": null, "meaning": "hair", "part_of_speech": "noun", "frequency_rank": 302, "sample_sentence": "Rambutnya panjang.", "is_phrase": false },
+            { "text": "kulit", "romanization": null, "meaning": "skin", "part_of_speech": "noun", "frequency_rank": 325, "sample_sentence": "Kulit saya terbakar.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Abstract Concepts",
+          "narrative": "As your Indonesian grows, you can express bigger ideas — time, life, truth. These abstract words elevate your conversations.",
+          "words": [
+            { "text": "waktu", "romanization": null, "meaning": "time", "part_of_speech": "noun", "frequency_rank": 72, "sample_sentence": "Tidak ada waktu.", "is_phrase": false },
+            { "text": "hidup", "romanization": null, "meaning": "life / live", "part_of_speech": "noun", "frequency_rank": 88, "sample_sentence": "Hidup itu indah.", "is_phrase": false },
+            { "text": "masalah", "romanization": null, "meaning": "problem", "part_of_speech": "noun", "frequency_rank": 122, "sample_sentence": "Tidak ada masalah.", "is_phrase": false },
+            { "text": "cara", "romanization": null, "meaning": "way / method", "part_of_speech": "noun", "frequency_rank": 108, "sample_sentence": "Bagaimana caranya?", "is_phrase": false },
+            { "text": "alasan", "romanization": null, "meaning": "reason", "part_of_speech": "noun", "frequency_rank": 285, "sample_sentence": "Apa alasannya?", "is_phrase": false },
+            { "text": "mimpi", "romanization": null, "meaning": "dream", "part_of_speech": "noun", "frequency_rank": 312, "sample_sentence": "Mimpi indah semalam.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Verbs of Possession & Exchange",
+          "narrative": "Giving, receiving, sharing, borrowing — the verbs of exchange that grease the wheels of human interaction.",
+          "words": [
+            { "text": "punya", "romanization": null, "meaning": "have / own", "part_of_speech": "verb", "frequency_rank": 28, "sample_sentence": "Anda punya uang?", "is_phrase": false },
+            { "text": "beri", "romanization": null, "meaning": "give", "part_of_speech": "verb", "frequency_rank": 92, "sample_sentence": "Beri saya satu.", "is_phrase": false },
+            { "text": "terima", "romanization": null, "meaning": "receive / accept", "part_of_speech": "verb", "frequency_rank": 112, "sample_sentence": "Terima kasih banyak.", "is_phrase": false },
+            { "text": "pinjam", "romanization": null, "meaning": "borrow / lend", "part_of_speech": "verb", "frequency_rank": 315, "sample_sentence": "Boleh pinjam pulpen?", "is_phrase": false },
+            { "text": "kembalikan", "romanization": null, "meaning": "return (give back)", "part_of_speech": "verb", "frequency_rank": 348, "sample_sentence": "Kembalikan buku itu.", "is_phrase": false },
+            { "text": "bagikan", "romanization": null, "meaning": "share / distribute", "part_of_speech": "verb", "frequency_rank": 375, "sample_sentence": "Bagikan makanan ini.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Expressing Needs",
+          "narrative": "Sometimes you need something urgently — medicine, a bathroom, directions. Here's how to express what you need right now.",
+          "words": [
+            { "text": "perlu", "romanization": null, "meaning": "need", "part_of_speech": "verb", "frequency_rank": 68, "sample_sentence": "Saya perlu bantuan.", "is_phrase": false },
+            { "text": "harus", "romanization": null, "meaning": "must / have to", "part_of_speech": "verb", "frequency_rank": 35, "sample_sentence": "Saya harus pergi.", "is_phrase": false },
+            { "text": "ingin", "romanization": null, "meaning": "want / desire (formal)", "part_of_speech": "verb", "frequency_rank": 52, "sample_sentence": "Saya ingin tahu.", "is_phrase": false },
+            { "text": "butuh", "romanization": null, "meaning": "need (informal)", "part_of_speech": "verb", "frequency_rank": 145, "sample_sentence": "Saya butuh air.", "is_phrase": false },
+            { "text": "coba", "romanization": null, "meaning": "try", "part_of_speech": "verb", "frequency_rank": 82, "sample_sentence": "Coba makanan ini.", "is_phrase": false },
+            { "text": "harap", "romanization": null, "meaning": "hope / expect", "part_of_speech": "verb", "frequency_rank": 168, "sample_sentence": "Saya harap besok cerah.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Places in Town",
+          "narrative": "Navigating a new Indonesian town? You need to know where things are — the bank, the hospital, the temple, the beach.",
+          "words": [
+            { "text": "bank", "romanization": null, "meaning": "bank", "part_of_speech": "noun", "frequency_rank": 252, "sample_sentence": "Bank di mana?", "is_phrase": false },
+            { "text": "rumah sakit", "romanization": null, "meaning": "hospital", "part_of_speech": "noun", "frequency_rank": 235, "sample_sentence": "Di mana rumah sakit terdekat?", "is_phrase": false },
+            { "text": "bandara", "romanization": null, "meaning": "airport", "part_of_speech": "noun", "frequency_rank": 312, "sample_sentence": "Ke bandara berapa lama?", "is_phrase": false },
+            { "text": "stasiun", "romanization": null, "meaning": "station", "part_of_speech": "noun", "frequency_rank": 328, "sample_sentence": "Stasiun kereta di mana?", "is_phrase": false },
+            { "text": "gereja", "romanization": null, "meaning": "church", "part_of_speech": "noun", "frequency_rank": 352, "sample_sentence": "Gereja tua di kota.", "is_phrase": false },
+            { "text": "masjid", "romanization": null, "meaning": "mosque", "part_of_speech": "noun", "frequency_rank": 348, "sample_sentence": "Masjid besar di pusat kota.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Comparisons & Superlatives",
+          "narrative": "Comparing things is how we make sense of the world — which is bigger, better, cheaper? Indonesian makes this wonderfully simple.",
+          "words": [
+            { "text": "lebih", "romanization": null, "meaning": "more / -er", "part_of_speech": "adverb", "frequency_rank": 45, "sample_sentence": "Ini lebih bagus.", "is_phrase": false },
+            { "text": "paling", "romanization": null, "meaning": "most / -est", "part_of_speech": "adverb", "frequency_rank": 118, "sample_sentence": "Ini paling enak.", "is_phrase": false },
+            { "text": "sama", "romanization": null, "meaning": "same / equal", "part_of_speech": "adjective", "frequency_rank": 58, "sample_sentence": "Sama saja.", "is_phrase": false },
+            { "text": "berbeda", "romanization": null, "meaning": "different", "part_of_speech": "adjective", "frequency_rank": 232, "sample_sentence": "Ini berbeda dari itu.", "is_phrase": false },
+            { "text": "sekali", "romanization": null, "meaning": "very / once", "part_of_speech": "adverb", "frequency_rank": 32, "sample_sentence": "Bagus sekali!", "is_phrase": false },
+            { "text": "terlalu", "romanization": null, "meaning": "too (excessive)", "part_of_speech": "adverb", "frequency_rank": 125, "sample_sentence": "Terlalu mahal.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Polite Requests & Responses",
+          "narrative": "Level up your politeness game. Indonesians deeply appreciate respectful communication, and these phrases show cultural awareness.",
+          "words": [
+            { "text": "mohon", "romanization": null, "meaning": "request / please (formal)", "part_of_speech": "verb", "frequency_rank": 228, "sample_sentence": "Mohon tunggu sebentar.", "is_phrase": false },
+            { "text": "tentu saja", "romanization": null, "meaning": "of course", "part_of_speech": "phrase", "frequency_rank": 82, "sample_sentence": "Tentu saja, silakan.", "is_phrase": true },
+            { "text": "dengan senang hati", "romanization": null, "meaning": "with pleasure", "part_of_speech": "phrase", "frequency_rank": 298, "sample_sentence": "Dengan senang hati saya bantu.", "is_phrase": true },
+            { "text": "tidak apa-apa", "romanization": null, "meaning": "it's okay / no problem", "part_of_speech": "phrase", "frequency_rank": 135, "sample_sentence": "Tidak apa-apa, santai saja.", "is_phrase": true },
+            { "text": "terserah", "romanization": null, "meaning": "up to you / whatever", "part_of_speech": "verb", "frequency_rank": 272, "sample_sentence": "Terserah anda.", "is_phrase": false },
+            { "text": "sebentar", "romanization": null, "meaning": "a moment", "part_of_speech": "noun", "frequency_rank": 115, "sample_sentence": "Tunggu sebentar.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Indonesian Slang & Informal",
+          "narrative": "Hanging out at a kopi shop in Jakarta, your Indonesian friends switch to slang. Textbooks won't teach you these — but every local uses them daily.",
+          "words": [
+            { "text": "dong", "romanization": null, "meaning": "particle for emphasis / please", "part_of_speech": "particle", "frequency_rank": 310, "sample_sentence": "Bantu dong!", "is_phrase": false },
+            { "text": "kok", "romanization": null, "meaning": "how come / why (informal)", "part_of_speech": "particle", "frequency_rank": 320, "sample_sentence": "Kok bisa begitu?", "is_phrase": false },
+            { "text": "sih", "romanization": null, "meaning": "particle for curiosity / emphasis", "part_of_speech": "particle", "frequency_rank": 315, "sample_sentence": "Kenapa sih?", "is_phrase": false },
+            { "text": "gue", "romanization": null, "meaning": "I / me (Jakarta slang)", "part_of_speech": "pronoun", "frequency_rank": 330, "sample_sentence": "Gue mau ke mall.", "is_phrase": false },
+            { "text": "lo", "romanization": null, "meaning": "you (Jakarta slang)", "part_of_speech": "pronoun", "frequency_rank": 335, "sample_sentence": "Lo mau ikut?", "is_phrase": false },
+            { "text": "udah", "romanization": null, "meaning": "already (informal for sudah)", "part_of_speech": "adverb", "frequency_rank": 305, "sample_sentence": "Udah makan belum?", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Food Preparation",
+          "narrative": "You're deeper into your Ubud cooking class now. The chef demonstrates advanced techniques — grilling, steaming, slicing. Keep up with the culinary action.",
+          "words": [
+            { "text": "panggang", "romanization": null, "meaning": "grill / roast", "part_of_speech": "verb", "frequency_rank": 410, "sample_sentence": "Ikan panggang dengan sambal.", "is_phrase": false },
+            { "text": "kukus", "romanization": null, "meaning": "steam (cooking)", "part_of_speech": "verb", "frequency_rank": 430, "sample_sentence": "Nasi kukus lebih sehat.", "is_phrase": false },
+            { "text": "iris", "romanization": null, "meaning": "slice / cut thinly", "part_of_speech": "verb", "frequency_rank": 420, "sample_sentence": "Iris bawang tipis-tipis.", "is_phrase": false },
+            { "text": "campur", "romanization": null, "meaning": "mix / blend", "part_of_speech": "verb", "frequency_rank": 360, "sample_sentence": "Campur semua bumbu.", "is_phrase": false },
+            { "text": "aduk", "romanization": null, "meaning": "stir", "part_of_speech": "verb", "frequency_rank": 440, "sample_sentence": "Aduk terus supaya tidak gosong.", "is_phrase": false },
+            { "text": "tumis", "romanization": null, "meaning": "stir-fry / saut\u00e9", "part_of_speech": "verb", "frequency_rank": 435, "sample_sentence": "Tumis bawang putih dulu.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Geography",
+          "narrative": "Indonesia is the world's largest archipelago — over 17,000 islands! From rivers cutting through jungles to volcanic lakes, the geography is stunning.",
+          "words": [
+            { "text": "pulau", "romanization": null, "meaning": "island", "part_of_speech": "noun", "frequency_rank": 310, "sample_sentence": "Bali adalah pulau kecil.", "is_phrase": false },
+            { "text": "sungai", "romanization": null, "meaning": "river", "part_of_speech": "noun", "frequency_rank": 340, "sample_sentence": "Sungai ini panjang sekali.", "is_phrase": false },
+            { "text": "danau", "romanization": null, "meaning": "lake", "part_of_speech": "noun", "frequency_rank": 380, "sample_sentence": "Danau Toba sangat indah.", "is_phrase": false },
+            { "text": "hutan", "romanization": null, "meaning": "forest / jungle", "part_of_speech": "noun", "frequency_rank": 350, "sample_sentence": "Hutan di Kalimantan sangat luas.", "is_phrase": false },
+            { "text": "desa", "romanization": null, "meaning": "village", "part_of_speech": "noun", "frequency_rank": 320, "sample_sentence": "Desa ini tenang dan damai.", "is_phrase": false },
+            { "text": "kota", "romanization": null, "meaning": "city / town", "part_of_speech": "noun", "frequency_rank": 300, "sample_sentence": "Jakarta adalah kota besar.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Sports & Exercise",
+          "narrative": "Your Balinese friend invites you to play futsal after work. Staying active in Indonesia means knowing the sports vocabulary — from swimming to the gym.",
+          "words": [
+            { "text": "olahraga", "romanization": null, "meaning": "sports / exercise", "part_of_speech": "noun", "frequency_rank": 350, "sample_sentence": "Saya suka olahraga pagi.", "is_phrase": false },
+            { "text": "sepak bola", "romanization": null, "meaning": "soccer / football", "part_of_speech": "noun", "frequency_rank": 370, "sample_sentence": "Kita main sepak bola sore ini.", "is_phrase": true },
+            { "text": "renang", "romanization": null, "meaning": "swimming", "part_of_speech": "noun", "frequency_rank": 390, "sample_sentence": "Saya latihan renang setiap pagi.", "is_phrase": false },
+            { "text": "gym", "romanization": null, "meaning": "gym / fitness center", "part_of_speech": "noun", "frequency_rank": 420, "sample_sentence": "Ada gym di hotel ini?", "is_phrase": false },
+            { "text": "latihan", "romanization": null, "meaning": "practice / training", "part_of_speech": "noun", "frequency_rank": 340, "sample_sentence": "Latihan setiap hari penting.", "is_phrase": false },
+            { "text": "sehat", "romanization": null, "meaning": "healthy", "part_of_speech": "adjective", "frequency_rank": 310, "sample_sentence": "Olahraga membuat tubuh sehat.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Music & Art",
+          "narrative": "The sound of gamelan drifts from a temple ceremony. A painter captures the rice terraces in watercolor. Indonesia's art scene is vibrant and deeply rooted.",
+          "words": [
+            { "text": "seni", "romanization": null, "meaning": "art", "part_of_speech": "noun", "frequency_rank": 360, "sample_sentence": "Seni Bali sangat terkenal.", "is_phrase": false },
+            { "text": "lukisan", "romanization": null, "meaning": "painting", "part_of_speech": "noun", "frequency_rank": 400, "sample_sentence": "Lukisan ini karya seniman lokal.", "is_phrase": false },
+            { "text": "menari", "romanization": null, "meaning": "dance (verb)", "part_of_speech": "verb", "frequency_rank": 390, "sample_sentence": "Gadis-gadis menari Legong.", "is_phrase": false },
+            { "text": "alat musik", "romanization": null, "meaning": "musical instrument", "part_of_speech": "noun", "frequency_rank": 430, "sample_sentence": "Gamelan adalah alat musik tradisional.", "is_phrase": true },
+            { "text": "konser", "romanization": null, "meaning": "concert", "part_of_speech": "noun", "frequency_rank": 450, "sample_sentence": "Ada konser musik malam ini.", "is_phrase": false },
+            { "text": "gambar", "romanization": null, "meaning": "picture / drawing", "part_of_speech": "noun", "frequency_rank": 330, "sample_sentence": "Gambar ini sangat bagus.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Social Media",
+          "narrative": "Everyone in Indonesia is on social media — Instagram, TikTok, WhatsApp. Your new friends want to connect online. Here's the digital vocabulary.",
+          "words": [
+            { "text": "akun", "romanization": null, "meaning": "account", "part_of_speech": "noun", "frequency_rank": 380, "sample_sentence": "Apa nama akun Instagram kamu?", "is_phrase": false },
+            { "text": "ikuti", "romanization": null, "meaning": "follow", "part_of_speech": "verb", "frequency_rank": 370, "sample_sentence": "Ikuti akun saya, ya.", "is_phrase": false },
+            { "text": "sukai", "romanization": null, "meaning": "like (social media)", "part_of_speech": "verb", "frequency_rank": 400, "sample_sentence": "Tolong sukai foto saya.", "is_phrase": false },
+            { "text": "unggah", "romanization": null, "meaning": "upload / post", "part_of_speech": "verb", "frequency_rank": 420, "sample_sentence": "Saya unggah foto pantai tadi.", "is_phrase": false },
+            { "text": "komentar", "romanization": null, "meaning": "comment", "part_of_speech": "noun", "frequency_rank": 390, "sample_sentence": "Banyak komentar di posting itu.", "is_phrase": false },
+            { "text": "berbagi", "romanization": null, "meaning": "share", "part_of_speech": "verb", "frequency_rank": 360, "sample_sentence": "Berbagi cerita perjalanan di media sosial.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Business",
+          "narrative": "You meet a local entrepreneur at a co-working space in Canggu. Business is booming in Indonesia, and these words let you talk shop.",
+          "words": [
+            { "text": "bisnis", "romanization": null, "meaning": "business", "part_of_speech": "noun", "frequency_rank": 310, "sample_sentence": "Bisnis kopi sangat populer.", "is_phrase": false },
+            { "text": "pelanggan", "romanization": null, "meaning": "customer / client", "part_of_speech": "noun", "frequency_rank": 380, "sample_sentence": "Pelanggan selalu benar.", "is_phrase": false },
+            { "text": "produk", "romanization": null, "meaning": "product", "part_of_speech": "noun", "frequency_rank": 350, "sample_sentence": "Produk ini buatan Indonesia.", "is_phrase": false },
+            { "text": "penjualan", "romanization": null, "meaning": "sales", "part_of_speech": "noun", "frequency_rank": 400, "sample_sentence": "Penjualan bulan ini meningkat.", "is_phrase": false },
+            { "text": "keuntungan", "romanization": null, "meaning": "profit / benefit", "part_of_speech": "noun", "frequency_rank": 420, "sample_sentence": "Keuntungan dari bisnis ini besar.", "is_phrase": false },
+            { "text": "kontrak", "romanization": null, "meaning": "contract", "part_of_speech": "noun", "frequency_rank": 440, "sample_sentence": "Kita perlu tanda tangan kontrak.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Legal & Official",
+          "narrative": "Extending your visa, signing a rental agreement, or registering at the local office — bureaucracy in Indonesia requires its own vocabulary.",
+          "words": [
+            { "text": "dokumen", "romanization": null, "meaning": "document", "part_of_speech": "noun", "frequency_rank": 370, "sample_sentence": "Bawa dokumen asli anda.", "is_phrase": false },
+            { "text": "formulir", "romanization": null, "meaning": "form (document)", "part_of_speech": "noun", "frequency_rank": 410, "sample_sentence": "Isi formulir ini dulu.", "is_phrase": false },
+            { "text": "tanda tangan", "romanization": null, "meaning": "signature / sign", "part_of_speech": "noun", "frequency_rank": 390, "sample_sentence": "Tanda tangan di sini.", "is_phrase": true },
+            { "text": "resmi", "romanization": null, "meaning": "official / formal", "part_of_speech": "adjective", "frequency_rank": 360, "sample_sentence": "Ini surat resmi dari kantor.", "is_phrase": false },
+            { "text": "izin", "romanization": null, "meaning": "permit / permission", "part_of_speech": "noun", "frequency_rank": 340, "sample_sentence": "Anda perlu izin untuk tinggal.", "is_phrase": false },
+            { "text": "daftar", "romanization": null, "meaning": "register / list", "part_of_speech": "verb", "frequency_rank": 320, "sample_sentence": "Daftar di loket depan.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Emotions Advanced",
+          "narrative": "Beyond happy and sad — now you can express the full range of human emotion. Frustration at traffic, pride in your language progress, anxiety before a flight.",
+          "words": [
+            { "text": "frustrasi", "romanization": null, "meaning": "frustrated", "part_of_speech": "adjective", "frequency_rank": 450, "sample_sentence": "Saya frustrasi dengan macetnya.", "is_phrase": false },
+            { "text": "kecewa", "romanization": null, "meaning": "disappointed", "part_of_speech": "adjective", "frequency_rank": 380, "sample_sentence": "Dia kecewa karena batal.", "is_phrase": false },
+            { "text": "bangga", "romanization": null, "meaning": "proud", "part_of_speech": "adjective", "frequency_rank": 370, "sample_sentence": "Saya bangga bisa bicara bahasa Indonesia.", "is_phrase": false },
+            { "text": "malu", "romanization": null, "meaning": "shy / embarrassed", "part_of_speech": "adjective", "frequency_rank": 340, "sample_sentence": "Jangan malu, coba saja.", "is_phrase": false },
+            { "text": "cemas", "romanization": null, "meaning": "anxious / worried", "part_of_speech": "adjective", "frequency_rank": 400, "sample_sentence": "Dia cemas menunggu hasilnya.", "is_phrase": false },
+            { "text": "santai", "romanization": null, "meaning": "relaxed / chill", "part_of_speech": "adjective", "frequency_rank": 310, "sample_sentence": "Santai saja, tidak usah buru-buru.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Household Items",
+          "narrative": "Settling into your rental in Bali, you realize you need to know what things are called. The wardrobe won't close, the fan is broken, you need an extra pillow.",
+          "words": [
+            { "text": "lemari", "romanization": null, "meaning": "wardrobe / cupboard", "part_of_speech": "noun", "frequency_rank": 380, "sample_sentence": "Baju di dalam lemari.", "is_phrase": false },
+            { "text": "cermin", "romanization": null, "meaning": "mirror", "part_of_speech": "noun", "frequency_rank": 400, "sample_sentence": "Ada cermin di kamar mandi.", "is_phrase": false },
+            { "text": "selimut", "romanization": null, "meaning": "blanket", "part_of_speech": "noun", "frequency_rank": 420, "sample_sentence": "Minta selimut tambahan.", "is_phrase": false },
+            { "text": "bantal", "romanization": null, "meaning": "pillow", "part_of_speech": "noun", "frequency_rank": 410, "sample_sentence": "Bantal ini terlalu keras.", "is_phrase": false },
+            { "text": "lampu", "romanization": null, "meaning": "lamp / light", "part_of_speech": "noun", "frequency_rank": 340, "sample_sentence": "Lampu kamar tidak menyala.", "is_phrase": false },
+            { "text": "kipas", "romanization": null, "meaning": "fan", "part_of_speech": "noun", "frequency_rank": 430, "sample_sentence": "Kipas angin rusak.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Gardening & Plants",
+          "narrative": "Your Balinese host tends a lush tropical garden every morning. Frangipani, orchids, and herbs grow everywhere. She teaches you the names.",
+          "words": [
+            { "text": "taman", "romanization": null, "meaning": "garden / park", "part_of_speech": "noun", "frequency_rank": 320, "sample_sentence": "Taman ini penuh bunga.", "is_phrase": false },
+            { "text": "tanaman", "romanization": null, "meaning": "plant", "part_of_speech": "noun", "frequency_rank": 360, "sample_sentence": "Tanaman ini perlu air setiap hari.", "is_phrase": false },
+            { "text": "bunga", "romanization": null, "meaning": "flower", "part_of_speech": "noun", "frequency_rank": 330, "sample_sentence": "Bunga kamboja harum sekali.", "is_phrase": false },
+            { "text": "biji", "romanization": null, "meaning": "seed", "part_of_speech": "noun", "frequency_rank": 410, "sample_sentence": "Tanam biji ini di tanah.", "is_phrase": false },
+            { "text": "tanam", "romanization": null, "meaning": "plant (verb)", "part_of_speech": "verb", "frequency_rank": 380, "sample_sentence": "Kita tanam sayur di kebun.", "is_phrase": false },
+            { "text": "tumbuh", "romanization": null, "meaning": "grow", "part_of_speech": "verb", "frequency_rank": 350, "sample_sentence": "Tanaman ini tumbuh cepat sekali.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Parties & Celebrations",
+          "narrative": "Your Indonesian friend is turning 25 and throws a big party. Birthday celebrations, weddings, and festivals are joyful social occasions here.",
+          "words": [
+            { "text": "pesta", "romanization": null, "meaning": "party", "part_of_speech": "noun", "frequency_rank": 370, "sample_sentence": "Pesta ulang tahunnya meriah.", "is_phrase": false },
+            { "text": "hadiah", "romanization": null, "meaning": "gift / present", "part_of_speech": "noun", "frequency_rank": 350, "sample_sentence": "Ini hadiah untuk kamu.", "is_phrase": false },
+            { "text": "undangan", "romanization": null, "meaning": "invitation", "part_of_speech": "noun", "frequency_rank": 400, "sample_sentence": "Saya terima undangan pernikahan.", "is_phrase": false },
+            { "text": "ulang tahun", "romanization": null, "meaning": "birthday", "part_of_speech": "noun", "frequency_rank": 380, "sample_sentence": "Selamat ulang tahun!", "is_phrase": true },
+            { "text": "merayakan", "romanization": null, "meaning": "celebrate", "part_of_speech": "verb", "frequency_rank": 410, "sample_sentence": "Kita merayakan bersama.", "is_phrase": false },
+            { "text": "dekorasi", "romanization": null, "meaning": "decoration", "part_of_speech": "noun", "frequency_rank": 440, "sample_sentence": "Dekorasi pestanya cantik sekali.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Marine Life",
+          "narrative": "Snorkeling in the Gili Islands, you see a sea turtle gliding past coral. Indonesia has some of the richest marine biodiversity on Earth.",
+          "words": [
+            { "text": "terumbu karang", "romanization": null, "meaning": "coral reef", "part_of_speech": "noun", "frequency_rank": 470, "sample_sentence": "Terumbu karang di sini sangat indah.", "is_phrase": true },
+            { "text": "penyu", "romanization": null, "meaning": "sea turtle", "part_of_speech": "noun", "frequency_rank": 460, "sample_sentence": "Kita lihat penyu di laut.", "is_phrase": false },
+            { "text": "lumba-lumba", "romanization": null, "meaning": "dolphin", "part_of_speech": "noun", "frequency_rank": 450, "sample_sentence": "Lumba-lumba melompat di Lovina.", "is_phrase": false },
+            { "text": "ombak", "romanization": null, "meaning": "wave (ocean)", "part_of_speech": "noun", "frequency_rank": 400, "sample_sentence": "Ombak di pantai ini besar.", "is_phrase": false },
+            { "text": "menyelam", "romanization": null, "meaning": "dive", "part_of_speech": "verb", "frequency_rank": 420, "sample_sentence": "Saya mau belajar menyelam.", "is_phrase": false },
+            { "text": "snorkeling", "romanization": null, "meaning": "snorkeling", "part_of_speech": "noun", "frequency_rank": 455, "sample_sentence": "Kita pergi snorkeling besok pagi.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Coffee Culture",
+          "narrative": "Indonesia is one of the world's top coffee producers. From thick kopi tubruk to trendy third-wave cafes, coffee culture runs deep here.",
+          "words": [
+            { "text": "kopi tubruk", "romanization": null, "meaning": "traditional brewed coffee (grounds in cup)", "part_of_speech": "noun", "frequency_rank": 460, "sample_sentence": "Kopi tubruk khas Jawa.", "is_phrase": true },
+            { "text": "gula aren", "romanization": null, "meaning": "palm sugar", "part_of_speech": "noun", "frequency_rank": 440, "sample_sentence": "Pakai gula aren, lebih enak.", "is_phrase": true },
+            { "text": "barista", "romanization": null, "meaning": "barista", "part_of_speech": "noun", "frequency_rank": 470, "sample_sentence": "Barista di sini sangat terampil.", "is_phrase": false },
+            { "text": "kedai kopi", "romanization": null, "meaning": "coffee shop", "part_of_speech": "noun", "frequency_rank": 430, "sample_sentence": "Kedai kopi ini baru buka.", "is_phrase": true },
+            { "text": "pahit", "romanization": null, "meaning": "bitter", "part_of_speech": "adjective", "frequency_rank": 390, "sample_sentence": "Kopi tanpa gula memang pahit.", "is_phrase": false },
+            { "text": "seduh", "romanization": null, "meaning": "brew (coffee/tea)", "part_of_speech": "verb", "frequency_rank": 450, "sample_sentence": "Seduh kopi dengan air panas.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Textiles & Crafts",
+          "narrative": "You visit a traditional weaving village in Flores. Skilled artisans create intricate ikat textiles, silver jewelry, and wood carvings by hand.",
+          "words": [
+            { "text": "tenun", "romanization": null, "meaning": "weave / woven textile", "part_of_speech": "noun", "frequency_rank": 460, "sample_sentence": "Kain tenun ini buatan tangan.", "is_phrase": false },
+            { "text": "kerajinan", "romanization": null, "meaning": "handicraft", "part_of_speech": "noun", "frequency_rank": 420, "sample_sentence": "Kerajinan tangan Bali terkenal.", "is_phrase": false },
+            { "text": "perak", "romanization": null, "meaning": "silver", "part_of_speech": "noun", "frequency_rank": 430, "sample_sentence": "Cincin perak dari Celuk.", "is_phrase": false },
+            { "text": "ukiran", "romanization": null, "meaning": "carving / engraving", "part_of_speech": "noun", "frequency_rank": 450, "sample_sentence": "Ukiran kayu Jepara sangat detail.", "is_phrase": false },
+            { "text": "anyaman", "romanization": null, "meaning": "woven / basketry", "part_of_speech": "noun", "frequency_rank": 470, "sample_sentence": "Tas anyaman dari rotan.", "is_phrase": false },
+            { "text": "sablon", "romanization": null, "meaning": "screen print", "part_of_speech": "noun", "frequency_rank": 480, "sample_sentence": "Kaos sablon di Kuta murah.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Daily Errands",
+          "narrative": "Living in Indonesia means running errands in Bahasa. Queuing at the post office, topping up your phone, doing laundry — the mundane but essential tasks.",
+          "words": [
+            { "text": "antrian", "romanization": null, "meaning": "queue / line", "part_of_speech": "noun", "frequency_rank": 410, "sample_sentence": "Antrian di bank panjang sekali.", "is_phrase": false },
+            { "text": "kirim paket", "romanization": null, "meaning": "send a package", "part_of_speech": "phrase", "frequency_rank": 430, "sample_sentence": "Saya mau kirim paket ke Jakarta.", "is_phrase": true },
+            { "text": "isi ulang", "romanization": null, "meaning": "refill / top up", "part_of_speech": "phrase", "frequency_rank": 400, "sample_sentence": "Saya perlu isi ulang pulsa.", "is_phrase": true },
+            { "text": "fotokopi", "romanization": null, "meaning": "photocopy", "part_of_speech": "noun", "frequency_rank": 420, "sample_sentence": "Fotokopi KTP di sana.", "is_phrase": false },
+            { "text": "laundry", "romanization": null, "meaning": "laundry", "part_of_speech": "noun", "frequency_rank": 440, "sample_sentence": "Ada laundry dekat sini?", "is_phrase": false },
+            { "text": "parkir", "romanization": null, "meaning": "parking / park", "part_of_speech": "noun", "frequency_rank": 380, "sample_sentence": "Tempat parkir di mana?", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Indonesian Cuisine",
+          "narrative": "Indonesia's culinary heritage spans hundreds of ethnic groups. From rendang to gudeg, each dish tells a story of the region it comes from.",
+          "words": [
+            { "text": "rendang", "romanization": null, "meaning": "slow-cooked spiced meat (Padang)", "part_of_speech": "noun", "frequency_rank": 440, "sample_sentence": "Rendang daging sapi paling enak.", "is_phrase": false },
+            { "text": "gudeg", "romanization": null, "meaning": "jackfruit stew (Yogyakarta)", "part_of_speech": "noun", "frequency_rank": 470, "sample_sentence": "Gudeg Jogja terkenal manis.", "is_phrase": false },
+            { "text": "gado-gado", "romanization": null, "meaning": "vegetable salad with peanut sauce", "part_of_speech": "noun", "frequency_rank": 450, "sample_sentence": "Gado-gado cocok untuk vegetarian.", "is_phrase": false },
+            { "text": "tempe", "romanization": null, "meaning": "fermented soybean cake", "part_of_speech": "noun", "frequency_rank": 410, "sample_sentence": "Tempe goreng renyah sekali.", "is_phrase": false },
+            { "text": "tahu", "romanization": null, "meaning": "tofu", "part_of_speech": "noun", "frequency_rank": 400, "sample_sentence": "Tahu isi sangat populer.", "is_phrase": false },
+            { "text": "rujak", "romanization": null, "meaning": "spicy fruit salad", "part_of_speech": "noun", "frequency_rank": 460, "sample_sentence": "Rujak buah segar dan pedas.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Environmental",
+          "narrative": "Indonesia faces big environmental challenges — from plastic in the oceans to deforestation. Many locals are passionate about sustainability.",
+          "words": [
+            { "text": "sampah", "romanization": null, "meaning": "trash / garbage", "part_of_speech": "noun", "frequency_rank": 350, "sample_sentence": "Jangan buang sampah di sini.", "is_phrase": false },
+            { "text": "daur ulang", "romanization": null, "meaning": "recycle", "part_of_speech": "noun", "frequency_rank": 450, "sample_sentence": "Kita harus daur ulang plastik.", "is_phrase": true },
+            { "text": "polusi", "romanization": null, "meaning": "pollution", "part_of_speech": "noun", "frequency_rank": 430, "sample_sentence": "Polusi udara di Jakarta parah.", "is_phrase": false },
+            { "text": "alam", "romanization": null, "meaning": "nature", "part_of_speech": "noun", "frequency_rank": 310, "sample_sentence": "Alam Indonesia sangat kaya.", "is_phrase": false },
+            { "text": "lingkungan", "romanization": null, "meaning": "environment", "part_of_speech": "noun", "frequency_rank": 370, "sample_sentence": "Jaga lingkungan tetap bersih.", "is_phrase": false },
+            { "text": "hemat", "romanization": null, "meaning": "save / economical", "part_of_speech": "adjective", "frequency_rank": 390, "sample_sentence": "Hemat air dan listrik.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Feelings About People",
+          "narrative": "Describing someone's character goes beyond just 'baik.' Your Indonesian friends are generous, honest, or sometimes a bit stingy. Here's how to say it.",
+          "words": [
+            { "text": "ramah", "romanization": null, "meaning": "friendly / warm", "part_of_speech": "adjective", "frequency_rank": 330, "sample_sentence": "Orang Bali sangat ramah.", "is_phrase": false },
+            { "text": "sopan", "romanization": null, "meaning": "polite / well-mannered", "part_of_speech": "adjective", "frequency_rank": 360, "sample_sentence": "Anak itu sopan sekali.", "is_phrase": false },
+            { "text": "jujur", "romanization": null, "meaning": "honest", "part_of_speech": "adjective", "frequency_rank": 340, "sample_sentence": "Dia orang yang jujur.", "is_phrase": false },
+            { "text": "pelit", "romanization": null, "meaning": "stingy / cheap", "part_of_speech": "adjective", "frequency_rank": 420, "sample_sentence": "Jangan pelit sama teman.", "is_phrase": false },
+            { "text": "dermawan", "romanization": null, "meaning": "generous", "part_of_speech": "adjective", "frequency_rank": 440, "sample_sentence": "Dia dermawan kepada semua orang.", "is_phrase": false },
+            { "text": "baik hati", "romanization": null, "meaning": "kind-hearted", "part_of_speech": "adjective", "frequency_rank": 380, "sample_sentence": "Ibu itu sangat baik hati.", "is_phrase": true }
+          ]
+        },
+        {
+          "title": "Travel Logistics",
+          "narrative": "Booking flights, confirming reservations, dealing with cancellations — the practical side of travel requires its own vocabulary.",
+          "words": [
+            { "text": "jadwal", "romanization": null, "meaning": "schedule / timetable", "part_of_speech": "noun", "frequency_rank": 340, "sample_sentence": "Jadwal pesawat berubah.", "is_phrase": false },
+            { "text": "pemesanan", "romanization": null, "meaning": "booking / reservation", "part_of_speech": "noun", "frequency_rank": 400, "sample_sentence": "Pemesanan hotel sudah dikonfirmasi.", "is_phrase": false },
+            { "text": "konfirmasi", "romanization": null, "meaning": "confirmation", "part_of_speech": "noun", "frequency_rank": 410, "sample_sentence": "Saya belum terima konfirmasi.", "is_phrase": false },
+            { "text": "pembatalan", "romanization": null, "meaning": "cancellation", "part_of_speech": "noun", "frequency_rank": 440, "sample_sentence": "Pembatalan gratis sampai besok.", "is_phrase": false },
+            { "text": "pengembalian", "romanization": null, "meaning": "refund / return", "part_of_speech": "noun", "frequency_rank": 450, "sample_sentence": "Minta pengembalian uang, ya.", "is_phrase": false },
+            { "text": "jaminan", "romanization": null, "meaning": "guarantee / deposit", "part_of_speech": "noun", "frequency_rank": 430, "sample_sentence": "Ada jaminan uang kembali?", "is_phrase": false }
+          ]
+        }
+      ]
+    }
+  ],
+  "travel_packs": [
+    {
+      "title": "2 Weeks in Bali",
+      "situations": [
+        {
+          "title": "At the Airport",
+          "narrative": "You've just landed at Ngurah Rai Airport. The warm tropical air hits you as you step off the plane. Navigate arrivals, customs, and your ride to the hotel.",
+          "words": [
+            { "text": "bandara", "romanization": null, "meaning": "airport", "part_of_speech": "noun", "frequency_rank": 312, "sample_sentence": "Selamat datang di bandara Bali.", "is_phrase": false },
+            { "text": "paspor", "romanization": null, "meaning": "passport", "part_of_speech": "noun", "frequency_rank": 400, "sample_sentence": "Tunjukkan paspor anda.", "is_phrase": false },
+            { "text": "visa", "romanization": null, "meaning": "visa", "part_of_speech": "noun", "frequency_rank": 410, "sample_sentence": "Visa saya untuk 30 hari.", "is_phrase": false },
+            { "text": "bagasi", "romanization": null, "meaning": "luggage / baggage", "part_of_speech": "noun", "frequency_rank": 415, "sample_sentence": "Bagasi saya belum keluar.", "is_phrase": false },
+            { "text": "tukar uang", "romanization": null, "meaning": "money exchange", "part_of_speech": "phrase", "frequency_rank": 420, "sample_sentence": "Di mana tukar uang?", "is_phrase": true },
+            { "text": "jemput", "romanization": null, "meaning": "pick up (a person)", "part_of_speech": "verb", "frequency_rank": 295, "sample_sentence": "Siapa yang jemput saya?", "is_phrase": false },
+            { "text": "antar", "romanization": null, "meaning": "deliver / take (a person)", "part_of_speech": "verb", "frequency_rank": 215, "sample_sentence": "Antar saya ke hotel.", "is_phrase": false },
+            { "text": "bea cukai", "romanization": null, "meaning": "customs", "part_of_speech": "noun", "frequency_rank": 480, "sample_sentence": "Lewat bea cukai dulu.", "is_phrase": true },
+            { "text": "kedatangan", "romanization": null, "meaning": "arrivals", "part_of_speech": "noun", "frequency_rank": 460, "sample_sentence": "Pintu kedatangan di lantai satu.", "is_phrase": false },
+            { "text": "keberangkatan", "romanization": null, "meaning": "departures", "part_of_speech": "noun", "frequency_rank": 465, "sample_sentence": "Terminal keberangkatan internasional.", "is_phrase": false },
+            { "text": "troli", "romanization": null, "meaning": "trolley / cart", "part_of_speech": "noun", "frequency_rank": 490, "sample_sentence": "Ambil troli untuk bagasi.", "is_phrase": false },
+            { "text": "deklarasi", "romanization": null, "meaning": "declaration (customs)", "part_of_speech": "noun", "frequency_rank": 500, "sample_sentence": "Isi formulir deklarasi bea cukai.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Getting Around Bali",
+          "narrative": "Bali has no trains and limited public transport. You'll rely on ojeks, Grabs, and maybe your own scooter. Here's how to navigate.",
+          "words": [
+            { "text": "ojek", "romanization": null, "meaning": "motorcycle taxi", "part_of_speech": "noun", "frequency_rank": 425, "sample_sentence": "Saya naik ojek ke Ubud.", "is_phrase": false },
+            { "text": "sewa", "romanization": null, "meaning": "rent / hire", "part_of_speech": "verb", "frequency_rank": 235, "sample_sentence": "Saya mau sewa motor.", "is_phrase": false },
+            { "text": "sopir", "romanization": null, "meaning": "driver", "part_of_speech": "noun", "frequency_rank": 288, "sample_sentence": "Sopirnya ramah sekali.", "is_phrase": false },
+            { "text": "macet", "romanization": null, "meaning": "traffic jam / stuck", "part_of_speech": "adjective", "frequency_rank": 335, "sample_sentence": "Jalannya macet.", "is_phrase": false },
+            { "text": "bensin", "romanization": null, "meaning": "gasoline / petrol", "part_of_speech": "noun", "frequency_rank": 378, "sample_sentence": "Perlu isi bensin.", "is_phrase": false },
+            { "text": "helm", "romanization": null, "meaning": "helmet", "part_of_speech": "noun", "frequency_rank": 412, "sample_sentence": "Pakai helm, ya.", "is_phrase": false },
+            { "text": "pelan-pelan", "romanization": null, "meaning": "slowly / take it easy", "part_of_speech": "phrase", "frequency_rank": 242, "sample_sentence": "Pelan-pelan, ya pak.", "is_phrase": true },
+            { "text": "jalan tol", "romanization": null, "meaning": "toll road / highway", "part_of_speech": "noun", "frequency_rank": 440, "sample_sentence": "Lewat jalan tol lebih cepat.", "is_phrase": true },
+            { "text": "putar balik", "romanization": null, "meaning": "U-turn", "part_of_speech": "phrase", "frequency_rank": 460, "sample_sentence": "Putar balik di depan.", "is_phrase": true },
+            { "text": "lampu merah", "romanization": null, "meaning": "traffic light", "part_of_speech": "noun", "frequency_rank": 420, "sample_sentence": "Berhenti di lampu merah.", "is_phrase": true },
+            { "text": "pertigaan", "romanization": null, "meaning": "T-junction / three-way intersection", "part_of_speech": "noun", "frequency_rank": 450, "sample_sentence": "Belok kiri di pertigaan.", "is_phrase": false },
+            { "text": "isi bensin", "romanization": null, "meaning": "fill up gas", "part_of_speech": "phrase", "frequency_rank": 430, "sample_sentence": "Kita isi bensin dulu.", "is_phrase": true }
+          ]
+        },
+        {
+          "title": "At Restaurants & Warungs",
+          "narrative": "From beachside fine dining to a plastic-stool warung, Bali's food scene is incredible. Order with confidence and discover local specialties.",
+          "words": [
+            { "text": "warung", "romanization": null, "meaning": "small local restaurant/shop", "part_of_speech": "noun", "frequency_rank": 275, "sample_sentence": "Warung ini enak dan murah.", "is_phrase": false },
+            { "text": "nasi goreng", "romanization": null, "meaning": "fried rice", "part_of_speech": "noun", "frequency_rank": 430, "sample_sentence": "Nasi goreng spesial, ya.", "is_phrase": false },
+            { "text": "mie goreng", "romanization": null, "meaning": "fried noodles", "part_of_speech": "noun", "frequency_rank": 432, "sample_sentence": "Satu mie goreng, pedas.", "is_phrase": false },
+            { "text": "sate", "romanization": null, "meaning": "satay (skewered meat)", "part_of_speech": "noun", "frequency_rank": 435, "sample_sentence": "Sate ayam lima tusuk.", "is_phrase": false },
+            { "text": "babi guling", "romanization": null, "meaning": "roasted suckling pig (Balinese specialty)", "part_of_speech": "noun", "frequency_rank": 440, "sample_sentence": "Babi guling di Ibu Oka terkenal.", "is_phrase": false },
+            { "text": "sambal", "romanization": null, "meaning": "chili sauce/paste", "part_of_speech": "noun", "frequency_rank": 388, "sample_sentence": "Tambah sambal, ya.", "is_phrase": false },
+            { "text": "es kelapa", "romanization": null, "meaning": "iced coconut water", "part_of_speech": "noun", "frequency_rank": 442, "sample_sentence": "Satu es kelapa muda.", "is_phrase": false },
+            { "text": "lalapan", "romanization": null, "meaning": "fresh raw vegetables (side dish)", "part_of_speech": "noun", "frequency_rank": 470, "sample_sentence": "Ayam goreng dengan lalapan.", "is_phrase": false },
+            { "text": "porsi", "romanization": null, "meaning": "portion / serving", "part_of_speech": "noun", "frequency_rank": 410, "sample_sentence": "Porsinya besar sekali.", "is_phrase": false },
+            { "text": "tambah", "romanization": null, "meaning": "add / extra", "part_of_speech": "verb", "frequency_rank": 300, "sample_sentence": "Tambah nasi satu lagi.", "is_phrase": false },
+            { "text": "bon", "romanization": null, "meaning": "bill / check", "part_of_speech": "noun", "frequency_rank": 420, "sample_sentence": "Minta bon, ya.", "is_phrase": false },
+            { "text": "jus", "romanization": null, "meaning": "juice", "part_of_speech": "noun", "frequency_rank": 400, "sample_sentence": "Saya mau jus alpukat.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "At the Hotel / Villa",
+          "narrative": "Your Bali villa has a private pool and the staff is incredibly attentive. Here's how to communicate your needs and requests.",
+          "words": [
+            { "text": "kolam renang", "romanization": null, "meaning": "swimming pool", "part_of_speech": "noun", "frequency_rank": 445, "sample_sentence": "Kolam renang di mana?", "is_phrase": false },
+            { "text": "handuk", "romanization": null, "meaning": "towel", "part_of_speech": "noun", "frequency_rank": 398, "sample_sentence": "Minta handuk bersih.", "is_phrase": false },
+            { "text": "AC", "romanization": null, "meaning": "air conditioning", "part_of_speech": "noun", "frequency_rank": 382, "sample_sentence": "AC-nya tidak jalan.", "is_phrase": false },
+            { "text": "sarapan", "romanization": null, "meaning": "breakfast", "part_of_speech": "noun", "frequency_rank": 288, "sample_sentence": "Sarapan jam berapa?", "is_phrase": false },
+            { "text": "check-in", "romanization": null, "meaning": "check in", "part_of_speech": "noun", "frequency_rank": 450, "sample_sentence": "Jam check-in jam berapa?", "is_phrase": false },
+            { "text": "check-out", "romanization": null, "meaning": "check out", "part_of_speech": "noun", "frequency_rank": 452, "sample_sentence": "Saya mau check-out.", "is_phrase": false },
+            { "text": "resepsionis", "romanization": null, "meaning": "receptionist", "part_of_speech": "noun", "frequency_rank": 470, "sample_sentence": "Tanya resepsionis di depan.", "is_phrase": false },
+            { "text": "wifi", "romanization": null, "meaning": "wifi", "part_of_speech": "noun", "frequency_rank": 400, "sample_sentence": "Password wifi apa?", "is_phrase": false },
+            { "text": "deposit", "romanization": null, "meaning": "deposit", "part_of_speech": "noun", "frequency_rank": 460, "sample_sentence": "Bayar deposit dulu.", "is_phrase": false },
+            { "text": "layanan kamar", "romanization": null, "meaning": "room service", "part_of_speech": "noun", "frequency_rank": 480, "sample_sentence": "Bisa pesan layanan kamar?", "is_phrase": true },
+            { "text": "pemandangan", "romanization": null, "meaning": "view (from room)", "part_of_speech": "noun", "frequency_rank": 345, "sample_sentence": "Kamar dengan pemandangan laut.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Shopping & Bargaining",
+          "narrative": "Bali's art markets are a haggling paradise. Kuta, Ubud, Sukawati — each has treasures if you know how to negotiate.",
+          "words": [
+            { "text": "tawar", "romanization": null, "meaning": "bargain / negotiate price", "part_of_speech": "verb", "frequency_rank": 358, "sample_sentence": "Boleh tawar?", "is_phrase": false },
+            { "text": "batik", "romanization": null, "meaning": "batik (traditional fabric)", "part_of_speech": "noun", "frequency_rank": 455, "sample_sentence": "Batik ini buatan tangan?", "is_phrase": false },
+            { "text": "oleh-oleh", "romanization": null, "meaning": "souvenirs / gifts from a trip", "part_of_speech": "noun", "frequency_rank": 395, "sample_sentence": "Saya cari oleh-oleh.", "is_phrase": false },
+            { "text": "asli", "romanization": null, "meaning": "original / authentic", "part_of_speech": "adjective", "frequency_rank": 258, "sample_sentence": "Ini asli atau tiruan?", "is_phrase": false },
+            { "text": "buatan tangan", "romanization": null, "meaning": "handmade", "part_of_speech": "phrase", "frequency_rank": 462, "sample_sentence": "Ini buatan tangan lokal.", "is_phrase": true },
+            { "text": "plastik", "romanization": null, "meaning": "plastic bag", "part_of_speech": "noun", "frequency_rank": 375, "sample_sentence": "Tanpa plastik, ya.", "is_phrase": false },
+            { "text": "bungkus", "romanization": null, "meaning": "wrap / to go", "part_of_speech": "verb", "frequency_rank": 332, "sample_sentence": "Bungkus, ya.", "is_phrase": false },
+            { "text": "cocok", "romanization": null, "meaning": "suitable / fits", "part_of_speech": "adjective", "frequency_rank": 340, "sample_sentence": "Warnanya cocok untuk kamu.", "is_phrase": false },
+            { "text": "tiruan", "romanization": null, "meaning": "imitation / fake", "part_of_speech": "noun", "frequency_rank": 430, "sample_sentence": "Ini asli atau tiruan?", "is_phrase": false },
+            { "text": "kemasan", "romanization": null, "meaning": "packaging", "part_of_speech": "noun", "frequency_rank": 440, "sample_sentence": "Kemasannya bagus untuk hadiah.", "is_phrase": false },
+            { "text": "turun harga", "romanization": null, "meaning": "lower the price", "part_of_speech": "phrase", "frequency_rank": 420, "sample_sentence": "Bisa turun harga sedikit?", "is_phrase": true },
+            { "text": "pas", "romanization": null, "meaning": "exact / just right", "part_of_speech": "adjective", "frequency_rank": 350, "sample_sentence": "Uang pas, ya.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Sightseeing & Temples",
+          "narrative": "Bali is the Island of the Gods. Ancient temples, rice terraces, and sacred springs await. Show respect and enjoy the spiritual beauty.",
+          "words": [
+            { "text": "pura", "romanization": null, "meaning": "Balinese Hindu temple", "part_of_speech": "noun", "frequency_rank": 465, "sample_sentence": "Pura Besakih sangat besar.", "is_phrase": false },
+            { "text": "sawah", "romanization": null, "meaning": "rice field / paddy", "part_of_speech": "noun", "frequency_rank": 395, "sample_sentence": "Sawah Tegallalang indah.", "is_phrase": false },
+            { "text": "sarung", "romanization": null, "meaning": "sarong (wrap-around cloth)", "part_of_speech": "noun", "frequency_rank": 405, "sample_sentence": "Pakai sarung masuk pura.", "is_phrase": false },
+            { "text": "persembahan", "romanization": null, "meaning": "offering (to the gods)", "part_of_speech": "noun", "frequency_rank": 468, "sample_sentence": "Persembahan di depan rumah.", "is_phrase": false },
+            { "text": "suci", "romanization": null, "meaning": "sacred / holy", "part_of_speech": "adjective", "frequency_rank": 385, "sample_sentence": "Tempat ini suci.", "is_phrase": false },
+            { "text": "dilarang", "romanization": null, "meaning": "prohibited / forbidden", "part_of_speech": "verb", "frequency_rank": 342, "sample_sentence": "Dilarang masuk area ini.", "is_phrase": false },
+            { "text": "pemandangan", "romanization": null, "meaning": "scenery / view", "part_of_speech": "noun", "frequency_rank": 345, "sample_sentence": "Pemandangannya luar biasa.", "is_phrase": false },
+            { "text": "peta", "romanization": null, "meaning": "map", "part_of_speech": "noun", "frequency_rank": 380, "sample_sentence": "Ada peta wisata?", "is_phrase": false },
+            { "text": "tiket masuk", "romanization": null, "meaning": "entrance ticket", "part_of_speech": "noun", "frequency_rank": 420, "sample_sentence": "Berapa tiket masuk pura?", "is_phrase": true },
+            { "text": "pemandu wisata", "romanization": null, "meaning": "tour guide", "part_of_speech": "noun", "frequency_rank": 450, "sample_sentence": "Kita perlu pemandu wisata.", "is_phrase": true },
+            { "text": "air terjun", "romanization": null, "meaning": "waterfall", "part_of_speech": "noun", "frequency_rank": 440, "sample_sentence": "Air terjun Tegenungan sangat indah.", "is_phrase": true },
+            { "text": "matahari terbenam", "romanization": null, "meaning": "sunset", "part_of_speech": "noun", "frequency_rank": 430, "sample_sentence": "Matahari terbenam di Tanah Lot.", "is_phrase": true }
+          ]
+        },
+        {
+          "title": "Emergency in Bali",
+          "narrative": "You hope you won't need these, but just in case — whether it's a motorbike scrape, lost belongings, or an allergic reaction, be prepared.",
+          "words": [
+            { "text": "apotek", "romanization": null, "meaning": "pharmacy", "part_of_speech": "noun", "frequency_rank": 415, "sample_sentence": "Di mana apotek terdekat?", "is_phrase": false },
+            { "text": "alergi", "romanization": null, "meaning": "allergy / allergic", "part_of_speech": "noun", "frequency_rank": 448, "sample_sentence": "Saya alergi kacang.", "is_phrase": false },
+            { "text": "ambulans", "romanization": null, "meaning": "ambulance", "part_of_speech": "noun", "frequency_rank": 460, "sample_sentence": "Panggil ambulans!", "is_phrase": false },
+            { "text": "hilang", "romanization": null, "meaning": "lost / missing", "part_of_speech": "adjective", "frequency_rank": 178, "sample_sentence": "Dompet saya hilang.", "is_phrase": false },
+            { "text": "dompet", "romanization": null, "meaning": "wallet", "part_of_speech": "noun", "frequency_rank": 365, "sample_sentence": "Dompet saya hilang!", "is_phrase": false },
+            { "text": "asuransi", "romanization": null, "meaning": "insurance", "part_of_speech": "noun", "frequency_rank": 418, "sample_sentence": "Saya punya asuransi perjalanan.", "is_phrase": false },
+            { "text": "kedutaan", "romanization": null, "meaning": "embassy", "part_of_speech": "noun", "frequency_rank": 470, "sample_sentence": "Di mana kedutaan Australia?", "is_phrase": false },
+            { "text": "darurat", "romanization": null, "meaning": "emergency", "part_of_speech": "noun", "frequency_rank": 380, "sample_sentence": "Nomor telepon darurat berapa?", "is_phrase": false },
+            { "text": "luka", "romanization": null, "meaning": "wound / injury", "part_of_speech": "noun", "frequency_rank": 350, "sample_sentence": "Luka di kaki saya perlu diobati.", "is_phrase": false },
+            { "text": "suntik", "romanization": null, "meaning": "injection / shot", "part_of_speech": "noun", "frequency_rank": 430, "sample_sentence": "Saya takut disuntik.", "is_phrase": false },
+            { "text": "lapor", "romanization": null, "meaning": "report (to authorities)", "part_of_speech": "verb", "frequency_rank": 370, "sample_sentence": "Saya mau lapor kehilangan.", "is_phrase": false },
+            { "text": "perban", "romanization": null, "meaning": "bandage", "part_of_speech": "noun", "frequency_rank": 450, "sample_sentence": "Minta perban untuk luka.", "is_phrase": false }
+          ]
+        }
+      ]
+    }
+  ]
+}

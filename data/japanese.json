@@ -1,0 +1,1078 @@
+{
+  "language": "Japanese",
+  "language_code": "ja",
+  "tiers": [
+    {
+      "tier": 1,
+      "name": "Survival",
+      "scenes": [
+        {
+          "title": "Meeting Someone",
+          "narrative": "You step into a cozy izakaya in Shinjuku. The staff calls out 'irasshaimase!' and you take a seat. Time to introduce yourself and make your first connection in Japanese.",
+          "words": [
+            { "text": "こんにちは", "romanization": "konnichiwa", "meaning": "hello / good afternoon", "part_of_speech": "interjection", "frequency_rank": 15, "sample_sentence": "こんにちは、元気ですか？", "is_phrase": false },
+            { "text": "名前", "romanization": "namae", "meaning": "name", "part_of_speech": "noun", "frequency_rank": 42, "sample_sentence": "名前は何ですか？", "is_phrase": false },
+            { "text": "私", "romanization": "watashi", "meaning": "I / me", "part_of_speech": "pronoun", "frequency_rank": 1, "sample_sentence": "私はアメリカ人です。", "is_phrase": false },
+            { "text": "はい", "romanization": "hai", "meaning": "yes", "part_of_speech": "interjection", "frequency_rank": 3, "sample_sentence": "はい、そうです。", "is_phrase": false },
+            { "text": "いいえ", "romanization": "iie", "meaning": "no", "part_of_speech": "interjection", "frequency_rank": 18, "sample_sentence": "いいえ、違います。", "is_phrase": false },
+            { "text": "はじめまして", "romanization": "hajimemashite", "meaning": "nice to meet you", "part_of_speech": "phrase", "frequency_rank": 55, "sample_sentence": "はじめまして、田中です。", "is_phrase": true },
+            { "text": "よろしくお願いします", "romanization": "yoroshiku onegaishimasu", "meaning": "pleased to meet you / please take care of it", "part_of_speech": "phrase", "frequency_rank": 25, "sample_sentence": "田中です。よろしくお願いします。", "is_phrase": true }
+          ]
+        },
+        {
+          "title": "Finding Your Way",
+          "narrative": "You're standing in the labyrinth of Shinjuku Station, one of the world's busiest. Signs everywhere but you need the west exit. Time to ask for directions.",
+          "words": [
+            { "text": "どこ", "romanization": "doko", "meaning": "where", "part_of_speech": "pronoun", "frequency_rank": 12, "sample_sentence": "トイレはどこですか？", "is_phrase": false },
+            { "text": "左", "romanization": "hidari", "meaning": "left", "part_of_speech": "noun", "frequency_rank": 95, "sample_sentence": "左に曲がってください。", "is_phrase": false },
+            { "text": "右", "romanization": "migi", "meaning": "right", "part_of_speech": "noun", "frequency_rank": 98, "sample_sentence": "右に行ってください。", "is_phrase": false },
+            { "text": "まっすぐ", "romanization": "massugu", "meaning": "straight", "part_of_speech": "adverb", "frequency_rank": 120, "sample_sentence": "まっすぐ行ってください。", "is_phrase": false },
+            { "text": "近い", "romanization": "chikai", "meaning": "near / close", "part_of_speech": "adjective", "frequency_rank": 72, "sample_sentence": "ここから近いですか？", "is_phrase": false },
+            { "text": "遠い", "romanization": "tooi", "meaning": "far", "part_of_speech": "adjective", "frequency_rank": 85, "sample_sentence": "駅は遠いです。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Getting Food",
+          "narrative": "The plastic food displays in the restaurant window look incredible. You push open the noren curtain and sit down. The waiter brings a menu — time to order.",
+          "words": [
+            { "text": "食べる", "romanization": "taberu", "meaning": "to eat", "part_of_speech": "verb", "frequency_rank": 18, "sample_sentence": "何を食べますか？", "is_phrase": false },
+            { "text": "飲む", "romanization": "nomu", "meaning": "to drink", "part_of_speech": "verb", "frequency_rank": 25, "sample_sentence": "水を飲みます。", "is_phrase": false },
+            { "text": "水", "romanization": "mizu", "meaning": "water", "part_of_speech": "noun", "frequency_rank": 35, "sample_sentence": "水をください。", "is_phrase": false },
+            { "text": "おいしい", "romanization": "oishii", "meaning": "delicious", "part_of_speech": "adjective", "frequency_rank": 62, "sample_sentence": "とてもおいしいです！", "is_phrase": false },
+            { "text": "ご飯", "romanization": "gohan", "meaning": "rice / meal", "part_of_speech": "noun", "frequency_rank": 48, "sample_sentence": "ご飯をお願いします。", "is_phrase": false },
+            { "text": "これをください", "romanization": "kore o kudasai", "meaning": "this one, please", "part_of_speech": "phrase", "frequency_rank": 30, "sample_sentence": "これをください。", "is_phrase": true },
+            { "text": "いただきます", "romanization": "itadakimasu", "meaning": "bon appétit (before eating)", "part_of_speech": "phrase", "frequency_rank": 65, "sample_sentence": "いただきます！", "is_phrase": true }
+          ]
+        },
+        {
+          "title": "Shopping",
+          "narrative": "You're in a Don Quijote discount store in Shibuya. Shelves are packed floor to ceiling. The prices flash on screens — let's shop!",
+          "words": [
+            { "text": "いくら", "romanization": "ikura", "meaning": "how much", "part_of_speech": "pronoun", "frequency_rank": 28, "sample_sentence": "これはいくらですか？", "is_phrase": false },
+            { "text": "高い", "romanization": "takai", "meaning": "expensive / tall", "part_of_speech": "adjective", "frequency_rank": 22, "sample_sentence": "ちょっと高いです。", "is_phrase": false },
+            { "text": "安い", "romanization": "yasui", "meaning": "cheap / inexpensive", "part_of_speech": "adjective", "frequency_rank": 68, "sample_sentence": "安いですね！", "is_phrase": false },
+            { "text": "買う", "romanization": "kau", "meaning": "to buy", "part_of_speech": "verb", "frequency_rank": 42, "sample_sentence": "これを買いたいです。", "is_phrase": false },
+            { "text": "お金", "romanization": "okane", "meaning": "money", "part_of_speech": "noun", "frequency_rank": 38, "sample_sentence": "お金がありません。", "is_phrase": false },
+            { "text": "お会計お願いします", "romanization": "okaikei onegaishimasu", "meaning": "check please", "part_of_speech": "phrase", "frequency_rank": 85, "sample_sentence": "お会計お願いします。", "is_phrase": true }
+          ]
+        },
+        {
+          "title": "Emergency",
+          "narrative": "Something's wrong — you're lost in a back alley, not feeling well, or need urgent help. These words could be crucial.",
+          "words": [
+            { "text": "助けて", "romanization": "tasukete", "meaning": "help!", "part_of_speech": "verb", "frequency_rank": 52, "sample_sentence": "助けてください！", "is_phrase": false },
+            { "text": "病気", "romanization": "byouki", "meaning": "sick / illness", "part_of_speech": "noun", "frequency_rank": 118, "sample_sentence": "病気です。", "is_phrase": false },
+            { "text": "医者", "romanization": "isha", "meaning": "doctor", "part_of_speech": "noun", "frequency_rank": 105, "sample_sentence": "医者に行きたいです。", "is_phrase": false },
+            { "text": "警察", "romanization": "keisatsu", "meaning": "police", "part_of_speech": "noun", "frequency_rank": 82, "sample_sentence": "警察を呼んでください。", "is_phrase": false },
+            { "text": "危ない", "romanization": "abunai", "meaning": "dangerous", "part_of_speech": "adjective", "frequency_rank": 92, "sample_sentence": "危ない！気をつけて！", "is_phrase": false },
+            { "text": "すみません、助けてください", "romanization": "sumimasen, tasukete kudasai", "meaning": "excuse me, please help", "part_of_speech": "phrase", "frequency_rank": 52, "sample_sentence": "すみません、助けてください。", "is_phrase": true }
+          ]
+        },
+        {
+          "title": "At the Hotel",
+          "narrative": "You arrive at your hotel in Ginza. The lobby is spotless, the staff bow politely. Time to check in and settle into your room.",
+          "words": [
+            { "text": "部屋", "romanization": "heya", "meaning": "room", "part_of_speech": "noun", "frequency_rank": 32, "sample_sentence": "部屋の鍵をください。", "is_phrase": false },
+            { "text": "鍵", "romanization": "kagi", "meaning": "key", "part_of_speech": "noun", "frequency_rank": 108, "sample_sentence": "鍵はどこですか？", "is_phrase": false },
+            { "text": "お風呂", "romanization": "ofuro", "meaning": "bath", "part_of_speech": "noun", "frequency_rank": 115, "sample_sentence": "お風呂に入りたいです。", "is_phrase": false },
+            { "text": "寝る", "romanization": "neru", "meaning": "to sleep", "part_of_speech": "verb", "frequency_rank": 55, "sample_sentence": "もう寝ます。", "is_phrase": false },
+            { "text": "朝", "romanization": "asa", "meaning": "morning", "part_of_speech": "noun", "frequency_rank": 35, "sample_sentence": "朝ご飯は何時からですか？", "is_phrase": false },
+            { "text": "夜", "romanization": "yoru", "meaning": "night / evening", "part_of_speech": "noun", "frequency_rank": 28, "sample_sentence": "今夜は何をしますか？", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Small Talk",
+          "narrative": "You're sitting next to someone at a ramen counter. They notice your guidebook and strike up a conversation. Keep it flowing!",
+          "words": [
+            { "text": "から", "romanization": "kara", "meaning": "from", "part_of_speech": "particle", "frequency_rank": 5, "sample_sentence": "アメリカから来ました。", "is_phrase": false },
+            { "text": "へ", "romanization": "e", "meaning": "to / toward", "part_of_speech": "particle", "frequency_rank": 8, "sample_sentence": "東京へ行きます。", "is_phrase": false },
+            { "text": "好き", "romanization": "suki", "meaning": "like / fond of", "part_of_speech": "adjective", "frequency_rank": 32, "sample_sentence": "日本が好きです。", "is_phrase": false },
+            { "text": "住む", "romanization": "sumu", "meaning": "to live / reside", "part_of_speech": "verb", "frequency_rank": 68, "sample_sentence": "どこに住んでいますか？", "is_phrase": false },
+            { "text": "仕事", "romanization": "shigoto", "meaning": "work / job", "part_of_speech": "noun", "frequency_rank": 22, "sample_sentence": "仕事は何ですか？", "is_phrase": false },
+            { "text": "お会いできてうれしいです", "romanization": "oai dekite ureshii desu", "meaning": "glad to meet you", "part_of_speech": "phrase", "frequency_rank": 72, "sample_sentence": "お会いできてうれしいです。", "is_phrase": true }
+          ]
+        },
+        {
+          "title": "Time & Numbers",
+          "narrative": "The train leaves at exactly 10:03. The price is ¥1,500. Japanese punctuality and precision require knowing your numbers and time.",
+          "words": [
+            { "text": "一", "romanization": "ichi", "meaning": "one", "part_of_speech": "number", "frequency_rank": 5, "sample_sentence": "一つください。", "is_phrase": false },
+            { "text": "二", "romanization": "ni", "meaning": "two", "part_of_speech": "number", "frequency_rank": 8, "sample_sentence": "二人です。", "is_phrase": false },
+            { "text": "三", "romanization": "san", "meaning": "three", "part_of_speech": "number", "frequency_rank": 12, "sample_sentence": "三日間東京にいます。", "is_phrase": false },
+            { "text": "時", "romanization": "ji", "meaning": "o'clock / hour", "part_of_speech": "noun", "frequency_rank": 15, "sample_sentence": "今何時ですか？", "is_phrase": false },
+            { "text": "日", "romanization": "hi / nichi", "meaning": "day", "part_of_speech": "noun", "frequency_rank": 5, "sample_sentence": "今日は何日ですか？", "is_phrase": false },
+            { "text": "今", "romanization": "ima", "meaning": "now", "part_of_speech": "adverb", "frequency_rank": 8, "sample_sentence": "今行きます。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Getting Around",
+          "narrative": "Japan's trains run like clockwork. From the Yamanote Line to the Shinkansen, navigating is an art. Here's how to master it.",
+          "words": [
+            { "text": "駅", "romanization": "eki", "meaning": "train station", "part_of_speech": "noun", "frequency_rank": 28, "sample_sentence": "駅はどこですか？", "is_phrase": false },
+            { "text": "行く", "romanization": "iku", "meaning": "to go", "part_of_speech": "verb", "frequency_rank": 3, "sample_sentence": "東京に行きます。", "is_phrase": false },
+            { "text": "来る", "romanization": "kuru", "meaning": "to come", "part_of_speech": "verb", "frequency_rank": 5, "sample_sentence": "電車が来ます。", "is_phrase": false },
+            { "text": "乗る", "romanization": "noru", "meaning": "to ride / get on", "part_of_speech": "verb", "frequency_rank": 48, "sample_sentence": "電車に乗ります。", "is_phrase": false },
+            { "text": "降りる", "romanization": "oriru", "meaning": "to get off", "part_of_speech": "verb", "frequency_rank": 75, "sample_sentence": "次の駅で降ります。", "is_phrase": false },
+            { "text": "電車", "romanization": "densha", "meaning": "train", "part_of_speech": "noun", "frequency_rank": 55, "sample_sentence": "電車は何番ホームですか？", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Being Polite",
+          "narrative": "Japan runs on politeness. A well-placed 'sumimasen' or 'arigatou gozaimasu' opens every door and earns instant respect.",
+          "words": [
+            { "text": "ありがとうございます", "romanization": "arigatou gozaimasu", "meaning": "thank you (polite)", "part_of_speech": "phrase", "frequency_rank": 5, "sample_sentence": "ありがとうございます！", "is_phrase": true },
+            { "text": "すみません", "romanization": "sumimasen", "meaning": "excuse me / sorry", "part_of_speech": "phrase", "frequency_rank": 8, "sample_sentence": "すみません、ちょっといいですか？", "is_phrase": true },
+            { "text": "ごめんなさい", "romanization": "gomen nasai", "meaning": "I'm sorry", "part_of_speech": "phrase", "frequency_rank": 35, "sample_sentence": "ごめんなさい、遅れました。", "is_phrase": true },
+            { "text": "お願いします", "romanization": "onegaishimasu", "meaning": "please", "part_of_speech": "phrase", "frequency_rank": 10, "sample_sentence": "水をお願いします。", "is_phrase": true },
+            { "text": "どうぞ", "romanization": "douzo", "meaning": "please (go ahead)", "part_of_speech": "adverb", "frequency_rank": 22, "sample_sentence": "どうぞお座りください。", "is_phrase": false },
+            { "text": "失礼します", "romanization": "shitsurei shimasu", "meaning": "excuse me (polite, entering/leaving)", "part_of_speech": "phrase", "frequency_rank": 48, "sample_sentence": "失礼します。", "is_phrase": true }
+          ]
+        },
+        {
+          "title": "Basic Verbs",
+          "narrative": "The core action words of Japanese — see, do, know, want. These verbs pop up in every single conversation.",
+          "words": [
+            { "text": "する", "romanization": "suru", "meaning": "to do / make", "part_of_speech": "verb", "frequency_rank": 1, "sample_sentence": "何をしますか？", "is_phrase": false },
+            { "text": "ある", "romanization": "aru", "meaning": "to exist (things)", "part_of_speech": "verb", "frequency_rank": 2, "sample_sentence": "コンビニはありますか？", "is_phrase": false },
+            { "text": "いる", "romanization": "iru", "meaning": "to exist (people/animals)", "part_of_speech": "verb", "frequency_rank": 3, "sample_sentence": "猫がいます。", "is_phrase": false },
+            { "text": "見る", "romanization": "miru", "meaning": "to see / look / watch", "part_of_speech": "verb", "frequency_rank": 8, "sample_sentence": "テレビを見ます。", "is_phrase": false },
+            { "text": "知る", "romanization": "shiru", "meaning": "to know", "part_of_speech": "verb", "frequency_rank": 15, "sample_sentence": "知りません。", "is_phrase": false },
+            { "text": "欲しい", "romanization": "hoshii", "meaning": "want (adjective)", "part_of_speech": "adjective", "frequency_rank": 55, "sample_sentence": "これが欲しいです。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Particles & Connectors",
+          "narrative": "Japanese particles are tiny but mighty — they mark subjects, objects, destinations, and more. Master these and your sentences click into place.",
+          "words": [
+            { "text": "は", "romanization": "wa", "meaning": "topic marker", "part_of_speech": "particle", "frequency_rank": 1, "sample_sentence": "私は学生です。", "is_phrase": false },
+            { "text": "が", "romanization": "ga", "meaning": "subject marker", "part_of_speech": "particle", "frequency_rank": 1, "sample_sentence": "猫がいます。", "is_phrase": false },
+            { "text": "を", "romanization": "o", "meaning": "object marker", "part_of_speech": "particle", "frequency_rank": 2, "sample_sentence": "水を飲みます。", "is_phrase": false },
+            { "text": "に", "romanization": "ni", "meaning": "to / at / in (location/time)", "part_of_speech": "particle", "frequency_rank": 2, "sample_sentence": "東京に行きます。", "is_phrase": false },
+            { "text": "と", "romanization": "to", "meaning": "and / with", "part_of_speech": "particle", "frequency_rank": 3, "sample_sentence": "友達と行きます。", "is_phrase": false },
+            { "text": "も", "romanization": "mo", "meaning": "also / too", "part_of_speech": "particle", "frequency_rank": 5, "sample_sentence": "私もです。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Common Adjectives",
+          "narrative": "Describe the enormous Tokyo Tower, the tiny apartment, the beautiful shrine. These adjectives bring your Japanese to life.",
+          "words": [
+            { "text": "大きい", "romanization": "ookii", "meaning": "big / large", "part_of_speech": "adjective", "frequency_rank": 18, "sample_sentence": "この公園は大きいです。", "is_phrase": false },
+            { "text": "小さい", "romanization": "chiisai", "meaning": "small / little", "part_of_speech": "adjective", "frequency_rank": 25, "sample_sentence": "小さい猫です。", "is_phrase": false },
+            { "text": "いい", "romanization": "ii", "meaning": "good / nice", "part_of_speech": "adjective", "frequency_rank": 5, "sample_sentence": "いい天気ですね。", "is_phrase": false },
+            { "text": "新しい", "romanization": "atarashii", "meaning": "new", "part_of_speech": "adjective", "frequency_rank": 35, "sample_sentence": "新しい携帯です。", "is_phrase": false },
+            { "text": "古い", "romanization": "furui", "meaning": "old (things)", "part_of_speech": "adjective", "frequency_rank": 58, "sample_sentence": "古いお寺です。", "is_phrase": false },
+            { "text": "暑い", "romanization": "atsui", "meaning": "hot (weather)", "part_of_speech": "adjective", "frequency_rank": 72, "sample_sentence": "今日は暑いですね。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "People & Family",
+          "narrative": "Japanese family vocabulary is nuanced — different words for older/younger siblings, formal/informal terms. Here are the essentials.",
+          "words": [
+            { "text": "人", "romanization": "hito", "meaning": "person / people", "part_of_speech": "noun", "frequency_rank": 3, "sample_sentence": "何人ですか？", "is_phrase": false },
+            { "text": "子供", "romanization": "kodomo", "meaning": "child / children", "part_of_speech": "noun", "frequency_rank": 35, "sample_sentence": "子供が二人います。", "is_phrase": false },
+            { "text": "お母さん", "romanization": "okaasan", "meaning": "mother", "part_of_speech": "noun", "frequency_rank": 22, "sample_sentence": "お母さんは元気ですか？", "is_phrase": false },
+            { "text": "お父さん", "romanization": "otousan", "meaning": "father", "part_of_speech": "noun", "frequency_rank": 25, "sample_sentence": "お父さんは先生です。", "is_phrase": false },
+            { "text": "友達", "romanization": "tomodachi", "meaning": "friend", "part_of_speech": "noun", "frequency_rank": 28, "sample_sentence": "友達と会います。", "is_phrase": false },
+            { "text": "家族", "romanization": "kazoku", "meaning": "family", "part_of_speech": "noun", "frequency_rank": 42, "sample_sentence": "家族は四人です。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Food & Drink Essentials",
+          "narrative": "Beyond basics — ramen, sushi, sake. Japan's culinary vocabulary is essential for the full food experience.",
+          "words": [
+            { "text": "肉", "romanization": "niku", "meaning": "meat", "part_of_speech": "noun", "frequency_rank": 82, "sample_sentence": "肉が好きです。", "is_phrase": false },
+            { "text": "魚", "romanization": "sakana", "meaning": "fish", "part_of_speech": "noun", "frequency_rank": 88, "sample_sentence": "魚は新鮮です。", "is_phrase": false },
+            { "text": "お茶", "romanization": "ocha", "meaning": "tea (green)", "part_of_speech": "noun", "frequency_rank": 72, "sample_sentence": "お茶をどうぞ。", "is_phrase": false },
+            { "text": "ビール", "romanization": "biiru", "meaning": "beer", "part_of_speech": "noun", "frequency_rank": 95, "sample_sentence": "ビールをください。", "is_phrase": false },
+            { "text": "甘い", "romanization": "amai", "meaning": "sweet", "part_of_speech": "adjective", "frequency_rank": 105, "sample_sentence": "この和菓子は甘いです。", "is_phrase": false },
+            { "text": "辛い", "romanization": "karai", "meaning": "spicy / hot", "part_of_speech": "adjective", "frequency_rank": 112, "sample_sentence": "辛くないですか？", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Essential Questions",
+          "narrative": "Questions open doors in any language. In Japanese, the question particle 'ka' makes them easy — just add it to the end!",
+          "words": [
+            { "text": "何", "romanization": "nani", "meaning": "what", "part_of_speech": "pronoun", "frequency_rank": 2, "sample_sentence": "これは何ですか？", "is_phrase": false },
+            { "text": "誰", "romanization": "dare", "meaning": "who", "part_of_speech": "pronoun", "frequency_rank": 18, "sample_sentence": "あの人は誰ですか？", "is_phrase": false },
+            { "text": "いつ", "romanization": "itsu", "meaning": "when", "part_of_speech": "pronoun", "frequency_rank": 22, "sample_sentence": "いつ来ますか？", "is_phrase": false },
+            { "text": "なぜ", "romanization": "naze", "meaning": "why", "part_of_speech": "adverb", "frequency_rank": 42, "sample_sentence": "なぜですか？", "is_phrase": false },
+            { "text": "どう", "romanization": "dou", "meaning": "how", "part_of_speech": "adverb", "frequency_rank": 15, "sample_sentence": "どうですか？", "is_phrase": false },
+            { "text": "か", "romanization": "ka", "meaning": "question particle", "part_of_speech": "particle", "frequency_rank": 3, "sample_sentence": "日本人ですか？", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Greetings & Farewells",
+          "narrative": "Japanese greetings change with the time of day and the relationship. These are the essentials for any situation.",
+          "words": [
+            { "text": "おはようございます", "romanization": "ohayou gozaimasu", "meaning": "good morning (polite)", "part_of_speech": "phrase", "frequency_rank": 18, "sample_sentence": "おはようございます！", "is_phrase": true },
+            { "text": "こんばんは", "romanization": "konbanwa", "meaning": "good evening", "part_of_speech": "interjection", "frequency_rank": 35, "sample_sentence": "こんばんは、お元気ですか？", "is_phrase": false },
+            { "text": "おやすみなさい", "romanization": "oyasumi nasai", "meaning": "good night", "part_of_speech": "phrase", "frequency_rank": 48, "sample_sentence": "おやすみなさい！", "is_phrase": true },
+            { "text": "さようなら", "romanization": "sayounara", "meaning": "goodbye", "part_of_speech": "interjection", "frequency_rank": 55, "sample_sentence": "さようなら！また会いましょう。", "is_phrase": false },
+            { "text": "また明日", "romanization": "mata ashita", "meaning": "see you tomorrow", "part_of_speech": "phrase", "frequency_rank": 62, "sample_sentence": "また明日！", "is_phrase": true },
+            { "text": "いらっしゃいませ", "romanization": "irasshaimase", "meaning": "welcome (to a shop/restaurant)", "part_of_speech": "phrase", "frequency_rank": 42, "sample_sentence": "いらっしゃいませ！", "is_phrase": true }
+          ]
+        }
+      ]
+    },
+    {
+      "tier": 2,
+      "name": "Conversational",
+      "scenes": [
+        {
+          "title": "Feelings & Emotions",
+          "narrative": "Your Japanese friend asks 'genki?' — but you want to express more than just 'fine.' Here's how to share your real feelings.",
+          "words": [
+            { "text": "嬉しい", "romanization": "ureshii", "meaning": "happy / glad", "part_of_speech": "adjective", "frequency_rank": 65, "sample_sentence": "とても嬉しいです。", "is_phrase": false },
+            { "text": "悲しい", "romanization": "kanashii", "meaning": "sad", "part_of_speech": "adjective", "frequency_rank": 132, "sample_sentence": "ちょっと悲しいです。", "is_phrase": false },
+            { "text": "怒る", "romanization": "okoru", "meaning": "to get angry", "part_of_speech": "verb", "frequency_rank": 145, "sample_sentence": "怒らないでください。", "is_phrase": false },
+            { "text": "怖い", "romanization": "kowai", "meaning": "scary / afraid", "part_of_speech": "adjective", "frequency_rank": 82, "sample_sentence": "怖い映画は苦手です。", "is_phrase": false },
+            { "text": "疲れた", "romanization": "tsukareta", "meaning": "tired", "part_of_speech": "verb", "frequency_rank": 95, "sample_sentence": "今日は疲れました。", "is_phrase": false },
+            { "text": "退屈", "romanization": "taikutsu", "meaning": "bored / boring", "part_of_speech": "adjective", "frequency_rank": 255, "sample_sentence": "退屈です。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Opinions & Thoughts",
+          "narrative": "Share what you think about Japan — the food, the culture, the scenery. Japanese people love hearing visitors' honest impressions.",
+          "words": [
+            { "text": "思う", "romanization": "omou", "meaning": "to think", "part_of_speech": "verb", "frequency_rank": 5, "sample_sentence": "いいと思います。", "is_phrase": false },
+            { "text": "本当", "romanization": "hontou", "meaning": "true / really", "part_of_speech": "noun", "frequency_rank": 12, "sample_sentence": "本当ですか？", "is_phrase": false },
+            { "text": "違う", "romanization": "chigau", "meaning": "different / wrong", "part_of_speech": "verb", "frequency_rank": 22, "sample_sentence": "ちょっと違います。", "is_phrase": false },
+            { "text": "正しい", "romanization": "tadashii", "meaning": "correct / right", "part_of_speech": "adjective", "frequency_rank": 135, "sample_sentence": "正しいですか？", "is_phrase": false },
+            { "text": "間違い", "romanization": "machigai", "meaning": "mistake / error", "part_of_speech": "noun", "frequency_rank": 148, "sample_sentence": "間違いました。すみません。", "is_phrase": false },
+            { "text": "面白い", "romanization": "omoshiroi", "meaning": "interesting / funny", "part_of_speech": "adjective", "frequency_rank": 52, "sample_sentence": "この本は面白いです。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Making Plans",
+          "narrative": "Your new friends suggest going to karaoke tomorrow. Let's arrange the details — when, where, and what time to meet.",
+          "words": [
+            { "text": "明日", "romanization": "ashita", "meaning": "tomorrow", "part_of_speech": "noun", "frequency_rank": 18, "sample_sentence": "明日何をしますか？", "is_phrase": false },
+            { "text": "昨日", "romanization": "kinou", "meaning": "yesterday", "part_of_speech": "noun", "frequency_rank": 42, "sample_sentence": "昨日映画を見ました。", "is_phrase": false },
+            { "text": "後で", "romanization": "ato de", "meaning": "later / afterwards", "part_of_speech": "adverb", "frequency_rank": 28, "sample_sentence": "後で電話します。", "is_phrase": false },
+            { "text": "会う", "romanization": "au", "meaning": "to meet", "part_of_speech": "verb", "frequency_rank": 18, "sample_sentence": "どこで会いますか？", "is_phrase": false },
+            { "text": "待つ", "romanization": "matsu", "meaning": "to wait", "part_of_speech": "verb", "frequency_rank": 32, "sample_sentence": "ちょっと待ってください。", "is_phrase": false },
+            { "text": "準備", "romanization": "junbi", "meaning": "preparation / ready", "part_of_speech": "noun", "frequency_rank": 125, "sample_sentence": "準備ができました。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Describing Things",
+          "narrative": "The temple is ancient. The sushi is fresh. The view is incredible. Expand your ability to describe the world in Japanese.",
+          "words": [
+            { "text": "きれい", "romanization": "kirei", "meaning": "beautiful / clean", "part_of_speech": "adjective", "frequency_rank": 42, "sample_sentence": "この花はきれいです。", "is_phrase": false },
+            { "text": "汚い", "romanization": "kitanai", "meaning": "dirty", "part_of_speech": "adjective", "frequency_rank": 188, "sample_sentence": "ちょっと汚いです。", "is_phrase": false },
+            { "text": "長い", "romanization": "nagai", "meaning": "long", "part_of_speech": "adjective", "frequency_rank": 28, "sample_sentence": "この道は長いです。", "is_phrase": false },
+            { "text": "短い", "romanization": "mijikai", "meaning": "short (length)", "part_of_speech": "adjective", "frequency_rank": 72, "sample_sentence": "短い映画でした。", "is_phrase": false },
+            { "text": "重い", "romanization": "omoi", "meaning": "heavy", "part_of_speech": "adjective", "frequency_rank": 102, "sample_sentence": "この荷物は重いです。", "is_phrase": false },
+            { "text": "軽い", "romanization": "karui", "meaning": "light (weight)", "part_of_speech": "adjective", "frequency_rank": 135, "sample_sentence": "このかばんは軽いです。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "At Work",
+          "narrative": "Maybe you're in a Japanese office or chatting with a salaryman at an izakaya. Here's essential work vocabulary.",
+          "words": [
+            { "text": "会社", "romanization": "kaisha", "meaning": "company", "part_of_speech": "noun", "frequency_rank": 25, "sample_sentence": "会社は東京にあります。", "is_phrase": false },
+            { "text": "働く", "romanization": "hataraku", "meaning": "to work", "part_of_speech": "verb", "frequency_rank": 42, "sample_sentence": "毎日働きます。", "is_phrase": false },
+            { "text": "給料", "romanization": "kyuuryou", "meaning": "salary", "part_of_speech": "noun", "frequency_rank": 298, "sample_sentence": "給料は良いです。", "is_phrase": false },
+            { "text": "上司", "romanization": "joushi", "meaning": "boss / supervisor", "part_of_speech": "noun", "frequency_rank": 215, "sample_sentence": "上司は優しいです。", "is_phrase": false },
+            { "text": "会議", "romanization": "kaigi", "meaning": "meeting / conference", "part_of_speech": "noun", "frequency_rank": 148, "sample_sentence": "二時に会議があります。", "is_phrase": false },
+            { "text": "忙しい", "romanization": "isogashii", "meaning": "busy", "part_of_speech": "adjective", "frequency_rank": 72, "sample_sentence": "今忙しいです。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Technology & Internet",
+          "narrative": "Japan is a tech wonderland. From vending machines to WiFi to cashless payments, here's the vocabulary of modern Japan.",
+          "words": [
+            { "text": "携帯", "romanization": "keitai", "meaning": "cell phone", "part_of_speech": "noun", "frequency_rank": 85, "sample_sentence": "携帯の充電が切れました。", "is_phrase": false },
+            { "text": "写真", "romanization": "shashin", "meaning": "photo / picture", "part_of_speech": "noun", "frequency_rank": 48, "sample_sentence": "写真を撮ってもいいですか？", "is_phrase": false },
+            { "text": "送る", "romanization": "okuru", "meaning": "to send", "part_of_speech": "verb", "frequency_rank": 55, "sample_sentence": "メールを送りました。", "is_phrase": false },
+            { "text": "パソコン", "romanization": "pasokon", "meaning": "personal computer", "part_of_speech": "noun", "frequency_rank": 158, "sample_sentence": "パソコンを使います。", "is_phrase": false },
+            { "text": "払う", "romanization": "harau", "meaning": "to pay", "part_of_speech": "verb", "frequency_rank": 62, "sample_sentence": "カードで払えますか？", "is_phrase": false },
+            { "text": "充電", "romanization": "juuden", "meaning": "charge (battery)", "part_of_speech": "noun", "frequency_rank": 225, "sample_sentence": "充電したいです。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Health & Body",
+          "narrative": "From jet lag to sore feet from temple-hopping, knowing body and health words helps you at the pharmacy or doctor's office.",
+          "words": [
+            { "text": "頭", "romanization": "atama", "meaning": "head", "part_of_speech": "noun", "frequency_rank": 28, "sample_sentence": "頭が痛いです。", "is_phrase": false },
+            { "text": "お腹", "romanization": "onaka", "meaning": "stomach / belly", "part_of_speech": "noun", "frequency_rank": 85, "sample_sentence": "お腹が痛いです。", "is_phrase": false },
+            { "text": "薬", "romanization": "kusuri", "meaning": "medicine", "part_of_speech": "noun", "frequency_rank": 92, "sample_sentence": "薬をください。", "is_phrase": false },
+            { "text": "目", "romanization": "me", "meaning": "eye", "part_of_speech": "noun", "frequency_rank": 12, "sample_sentence": "目が疲れました。", "is_phrase": false },
+            { "text": "手", "romanization": "te", "meaning": "hand", "part_of_speech": "noun", "frequency_rank": 8, "sample_sentence": "手を洗ってください。", "is_phrase": false },
+            { "text": "足", "romanization": "ashi", "meaning": "foot / leg", "part_of_speech": "noun", "frequency_rank": 22, "sample_sentence": "足が痛いです。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Nature & Weather",
+          "narrative": "From cherry blossoms to typhoons, Japanese culture is deeply connected to nature and seasons. Here's how to talk about it.",
+          "words": [
+            { "text": "雨", "romanization": "ame", "meaning": "rain", "part_of_speech": "noun", "frequency_rank": 55, "sample_sentence": "今日は雨です。", "is_phrase": false },
+            { "text": "太陽", "romanization": "taiyou", "meaning": "sun", "part_of_speech": "noun", "frequency_rank": 148, "sample_sentence": "太陽が出ています。", "is_phrase": false },
+            { "text": "海", "romanization": "umi", "meaning": "sea / ocean", "part_of_speech": "noun", "frequency_rank": 42, "sample_sentence": "海がきれいです。", "is_phrase": false },
+            { "text": "山", "romanization": "yama", "meaning": "mountain", "part_of_speech": "noun", "frequency_rank": 28, "sample_sentence": "富士山は高いです。", "is_phrase": false },
+            { "text": "花", "romanization": "hana", "meaning": "flower", "part_of_speech": "noun", "frequency_rank": 42, "sample_sentence": "桜の花がきれいです。", "is_phrase": false },
+            { "text": "木", "romanization": "ki", "meaning": "tree", "part_of_speech": "noun", "frequency_rank": 35, "sample_sentence": "大きい木があります。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Entertainment",
+          "narrative": "Karaoke, manga, anime, arcades — Japan's entertainment culture is unique. Here's the vocabulary to join the fun.",
+          "words": [
+            { "text": "音楽", "romanization": "ongaku", "meaning": "music", "part_of_speech": "noun", "frequency_rank": 72, "sample_sentence": "音楽が好きです。", "is_phrase": false },
+            { "text": "映画", "romanization": "eiga", "meaning": "movie", "part_of_speech": "noun", "frequency_rank": 48, "sample_sentence": "映画を見に行きましょう。", "is_phrase": false },
+            { "text": "遊ぶ", "romanization": "asobu", "meaning": "to play / hang out", "part_of_speech": "verb", "frequency_rank": 55, "sample_sentence": "週末遊びましょう。", "is_phrase": false },
+            { "text": "歌う", "romanization": "utau", "meaning": "to sing", "part_of_speech": "verb", "frequency_rank": 88, "sample_sentence": "カラオケで歌います。", "is_phrase": false },
+            { "text": "本", "romanization": "hon", "meaning": "book", "part_of_speech": "noun", "frequency_rank": 12, "sample_sentence": "この本を読みました。", "is_phrase": false },
+            { "text": "話", "romanization": "hanashi", "meaning": "story / talk", "part_of_speech": "noun", "frequency_rank": 8, "sample_sentence": "面白い話ですね。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Relationships",
+          "narrative": "Japanese relationships have nuanced terms — senpai, kohai, kanojo, kareshi. Here's the vocabulary of social bonds.",
+          "words": [
+            { "text": "彼氏", "romanization": "kareshi", "meaning": "boyfriend", "part_of_speech": "noun", "frequency_rank": 168, "sample_sentence": "彼氏がいますか？", "is_phrase": false },
+            { "text": "彼女", "romanization": "kanojo", "meaning": "girlfriend / she", "part_of_speech": "noun", "frequency_rank": 15, "sample_sentence": "彼女は日本人です。", "is_phrase": false },
+            { "text": "夫", "romanization": "otto", "meaning": "husband", "part_of_speech": "noun", "frequency_rank": 108, "sample_sentence": "夫は料理が上手です。", "is_phrase": false },
+            { "text": "妻", "romanization": "tsuma", "meaning": "wife", "part_of_speech": "noun", "frequency_rank": 112, "sample_sentence": "妻は先生です。", "is_phrase": false },
+            { "text": "兄", "romanization": "ani", "meaning": "older brother", "part_of_speech": "noun", "frequency_rank": 72, "sample_sentence": "兄は東京に住んでいます。", "is_phrase": false },
+            { "text": "姉", "romanization": "ane", "meaning": "older sister", "part_of_speech": "noun", "frequency_rank": 78, "sample_sentence": "姉は医者です。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Daily Routine",
+          "narrative": "From the morning commute to the evening bath, Japanese daily life has its own rhythm. Describe yours in Japanese.",
+          "words": [
+            { "text": "起きる", "romanization": "okiru", "meaning": "to wake up / get up", "part_of_speech": "verb", "frequency_rank": 48, "sample_sentence": "六時に起きます。", "is_phrase": false },
+            { "text": "朝ご飯", "romanization": "asagohan", "meaning": "breakfast", "part_of_speech": "noun", "frequency_rank": 125, "sample_sentence": "朝ご飯を食べましたか？", "is_phrase": false },
+            { "text": "帰る", "romanization": "kaeru", "meaning": "to go home / return", "part_of_speech": "verb", "frequency_rank": 22, "sample_sentence": "もう帰ります。", "is_phrase": false },
+            { "text": "料理", "romanization": "ryouri", "meaning": "cooking / cuisine", "part_of_speech": "noun", "frequency_rank": 62, "sample_sentence": "日本料理が好きです。", "is_phrase": false },
+            { "text": "洗う", "romanization": "arau", "meaning": "to wash", "part_of_speech": "verb", "frequency_rank": 108, "sample_sentence": "手を洗ってください。", "is_phrase": false },
+            { "text": "休む", "romanization": "yasumu", "meaning": "to rest / take a day off", "part_of_speech": "verb", "frequency_rank": 82, "sample_sentence": "今日は休みます。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Home & Living",
+          "narrative": "Japanese homes are compact and ingenious. From tatami to futon, here's the vocabulary of domestic life.",
+          "words": [
+            { "text": "家", "romanization": "ie / uchi", "meaning": "house / home", "part_of_speech": "noun", "frequency_rank": 8, "sample_sentence": "家に帰ります。", "is_phrase": false },
+            { "text": "ドア", "romanization": "doa", "meaning": "door", "part_of_speech": "noun", "frequency_rank": 92, "sample_sentence": "ドアを閉めてください。", "is_phrase": false },
+            { "text": "窓", "romanization": "mado", "meaning": "window", "part_of_speech": "noun", "frequency_rank": 82, "sample_sentence": "窓を開けてください。", "is_phrase": false },
+            { "text": "椅子", "romanization": "isu", "meaning": "chair", "part_of_speech": "noun", "frequency_rank": 118, "sample_sentence": "椅子に座ってください。", "is_phrase": false },
+            { "text": "テーブル", "romanization": "teeburu", "meaning": "table", "part_of_speech": "noun", "frequency_rank": 125, "sample_sentence": "テーブルの上にあります。", "is_phrase": false },
+            { "text": "台所", "romanization": "daidokoro", "meaning": "kitchen", "part_of_speech": "noun", "frequency_rank": 195, "sample_sentence": "台所で料理します。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Education & Learning",
+          "narrative": "You're studying Japanese — let's talk about learning itself! These words cover school, studying, and the process of education.",
+          "words": [
+            { "text": "勉強", "romanization": "benkyou", "meaning": "study", "part_of_speech": "noun", "frequency_rank": 42, "sample_sentence": "日本語を勉強しています。", "is_phrase": false },
+            { "text": "学校", "romanization": "gakkou", "meaning": "school", "part_of_speech": "noun", "frequency_rank": 22, "sample_sentence": "学校は楽しいです。", "is_phrase": false },
+            { "text": "先生", "romanization": "sensei", "meaning": "teacher", "part_of_speech": "noun", "frequency_rank": 8, "sample_sentence": "先生はとても優しいです。", "is_phrase": false },
+            { "text": "日本語", "romanization": "nihongo", "meaning": "Japanese language", "part_of_speech": "noun", "frequency_rank": 35, "sample_sentence": "日本語は難しいですか？", "is_phrase": false },
+            { "text": "分かる", "romanization": "wakaru", "meaning": "to understand", "part_of_speech": "verb", "frequency_rank": 5, "sample_sentence": "分かりますか？", "is_phrase": false },
+            { "text": "読む", "romanization": "yomu", "meaning": "to read", "part_of_speech": "verb", "frequency_rank": 22, "sample_sentence": "本を読みます。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Colors",
+          "narrative": "From the red of shrine gates to the white of Mt. Fuji's snow, Japan is full of color. Name what you see.",
+          "words": [
+            { "text": "赤", "romanization": "aka", "meaning": "red", "part_of_speech": "noun", "frequency_rank": 62, "sample_sentence": "赤い車です。", "is_phrase": false },
+            { "text": "青", "romanization": "ao", "meaning": "blue / green (traffic light)", "part_of_speech": "noun", "frequency_rank": 55, "sample_sentence": "空は青いです。", "is_phrase": false },
+            { "text": "緑", "romanization": "midori", "meaning": "green", "part_of_speech": "noun", "frequency_rank": 102, "sample_sentence": "緑茶をどうぞ。", "is_phrase": false },
+            { "text": "白", "romanization": "shiro", "meaning": "white", "part_of_speech": "noun", "frequency_rank": 42, "sample_sentence": "白いシャツです。", "is_phrase": false },
+            { "text": "黒", "romanization": "kuro", "meaning": "black", "part_of_speech": "noun", "frequency_rank": 48, "sample_sentence": "黒い猫がいます。", "is_phrase": false },
+            { "text": "黄色", "romanization": "kiiro", "meaning": "yellow", "part_of_speech": "noun", "frequency_rank": 138, "sample_sentence": "黄色い花がきれいです。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "More Numbers",
+          "narrative": "Prices in yen run into the hundreds and thousands. Master these numbers to handle money, time, and quantities.",
+          "words": [
+            { "text": "四", "romanization": "shi / yon", "meaning": "four", "part_of_speech": "number", "frequency_rank": 15, "sample_sentence": "四人です。", "is_phrase": false },
+            { "text": "五", "romanization": "go", "meaning": "five", "part_of_speech": "number", "frequency_rank": 15, "sample_sentence": "五時に会いましょう。", "is_phrase": false },
+            { "text": "六", "romanization": "roku", "meaning": "six", "part_of_speech": "number", "frequency_rank": 22, "sample_sentence": "六百円です。", "is_phrase": false },
+            { "text": "七", "romanization": "shichi / nana", "meaning": "seven", "part_of_speech": "number", "frequency_rank": 25, "sample_sentence": "七時に起きます。", "is_phrase": false },
+            { "text": "八", "romanization": "hachi", "meaning": "eight", "part_of_speech": "number", "frequency_rank": 28, "sample_sentence": "八百円です。", "is_phrase": false },
+            { "text": "九", "romanization": "kyuu / ku", "meaning": "nine", "part_of_speech": "number", "frequency_rank": 32, "sample_sentence": "九時に出発します。", "is_phrase": false },
+            { "text": "十", "romanization": "juu", "meaning": "ten", "part_of_speech": "number", "frequency_rank": 8, "sample_sentence": "十分待ってください。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Transportation",
+          "narrative": "Japan's transport system is a marvel — bullet trains, subways, buses, taxis. Here's how to navigate it all.",
+          "words": [
+            { "text": "車", "romanization": "kuruma", "meaning": "car", "part_of_speech": "noun", "frequency_rank": 22, "sample_sentence": "車で行きます。", "is_phrase": false },
+            { "text": "バス", "romanization": "basu", "meaning": "bus", "part_of_speech": "noun", "frequency_rank": 108, "sample_sentence": "バスに乗ります。", "is_phrase": false },
+            { "text": "タクシー", "romanization": "takushii", "meaning": "taxi", "part_of_speech": "noun", "frequency_rank": 118, "sample_sentence": "タクシーを呼びます。", "is_phrase": false },
+            { "text": "飛行機", "romanization": "hikouki", "meaning": "airplane", "part_of_speech": "noun", "frequency_rank": 132, "sample_sentence": "飛行機で来ました。", "is_phrase": false },
+            { "text": "新幹線", "romanization": "shinkansen", "meaning": "bullet train", "part_of_speech": "noun", "frequency_rank": 168, "sample_sentence": "新幹線で京都に行きます。", "is_phrase": false },
+            { "text": "切符", "romanization": "kippu", "meaning": "ticket", "part_of_speech": "noun", "frequency_rank": 142, "sample_sentence": "切符を買いました。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Quantity & Size",
+          "narrative": "More miso soup? A little wasabi? These words help you fine-tune quantities — essential for ordering and shopping.",
+          "words": [
+            { "text": "多い", "romanization": "ooi", "meaning": "many / a lot", "part_of_speech": "adjective", "frequency_rank": 18, "sample_sentence": "人が多いです。", "is_phrase": false },
+            { "text": "少ない", "romanization": "sukunai", "meaning": "few / a little", "part_of_speech": "adjective", "frequency_rank": 48, "sample_sentence": "少ないですね。", "is_phrase": false },
+            { "text": "全部", "romanization": "zenbu", "meaning": "all / everything", "part_of_speech": "noun", "frequency_rank": 32, "sample_sentence": "全部ください。", "is_phrase": false },
+            { "text": "もっと", "romanization": "motto", "meaning": "more", "part_of_speech": "adverb", "frequency_rank": 22, "sample_sentence": "もっとください。", "is_phrase": false },
+            { "text": "十分", "romanization": "juubun", "meaning": "enough / sufficient", "part_of_speech": "adjective", "frequency_rank": 72, "sample_sentence": "十分です。", "is_phrase": false },
+            { "text": "ちょっと", "romanization": "chotto", "meaning": "a little / a bit", "part_of_speech": "adverb", "frequency_rank": 8, "sample_sentence": "ちょっと待ってください。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Animals",
+          "narrative": "From the deer in Nara to the cats of cat cafes, Japanese animal culture is adorable. Name the creatures you encounter.",
+          "words": [
+            { "text": "猫", "romanization": "neko", "meaning": "cat", "part_of_speech": "noun", "frequency_rank": 82, "sample_sentence": "猫が可愛いです。", "is_phrase": false },
+            { "text": "犬", "romanization": "inu", "meaning": "dog", "part_of_speech": "noun", "frequency_rank": 72, "sample_sentence": "犬を飼っています。", "is_phrase": false },
+            { "text": "鳥", "romanization": "tori", "meaning": "bird", "part_of_speech": "noun", "frequency_rank": 88, "sample_sentence": "鳥が鳴いています。", "is_phrase": false },
+            { "text": "魚", "romanization": "sakana", "meaning": "fish", "part_of_speech": "noun", "frequency_rank": 88, "sample_sentence": "魚が泳いでいます。", "is_phrase": false },
+            { "text": "鹿", "romanization": "shika", "meaning": "deer", "part_of_speech": "noun", "frequency_rank": 232, "sample_sentence": "奈良の鹿は人懐こいです。", "is_phrase": false },
+            { "text": "馬", "romanization": "uma", "meaning": "horse", "part_of_speech": "noun", "frequency_rank": 128, "sample_sentence": "馬に乗りたいです。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Days of the Week",
+          "narrative": "Plan your Tokyo itinerary — museums close on Mondays, shrines have special events on weekends. Know your days.",
+          "words": [
+            { "text": "月曜日", "romanization": "getsuyoubi", "meaning": "Monday", "part_of_speech": "noun", "frequency_rank": 158, "sample_sentence": "月曜日は休みです。", "is_phrase": false },
+            { "text": "火曜日", "romanization": "kayoubi", "meaning": "Tuesday", "part_of_speech": "noun", "frequency_rank": 165, "sample_sentence": "火曜日に会いましょう。", "is_phrase": false },
+            { "text": "水曜日", "romanization": "suiyoubi", "meaning": "Wednesday", "part_of_speech": "noun", "frequency_rank": 172, "sample_sentence": "水曜日は忙しいです。", "is_phrase": false },
+            { "text": "木曜日", "romanization": "mokuyoubi", "meaning": "Thursday", "part_of_speech": "noun", "frequency_rank": 178, "sample_sentence": "木曜日に来てください。", "is_phrase": false },
+            { "text": "金曜日", "romanization": "kinyoubi", "meaning": "Friday", "part_of_speech": "noun", "frequency_rank": 152, "sample_sentence": "金曜日は飲みに行きます。", "is_phrase": false },
+            { "text": "土曜日", "romanization": "doyoubi", "meaning": "Saturday", "part_of_speech": "noun", "frequency_rank": 145, "sample_sentence": "土曜日に映画を見ます。", "is_phrase": false },
+            { "text": "日曜日", "romanization": "nichiyoubi", "meaning": "Sunday", "part_of_speech": "noun", "frequency_rank": 138, "sample_sentence": "日曜日は家でゆっくりします。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Weather & Seasons",
+          "narrative": "Japan's four distinct seasons shape everything — cherry blossoms in spring, fireworks in summer, foliage in fall, snow in winter.",
+          "words": [
+            { "text": "寒い", "romanization": "samui", "meaning": "cold (weather)", "part_of_speech": "adjective", "frequency_rank": 58, "sample_sentence": "今日は寒いですね。", "is_phrase": false },
+            { "text": "涼しい", "romanization": "suzushii", "meaning": "cool (refreshing)", "part_of_speech": "adjective", "frequency_rank": 148, "sample_sentence": "今日は涼しいです。", "is_phrase": false },
+            { "text": "風", "romanization": "kaze", "meaning": "wind", "part_of_speech": "noun", "frequency_rank": 55, "sample_sentence": "風が強いです。", "is_phrase": false },
+            { "text": "雪", "romanization": "yuki", "meaning": "snow", "part_of_speech": "noun", "frequency_rank": 108, "sample_sentence": "雪が降っています。", "is_phrase": false },
+            { "text": "春", "romanization": "haru", "meaning": "spring", "part_of_speech": "noun", "frequency_rank": 82, "sample_sentence": "春は桜がきれいです。", "is_phrase": false },
+            { "text": "夏", "romanization": "natsu", "meaning": "summer", "part_of_speech": "noun", "frequency_rank": 72, "sample_sentence": "夏は暑いです。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Money & Shopping",
+          "narrative": "Japan is largely a cash society, though IC cards and cashless options are growing. Navigate purchases and payments.",
+          "words": [
+            { "text": "値段", "romanization": "nedan", "meaning": "price", "part_of_speech": "noun", "frequency_rank": 118, "sample_sentence": "値段はいくらですか？", "is_phrase": false },
+            { "text": "お釣り", "romanization": "otsuri", "meaning": "change (money)", "part_of_speech": "noun", "frequency_rank": 195, "sample_sentence": "お釣りをどうぞ。", "is_phrase": false },
+            { "text": "現金", "romanization": "genkin", "meaning": "cash", "part_of_speech": "noun", "frequency_rank": 178, "sample_sentence": "現金のみです。", "is_phrase": false },
+            { "text": "カード", "romanization": "kaado", "meaning": "card", "part_of_speech": "noun", "frequency_rank": 108, "sample_sentence": "カードで払えますか？", "is_phrase": false },
+            { "text": "レシート", "romanization": "reshiito", "meaning": "receipt", "part_of_speech": "noun", "frequency_rank": 242, "sample_sentence": "レシートをください。", "is_phrase": false },
+            { "text": "無料", "romanization": "muryou", "meaning": "free (no charge)", "part_of_speech": "noun", "frequency_rank": 185, "sample_sentence": "Wi-Fiは無料です。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Communication Verbs",
+          "narrative": "Speaking, listening, reading, writing — the four pillars of language learning, now in Japanese.",
+          "words": [
+            { "text": "話す", "romanization": "hanasu", "meaning": "to speak / talk", "part_of_speech": "verb", "frequency_rank": 8, "sample_sentence": "日本語を話します。", "is_phrase": false },
+            { "text": "聞く", "romanization": "kiku", "meaning": "to listen / ask", "part_of_speech": "verb", "frequency_rank": 8, "sample_sentence": "音楽を聞きます。", "is_phrase": false },
+            { "text": "書く", "romanization": "kaku", "meaning": "to write", "part_of_speech": "verb", "frequency_rank": 18, "sample_sentence": "名前を書いてください。", "is_phrase": false },
+            { "text": "答える", "romanization": "kotaeru", "meaning": "to answer", "part_of_speech": "verb", "frequency_rank": 72, "sample_sentence": "質問に答えてください。", "is_phrase": false },
+            { "text": "言う", "romanization": "iu", "meaning": "to say", "part_of_speech": "verb", "frequency_rank": 2, "sample_sentence": "何と言いましたか？", "is_phrase": false },
+            { "text": "教える", "romanization": "oshieru", "meaning": "to teach / tell", "part_of_speech": "verb", "frequency_rank": 28, "sample_sentence": "道を教えてください。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "More Useful Verbs",
+          "narrative": "Expand your verb arsenal. These everyday verbs come up constantly and make you sound much more natural.",
+          "words": [
+            { "text": "探す", "romanization": "sagasu", "meaning": "to look for / search", "part_of_speech": "verb", "frequency_rank": 42, "sample_sentence": "ホテルを探しています。", "is_phrase": false },
+            { "text": "取る", "romanization": "toru", "meaning": "to take", "part_of_speech": "verb", "frequency_rank": 12, "sample_sentence": "写真を撮ります。", "is_phrase": false },
+            { "text": "持つ", "romanization": "motsu", "meaning": "to hold / have", "part_of_speech": "verb", "frequency_rank": 15, "sample_sentence": "傘を持っていますか？", "is_phrase": false },
+            { "text": "置く", "romanization": "oku", "meaning": "to put / place", "part_of_speech": "verb", "frequency_rank": 28, "sample_sentence": "ここに置いてください。", "is_phrase": false },
+            { "text": "開ける", "romanization": "akeru", "meaning": "to open", "part_of_speech": "verb", "frequency_rank": 42, "sample_sentence": "窓を開けてください。", "is_phrase": false },
+            { "text": "閉める", "romanization": "shimeru", "meaning": "to close", "part_of_speech": "verb", "frequency_rank": 55, "sample_sentence": "ドアを閉めてください。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Expressing Needs",
+          "narrative": "When you need something — directions, help, the bathroom — these words convey urgency and get results.",
+          "words": [
+            { "text": "必要", "romanization": "hitsuyou", "meaning": "necessary / need", "part_of_speech": "adjective", "frequency_rank": 42, "sample_sentence": "パスポートが必要です。", "is_phrase": false },
+            { "text": "〜たい", "romanization": "-tai", "meaning": "want to (verb ending)", "part_of_speech": "particle", "frequency_rank": 8, "sample_sentence": "食べたいです。", "is_phrase": false },
+            { "text": "〜てください", "romanization": "-te kudasai", "meaning": "please do (request)", "part_of_speech": "phrase", "frequency_rank": 5, "sample_sentence": "教えてください。", "is_phrase": true },
+            { "text": "できる", "romanization": "dekiru", "meaning": "can / be able to", "part_of_speech": "verb", "frequency_rank": 5, "sample_sentence": "日本語ができますか？", "is_phrase": false },
+            { "text": "試す", "romanization": "tamesu", "meaning": "to try", "part_of_speech": "verb", "frequency_rank": 118, "sample_sentence": "これを試したいです。", "is_phrase": false },
+            { "text": "大丈夫", "romanization": "daijoubu", "meaning": "okay / all right / fine", "part_of_speech": "adjective", "frequency_rank": 18, "sample_sentence": "大丈夫ですか？", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Places in Town",
+          "narrative": "Navigate Japanese cities with confidence. From konbini to temples, here's your urban vocabulary.",
+          "words": [
+            { "text": "銀行", "romanization": "ginkou", "meaning": "bank", "part_of_speech": "noun", "frequency_rank": 108, "sample_sentence": "銀行はどこですか？", "is_phrase": false },
+            { "text": "病院", "romanization": "byouin", "meaning": "hospital", "part_of_speech": "noun", "frequency_rank": 62, "sample_sentence": "病院に行きたいです。", "is_phrase": false },
+            { "text": "空港", "romanization": "kuukou", "meaning": "airport", "part_of_speech": "noun", "frequency_rank": 118, "sample_sentence": "空港まで何分ですか？", "is_phrase": false },
+            { "text": "公園", "romanization": "kouen", "meaning": "park", "part_of_speech": "noun", "frequency_rank": 72, "sample_sentence": "公園を散歩します。", "is_phrase": false },
+            { "text": "コンビニ", "romanization": "konbini", "meaning": "convenience store", "part_of_speech": "noun", "frequency_rank": 155, "sample_sentence": "コンビニは24時間開いています。", "is_phrase": false },
+            { "text": "神社", "romanization": "jinja", "meaning": "Shinto shrine", "part_of_speech": "noun", "frequency_rank": 145, "sample_sentence": "神社でお参りしました。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Comparisons",
+          "narrative": "Which is better, ramen or soba? Comparing things is how we make choices — Japanese has elegant ways to do it.",
+          "words": [
+            { "text": "もっと", "romanization": "motto", "meaning": "more", "part_of_speech": "adverb", "frequency_rank": 22, "sample_sentence": "もっとゆっくり話してください。", "is_phrase": false },
+            { "text": "一番", "romanization": "ichiban", "meaning": "most / number one", "part_of_speech": "adverb", "frequency_rank": 22, "sample_sentence": "一番好きな食べ物は何ですか？", "is_phrase": false },
+            { "text": "同じ", "romanization": "onaji", "meaning": "same", "part_of_speech": "adjective", "frequency_rank": 22, "sample_sentence": "同じものをください。", "is_phrase": false },
+            { "text": "違う", "romanization": "chigau", "meaning": "different / wrong", "part_of_speech": "verb", "frequency_rank": 22, "sample_sentence": "これは違います。", "is_phrase": false },
+            { "text": "とても", "romanization": "totemo", "meaning": "very", "part_of_speech": "adverb", "frequency_rank": 12, "sample_sentence": "とてもきれいです。", "is_phrase": false },
+            { "text": "すぎる", "romanization": "sugiru", "meaning": "too much / excessive", "part_of_speech": "verb", "frequency_rank": 35, "sample_sentence": "高すぎます。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Time Expressions",
+          "narrative": "Japanese punctuality is legendary. Master these time words to plan, schedule, and never miss a train.",
+          "words": [
+            { "text": "週", "romanization": "shuu", "meaning": "week", "part_of_speech": "noun", "frequency_rank": 48, "sample_sentence": "来週会いましょう。", "is_phrase": false },
+            { "text": "月", "romanization": "tsuki / getsu", "meaning": "month / moon", "part_of_speech": "noun", "frequency_rank": 12, "sample_sentence": "来月日本に行きます。", "is_phrase": false },
+            { "text": "年", "romanization": "nen / toshi", "meaning": "year", "part_of_speech": "noun", "frequency_rank": 3, "sample_sentence": "去年東京に行きました。", "is_phrase": false },
+            { "text": "前", "romanization": "mae", "meaning": "before / in front", "part_of_speech": "noun", "frequency_rank": 5, "sample_sentence": "三年前に日本に来ました。", "is_phrase": false },
+            { "text": "いつも", "romanization": "itsumo", "meaning": "always", "part_of_speech": "adverb", "frequency_rank": 22, "sample_sentence": "いつもありがとうございます。", "is_phrase": false },
+            { "text": "時々", "romanization": "tokidoki", "meaning": "sometimes", "part_of_speech": "adverb", "frequency_rank": 72, "sample_sentence": "時々カラオケに行きます。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Japanese Manners",
+          "narrative": "Politeness is the backbone of Japanese society. From bowing to using honorifics, understanding manners earns deep respect from locals.",
+          "words": [
+            { "text": "礼儀", "romanization": "reigi", "meaning": "manners / etiquette", "part_of_speech": "noun", "frequency_rank": 285, "sample_sentence": "日本では礼儀が大切です。", "is_phrase": false },
+            { "text": "挨拶", "romanization": "aisatsu", "meaning": "greeting", "part_of_speech": "noun", "frequency_rank": 248, "sample_sentence": "朝の挨拶を忘れないでください。", "is_phrase": false },
+            { "text": "お辞儀", "romanization": "ojigi", "meaning": "bow", "part_of_speech": "noun", "frequency_rank": 312, "sample_sentence": "お辞儀をして挨拶しました。", "is_phrase": false },
+            { "text": "敬語", "romanization": "keigo", "meaning": "honorific language", "part_of_speech": "noun", "frequency_rank": 325, "sample_sentence": "敬語を使うのは難しいです。", "is_phrase": false },
+            { "text": "丁寧", "romanization": "teinei", "meaning": "polite / careful", "part_of_speech": "adjective", "frequency_rank": 268, "sample_sentence": "丁寧に説明してくれました。", "is_phrase": false },
+            { "text": "謙虚", "romanization": "kenkyo", "meaning": "humble / modest", "part_of_speech": "adjective", "frequency_rank": 345, "sample_sentence": "謙虚な態度が大切です。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Cooking & Kitchen",
+          "narrative": "You join a Japanese cooking class in a cozy kitchen. The instructor demonstrates techniques — grilling, simmering, slicing — and you try each one.",
+          "words": [
+            { "text": "焼く", "romanization": "yaku", "meaning": "to grill / bake / roast", "part_of_speech": "verb", "frequency_rank": 155, "sample_sentence": "魚を焼きましょう。", "is_phrase": false },
+            { "text": "煮る", "romanization": "niru", "meaning": "to simmer / boil", "part_of_speech": "verb", "frequency_rank": 228, "sample_sentence": "野菜を煮ます。", "is_phrase": false },
+            { "text": "切る", "romanization": "kiru", "meaning": "to cut", "part_of_speech": "verb", "frequency_rank": 165, "sample_sentence": "玉ねぎを細かく切ってください。", "is_phrase": false },
+            { "text": "混ぜる", "romanization": "mazeru", "meaning": "to mix / stir", "part_of_speech": "verb", "frequency_rank": 275, "sample_sentence": "よく混ぜてください。", "is_phrase": false },
+            { "text": "炒める", "romanization": "itameru", "meaning": "to stir-fry / sauté", "part_of_speech": "verb", "frequency_rank": 298, "sample_sentence": "野菜を炒めます。", "is_phrase": false },
+            { "text": "蒸す", "romanization": "musu", "meaning": "to steam", "part_of_speech": "verb", "frequency_rank": 315, "sample_sentence": "肉まんを蒸して食べます。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Geography",
+          "narrative": "Japan is an island nation of breathtaking variety — rivers, lakes, forests, and thousands of small villages. Describe the landscape around you.",
+          "words": [
+            { "text": "島", "romanization": "shima", "meaning": "island", "part_of_speech": "noun", "frequency_rank": 168, "sample_sentence": "沖縄は美しい島です。", "is_phrase": false },
+            { "text": "川", "romanization": "kawa", "meaning": "river", "part_of_speech": "noun", "frequency_rank": 152, "sample_sentence": "川で魚を釣りました。", "is_phrase": false },
+            { "text": "湖", "romanization": "mizuumi", "meaning": "lake", "part_of_speech": "noun", "frequency_rank": 238, "sample_sentence": "湖の水がとても澄んでいます。", "is_phrase": false },
+            { "text": "森", "romanization": "mori", "meaning": "forest", "part_of_speech": "noun", "frequency_rank": 195, "sample_sentence": "森の中を散歩しました。", "is_phrase": false },
+            { "text": "村", "romanization": "mura", "meaning": "village", "part_of_speech": "noun", "frequency_rank": 205, "sample_sentence": "小さな村に泊まりました。", "is_phrase": false },
+            { "text": "町", "romanization": "machi", "meaning": "town", "part_of_speech": "noun", "frequency_rank": 158, "sample_sentence": "この町は静かで住みやすいです。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Sports & Exercise",
+          "narrative": "From baseball stadiums to jogging paths along the Sumida River, sports are a huge part of Japanese life. Get moving!",
+          "words": [
+            { "text": "スポーツ", "romanization": "supootsu", "meaning": "sports", "part_of_speech": "noun", "frequency_rank": 172, "sample_sentence": "スポーツが好きですか？", "is_phrase": false },
+            { "text": "サッカー", "romanization": "sakkaa", "meaning": "soccer / football", "part_of_speech": "noun", "frequency_rank": 195, "sample_sentence": "サッカーの試合を見ました。", "is_phrase": false },
+            { "text": "走る", "romanization": "hashiru", "meaning": "to run", "part_of_speech": "verb", "frequency_rank": 162, "sample_sentence": "毎朝走っています。", "is_phrase": false },
+            { "text": "泳ぐ", "romanization": "oyogu", "meaning": "to swim", "part_of_speech": "verb", "frequency_rank": 215, "sample_sentence": "プールで泳ぎましょう。", "is_phrase": false },
+            { "text": "練習", "romanization": "renshuu", "meaning": "practice / training", "part_of_speech": "noun", "frequency_rank": 178, "sample_sentence": "毎日練習しています。", "is_phrase": false },
+            { "text": "試合", "romanization": "shiai", "meaning": "match / game", "part_of_speech": "noun", "frequency_rank": 188, "sample_sentence": "明日の試合を楽しみにしています。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Music & Art",
+          "narrative": "From ukiyo-e woodblock prints to taiko drums, Japan's artistic heritage is extraordinary. Discuss the creative world.",
+          "words": [
+            { "text": "絵", "romanization": "e", "meaning": "picture / painting", "part_of_speech": "noun", "frequency_rank": 162, "sample_sentence": "この絵はとても美しいです。", "is_phrase": false },
+            { "text": "踊る", "romanization": "odoru", "meaning": "to dance", "part_of_speech": "verb", "frequency_rank": 225, "sample_sentence": "盆踊りで踊りましょう。", "is_phrase": false },
+            { "text": "楽器", "romanization": "gakki", "meaning": "musical instrument", "part_of_speech": "noun", "frequency_rank": 285, "sample_sentence": "何か楽器を弾けますか？", "is_phrase": false },
+            { "text": "美術", "romanization": "bijutsu", "meaning": "fine art", "part_of_speech": "noun", "frequency_rank": 265, "sample_sentence": "美術館に行きたいです。", "is_phrase": false },
+            { "text": "作品", "romanization": "sakuhin", "meaning": "work (of art) / piece", "part_of_speech": "noun", "frequency_rank": 195, "sample_sentence": "この作品はいつ作られましたか？", "is_phrase": false },
+            { "text": "描く", "romanization": "egaku", "meaning": "to draw / paint", "part_of_speech": "verb", "frequency_rank": 232, "sample_sentence": "趣味で絵を描いています。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Social Media",
+          "narrative": "You want to follow your new Japanese friends online. Instagram, LINE, YouTube — social media vocabulary bridges the digital gap.",
+          "words": [
+            { "text": "アカウント", "romanization": "akaunto", "meaning": "account", "part_of_speech": "noun", "frequency_rank": 275, "sample_sentence": "インスタのアカウントを教えてください。", "is_phrase": false },
+            { "text": "フォロー", "romanization": "foroo", "meaning": "follow (social media)", "part_of_speech": "noun", "frequency_rank": 295, "sample_sentence": "フォローしてもいいですか？", "is_phrase": false },
+            { "text": "投稿", "romanization": "toukou", "meaning": "post / submission", "part_of_speech": "noun", "frequency_rank": 258, "sample_sentence": "新しい投稿を見ましたか？", "is_phrase": false },
+            { "text": "シェア", "romanization": "shea", "meaning": "share", "part_of_speech": "noun", "frequency_rank": 308, "sample_sentence": "この写真をシェアしてもいいですか？", "is_phrase": false },
+            { "text": "いいね", "romanization": "iine", "meaning": "like (social media)", "part_of_speech": "noun", "frequency_rank": 315, "sample_sentence": "いいねをたくさんもらいました。", "is_phrase": false },
+            { "text": "動画", "romanization": "douga", "meaning": "video", "part_of_speech": "noun", "frequency_rank": 228, "sample_sentence": "面白い動画を見つけました。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Business Japanese",
+          "narrative": "In a sleek office in Marunouchi, you sit across from a potential partner. Business Japanese has its own vocabulary and rhythm.",
+          "words": [
+            { "text": "ビジネス", "romanization": "bijinesu", "meaning": "business", "part_of_speech": "noun", "frequency_rank": 185, "sample_sentence": "ビジネスで東京に来ました。", "is_phrase": false },
+            { "text": "客", "romanization": "kyaku", "meaning": "customer / guest", "part_of_speech": "noun", "frequency_rank": 165, "sample_sentence": "客が来るので準備してください。", "is_phrase": false },
+            { "text": "製品", "romanization": "seihin", "meaning": "product", "part_of_speech": "noun", "frequency_rank": 218, "sample_sentence": "新しい製品を紹介します。", "is_phrase": false },
+            { "text": "売上", "romanization": "uriage", "meaning": "sales / revenue", "part_of_speech": "noun", "frequency_rank": 298, "sample_sentence": "今月の売上は良かったです。", "is_phrase": false },
+            { "text": "利益", "romanization": "rieki", "meaning": "profit / benefit", "part_of_speech": "noun", "frequency_rank": 275, "sample_sentence": "利益が増えました。", "is_phrase": false },
+            { "text": "契約", "romanization": "keiyaku", "meaning": "contract / agreement", "part_of_speech": "noun", "frequency_rank": 248, "sample_sentence": "契約書にサインしてください。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Documents & Forms",
+          "narrative": "Filling out forms at city hall, the post office, or the bank. Japanese paperwork has its own vocabulary — know it and save time.",
+          "words": [
+            { "text": "書類", "romanization": "shorui", "meaning": "documents / paperwork", "part_of_speech": "noun", "frequency_rank": 235, "sample_sentence": "書類を提出してください。", "is_phrase": false },
+            { "text": "申込書", "romanization": "moushikomisho", "meaning": "application form", "part_of_speech": "noun", "frequency_rank": 328, "sample_sentence": "申込書に記入してください。", "is_phrase": false },
+            { "text": "署名", "romanization": "shomei", "meaning": "signature", "part_of_speech": "noun", "frequency_rank": 305, "sample_sentence": "ここに署名をお願いします。", "is_phrase": false },
+            { "text": "届", "romanization": "todoke", "meaning": "notification / report (form)", "part_of_speech": "noun", "frequency_rank": 318, "sample_sentence": "届を出さなければなりません。", "is_phrase": false },
+            { "text": "許可", "romanization": "kyoka", "meaning": "permission / permit", "part_of_speech": "noun", "frequency_rank": 245, "sample_sentence": "写真撮影の許可が必要です。", "is_phrase": false },
+            { "text": "登録", "romanization": "touroku", "meaning": "registration", "part_of_speech": "noun", "frequency_rank": 258, "sample_sentence": "住所の登録をしてください。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Advanced Emotions",
+          "narrative": "Beyond happy and sad — frustration, pride, embarrassment. These nuanced feelings let you connect on a deeper level.",
+          "words": [
+            { "text": "悔しい", "romanization": "kuyashii", "meaning": "frustrating / vexing", "part_of_speech": "adjective", "frequency_rank": 285, "sample_sentence": "負けて悔しいです。", "is_phrase": false },
+            { "text": "がっかり", "romanization": "gakkari", "meaning": "disappointed", "part_of_speech": "adverb", "frequency_rank": 295, "sample_sentence": "結果にがっかりしました。", "is_phrase": false },
+            { "text": "誇り", "romanization": "hokori", "meaning": "pride", "part_of_speech": "noun", "frequency_rank": 278, "sample_sentence": "日本の文化に誇りを持っています。", "is_phrase": false },
+            { "text": "恥ずかしい", "romanization": "hazukashii", "meaning": "embarrassing / shy", "part_of_speech": "adjective", "frequency_rank": 215, "sample_sentence": "間違えて恥ずかしいです。", "is_phrase": false },
+            { "text": "心配", "romanization": "shinpai", "meaning": "worry / concern", "part_of_speech": "noun", "frequency_rank": 168, "sample_sentence": "心配しないでください。", "is_phrase": false },
+            { "text": "のんびり", "romanization": "nonbiri", "meaning": "relaxed / leisurely", "part_of_speech": "adverb", "frequency_rank": 305, "sample_sentence": "休みの日はのんびり過ごします。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Household Items",
+          "narrative": "Living in a Japanese apartment, you discover the essentials — shelves, mirrors, blankets. Every item has its place.",
+          "words": [
+            { "text": "棚", "romanization": "tana", "meaning": "shelf", "part_of_speech": "noun", "frequency_rank": 248, "sample_sentence": "棚の上に本を置きました。", "is_phrase": false },
+            { "text": "鏡", "romanization": "kagami", "meaning": "mirror", "part_of_speech": "noun", "frequency_rank": 232, "sample_sentence": "鏡を見てください。", "is_phrase": false },
+            { "text": "毛布", "romanization": "moufu", "meaning": "blanket", "part_of_speech": "noun", "frequency_rank": 315, "sample_sentence": "寒いので毛布をください。", "is_phrase": false },
+            { "text": "枕", "romanization": "makura", "meaning": "pillow", "part_of_speech": "noun", "frequency_rank": 298, "sample_sentence": "枕が高すぎます。", "is_phrase": false },
+            { "text": "電気", "romanization": "denki", "meaning": "electricity / light", "part_of_speech": "noun", "frequency_rank": 178, "sample_sentence": "電気を消してください。", "is_phrase": false },
+            { "text": "扇風機", "romanization": "senpuuki", "meaning": "electric fan", "part_of_speech": "noun", "frequency_rank": 345, "sample_sentence": "暑いので扇風機をつけましょう。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Garden & Nature",
+          "narrative": "A peaceful Japanese garden with koi ponds and mossy stones. Nature vocabulary lets you appreciate the beauty all around you.",
+          "words": [
+            { "text": "庭", "romanization": "niwa", "meaning": "garden / yard", "part_of_speech": "noun", "frequency_rank": 195, "sample_sentence": "庭に花がたくさん咲いています。", "is_phrase": false },
+            { "text": "植物", "romanization": "shokubutsu", "meaning": "plant", "part_of_speech": "noun", "frequency_rank": 258, "sample_sentence": "植物を育てるのが好きです。", "is_phrase": false },
+            { "text": "種", "romanization": "tane", "meaning": "seed", "part_of_speech": "noun", "frequency_rank": 225, "sample_sentence": "花の種をまきました。", "is_phrase": false },
+            { "text": "植える", "romanization": "ueru", "meaning": "to plant", "part_of_speech": "verb", "frequency_rank": 275, "sample_sentence": "木を植えましょう。", "is_phrase": false },
+            { "text": "育てる", "romanization": "sodateru", "meaning": "to raise / grow", "part_of_speech": "verb", "frequency_rank": 218, "sample_sentence": "トマトを育てています。", "is_phrase": false },
+            { "text": "咲く", "romanization": "saku", "meaning": "to bloom / blossom", "part_of_speech": "verb", "frequency_rank": 235, "sample_sentence": "桜が咲きました。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Celebrations",
+          "narrative": "Birthday parties, New Year's, festivals — Japanese celebrations blend tradition and joy. Here is how to join the festivities.",
+          "words": [
+            { "text": "祭り", "romanization": "matsuri", "meaning": "festival", "part_of_speech": "noun", "frequency_rank": 215, "sample_sentence": "夏祭りに行きましょう。", "is_phrase": false },
+            { "text": "プレゼント", "romanization": "purezento", "meaning": "present / gift", "part_of_speech": "noun", "frequency_rank": 198, "sample_sentence": "誕生日のプレゼントを買いました。", "is_phrase": false },
+            { "text": "招待", "romanization": "shoutai", "meaning": "invitation", "part_of_speech": "noun", "frequency_rank": 278, "sample_sentence": "パーティーに招待されました。", "is_phrase": false },
+            { "text": "誕生日", "romanization": "tanjoubi", "meaning": "birthday", "part_of_speech": "noun", "frequency_rank": 205, "sample_sentence": "お誕生日おめでとうございます。", "is_phrase": false },
+            { "text": "祝う", "romanization": "iwau", "meaning": "to celebrate / congratulate", "part_of_speech": "verb", "frequency_rank": 268, "sample_sentence": "みんなで合格を祝いました。", "is_phrase": false },
+            { "text": "飾る", "romanization": "kazaru", "meaning": "to decorate", "part_of_speech": "verb", "frequency_rank": 285, "sample_sentence": "部屋を飾りましょう。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Ocean Life",
+          "narrative": "Snorkeling off Okinawa's coast, you peer into crystal-clear water. Coral, turtles, dolphins — the ocean world awaits.",
+          "words": [
+            { "text": "サンゴ", "romanization": "sango", "meaning": "coral", "part_of_speech": "noun", "frequency_rank": 348, "sample_sentence": "沖縄のサンゴはきれいです。", "is_phrase": false },
+            { "text": "亀", "romanization": "kame", "meaning": "turtle / tortoise", "part_of_speech": "noun", "frequency_rank": 278, "sample_sentence": "海で亀を見ました。", "is_phrase": false },
+            { "text": "イルカ", "romanization": "iruka", "meaning": "dolphin", "part_of_speech": "noun", "frequency_rank": 318, "sample_sentence": "イルカと泳ぎたいです。", "is_phrase": false },
+            { "text": "波", "romanization": "nami", "meaning": "wave", "part_of_speech": "noun", "frequency_rank": 215, "sample_sentence": "今日は波が高いです。", "is_phrase": false },
+            { "text": "ダイビング", "romanization": "daibingu", "meaning": "diving", "part_of_speech": "noun", "frequency_rank": 335, "sample_sentence": "ダイビングの免許を持っています。", "is_phrase": false },
+            { "text": "シュノーケル", "romanization": "shunookeru", "meaning": "snorkeling", "part_of_speech": "noun", "frequency_rank": 365, "sample_sentence": "シュノーケルで魚を見ました。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Tea & Coffee Culture",
+          "narrative": "A quiet kissaten in a Kyoto side street. The barista carefully prepares matcha. Japan's tea and coffee culture is a ritual of calm.",
+          "words": [
+            { "text": "抹茶", "romanization": "matcha", "meaning": "matcha (powdered green tea)", "part_of_speech": "noun", "frequency_rank": 268, "sample_sentence": "抹茶アイスが好きです。", "is_phrase": false },
+            { "text": "珈琲", "romanization": "koohii", "meaning": "coffee", "part_of_speech": "noun", "frequency_rank": 155, "sample_sentence": "珈琲を一杯ください。", "is_phrase": false },
+            { "text": "喫茶店", "romanization": "kissaten", "meaning": "coffee shop / tea room", "part_of_speech": "noun", "frequency_rank": 285, "sample_sentence": "この喫茶店は雰囲気がいいです。", "is_phrase": false },
+            { "text": "注ぐ", "romanization": "sosogu", "meaning": "to pour", "part_of_speech": "verb", "frequency_rank": 295, "sample_sentence": "お茶を注いでください。", "is_phrase": false },
+            { "text": "味わう", "romanization": "ajiwau", "meaning": "to savor / taste", "part_of_speech": "verb", "frequency_rank": 305, "sample_sentence": "ゆっくり味わって飲みましょう。", "is_phrase": false },
+            { "text": "苦い", "romanization": "nigai", "meaning": "bitter", "part_of_speech": "adjective", "frequency_rank": 248, "sample_sentence": "この珈琲はちょっと苦いです。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Traditional Crafts",
+          "narrative": "In a Kyoto workshop, artisans practice centuries-old crafts. Pottery, lacquerware, origami — each piece tells a story.",
+          "words": [
+            { "text": "陶器", "romanization": "touki", "meaning": "pottery / ceramics", "part_of_speech": "noun", "frequency_rank": 325, "sample_sentence": "この陶器は手作りです。", "is_phrase": false },
+            { "text": "漆器", "romanization": "shikki", "meaning": "lacquerware", "part_of_speech": "noun", "frequency_rank": 368, "sample_sentence": "漆器のお椀で味噌汁を飲みます。", "is_phrase": false },
+            { "text": "折り紙", "romanization": "origami", "meaning": "origami (paper folding)", "part_of_speech": "noun", "frequency_rank": 298, "sample_sentence": "折り紙で鶴を折りましょう。", "is_phrase": false },
+            { "text": "着物", "romanization": "kimono", "meaning": "kimono (traditional garment)", "part_of_speech": "noun", "frequency_rank": 232, "sample_sentence": "着物を着て写真を撮りました。", "is_phrase": false },
+            { "text": "扇子", "romanization": "sensu", "meaning": "folding fan", "part_of_speech": "noun", "frequency_rank": 348, "sample_sentence": "暑いので扇子を使います。", "is_phrase": false },
+            { "text": "筆", "romanization": "fude", "meaning": "brush (calligraphy)", "part_of_speech": "noun", "frequency_rank": 308, "sample_sentence": "筆で漢字を書きました。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Errands",
+          "narrative": "Running daily errands in Japan — post office, dry cleaner, parking. Each task has its own essential vocabulary.",
+          "words": [
+            { "text": "郵便局", "romanization": "yuubinkyoku", "meaning": "post office", "part_of_speech": "noun", "frequency_rank": 225, "sample_sentence": "郵便局で手紙を出します。", "is_phrase": false },
+            { "text": "届ける", "romanization": "todokeru", "meaning": "to deliver", "part_of_speech": "verb", "frequency_rank": 215, "sample_sentence": "荷物を届けてください。", "is_phrase": false },
+            { "text": "受け取る", "romanization": "uketoru", "meaning": "to receive / pick up", "part_of_speech": "verb", "frequency_rank": 198, "sample_sentence": "荷物を受け取りに来ました。", "is_phrase": false },
+            { "text": "コピー", "romanization": "kopii", "meaning": "copy", "part_of_speech": "noun", "frequency_rank": 228, "sample_sentence": "コピーを三枚お願いします。", "is_phrase": false },
+            { "text": "クリーニング", "romanization": "kuriiningu", "meaning": "dry cleaning", "part_of_speech": "noun", "frequency_rank": 335, "sample_sentence": "スーツをクリーニングに出します。", "is_phrase": false },
+            { "text": "駐車", "romanization": "chuusha", "meaning": "parking", "part_of_speech": "noun", "frequency_rank": 268, "sample_sentence": "駐車場はありますか？", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Japanese Cuisine",
+          "narrative": "Beyond sushi and ramen — tempura, udon, soba, yakitori. Explore Japan's incredible variety of dishes by name.",
+          "words": [
+            { "text": "天ぷら", "romanization": "tenpura", "meaning": "tempura (battered & fried)", "part_of_speech": "noun", "frequency_rank": 242, "sample_sentence": "天ぷらが大好きです。", "is_phrase": false },
+            { "text": "うどん", "romanization": "udon", "meaning": "udon noodles", "part_of_speech": "noun", "frequency_rank": 228, "sample_sentence": "うどんを食べましょう。", "is_phrase": false },
+            { "text": "そば", "romanization": "soba", "meaning": "buckwheat noodles", "part_of_speech": "noun", "frequency_rank": 218, "sample_sentence": "年越しそばを食べます。", "is_phrase": false },
+            { "text": "刺身", "romanization": "sashimi", "meaning": "sashimi (raw sliced fish)", "part_of_speech": "noun", "frequency_rank": 258, "sample_sentence": "刺身は新鮮でおいしいです。", "is_phrase": false },
+            { "text": "味噌汁", "romanization": "misoshiru", "meaning": "miso soup", "part_of_speech": "noun", "frequency_rank": 248, "sample_sentence": "朝ご飯に味噌汁を飲みます。", "is_phrase": false },
+            { "text": "焼き鳥", "romanization": "yakitori", "meaning": "grilled chicken skewers", "part_of_speech": "noun", "frequency_rank": 275, "sample_sentence": "焼き鳥とビールは最高です。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Environmental",
+          "narrative": "Japan leads in recycling and environmental awareness. Learn the vocabulary of sustainability and nature conservation.",
+          "words": [
+            { "text": "ゴミ", "romanization": "gomi", "meaning": "garbage / trash", "part_of_speech": "noun", "frequency_rank": 195, "sample_sentence": "ゴミの分別をしてください。", "is_phrase": false },
+            { "text": "リサイクル", "romanization": "risaikuru", "meaning": "recycling", "part_of_speech": "noun", "frequency_rank": 285, "sample_sentence": "ペットボトルはリサイクルできます。", "is_phrase": false },
+            { "text": "汚染", "romanization": "osen", "meaning": "pollution / contamination", "part_of_speech": "noun", "frequency_rank": 318, "sample_sentence": "空気の汚染が問題です。", "is_phrase": false },
+            { "text": "自然", "romanization": "shizen", "meaning": "nature", "part_of_speech": "noun", "frequency_rank": 172, "sample_sentence": "自然を大切にしましょう。", "is_phrase": false },
+            { "text": "環境", "romanization": "kankyou", "meaning": "environment", "part_of_speech": "noun", "frequency_rank": 198, "sample_sentence": "環境問題に関心があります。", "is_phrase": false },
+            { "text": "節約", "romanization": "setsuyaku", "meaning": "saving / conservation", "part_of_speech": "noun", "frequency_rank": 278, "sample_sentence": "電気を節約しましょう。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Describing People",
+          "narrative": "Your host family, your sensei, your new friends — describe their personalities and character with these essential words.",
+          "words": [
+            { "text": "優しい", "romanization": "yasashii", "meaning": "kind / gentle", "part_of_speech": "adjective", "frequency_rank": 152, "sample_sentence": "先生はとても優しいです。", "is_phrase": false },
+            { "text": "真面目", "romanization": "majime", "meaning": "serious / diligent", "part_of_speech": "adjective", "frequency_rank": 245, "sample_sentence": "彼はとても真面目な人です。", "is_phrase": false },
+            { "text": "正直", "romanization": "shoujiki", "meaning": "honest", "part_of_speech": "adjective", "frequency_rank": 258, "sample_sentence": "正直に言ってください。", "is_phrase": false },
+            { "text": "けち", "romanization": "kechi", "meaning": "stingy / cheap", "part_of_speech": "adjective", "frequency_rank": 378, "sample_sentence": "あの人はちょっとけちです。", "is_phrase": false },
+            { "text": "親切", "romanization": "shinsetsu", "meaning": "kind / helpful", "part_of_speech": "adjective", "frequency_rank": 205, "sample_sentence": "駅員さんはとても親切でした。", "is_phrase": false },
+            { "text": "明るい", "romanization": "akarui", "meaning": "cheerful / bright", "part_of_speech": "adjective", "frequency_rank": 185, "sample_sentence": "彼女は明るい性格です。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Travel Planning",
+          "narrative": "Planning the perfect itinerary — schedules, confirmations, cancellations. Make sure your travel plans run smoothly.",
+          "words": [
+            { "text": "スケジュール", "romanization": "sukejuuru", "meaning": "schedule", "part_of_speech": "noun", "frequency_rank": 235, "sample_sentence": "明日のスケジュールを確認しましょう。", "is_phrase": false },
+            { "text": "確認", "romanization": "kakunin", "meaning": "confirmation / check", "part_of_speech": "noun", "frequency_rank": 198, "sample_sentence": "予約の確認をお願いします。", "is_phrase": false },
+            { "text": "キャンセル", "romanization": "kyanseru", "meaning": "cancellation", "part_of_speech": "noun", "frequency_rank": 268, "sample_sentence": "予約をキャンセルしたいです。", "is_phrase": false },
+            { "text": "払い戻し", "romanization": "haraimodoshi", "meaning": "refund", "part_of_speech": "noun", "frequency_rank": 345, "sample_sentence": "払い戻しはできますか？", "is_phrase": false },
+            { "text": "保証", "romanization": "hoshou", "meaning": "guarantee / warranty", "part_of_speech": "noun", "frequency_rank": 305, "sample_sentence": "保証はありますか？", "is_phrase": false },
+            { "text": "手続き", "romanization": "tetsuzuki", "meaning": "procedure / process", "part_of_speech": "noun", "frequency_rank": 248, "sample_sentence": "手続きは簡単ですか？", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Clothing Details",
+          "narrative": "Shopping for clothes in Harajuku, you need to describe fabrics, fits, and details. Here is the vocabulary of fashion.",
+          "words": [
+            { "text": "袖", "romanization": "sode", "meaning": "sleeve", "part_of_speech": "noun", "frequency_rank": 305, "sample_sentence": "袖が長すぎます。", "is_phrase": false },
+            { "text": "ポケット", "romanization": "poketto", "meaning": "pocket", "part_of_speech": "noun", "frequency_rank": 275, "sample_sentence": "ポケットに財布を入れました。", "is_phrase": false },
+            { "text": "布", "romanization": "nuno", "meaning": "cloth / fabric", "part_of_speech": "noun", "frequency_rank": 248, "sample_sentence": "この布は柔らかいです。", "is_phrase": false },
+            { "text": "綿", "romanization": "men", "meaning": "cotton", "part_of_speech": "noun", "frequency_rank": 318, "sample_sentence": "綿のシャツが好きです。", "is_phrase": false },
+            { "text": "絹", "romanization": "kinu", "meaning": "silk", "part_of_speech": "noun", "frequency_rank": 335, "sample_sentence": "この着物は絹でできています。", "is_phrase": false },
+            { "text": "毛", "romanization": "ke", "meaning": "wool / hair / fur", "part_of_speech": "noun", "frequency_rank": 195, "sample_sentence": "毛のセーターは暖かいです。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Kitchen Utensils",
+          "narrative": "Setting the table Japanese style — bowls, chopsticks, pans. Know the names of what you cook with and eat from.",
+          "words": [
+            { "text": "鍋", "romanization": "nabe", "meaning": "pot / hot pot", "part_of_speech": "noun", "frequency_rank": 215, "sample_sentence": "鍋料理が好きです。", "is_phrase": false },
+            { "text": "フライパン", "romanization": "furaipan", "meaning": "frying pan", "part_of_speech": "noun", "frequency_rank": 295, "sample_sentence": "フライパンで卵を焼きます。", "is_phrase": false },
+            { "text": "包丁", "romanization": "houchou", "meaning": "kitchen knife", "part_of_speech": "noun", "frequency_rank": 268, "sample_sentence": "日本の包丁はよく切れます。", "is_phrase": false },
+            { "text": "箸", "romanization": "hashi", "meaning": "chopsticks", "part_of_speech": "noun", "frequency_rank": 215, "sample_sentence": "箸を上手に使えますか？", "is_phrase": false },
+            { "text": "茶碗", "romanization": "chawan", "meaning": "rice bowl / tea bowl", "part_of_speech": "noun", "frequency_rank": 285, "sample_sentence": "茶碗にご飯をよそいます。", "is_phrase": false },
+            { "text": "お皿", "romanization": "osara", "meaning": "plate / dish", "part_of_speech": "noun", "frequency_rank": 218, "sample_sentence": "お皿を並べてください。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Professions",
+          "narrative": "What do you do? In Japan, your profession defines much of your social identity. Talk about careers and occupations.",
+          "words": [
+            { "text": "弁護士", "romanization": "bengoshi", "meaning": "lawyer", "part_of_speech": "noun", "frequency_rank": 265, "sample_sentence": "弁護士に相談しました。", "is_phrase": false },
+            { "text": "エンジニア", "romanization": "enjinia", "meaning": "engineer", "part_of_speech": "noun", "frequency_rank": 248, "sample_sentence": "エンジニアとして働いています。", "is_phrase": false },
+            { "text": "看護師", "romanization": "kangoshi", "meaning": "nurse", "part_of_speech": "noun", "frequency_rank": 275, "sample_sentence": "看護師さんがとても親切でした。", "is_phrase": false },
+            { "text": "建築家", "romanization": "kenchikuka", "meaning": "architect", "part_of_speech": "noun", "frequency_rank": 328, "sample_sentence": "建築家になりたいです。", "is_phrase": false },
+            { "text": "公務員", "romanization": "koumuin", "meaning": "civil servant / government worker", "part_of_speech": "noun", "frequency_rank": 305, "sample_sentence": "公務員は安定した仕事です。", "is_phrase": false },
+            { "text": "記者", "romanization": "kisha", "meaning": "journalist / reporter", "part_of_speech": "noun", "frequency_rank": 258, "sample_sentence": "記者がインタビューに来ました。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Body Actions",
+          "narrative": "The body speaks its own language — coughs, sneezes, yawns. These involuntary actions are part of daily conversation.",
+          "words": [
+            { "text": "咳", "romanization": "seki", "meaning": "cough", "part_of_speech": "noun", "frequency_rank": 285, "sample_sentence": "咳が止まりません。", "is_phrase": false },
+            { "text": "くしゃみ", "romanization": "kushami", "meaning": "sneeze", "part_of_speech": "noun", "frequency_rank": 348, "sample_sentence": "くしゃみが出ます。", "is_phrase": false },
+            { "text": "あくび", "romanization": "akubi", "meaning": "yawn", "part_of_speech": "noun", "frequency_rank": 375, "sample_sentence": "あくびが止まらないです。", "is_phrase": false },
+            { "text": "呼吸", "romanization": "kokyuu", "meaning": "breathing / respiration", "part_of_speech": "noun", "frequency_rank": 268, "sample_sentence": "深呼吸してください。", "is_phrase": false },
+            { "text": "汗", "romanization": "ase", "meaning": "sweat", "part_of_speech": "noun", "frequency_rank": 235, "sample_sentence": "暑くて汗をかきました。", "is_phrase": false },
+            { "text": "涙", "romanization": "namida", "meaning": "tears", "part_of_speech": "noun", "frequency_rank": 218, "sample_sentence": "感動して涙が出ました。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Textures",
+          "narrative": "Touch a piece of washi paper, feel the smoothness of lacquerware, or the roughness of stone. Describe what you feel.",
+          "words": [
+            { "text": "柔らかい", "romanization": "yawarakai", "meaning": "soft / tender", "part_of_speech": "adjective", "frequency_rank": 225, "sample_sentence": "このパンは柔らかいです。", "is_phrase": false },
+            { "text": "硬い", "romanization": "katai", "meaning": "hard / stiff", "part_of_speech": "adjective", "frequency_rank": 215, "sample_sentence": "この肉は硬いです。", "is_phrase": false },
+            { "text": "なめらか", "romanization": "nameraka", "meaning": "smooth", "part_of_speech": "adjective", "frequency_rank": 328, "sample_sentence": "なめらかな肌ですね。", "is_phrase": false },
+            { "text": "ざらざら", "romanization": "zarazara", "meaning": "rough / coarse", "part_of_speech": "adverb", "frequency_rank": 385, "sample_sentence": "この壁はざらざらしています。", "is_phrase": false },
+            { "text": "濡れた", "romanization": "nureta", "meaning": "wet", "part_of_speech": "adjective", "frequency_rank": 275, "sample_sentence": "濡れた服を着替えてください。", "is_phrase": false },
+            { "text": "べたべた", "romanization": "betabeta", "meaning": "sticky", "part_of_speech": "adverb", "frequency_rank": 395, "sample_sentence": "手がべたべたします。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Counting Objects",
+          "narrative": "Japanese uses special counters for different objects — flat things, long things, books, animals. Master the essential counters.",
+          "words": [
+            { "text": "枚", "romanization": "mai", "meaning": "counter for flat objects", "part_of_speech": "counter", "frequency_rank": 178, "sample_sentence": "紙を三枚ください。", "is_phrase": false },
+            { "text": "本", "romanization": "hon / pon", "meaning": "counter for long objects", "part_of_speech": "counter", "frequency_rank": 155, "sample_sentence": "ペンを二本買いました。", "is_phrase": false },
+            { "text": "冊", "romanization": "satsu", "meaning": "counter for books", "part_of_speech": "counter", "frequency_rank": 258, "sample_sentence": "本を五冊読みました。", "is_phrase": false },
+            { "text": "匹", "romanization": "hiki", "meaning": "counter for small animals", "part_of_speech": "counter", "frequency_rank": 245, "sample_sentence": "猫が三匹います。", "is_phrase": false },
+            { "text": "台", "romanization": "dai", "meaning": "counter for machines/vehicles", "part_of_speech": "counter", "frequency_rank": 195, "sample_sentence": "車が二台あります。", "is_phrase": false },
+            { "text": "杯", "romanization": "hai", "meaning": "counter for cups/glasses", "part_of_speech": "counter", "frequency_rank": 218, "sample_sentence": "コーヒーを一杯ください。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Japanese Seasons",
+          "narrative": "Japan's seasons are celebrated like nowhere else — cherry blossoms, rainy season, autumn leaves. Each season has its own magic.",
+          "words": [
+            { "text": "秋", "romanization": "aki", "meaning": "autumn / fall", "part_of_speech": "noun", "frequency_rank": 168, "sample_sentence": "秋は食べ物がおいしいです。", "is_phrase": false },
+            { "text": "冬", "romanization": "fuyu", "meaning": "winter", "part_of_speech": "noun", "frequency_rank": 172, "sample_sentence": "冬は北海道でスキーをします。", "is_phrase": false },
+            { "text": "梅雨", "romanization": "tsuyu", "meaning": "rainy season", "part_of_speech": "noun", "frequency_rank": 275, "sample_sentence": "六月は梅雨で雨が多いです。", "is_phrase": false },
+            { "text": "紅葉", "romanization": "kouyou", "meaning": "autumn leaves / foliage", "part_of_speech": "noun", "frequency_rank": 285, "sample_sentence": "京都の紅葉は有名です。", "is_phrase": false },
+            { "text": "桜", "romanization": "sakura", "meaning": "cherry blossom", "part_of_speech": "noun", "frequency_rank": 198, "sample_sentence": "桜が満開です。", "is_phrase": false },
+            { "text": "花見", "romanization": "hanami", "meaning": "cherry blossom viewing", "part_of_speech": "noun", "frequency_rank": 268, "sample_sentence": "週末に花見に行きましょう。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Feelings About Food",
+          "narrative": "Beyond delicious — too salty, too bland, refreshing, rich. Japanese food vocabulary is incredibly detailed.",
+          "words": [
+            { "text": "味", "romanization": "aji", "meaning": "taste / flavor", "part_of_speech": "noun", "frequency_rank": 185, "sample_sentence": "この料理は味がいいです。", "is_phrase": false },
+            { "text": "まずい", "romanization": "mazui", "meaning": "bad-tasting / unappetizing", "part_of_speech": "adjective", "frequency_rank": 265, "sample_sentence": "ちょっとまずいです。", "is_phrase": false },
+            { "text": "薄い", "romanization": "usui", "meaning": "thin / weak (flavor)", "part_of_speech": "adjective", "frequency_rank": 198, "sample_sentence": "味が薄いので醤油をください。", "is_phrase": false },
+            { "text": "濃い", "romanization": "koi", "meaning": "thick / strong (flavor)", "part_of_speech": "adjective", "frequency_rank": 225, "sample_sentence": "このスープは味が濃いです。", "is_phrase": false },
+            { "text": "さっぱり", "romanization": "sappari", "meaning": "refreshing / light (taste)", "part_of_speech": "adverb", "frequency_rank": 295, "sample_sentence": "さっぱりした味が好きです。", "is_phrase": false },
+            { "text": "こってり", "romanization": "kotteri", "meaning": "rich / heavy (taste)", "part_of_speech": "adverb", "frequency_rank": 335, "sample_sentence": "こってりしたラーメンが食べたいです。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Onomatopoeia",
+          "narrative": "Japanese is famous for its onomatopoeia — sounds and feelings expressed through playful, descriptive words.",
+          "words": [
+            { "text": "ドキドキ", "romanization": "dokidoki", "meaning": "heart pounding (excitement/nervousness)", "part_of_speech": "adverb", "frequency_rank": 298, "sample_sentence": "ドキドキしています。", "is_phrase": false },
+            { "text": "ワクワク", "romanization": "wakuwaku", "meaning": "excited / thrilled", "part_of_speech": "adverb", "frequency_rank": 308, "sample_sentence": "旅行が楽しみでワクワクします。", "is_phrase": false },
+            { "text": "ペラペラ", "romanization": "perapera", "meaning": "fluent (language)", "part_of_speech": "adverb", "frequency_rank": 348, "sample_sentence": "日本語がペラペラですね。", "is_phrase": false },
+            { "text": "ぴかぴか", "romanization": "pikapika", "meaning": "shiny / sparkling", "part_of_speech": "adverb", "frequency_rank": 368, "sample_sentence": "床がぴかぴかに光っています。", "is_phrase": false },
+            { "text": "ふわふわ", "romanization": "fuwafuwa", "meaning": "fluffy / soft", "part_of_speech": "adverb", "frequency_rank": 345, "sample_sentence": "ふわふわのパンケーキです。", "is_phrase": false },
+            { "text": "ゴロゴロ", "romanization": "gorogoro", "meaning": "rumbling / lounging around", "part_of_speech": "adverb", "frequency_rank": 355, "sample_sentence": "休みの日は家でゴロゴロします。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Polite Requests",
+          "narrative": "Set phrases that oil the gears of daily life in Japan. These polite expressions show cultural awareness and earn warm smiles.",
+          "words": [
+            { "text": "お手洗い", "romanization": "otearai", "meaning": "restroom (polite)", "part_of_speech": "noun", "frequency_rank": 218, "sample_sentence": "お手洗いはどこですか？", "is_phrase": false },
+            { "text": "お代わり", "romanization": "okawari", "meaning": "refill / second helping", "part_of_speech": "noun", "frequency_rank": 298, "sample_sentence": "ご飯のお代わりをお願いします。", "is_phrase": false },
+            { "text": "お先に", "romanization": "osaki ni", "meaning": "excuse me for going first", "part_of_speech": "phrase", "frequency_rank": 268, "sample_sentence": "お先に失礼します。", "is_phrase": true },
+            { "text": "お疲れ様", "romanization": "otsukaresama", "meaning": "good work / thanks for your effort", "part_of_speech": "phrase", "frequency_rank": 195, "sample_sentence": "お疲れ様でした。", "is_phrase": true },
+            { "text": "ただいま", "romanization": "tadaima", "meaning": "I'm home", "part_of_speech": "phrase", "frequency_rank": 225, "sample_sentence": "ただいま！", "is_phrase": true },
+            { "text": "お邪魔します", "romanization": "ojamashimasu", "meaning": "excuse me for intruding (entering someone's home)", "part_of_speech": "phrase", "frequency_rank": 258, "sample_sentence": "お邪魔します。素敵なお家ですね。", "is_phrase": true }
+          ]
+        },
+        {
+          "title": "City Life",
+          "narrative": "Apartment hunting, paying rent, dealing with neighbors — the vocabulary of urban life in Japan's bustling cities.",
+          "words": [
+            { "text": "マンション", "romanization": "manshon", "meaning": "apartment building (mid/high-rise)", "part_of_speech": "noun", "frequency_rank": 232, "sample_sentence": "新しいマンションに住んでいます。", "is_phrase": false },
+            { "text": "アパート", "romanization": "apaato", "meaning": "apartment (smaller building)", "part_of_speech": "noun", "frequency_rank": 245, "sample_sentence": "アパートの家賃はいくらですか？", "is_phrase": false },
+            { "text": "家賃", "romanization": "yachin", "meaning": "rent", "part_of_speech": "noun", "frequency_rank": 298, "sample_sentence": "家賃は月八万円です。", "is_phrase": false },
+            { "text": "引っ越し", "romanization": "hikkoshi", "meaning": "moving (house)", "part_of_speech": "noun", "frequency_rank": 278, "sample_sentence": "来月引っ越しします。", "is_phrase": false },
+            { "text": "近所", "romanization": "kinjo", "meaning": "neighborhood", "part_of_speech": "noun", "frequency_rank": 215, "sample_sentence": "近所にいいレストランがあります。", "is_phrase": false },
+            { "text": "交通", "romanization": "koutsuu", "meaning": "traffic / transportation", "part_of_speech": "noun", "frequency_rank": 198, "sample_sentence": "交通が便利な場所に住みたいです。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "School Life",
+          "narrative": "From cram schools to club activities, Japanese school life is intense and memorable. Here is the vocabulary of student days.",
+          "words": [
+            { "text": "授業", "romanization": "jugyou", "meaning": "class / lesson", "part_of_speech": "noun", "frequency_rank": 185, "sample_sentence": "授業は九時に始まります。", "is_phrase": false },
+            { "text": "宿題", "romanization": "shukudai", "meaning": "homework", "part_of_speech": "noun", "frequency_rank": 215, "sample_sentence": "宿題を忘れました。", "is_phrase": false },
+            { "text": "テスト", "romanization": "tesuto", "meaning": "test / exam", "part_of_speech": "noun", "frequency_rank": 198, "sample_sentence": "明日テストがあります。", "is_phrase": false },
+            { "text": "成績", "romanization": "seiseki", "meaning": "grades / academic results", "part_of_speech": "noun", "frequency_rank": 275, "sample_sentence": "成績が上がりました。", "is_phrase": false },
+            { "text": "クラス", "romanization": "kurasu", "meaning": "class (group)", "part_of_speech": "noun", "frequency_rank": 225, "sample_sentence": "クラスに三十人います。", "is_phrase": false },
+            { "text": "卒業", "romanization": "sotsugyou", "meaning": "graduation", "part_of_speech": "noun", "frequency_rank": 235, "sample_sentence": "来年大学を卒業します。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Giving & Receiving",
+          "narrative": "Japanese has different verbs for giving and receiving depending on the social relationship. Master this core concept.",
+          "words": [
+            { "text": "あげる", "romanization": "ageru", "meaning": "to give (to someone)", "part_of_speech": "verb", "frequency_rank": 155, "sample_sentence": "友達にプレゼントをあげました。", "is_phrase": false },
+            { "text": "もらう", "romanization": "morau", "meaning": "to receive", "part_of_speech": "verb", "frequency_rank": 165, "sample_sentence": "先生に本をもらいました。", "is_phrase": false },
+            { "text": "くれる", "romanization": "kureru", "meaning": "to give (to me/us)", "part_of_speech": "verb", "frequency_rank": 172, "sample_sentence": "母がお菓子をくれました。", "is_phrase": false },
+            { "text": "届く", "romanization": "todoku", "meaning": "to arrive / reach", "part_of_speech": "verb", "frequency_rank": 198, "sample_sentence": "荷物が届きました。", "is_phrase": false },
+            { "text": "贈る", "romanization": "okuru", "meaning": "to present / give (formal gift)", "part_of_speech": "verb", "frequency_rank": 258, "sample_sentence": "花を贈りましょう。", "is_phrase": false },
+            { "text": "受ける", "romanization": "ukeru", "meaning": "to receive / take (exam)", "part_of_speech": "verb", "frequency_rank": 162, "sample_sentence": "試験を受けました。", "is_phrase": false }
+          ]
+        }
+      ]
+    }
+  ],
+  "travel_packs": [
+    {
+      "title": "2 Weeks in Tokyo",
+      "situations": [
+        {
+          "title": "At the Airport",
+          "narrative": "You've landed at Narita or Haneda. The signs are bilingual but the real Japan starts now. Navigate arrivals and get to the city.",
+          "words": [
+            { "text": "空港", "romanization": "kuukou", "meaning": "airport", "part_of_speech": "noun", "frequency_rank": 118, "sample_sentence": "空港からホテルまで何分ですか？", "is_phrase": false },
+            { "text": "パスポート", "romanization": "pasupooto", "meaning": "passport", "part_of_speech": "noun", "frequency_rank": 195, "sample_sentence": "パスポートを見せてください。", "is_phrase": false },
+            { "text": "入国", "romanization": "nyuukoku", "meaning": "immigration / entry", "part_of_speech": "noun", "frequency_rank": 268, "sample_sentence": "入国審査はどこですか？", "is_phrase": false },
+            { "text": "荷物", "romanization": "nimotsu", "meaning": "luggage / baggage", "part_of_speech": "noun", "frequency_rank": 82, "sample_sentence": "荷物はどこで受け取りますか？", "is_phrase": false },
+            { "text": "両替", "romanization": "ryougae", "meaning": "money exchange", "part_of_speech": "noun", "frequency_rank": 278, "sample_sentence": "両替はどこでできますか？", "is_phrase": false },
+            { "text": "出口", "romanization": "deguchi", "meaning": "exit", "part_of_speech": "noun", "frequency_rank": 135, "sample_sentence": "出口はどこですか？", "is_phrase": false },
+            { "text": "到着", "romanization": "touchaku", "meaning": "arrival", "part_of_speech": "noun", "frequency_rank": 172, "sample_sentence": "到着ロビーはどこですか？", "is_phrase": false },
+            { "text": "税関", "romanization": "zeikan", "meaning": "customs", "part_of_speech": "noun", "frequency_rank": 288, "sample_sentence": "税関で申告するものはありますか？", "is_phrase": false },
+            { "text": "申告", "romanization": "shinkoku", "meaning": "declaration", "part_of_speech": "noun", "frequency_rank": 312, "sample_sentence": "申告するものはありません。", "is_phrase": false },
+            { "text": "搭乗", "romanization": "toujou", "meaning": "boarding", "part_of_speech": "noun", "frequency_rank": 295, "sample_sentence": "搭乗口は何番ですか？", "is_phrase": false },
+            { "text": "手荷物", "romanization": "tenimotsu", "meaning": "carry-on luggage", "part_of_speech": "noun", "frequency_rank": 305, "sample_sentence": "手荷物は一つだけです。", "is_phrase": false },
+            { "text": "案内所", "romanization": "annaijo", "meaning": "information desk", "part_of_speech": "noun", "frequency_rank": 278, "sample_sentence": "案内所で地図をもらいました。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Riding the Trains",
+          "narrative": "Tokyo's train system is the world's most efficient — and most complex. From IC cards to platform numbers, here's your survival kit.",
+          "words": [
+            { "text": "電車", "romanization": "densha", "meaning": "train", "part_of_speech": "noun", "frequency_rank": 55, "sample_sentence": "電車は何番線ですか？", "is_phrase": false },
+            { "text": "地下鉄", "romanization": "chikatetsu", "meaning": "subway", "part_of_speech": "noun", "frequency_rank": 162, "sample_sentence": "地下鉄で行きます。", "is_phrase": false },
+            { "text": "ホーム", "romanization": "hoomu", "meaning": "platform", "part_of_speech": "noun", "frequency_rank": 178, "sample_sentence": "三番ホームです。", "is_phrase": false },
+            { "text": "乗り換え", "romanization": "norikae", "meaning": "transfer (train)", "part_of_speech": "noun", "frequency_rank": 215, "sample_sentence": "ここで乗り換えてください。", "is_phrase": false },
+            { "text": "Suica", "romanization": "Suica", "meaning": "IC transit card", "part_of_speech": "noun", "frequency_rank": 285, "sample_sentence": "Suicaで乗れます。", "is_phrase": false },
+            { "text": "終電", "romanization": "shuuden", "meaning": "last train", "part_of_speech": "noun", "frequency_rank": 252, "sample_sentence": "終電は何時ですか？", "is_phrase": false },
+            { "text": "次の駅", "romanization": "tsugi no eki", "meaning": "next station", "part_of_speech": "phrase", "frequency_rank": 142, "sample_sentence": "次の駅で降ります。", "is_phrase": true },
+            { "text": "改札", "romanization": "kaisatsu", "meaning": "ticket gate", "part_of_speech": "noun", "frequency_rank": 248, "sample_sentence": "改札を通ってください。", "is_phrase": false },
+            { "text": "片道", "romanization": "katamichi", "meaning": "one way", "part_of_speech": "noun", "frequency_rank": 295, "sample_sentence": "片道切符を一枚ください。", "is_phrase": false },
+            { "text": "往復", "romanization": "oufuku", "meaning": "round trip", "part_of_speech": "noun", "frequency_rank": 278, "sample_sentence": "往復切符はありますか？", "is_phrase": false },
+            { "text": "指定席", "romanization": "shiteiseki", "meaning": "reserved seat", "part_of_speech": "noun", "frequency_rank": 305, "sample_sentence": "指定席を予約したいです。", "is_phrase": false },
+            { "text": "自由席", "romanization": "jiyuuseki", "meaning": "non-reserved seat", "part_of_speech": "noun", "frequency_rank": 315, "sample_sentence": "自由席はどこですか？", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Restaurants & Izakayas",
+          "narrative": "From ramen shops to high-end sushi bars to smoky izakayas, Tokyo's food scene is the world's best. Order with confidence.",
+          "words": [
+            { "text": "居酒屋", "romanization": "izakaya", "meaning": "Japanese pub / bar", "part_of_speech": "noun", "frequency_rank": 232, "sample_sentence": "居酒屋に行きましょう。", "is_phrase": false },
+            { "text": "ラーメン", "romanization": "raamen", "meaning": "ramen noodles", "part_of_speech": "noun", "frequency_rank": 198, "sample_sentence": "ラーメンが食べたいです。", "is_phrase": false },
+            { "text": "寿司", "romanization": "sushi", "meaning": "sushi", "part_of_speech": "noun", "frequency_rank": 185, "sample_sentence": "回転寿司に行きましょう。", "is_phrase": false },
+            { "text": "定食", "romanization": "teishoku", "meaning": "set meal", "part_of_speech": "noun", "frequency_rank": 248, "sample_sentence": "今日の定食は何ですか？", "is_phrase": false },
+            { "text": "おすすめ", "romanization": "osusume", "meaning": "recommendation", "part_of_speech": "noun", "frequency_rank": 172, "sample_sentence": "おすすめは何ですか？", "is_phrase": false },
+            { "text": "ごちそうさまでした", "romanization": "gochisousama deshita", "meaning": "thank you for the meal (after eating)", "part_of_speech": "phrase", "frequency_rank": 95, "sample_sentence": "ごちそうさまでした！", "is_phrase": true },
+            { "text": "生ビール", "romanization": "nama biiru", "meaning": "draft beer", "part_of_speech": "noun", "frequency_rank": 258, "sample_sentence": "生ビールを二つお願いします。", "is_phrase": false },
+            { "text": "食べ放題", "romanization": "tabehoudai", "meaning": "all-you-can-eat", "part_of_speech": "noun", "frequency_rank": 305, "sample_sentence": "食べ放題のお店に行きましょう。", "is_phrase": false },
+            { "text": "飲み放題", "romanization": "nomihoudai", "meaning": "all-you-can-drink", "part_of_speech": "noun", "frequency_rank": 315, "sample_sentence": "飲み放題は二時間です。", "is_phrase": false },
+            { "text": "お通し", "romanization": "otooshi", "meaning": "appetizer (automatic at izakaya)", "part_of_speech": "noun", "frequency_rank": 345, "sample_sentence": "お通しは枝豆です。", "is_phrase": false },
+            { "text": "割り勘", "romanization": "warikan", "meaning": "splitting the bill", "part_of_speech": "noun", "frequency_rank": 328, "sample_sentence": "割り勘にしましょう。", "is_phrase": false },
+            { "text": "禁煙", "romanization": "kinen", "meaning": "non-smoking", "part_of_speech": "noun", "frequency_rank": 265, "sample_sentence": "禁煙席をお願いします。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "At the Hotel / Ryokan",
+          "narrative": "Whether you're at a business hotel in Shinjuku or a traditional ryokan, here's how to handle check-in and requests.",
+          "words": [
+            { "text": "予約", "romanization": "yoyaku", "meaning": "reservation", "part_of_speech": "noun", "frequency_rank": 128, "sample_sentence": "予約があります。", "is_phrase": false },
+            { "text": "タオル", "romanization": "taoru", "meaning": "towel", "part_of_speech": "noun", "frequency_rank": 195, "sample_sentence": "タオルをもう一枚ください。", "is_phrase": false },
+            { "text": "布団", "romanization": "futon", "meaning": "futon / Japanese mattress", "part_of_speech": "noun", "frequency_rank": 242, "sample_sentence": "布団を敷いてもらえますか？", "is_phrase": false },
+            { "text": "チェックイン", "romanization": "chekkuin", "meaning": "check-in", "part_of_speech": "noun", "frequency_rank": 262, "sample_sentence": "チェックインお願いします。", "is_phrase": false },
+            { "text": "チェックアウト", "romanization": "chekkuauto", "meaning": "check-out", "part_of_speech": "noun", "frequency_rank": 268, "sample_sentence": "チェックアウトは何時ですか？", "is_phrase": false },
+            { "text": "温泉", "romanization": "onsen", "meaning": "hot spring bath", "part_of_speech": "noun", "frequency_rank": 205, "sample_sentence": "温泉に入りたいです。", "is_phrase": false },
+            { "text": "浴衣", "romanization": "yukata", "meaning": "light cotton kimono", "part_of_speech": "noun", "frequency_rank": 295, "sample_sentence": "浴衣を着て散歩しましょう。", "is_phrase": false },
+            { "text": "朝食", "romanization": "choushoku", "meaning": "breakfast (formal)", "part_of_speech": "noun", "frequency_rank": 248, "sample_sentence": "朝食は七時からです。", "is_phrase": false },
+            { "text": "連泊", "romanization": "renpaku", "meaning": "consecutive nights stay", "part_of_speech": "noun", "frequency_rank": 365, "sample_sentence": "三泊連泊できますか？", "is_phrase": false },
+            { "text": "フロント", "romanization": "furonto", "meaning": "front desk / reception", "part_of_speech": "noun", "frequency_rank": 258, "sample_sentence": "フロントに電話してください。", "is_phrase": false },
+            { "text": "禁煙室", "romanization": "kinenshitsu", "meaning": "non-smoking room", "part_of_speech": "noun", "frequency_rank": 318, "sample_sentence": "禁煙室を予約しました。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Shopping in Tokyo",
+          "narrative": "From Harajuku's fashion to Akihabara's electronics to depachika food halls, Tokyo shopping is an experience like no other.",
+          "words": [
+            { "text": "お土産", "romanization": "omiyage", "meaning": "souvenir / gift", "part_of_speech": "noun", "frequency_rank": 188, "sample_sentence": "お土産を買いたいです。", "is_phrase": false },
+            { "text": "試着", "romanization": "shichaku", "meaning": "fitting / trying on", "part_of_speech": "noun", "frequency_rank": 278, "sample_sentence": "試着してもいいですか？", "is_phrase": false },
+            { "text": "サイズ", "romanization": "saizu", "meaning": "size", "part_of_speech": "noun", "frequency_rank": 168, "sample_sentence": "このサイズはありますか？", "is_phrase": false },
+            { "text": "免税", "romanization": "menzei", "meaning": "tax-free / duty-free", "part_of_speech": "noun", "frequency_rank": 295, "sample_sentence": "免税で買えますか？", "is_phrase": false },
+            { "text": "袋", "romanization": "fukuro", "meaning": "bag", "part_of_speech": "noun", "frequency_rank": 135, "sample_sentence": "袋をお願いします。", "is_phrase": false },
+            { "text": "包む", "romanization": "tsutsumu", "meaning": "to wrap", "part_of_speech": "verb", "frequency_rank": 172, "sample_sentence": "プレゼント用に包んでください。", "is_phrase": false },
+            { "text": "百円ショップ", "romanization": "hyaku en shoppu", "meaning": "100 yen store", "part_of_speech": "noun", "frequency_rank": 302, "sample_sentence": "百円ショップは便利です。", "is_phrase": false },
+            { "text": "セール", "romanization": "seeru", "meaning": "sale / discount event", "part_of_speech": "noun", "frequency_rank": 245, "sample_sentence": "今セール中ですか？", "is_phrase": false },
+            { "text": "色違い", "romanization": "irochigai", "meaning": "different color", "part_of_speech": "noun", "frequency_rank": 348, "sample_sentence": "色違いはありますか？", "is_phrase": false },
+            { "text": "在庫", "romanization": "zaiko", "meaning": "stock / inventory", "part_of_speech": "noun", "frequency_rank": 298, "sample_sentence": "在庫はありますか？", "is_phrase": false },
+            { "text": "割引", "romanization": "waribiki", "meaning": "discount", "part_of_speech": "noun", "frequency_rank": 265, "sample_sentence": "学生割引はありますか？", "is_phrase": false },
+            { "text": "贈り物", "romanization": "okurimono", "meaning": "gift / present (formal)", "part_of_speech": "noun", "frequency_rank": 285, "sample_sentence": "贈り物用に包んでください。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Sightseeing & Temples",
+          "narrative": "Meiji Shrine, Senso-ji, Tokyo Tower, Shibuya Crossing — Tokyo's landmarks are iconic. Here's how to explore them.",
+          "words": [
+            { "text": "お寺", "romanization": "otera", "meaning": "Buddhist temple", "part_of_speech": "noun", "frequency_rank": 148, "sample_sentence": "浅草のお寺に行きました。", "is_phrase": false },
+            { "text": "神社", "romanization": "jinja", "meaning": "Shinto shrine", "part_of_speech": "noun", "frequency_rank": 145, "sample_sentence": "明治神社でお参りしました。", "is_phrase": false },
+            { "text": "入場料", "romanization": "nyuujouryou", "meaning": "admission fee", "part_of_speech": "noun", "frequency_rank": 262, "sample_sentence": "入場料はいくらですか？", "is_phrase": false },
+            { "text": "お参り", "romanization": "omairi", "meaning": "shrine/temple visit (worship)", "part_of_speech": "noun", "frequency_rank": 218, "sample_sentence": "お参りの仕方を教えてください。", "is_phrase": false },
+            { "text": "景色", "romanization": "keshiki", "meaning": "scenery / view", "part_of_speech": "noun", "frequency_rank": 155, "sample_sentence": "景色がすばらしいです。", "is_phrase": false },
+            { "text": "御朱印", "romanization": "goshuin", "meaning": "temple/shrine stamp", "part_of_speech": "noun", "frequency_rank": 312, "sample_sentence": "御朱印をお願いします。", "is_phrase": false },
+            { "text": "お守り", "romanization": "omamori", "meaning": "lucky charm / amulet", "part_of_speech": "noun", "frequency_rank": 275, "sample_sentence": "お守りを買いました。", "is_phrase": false },
+            { "text": "観光", "romanization": "kankou", "meaning": "sightseeing / tourism", "part_of_speech": "noun", "frequency_rank": 195, "sample_sentence": "東京で観光を楽しみました。", "is_phrase": false },
+            { "text": "展望台", "romanization": "tenboudai", "meaning": "observation deck", "part_of_speech": "noun", "frequency_rank": 318, "sample_sentence": "展望台からの眺めは最高です。", "is_phrase": false },
+            { "text": "案内", "romanization": "annai", "meaning": "guidance / information", "part_of_speech": "noun", "frequency_rank": 185, "sample_sentence": "ガイドの案内で回りました。", "is_phrase": false },
+            { "text": "記念", "romanization": "kinen", "meaning": "commemoration / souvenir", "part_of_speech": "noun", "frequency_rank": 225, "sample_sentence": "記念写真を撮りましょう。", "is_phrase": false },
+            { "text": "国宝", "romanization": "kokuhou", "meaning": "national treasure", "part_of_speech": "noun", "frequency_rank": 335, "sample_sentence": "この仏像は国宝です。", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Emergency in Tokyo",
+          "narrative": "Japan is very safe, but things can still go wrong. From earthquakes to lost items, here's your emergency vocabulary.",
+          "words": [
+            { "text": "薬局", "romanization": "yakkyoku", "meaning": "pharmacy", "part_of_speech": "noun", "frequency_rank": 205, "sample_sentence": "薬局はどこですか？", "is_phrase": false },
+            { "text": "アレルギー", "romanization": "arerugii", "meaning": "allergy", "part_of_speech": "noun", "frequency_rank": 242, "sample_sentence": "エビのアレルギーがあります。", "is_phrase": false },
+            { "text": "救急車", "romanization": "kyuukyuusha", "meaning": "ambulance", "part_of_speech": "noun", "frequency_rank": 225, "sample_sentence": "救急車を呼んでください。", "is_phrase": false },
+            { "text": "地震", "romanization": "jishin", "meaning": "earthquake", "part_of_speech": "noun", "frequency_rank": 148, "sample_sentence": "地震です！", "is_phrase": false },
+            { "text": "落とし物", "romanization": "otoshimono", "meaning": "lost item", "part_of_speech": "noun", "frequency_rank": 288, "sample_sentence": "落とし物センターはどこですか？", "is_phrase": false },
+            { "text": "財布", "romanization": "saifu", "meaning": "wallet", "part_of_speech": "noun", "frequency_rank": 168, "sample_sentence": "財布をなくしました。", "is_phrase": false },
+            { "text": "交番", "romanization": "kouban", "meaning": "police box (small station)", "part_of_speech": "noun", "frequency_rank": 258, "sample_sentence": "交番はどこですか？", "is_phrase": false },
+            { "text": "保険", "romanization": "hoken", "meaning": "insurance", "part_of_speech": "noun", "frequency_rank": 215, "sample_sentence": "旅行保険に入っています。", "is_phrase": false },
+            { "text": "大使館", "romanization": "taishikan", "meaning": "embassy", "part_of_speech": "noun", "frequency_rank": 298, "sample_sentence": "大使館に連絡してください。", "is_phrase": false },
+            { "text": "届け出", "romanization": "todokede", "meaning": "report / filing (to authorities)", "part_of_speech": "noun", "frequency_rank": 325, "sample_sentence": "届け出を出さなければなりません。", "is_phrase": false },
+            { "text": "避難", "romanization": "hinan", "meaning": "evacuation / taking shelter", "part_of_speech": "noun", "frequency_rank": 268, "sample_sentence": "地震の時は避難してください。", "is_phrase": false },
+            { "text": "応急処置", "romanization": "oukyuushochi", "meaning": "first aid", "part_of_speech": "noun", "frequency_rank": 348, "sample_sentence": "応急処置の方法を教えてください。", "is_phrase": false }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1090 @@
+{
+  "language": "Spanish",
+  "language_code": "es",
+  "tiers": [
+    {
+      "tier": 1,
+      "name": "Survival",
+      "scenes": [
+        {
+          "title": "Meeting Someone",
+          "narrative": "You step into a lively café in the Condesa neighborhood of Mexico City. The barista greets you warmly. Time to introduce yourself in Spanish.",
+          "words": [
+            { "text": "hola", "romanization": null, "meaning": "hello", "part_of_speech": "interjection", "frequency_rank": 15, "sample_sentence": "¡Hola! ¿Cómo estás?", "is_phrase": false },
+            { "text": "nombre", "romanization": null, "meaning": "name", "part_of_speech": "noun", "frequency_rank": 45, "sample_sentence": "Mi nombre es María.", "is_phrase": false },
+            { "text": "yo", "romanization": null, "meaning": "I", "part_of_speech": "pronoun", "frequency_rank": 1, "sample_sentence": "Yo soy de Estados Unidos.", "is_phrase": false },
+            { "text": "bien", "romanization": null, "meaning": "well / good / fine", "part_of_speech": "adverb", "frequency_rank": 12, "sample_sentence": "Estoy bien, gracias.", "is_phrase": false },
+            { "text": "mucho gusto", "romanization": null, "meaning": "nice to meet you", "part_of_speech": "phrase", "frequency_rank": 55, "sample_sentence": "Mucho gusto, soy Carlos.", "is_phrase": true },
+            { "text": "¿cómo estás?", "romanization": null, "meaning": "how are you (informal)", "part_of_speech": "phrase", "frequency_rank": 10, "sample_sentence": "¡Hola! ¿Cómo estás?", "is_phrase": true },
+            { "text": "me llamo", "romanization": null, "meaning": "my name is", "part_of_speech": "phrase", "frequency_rank": 42, "sample_sentence": "Me llamo Pedro.", "is_phrase": true }
+          ]
+        },
+        {
+          "title": "Finding Your Way",
+          "narrative": "You're standing outside the metro station in Mexico City's historic center. The Zócalo is nearby but the streets are a maze. Time to ask for directions.",
+          "words": [
+            { "text": "dónde", "romanization": null, "meaning": "where", "part_of_speech": "adverb", "frequency_rank": 18, "sample_sentence": "¿Dónde está el baño?", "is_phrase": false },
+            { "text": "izquierda", "romanization": null, "meaning": "left", "part_of_speech": "noun", "frequency_rank": 120, "sample_sentence": "Gira a la izquierda.", "is_phrase": false },
+            { "text": "derecha", "romanization": null, "meaning": "right", "part_of_speech": "noun", "frequency_rank": 115, "sample_sentence": "A la derecha está el museo.", "is_phrase": false },
+            { "text": "recto", "romanization": null, "meaning": "straight", "part_of_speech": "adverb", "frequency_rank": 135, "sample_sentence": "Sigue recto dos cuadras.", "is_phrase": false },
+            { "text": "cerca", "romanization": null, "meaning": "near / close", "part_of_speech": "adverb", "frequency_rank": 72, "sample_sentence": "¿Está cerca de aquí?", "is_phrase": false },
+            { "text": "lejos", "romanization": null, "meaning": "far", "part_of_speech": "adverb", "frequency_rank": 95, "sample_sentence": "No está lejos.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Getting Food",
+          "narrative": "The smell of grilled carne asada drifts from a taco stand. Your stomach rumbles. The taquero looks at you — ¿qué va a querer?",
+          "words": [
+            { "text": "comer", "romanization": null, "meaning": "to eat", "part_of_speech": "verb", "frequency_rank": 30, "sample_sentence": "Quiero comer tacos.", "is_phrase": false },
+            { "text": "beber", "romanization": null, "meaning": "to drink", "part_of_speech": "verb", "frequency_rank": 48, "sample_sentence": "¿Qué quieres beber?", "is_phrase": false },
+            { "text": "agua", "romanization": null, "meaning": "water", "part_of_speech": "noun", "frequency_rank": 22, "sample_sentence": "Un agua mineral, por favor.", "is_phrase": false },
+            { "text": "comida", "romanization": null, "meaning": "food / meal", "part_of_speech": "noun", "frequency_rank": 42, "sample_sentence": "La comida está deliciosa.", "is_phrase": false },
+            { "text": "picante", "romanization": null, "meaning": "spicy / hot", "part_of_speech": "adjective", "frequency_rank": 155, "sample_sentence": "No muy picante, por favor.", "is_phrase": false },
+            { "text": "rico", "romanization": null, "meaning": "delicious / tasty", "part_of_speech": "adjective", "frequency_rank": 82, "sample_sentence": "¡Qué rico!", "is_phrase": false },
+            { "text": "quiero", "romanization": null, "meaning": "I want", "part_of_speech": "verb", "frequency_rank": 8, "sample_sentence": "Quiero un café, por favor.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Shopping",
+          "narrative": "You're browsing a colorful artisan market in Coyoacán. Beautiful handcrafted jewelry, pottery, and textiles surround you. Let's negotiate!",
+          "words": [
+            { "text": "cuánto", "romanization": null, "meaning": "how much", "part_of_speech": "pronoun", "frequency_rank": 28, "sample_sentence": "¿Cuánto cuesta?", "is_phrase": false },
+            { "text": "caro", "romanization": null, "meaning": "expensive", "part_of_speech": "adjective", "frequency_rank": 125, "sample_sentence": "Es muy caro.", "is_phrase": false },
+            { "text": "barato", "romanization": null, "meaning": "cheap", "part_of_speech": "adjective", "frequency_rank": 132, "sample_sentence": "¿Tiene algo más barato?", "is_phrase": false },
+            { "text": "comprar", "romanization": null, "meaning": "to buy", "part_of_speech": "verb", "frequency_rank": 62, "sample_sentence": "Quiero comprar esto.", "is_phrase": false },
+            { "text": "dinero", "romanization": null, "meaning": "money", "part_of_speech": "noun", "frequency_rank": 38, "sample_sentence": "No tengo dinero.", "is_phrase": false },
+            { "text": "¿cuánto cuesta?", "romanization": null, "meaning": "how much does it cost?", "part_of_speech": "phrase", "frequency_rank": 28, "sample_sentence": "¿Cuánto cuesta este collar?", "is_phrase": true }
+          ]
+        },
+        {
+          "title": "Emergency",
+          "narrative": "Something's gone wrong — you're lost, not feeling well, or need help urgently. These are the words that could save your day.",
+          "words": [
+            { "text": "ayuda", "romanization": null, "meaning": "help", "part_of_speech": "noun", "frequency_rank": 52, "sample_sentence": "¡Necesito ayuda!", "is_phrase": false },
+            { "text": "enfermo", "romanization": null, "meaning": "sick / ill", "part_of_speech": "adjective", "frequency_rank": 140, "sample_sentence": "Estoy enfermo.", "is_phrase": false },
+            { "text": "doctor", "romanization": null, "meaning": "doctor", "part_of_speech": "noun", "frequency_rank": 88, "sample_sentence": "Necesito un doctor.", "is_phrase": false },
+            { "text": "policía", "romanization": null, "meaning": "police", "part_of_speech": "noun", "frequency_rank": 78, "sample_sentence": "Llame a la policía.", "is_phrase": false },
+            { "text": "peligro", "romanization": null, "meaning": "danger", "part_of_speech": "noun", "frequency_rank": 148, "sample_sentence": "¡Cuidado, peligro!", "is_phrase": false },
+            { "text": "¡ayúdeme!", "romanization": null, "meaning": "help me!", "part_of_speech": "phrase", "frequency_rank": 52, "sample_sentence": "¡Ayúdeme, por favor!", "is_phrase": true }
+          ]
+        },
+        {
+          "title": "At the Hotel",
+          "narrative": "You arrive at your hotel in Roma Norte after a long flight. The receptionist greets you. Time to check in and find your room.",
+          "words": [
+            { "text": "habitación", "romanization": null, "meaning": "room", "part_of_speech": "noun", "frequency_rank": 65, "sample_sentence": "Tengo una reservación de habitación.", "is_phrase": false },
+            { "text": "llave", "romanization": null, "meaning": "key", "part_of_speech": "noun", "frequency_rank": 118, "sample_sentence": "¿Me da la llave?", "is_phrase": false },
+            { "text": "baño", "romanization": null, "meaning": "bathroom", "part_of_speech": "noun", "frequency_rank": 58, "sample_sentence": "¿Dónde está el baño?", "is_phrase": false },
+            { "text": "dormir", "romanization": null, "meaning": "to sleep", "part_of_speech": "verb", "frequency_rank": 55, "sample_sentence": "Necesito dormir.", "is_phrase": false },
+            { "text": "mañana", "romanization": null, "meaning": "morning / tomorrow", "part_of_speech": "noun", "frequency_rank": 18, "sample_sentence": "Nos vemos mañana.", "is_phrase": false },
+            { "text": "noche", "romanization": null, "meaning": "night", "part_of_speech": "noun", "frequency_rank": 25, "sample_sentence": "Buenas noches.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Small Talk",
+          "narrative": "You're sharing a bench in Chapultepec Park with a friendly local. The conversation flows easily with these essential small talk words.",
+          "words": [
+            { "text": "de", "romanization": null, "meaning": "from / of", "part_of_speech": "preposition", "frequency_rank": 1, "sample_sentence": "Soy de Canada.", "is_phrase": false },
+            { "text": "vivir", "romanization": null, "meaning": "to live", "part_of_speech": "verb", "frequency_rank": 35, "sample_sentence": "¿Dónde vives?", "is_phrase": false },
+            { "text": "trabajo", "romanization": null, "meaning": "work / job", "part_of_speech": "noun", "frequency_rank": 32, "sample_sentence": "¿En qué trabajas?", "is_phrase": false },
+            { "text": "gustar", "romanization": null, "meaning": "to like / please", "part_of_speech": "verb", "frequency_rank": 22, "sample_sentence": "Me gusta México.", "is_phrase": false },
+            { "text": "también", "romanization": null, "meaning": "also / too", "part_of_speech": "adverb", "frequency_rank": 14, "sample_sentence": "A mí también.", "is_phrase": false },
+            { "text": "¿de dónde eres?", "romanization": null, "meaning": "where are you from?", "part_of_speech": "phrase", "frequency_rank": 42, "sample_sentence": "¿De dónde eres?", "is_phrase": true }
+          ]
+        },
+        {
+          "title": "Time & Numbers",
+          "narrative": "The taxi driver quotes a price, the museum closes at a certain hour, your flight is at a specific time. Numbers and time are everywhere.",
+          "words": [
+            { "text": "uno", "romanization": null, "meaning": "one", "part_of_speech": "number", "frequency_rank": 5, "sample_sentence": "Uno, por favor.", "is_phrase": false },
+            { "text": "dos", "romanization": null, "meaning": "two", "part_of_speech": "number", "frequency_rank": 8, "sample_sentence": "Dos tacos de pastor.", "is_phrase": false },
+            { "text": "tres", "romanization": null, "meaning": "three", "part_of_speech": "number", "frequency_rank": 15, "sample_sentence": "En tres minutos.", "is_phrase": false },
+            { "text": "hora", "romanization": null, "meaning": "hour / time", "part_of_speech": "noun", "frequency_rank": 35, "sample_sentence": "¿Qué hora es?", "is_phrase": false },
+            { "text": "día", "romanization": null, "meaning": "day", "part_of_speech": "noun", "frequency_rank": 12, "sample_sentence": "Hoy es un buen día.", "is_phrase": false },
+            { "text": "ahora", "romanization": null, "meaning": "now", "part_of_speech": "adverb", "frequency_rank": 10, "sample_sentence": "Vamos ahora.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Getting Around",
+          "narrative": "Mexico City's metro is amazing but confusing. Taxis, Uber, and buses are everywhere. Here's how to get from point A to B.",
+          "words": [
+            { "text": "calle", "romanization": null, "meaning": "street", "part_of_speech": "noun", "frequency_rank": 42, "sample_sentence": "¿Qué calle es esta?", "is_phrase": false },
+            { "text": "ir", "romanization": null, "meaning": "to go", "part_of_speech": "verb", "frequency_rank": 3, "sample_sentence": "Quiero ir al centro.", "is_phrase": false },
+            { "text": "llegar", "romanization": null, "meaning": "to arrive", "part_of_speech": "verb", "frequency_rank": 25, "sample_sentence": "¿Cómo llego al museo?", "is_phrase": false },
+            { "text": "parar", "romanization": null, "meaning": "to stop", "part_of_speech": "verb", "frequency_rank": 65, "sample_sentence": "Pare aquí, por favor.", "is_phrase": false },
+            { "text": "rápido", "romanization": null, "meaning": "fast / quick", "part_of_speech": "adjective", "frequency_rank": 58, "sample_sentence": "Más rápido, por favor.", "is_phrase": false },
+            { "text": "caminar", "romanization": null, "meaning": "to walk", "part_of_speech": "verb", "frequency_rank": 75, "sample_sentence": "Prefiero caminar.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Being Polite",
+          "narrative": "Mexican culture is warm and courteous. These politeness words and phrases earn you instant goodwill and warmer interactions everywhere.",
+          "words": [
+            { "text": "gracias", "romanization": null, "meaning": "thank you", "part_of_speech": "noun", "frequency_rank": 8, "sample_sentence": "Muchas gracias.", "is_phrase": false },
+            { "text": "por favor", "romanization": null, "meaning": "please", "part_of_speech": "phrase", "frequency_rank": 10, "sample_sentence": "Un café, por favor.", "is_phrase": true },
+            { "text": "de nada", "romanization": null, "meaning": "you're welcome", "part_of_speech": "phrase", "frequency_rank": 85, "sample_sentence": "De nada, con gusto.", "is_phrase": true },
+            { "text": "perdón", "romanization": null, "meaning": "sorry / excuse me", "part_of_speech": "interjection", "frequency_rank": 55, "sample_sentence": "Perdón, ¿puede repetir?", "is_phrase": false },
+            { "text": "disculpe", "romanization": null, "meaning": "excuse me (formal)", "part_of_speech": "verb", "frequency_rank": 92, "sample_sentence": "Disculpe, ¿dónde está el metro?", "is_phrase": false },
+            { "text": "con permiso", "romanization": null, "meaning": "excuse me (passing by)", "part_of_speech": "phrase", "frequency_rank": 110, "sample_sentence": "Con permiso, necesito pasar.", "is_phrase": true }
+          ]
+        },
+        {
+          "title": "Basic Verbs",
+          "narrative": "These core verbs are the engine of Spanish conversation. Master them and you can express almost any basic idea.",
+          "words": [
+            { "text": "ser", "romanization": null, "meaning": "to be (permanent)", "part_of_speech": "verb", "frequency_rank": 1, "sample_sentence": "Soy estudiante.", "is_phrase": false },
+            { "text": "estar", "romanization": null, "meaning": "to be (temporary/location)", "part_of_speech": "verb", "frequency_rank": 2, "sample_sentence": "Estoy cansado.", "is_phrase": false },
+            { "text": "tener", "romanization": null, "meaning": "to have", "part_of_speech": "verb", "frequency_rank": 3, "sample_sentence": "Tengo hambre.", "is_phrase": false },
+            { "text": "poder", "romanization": null, "meaning": "can / to be able", "part_of_speech": "verb", "frequency_rank": 5, "sample_sentence": "¿Puede hablar más despacio?", "is_phrase": false },
+            { "text": "saber", "romanization": null, "meaning": "to know (facts)", "part_of_speech": "verb", "frequency_rank": 15, "sample_sentence": "No sé.", "is_phrase": false },
+            { "text": "hacer", "romanization": null, "meaning": "to do / make", "part_of_speech": "verb", "frequency_rank": 4, "sample_sentence": "¿Qué vas a hacer?", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Pronouns & Connectors",
+          "narrative": "The glue words that hold Spanish sentences together. Without them you'd sound choppy — with them, you can build flowing thoughts.",
+          "words": [
+            { "text": "él", "romanization": null, "meaning": "he", "part_of_speech": "pronoun", "frequency_rank": 5, "sample_sentence": "Él es mi amigo.", "is_phrase": false },
+            { "text": "ella", "romanization": null, "meaning": "she", "part_of_speech": "pronoun", "frequency_rank": 6, "sample_sentence": "Ella es doctora.", "is_phrase": false },
+            { "text": "esto", "romanization": null, "meaning": "this", "part_of_speech": "pronoun", "frequency_rank": 8, "sample_sentence": "¿Qué es esto?", "is_phrase": false },
+            { "text": "eso", "romanization": null, "meaning": "that", "part_of_speech": "pronoun", "frequency_rank": 7, "sample_sentence": "Eso está bien.", "is_phrase": false },
+            { "text": "y", "romanization": null, "meaning": "and", "part_of_speech": "conjunction", "frequency_rank": 1, "sample_sentence": "Pan y café.", "is_phrase": false },
+            { "text": "o", "romanization": null, "meaning": "or", "part_of_speech": "conjunction", "frequency_rank": 12, "sample_sentence": "¿Café o té?", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Common Adjectives",
+          "narrative": "Describe the enormous pyramids, the tiny street dogs, the beautiful murals. These adjectives add color to everything you say.",
+          "words": [
+            { "text": "grande", "romanization": null, "meaning": "big / large", "part_of_speech": "adjective", "frequency_rank": 18, "sample_sentence": "La ciudad es muy grande.", "is_phrase": false },
+            { "text": "pequeño", "romanization": null, "meaning": "small / little", "part_of_speech": "adjective", "frequency_rank": 32, "sample_sentence": "Es un pueblo pequeño.", "is_phrase": false },
+            { "text": "bueno", "romanization": null, "meaning": "good", "part_of_speech": "adjective", "frequency_rank": 10, "sample_sentence": "Es un buen restaurante.", "is_phrase": false },
+            { "text": "malo", "romanization": null, "meaning": "bad", "part_of_speech": "adjective", "frequency_rank": 35, "sample_sentence": "No es malo.", "is_phrase": false },
+            { "text": "nuevo", "romanization": null, "meaning": "new", "part_of_speech": "adjective", "frequency_rank": 22, "sample_sentence": "Tengo un teléfono nuevo.", "is_phrase": false },
+            { "text": "bonito", "romanization": null, "meaning": "pretty / beautiful", "part_of_speech": "adjective", "frequency_rank": 68, "sample_sentence": "¡Qué bonito!", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Yes, No & Maybe",
+          "narrative": "The simplest responses are often the most useful. Master these and you can handle any yes-or-no situation confidently.",
+          "words": [
+            { "text": "sí", "romanization": null, "meaning": "yes", "part_of_speech": "adverb", "frequency_rank": 3, "sample_sentence": "Sí, claro.", "is_phrase": false },
+            { "text": "no", "romanization": null, "meaning": "no / not", "part_of_speech": "adverb", "frequency_rank": 2, "sample_sentence": "No, gracias.", "is_phrase": false },
+            { "text": "todavía no", "romanization": null, "meaning": "not yet", "part_of_speech": "phrase", "frequency_rank": 45, "sample_sentence": "Todavía no estoy listo.", "is_phrase": true },
+            { "text": "ya", "romanization": null, "meaning": "already / now", "part_of_speech": "adverb", "frequency_rank": 8, "sample_sentence": "Ya terminé.", "is_phrase": false },
+            { "text": "tal vez", "romanization": null, "meaning": "maybe / perhaps", "part_of_speech": "phrase", "frequency_rank": 42, "sample_sentence": "Tal vez mañana.", "is_phrase": true },
+            { "text": "claro", "romanization": null, "meaning": "of course / clear", "part_of_speech": "adverb", "frequency_rank": 25, "sample_sentence": "¡Claro que sí!", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "People & Family",
+          "narrative": "Family is at the heart of Mexican culture. Whether meeting relatives or talking about your own, these words come up constantly.",
+          "words": [
+            { "text": "persona", "romanization": null, "meaning": "person", "part_of_speech": "noun", "frequency_rank": 35, "sample_sentence": "Es una buena persona.", "is_phrase": false },
+            { "text": "niño", "romanization": null, "meaning": "child / boy", "part_of_speech": "noun", "frequency_rank": 42, "sample_sentence": "El niño está jugando.", "is_phrase": false },
+            { "text": "madre", "romanization": null, "meaning": "mother", "part_of_speech": "noun", "frequency_rank": 28, "sample_sentence": "Mi madre vive en Guadalajara.", "is_phrase": false },
+            { "text": "padre", "romanization": null, "meaning": "father", "part_of_speech": "noun", "frequency_rank": 30, "sample_sentence": "Mi padre es maestro.", "is_phrase": false },
+            { "text": "amigo", "romanization": null, "meaning": "friend", "part_of_speech": "noun", "frequency_rank": 25, "sample_sentence": "Es mi mejor amigo.", "is_phrase": false },
+            { "text": "familia", "romanization": null, "meaning": "family", "part_of_speech": "noun", "frequency_rank": 22, "sample_sentence": "Tengo una familia grande.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Food & Drink Essentials",
+          "narrative": "Beyond the basics — you need to know your carne from your pollo, your cerveza from your jugo. This is Mexican culinary vocabulary.",
+          "words": [
+            { "text": "carne", "romanization": null, "meaning": "meat", "part_of_speech": "noun", "frequency_rank": 85, "sample_sentence": "Quiero tacos de carne.", "is_phrase": false },
+            { "text": "pollo", "romanization": null, "meaning": "chicken", "part_of_speech": "noun", "frequency_rank": 105, "sample_sentence": "Pollo con mole, por favor.", "is_phrase": false },
+            { "text": "cerveza", "romanization": null, "meaning": "beer", "part_of_speech": "noun", "frequency_rank": 95, "sample_sentence": "Una cerveza fría, por favor.", "is_phrase": false },
+            { "text": "café", "romanization": null, "meaning": "coffee", "part_of_speech": "noun", "frequency_rank": 72, "sample_sentence": "Un café con leche.", "is_phrase": false },
+            { "text": "leche", "romanization": null, "meaning": "milk", "part_of_speech": "noun", "frequency_rank": 108, "sample_sentence": "¿Tiene leche de almendra?", "is_phrase": false },
+            { "text": "pan", "romanization": null, "meaning": "bread", "part_of_speech": "noun", "frequency_rank": 78, "sample_sentence": "Pan dulce para el desayuno.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Essential Questions",
+          "narrative": "Questions are your superpower as a traveler. Each one opens a door — and shows locals you're genuinely making an effort.",
+          "words": [
+            { "text": "qué", "romanization": null, "meaning": "what", "part_of_speech": "pronoun", "frequency_rank": 2, "sample_sentence": "¿Qué es eso?", "is_phrase": false },
+            { "text": "quién", "romanization": null, "meaning": "who", "part_of_speech": "pronoun", "frequency_rank": 22, "sample_sentence": "¿Quién es ella?", "is_phrase": false },
+            { "text": "cuándo", "romanization": null, "meaning": "when", "part_of_speech": "adverb", "frequency_rank": 25, "sample_sentence": "¿Cuándo abre?", "is_phrase": false },
+            { "text": "por qué", "romanization": null, "meaning": "why", "part_of_speech": "adverb", "frequency_rank": 15, "sample_sentence": "¿Por qué no?", "is_phrase": false },
+            { "text": "cómo", "romanization": null, "meaning": "how", "part_of_speech": "adverb", "frequency_rank": 10, "sample_sentence": "¿Cómo se dice en español?", "is_phrase": false },
+            { "text": "hay", "romanization": null, "meaning": "there is / there are", "part_of_speech": "verb", "frequency_rank": 8, "sample_sentence": "¿Hay un banco cerca?", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Greetings & Farewells",
+          "narrative": "Every Mexican encounter starts and ends warmly. Master these and you'll fit right in — from buenos días to hasta luego.",
+          "words": [
+            { "text": "buenos días", "romanization": null, "meaning": "good morning", "part_of_speech": "phrase", "frequency_rank": 18, "sample_sentence": "Buenos días, ¿cómo amaneciste?", "is_phrase": true },
+            { "text": "buenas tardes", "romanization": null, "meaning": "good afternoon", "part_of_speech": "phrase", "frequency_rank": 22, "sample_sentence": "Buenas tardes, señora.", "is_phrase": true },
+            { "text": "buenas noches", "romanization": null, "meaning": "good night", "part_of_speech": "phrase", "frequency_rank": 25, "sample_sentence": "Buenas noches, que descanses.", "is_phrase": true },
+            { "text": "adiós", "romanization": null, "meaning": "goodbye", "part_of_speech": "interjection", "frequency_rank": 48, "sample_sentence": "Adiós, nos vemos.", "is_phrase": false },
+            { "text": "hasta luego", "romanization": null, "meaning": "see you later", "part_of_speech": "phrase", "frequency_rank": 55, "sample_sentence": "Hasta luego, cuídate.", "is_phrase": true },
+            { "text": "bienvenido", "romanization": null, "meaning": "welcome", "part_of_speech": "adjective", "frequency_rank": 105, "sample_sentence": "¡Bienvenido a México!", "is_phrase": false }
+          ]
+        }
+      ]
+    },
+    {
+      "tier": 2,
+      "name": "Conversational",
+      "scenes": [
+        {
+          "title": "Feelings & Emotions",
+          "narrative": "Your Mexican friend asks how you're really doing. Beyond 'bien,' here's how to express the full range of human emotion in Spanish.",
+          "words": [
+            { "text": "feliz", "romanization": null, "meaning": "happy", "part_of_speech": "adjective", "frequency_rank": 92, "sample_sentence": "Estoy muy feliz aquí.", "is_phrase": false },
+            { "text": "triste", "romanization": null, "meaning": "sad", "part_of_speech": "adjective", "frequency_rank": 142, "sample_sentence": "Estoy un poco triste.", "is_phrase": false },
+            { "text": "enojado", "romanization": null, "meaning": "angry", "part_of_speech": "adjective", "frequency_rank": 185, "sample_sentence": "No estoy enojado.", "is_phrase": false },
+            { "text": "asustado", "romanization": null, "meaning": "scared / frightened", "part_of_speech": "adjective", "frequency_rank": 198, "sample_sentence": "Estoy asustado.", "is_phrase": false },
+            { "text": "cansado", "romanization": null, "meaning": "tired", "part_of_speech": "adjective", "frequency_rank": 118, "sample_sentence": "Estoy muy cansado.", "is_phrase": false },
+            { "text": "aburrido", "romanization": null, "meaning": "bored", "part_of_speech": "adjective", "frequency_rank": 225, "sample_sentence": "Estoy aburrido.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Opinions & Thoughts",
+          "narrative": "Share what you think — about the food, the city, the art. Mexicans love hearing visitors' genuine reactions to their country.",
+          "words": [
+            { "text": "pensar", "romanization": null, "meaning": "to think", "part_of_speech": "verb", "frequency_rank": 25, "sample_sentence": "Pienso que es bonito.", "is_phrase": false },
+            { "text": "creer", "romanization": null, "meaning": "to believe / think", "part_of_speech": "verb", "frequency_rank": 18, "sample_sentence": "Creo que sí.", "is_phrase": false },
+            { "text": "verdad", "romanization": null, "meaning": "truth / true", "part_of_speech": "noun", "frequency_rank": 22, "sample_sentence": "¿De verdad?", "is_phrase": false },
+            { "text": "mentira", "romanization": null, "meaning": "lie", "part_of_speech": "noun", "frequency_rank": 165, "sample_sentence": "Eso es mentira.", "is_phrase": false },
+            { "text": "razón", "romanization": null, "meaning": "reason / right", "part_of_speech": "noun", "frequency_rank": 42, "sample_sentence": "Tienes razón.", "is_phrase": false },
+            { "text": "opinar", "romanization": null, "meaning": "to give an opinion", "part_of_speech": "verb", "frequency_rank": 248, "sample_sentence": "¿Qué opinas?", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Making Plans",
+          "narrative": "Your new friends want to go out tonight. Let's plan where, when, and what you'll do — in Spanish.",
+          "words": [
+            { "text": "mañana", "romanization": null, "meaning": "tomorrow", "part_of_speech": "adverb", "frequency_rank": 18, "sample_sentence": "Nos vemos mañana.", "is_phrase": false },
+            { "text": "ayer", "romanization": null, "meaning": "yesterday", "part_of_speech": "adverb", "frequency_rank": 55, "sample_sentence": "Ayer fui al museo.", "is_phrase": false },
+            { "text": "después", "romanization": null, "meaning": "after / later", "part_of_speech": "adverb", "frequency_rank": 15, "sample_sentence": "Después vamos al bar.", "is_phrase": false },
+            { "text": "quedar", "romanization": null, "meaning": "to meet up / to stay", "part_of_speech": "verb", "frequency_rank": 48, "sample_sentence": "¿Dónde quedamos?", "is_phrase": false },
+            { "text": "esperar", "romanization": null, "meaning": "to wait / hope", "part_of_speech": "verb", "frequency_rank": 28, "sample_sentence": "Espérame un momento.", "is_phrase": false },
+            { "text": "listo", "romanization": null, "meaning": "ready", "part_of_speech": "adjective", "frequency_rank": 72, "sample_sentence": "Ya estoy listo.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Describing Things",
+          "narrative": "The pyramid is massive. The dog is tiny. The sky is incredible. Expand your vocabulary to paint the world with Spanish words.",
+          "words": [
+            { "text": "hermoso", "romanization": null, "meaning": "beautiful / gorgeous", "part_of_speech": "adjective", "frequency_rank": 98, "sample_sentence": "El atardecer es hermoso.", "is_phrase": false },
+            { "text": "feo", "romanization": null, "meaning": "ugly", "part_of_speech": "adjective", "frequency_rank": 195, "sample_sentence": "No es feo, es diferente.", "is_phrase": false },
+            { "text": "alto", "romanization": null, "meaning": "tall / high", "part_of_speech": "adjective", "frequency_rank": 58, "sample_sentence": "El edificio es muy alto.", "is_phrase": false },
+            { "text": "bajo", "romanization": null, "meaning": "short / low", "part_of_speech": "adjective", "frequency_rank": 68, "sample_sentence": "El precio está bajo.", "is_phrase": false },
+            { "text": "pesado", "romanization": null, "meaning": "heavy", "part_of_speech": "adjective", "frequency_rank": 175, "sample_sentence": "Esta maleta es pesada.", "is_phrase": false },
+            { "text": "ligero", "romanization": null, "meaning": "light (weight)", "part_of_speech": "adjective", "frequency_rank": 205, "sample_sentence": "Es muy ligero.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "At Work",
+          "narrative": "Working remotely from a Mexican co-working space? Chatting with locals about their jobs? Here's your work vocabulary.",
+          "words": [
+            { "text": "oficina", "romanization": null, "meaning": "office", "part_of_speech": "noun", "frequency_rank": 128, "sample_sentence": "Mi oficina está en el centro.", "is_phrase": false },
+            { "text": "trabajar", "romanization": null, "meaning": "to work", "part_of_speech": "verb", "frequency_rank": 22, "sample_sentence": "Trabajo desde casa.", "is_phrase": false },
+            { "text": "sueldo", "romanization": null, "meaning": "salary", "part_of_speech": "noun", "frequency_rank": 285, "sample_sentence": "El sueldo es bueno.", "is_phrase": false },
+            { "text": "jefe", "romanization": null, "meaning": "boss", "part_of_speech": "noun", "frequency_rank": 108, "sample_sentence": "Mi jefe es amable.", "is_phrase": false },
+            { "text": "reunión", "romanization": null, "meaning": "meeting", "part_of_speech": "noun", "frequency_rank": 148, "sample_sentence": "Tengo una reunión a las dos.", "is_phrase": false },
+            { "text": "ocupado", "romanization": null, "meaning": "busy", "part_of_speech": "adjective", "frequency_rank": 155, "sample_sentence": "Estoy ocupado ahora.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Technology & Internet",
+          "narrative": "Finding WiFi, ordering an Uber, sending a WhatsApp — modern life in Mexico requires these tech words.",
+          "words": [
+            { "text": "teléfono", "romanization": null, "meaning": "telephone / phone", "part_of_speech": "noun", "frequency_rank": 62, "sample_sentence": "¿Me das tu número de teléfono?", "is_phrase": false },
+            { "text": "contraseña", "romanization": null, "meaning": "password", "part_of_speech": "noun", "frequency_rank": 312, "sample_sentence": "¿Cuál es la contraseña del WiFi?", "is_phrase": false },
+            { "text": "foto", "romanization": null, "meaning": "photo", "part_of_speech": "noun", "frequency_rank": 118, "sample_sentence": "¿Puedo tomar una foto?", "is_phrase": false },
+            { "text": "enviar", "romanization": null, "meaning": "to send", "part_of_speech": "verb", "frequency_rank": 112, "sample_sentence": "Te envío un mensaje.", "is_phrase": false },
+            { "text": "mensaje", "romanization": null, "meaning": "message", "part_of_speech": "noun", "frequency_rank": 98, "sample_sentence": "Te mandé un mensaje.", "is_phrase": false },
+            { "text": "pagar", "romanization": null, "meaning": "to pay", "part_of_speech": "verb", "frequency_rank": 52, "sample_sentence": "¿Puedo pagar con tarjeta?", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Health & Body",
+          "narrative": "Montezuma's revenge, altitude sickness, or just a headache. Know the body parts and health words to get help at a farmacia.",
+          "words": [
+            { "text": "cabeza", "romanization": null, "meaning": "head", "part_of_speech": "noun", "frequency_rank": 62, "sample_sentence": "Me duele la cabeza.", "is_phrase": false },
+            { "text": "estómago", "romanization": null, "meaning": "stomach", "part_of_speech": "noun", "frequency_rank": 172, "sample_sentence": "Me duele el estómago.", "is_phrase": false },
+            { "text": "medicina", "romanization": null, "meaning": "medicine", "part_of_speech": "noun", "frequency_rank": 155, "sample_sentence": "Necesito medicina.", "is_phrase": false },
+            { "text": "ojo", "romanization": null, "meaning": "eye", "part_of_speech": "noun", "frequency_rank": 55, "sample_sentence": "Tiene los ojos verdes.", "is_phrase": false },
+            { "text": "mano", "romanization": null, "meaning": "hand", "part_of_speech": "noun", "frequency_rank": 22, "sample_sentence": "Lávate las manos.", "is_phrase": false },
+            { "text": "pie", "romanization": null, "meaning": "foot", "part_of_speech": "noun", "frequency_rank": 68, "sample_sentence": "Me duele el pie.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Nature & Weather",
+          "narrative": "From Mexico City's parks to the coast's beaches, nature is everywhere. Here's how to talk about the world around you.",
+          "words": [
+            { "text": "lluvia", "romanization": null, "meaning": "rain", "part_of_speech": "noun", "frequency_rank": 148, "sample_sentence": "Está lloviendo mucho.", "is_phrase": false },
+            { "text": "sol", "romanization": null, "meaning": "sun", "part_of_speech": "noun", "frequency_rank": 65, "sample_sentence": "Hace mucho sol hoy.", "is_phrase": false },
+            { "text": "playa", "romanization": null, "meaning": "beach", "part_of_speech": "noun", "frequency_rank": 125, "sample_sentence": "La playa es hermosa.", "is_phrase": false },
+            { "text": "montaña", "romanization": null, "meaning": "mountain", "part_of_speech": "noun", "frequency_rank": 155, "sample_sentence": "Las montañas son impresionantes.", "is_phrase": false },
+            { "text": "mar", "romanization": null, "meaning": "sea", "part_of_speech": "noun", "frequency_rank": 72, "sample_sentence": "El mar está tranquilo.", "is_phrase": false },
+            { "text": "árbol", "romanization": null, "meaning": "tree", "part_of_speech": "noun", "frequency_rank": 135, "sample_sentence": "El árbol es muy grande.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Entertainment",
+          "narrative": "Mexico City's nightlife, concerts, museums, and lucha libre are legendary. Here's your entertainment vocabulary.",
+          "words": [
+            { "text": "música", "romanization": null, "meaning": "music", "part_of_speech": "noun", "frequency_rank": 78, "sample_sentence": "Me gusta la música mexicana.", "is_phrase": false },
+            { "text": "película", "romanization": null, "meaning": "movie / film", "part_of_speech": "noun", "frequency_rank": 85, "sample_sentence": "¿Vamos al cine a ver una película?", "is_phrase": false },
+            { "text": "jugar", "romanization": null, "meaning": "to play", "part_of_speech": "verb", "frequency_rank": 42, "sample_sentence": "Los niños juegan en el parque.", "is_phrase": false },
+            { "text": "bailar", "romanization": null, "meaning": "to dance", "part_of_speech": "verb", "frequency_rank": 112, "sample_sentence": "¿Quieres bailar?", "is_phrase": false },
+            { "text": "libro", "romanization": null, "meaning": "book", "part_of_speech": "noun", "frequency_rank": 42, "sample_sentence": "Estoy leyendo un libro.", "is_phrase": false },
+            { "text": "canción", "romanization": null, "meaning": "song", "part_of_speech": "noun", "frequency_rank": 108, "sample_sentence": "Me encanta esta canción.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Relationships",
+          "narrative": "From family bonds to new romances, Mexican social life revolves around close relationships. Here's the vocabulary of connection.",
+          "words": [
+            { "text": "esposo", "romanization": null, "meaning": "husband", "part_of_speech": "noun", "frequency_rank": 172, "sample_sentence": "Mi esposo está en casa.", "is_phrase": false },
+            { "text": "esposa", "romanization": null, "meaning": "wife", "part_of_speech": "noun", "frequency_rank": 168, "sample_sentence": "Mi esposa es mexicana.", "is_phrase": false },
+            { "text": "novio", "romanization": null, "meaning": "boyfriend", "part_of_speech": "noun", "frequency_rank": 148, "sample_sentence": "Mi novio es muy amable.", "is_phrase": false },
+            { "text": "hermano", "romanization": null, "meaning": "brother", "part_of_speech": "noun", "frequency_rank": 55, "sample_sentence": "Mi hermano vive en Monterrey.", "is_phrase": false },
+            { "text": "hermana", "romanization": null, "meaning": "sister", "part_of_speech": "noun", "frequency_rank": 58, "sample_sentence": "Mi hermana es mayor.", "is_phrase": false },
+            { "text": "amor", "romanization": null, "meaning": "love", "part_of_speech": "noun", "frequency_rank": 28, "sample_sentence": "El amor es importante.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Daily Routine",
+          "narrative": "From waking up to going to bed, describe the rhythm of your day. These words cover the daily basics.",
+          "words": [
+            { "text": "despertar", "romanization": null, "meaning": "to wake up", "part_of_speech": "verb", "frequency_rank": 105, "sample_sentence": "Me despierto a las seis.", "is_phrase": false },
+            { "text": "desayuno", "romanization": null, "meaning": "breakfast", "part_of_speech": "noun", "frequency_rank": 162, "sample_sentence": "¿Qué hay para el desayuno?", "is_phrase": false },
+            { "text": "regresar", "romanization": null, "meaning": "to return", "part_of_speech": "verb", "frequency_rank": 72, "sample_sentence": "Regreso a las cinco.", "is_phrase": false },
+            { "text": "cocinar", "romanization": null, "meaning": "to cook", "part_of_speech": "verb", "frequency_rank": 145, "sample_sentence": "Me gusta cocinar.", "is_phrase": false },
+            { "text": "lavar", "romanization": null, "meaning": "to wash", "part_of_speech": "verb", "frequency_rank": 158, "sample_sentence": "Necesito lavar la ropa.", "is_phrase": false },
+            { "text": "descansar", "romanization": null, "meaning": "to rest", "part_of_speech": "verb", "frequency_rank": 132, "sample_sentence": "Necesito descansar.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Home & Living",
+          "narrative": "Whether you're renting an apartment in CDMX or staying with a host family, these words help you talk about where you live.",
+          "words": [
+            { "text": "casa", "romanization": null, "meaning": "house / home", "part_of_speech": "noun", "frequency_rank": 12, "sample_sentence": "Mi casa es tu casa.", "is_phrase": false },
+            { "text": "puerta", "romanization": null, "meaning": "door", "part_of_speech": "noun", "frequency_rank": 52, "sample_sentence": "Cierra la puerta.", "is_phrase": false },
+            { "text": "ventana", "romanization": null, "meaning": "window", "part_of_speech": "noun", "frequency_rank": 82, "sample_sentence": "Abre la ventana.", "is_phrase": false },
+            { "text": "silla", "romanization": null, "meaning": "chair", "part_of_speech": "noun", "frequency_rank": 115, "sample_sentence": "Siéntate en la silla.", "is_phrase": false },
+            { "text": "mesa", "romanization": null, "meaning": "table", "part_of_speech": "noun", "frequency_rank": 62, "sample_sentence": "La comida está en la mesa.", "is_phrase": false },
+            { "text": "cocina", "romanization": null, "meaning": "kitchen", "part_of_speech": "noun", "frequency_rank": 105, "sample_sentence": "Estoy en la cocina.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Education & Learning",
+          "narrative": "You're learning Spanish right now! Here are the words about studying, schools, and the joy of learning.",
+          "words": [
+            { "text": "estudiar", "romanization": null, "meaning": "to study", "part_of_speech": "verb", "frequency_rank": 62, "sample_sentence": "Estudio español.", "is_phrase": false },
+            { "text": "escuela", "romanization": null, "meaning": "school", "part_of_speech": "noun", "frequency_rank": 42, "sample_sentence": "La escuela está cerca.", "is_phrase": false },
+            { "text": "maestro", "romanization": null, "meaning": "teacher", "part_of_speech": "noun", "frequency_rank": 82, "sample_sentence": "El maestro es muy bueno.", "is_phrase": false },
+            { "text": "idioma", "romanization": null, "meaning": "language", "part_of_speech": "noun", "frequency_rank": 148, "sample_sentence": "El español es un idioma bonito.", "is_phrase": false },
+            { "text": "entender", "romanization": null, "meaning": "to understand", "part_of_speech": "verb", "frequency_rank": 18, "sample_sentence": "No entiendo.", "is_phrase": false },
+            { "text": "leer", "romanization": null, "meaning": "to read", "part_of_speech": "verb", "frequency_rank": 42, "sample_sentence": "Me gusta leer.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Colors",
+          "narrative": "From the bright pinks of Barragán architecture to the blue of the cenotes, Mexico is a explosion of color. Name what you see.",
+          "words": [
+            { "text": "rojo", "romanization": null, "meaning": "red", "part_of_speech": "adjective", "frequency_rank": 118, "sample_sentence": "El vestido rojo es bonito.", "is_phrase": false },
+            { "text": "azul", "romanization": null, "meaning": "blue", "part_of_speech": "adjective", "frequency_rank": 108, "sample_sentence": "El cielo está azul.", "is_phrase": false },
+            { "text": "verde", "romanization": null, "meaning": "green", "part_of_speech": "adjective", "frequency_rank": 95, "sample_sentence": "Salsa verde, por favor.", "is_phrase": false },
+            { "text": "blanco", "romanization": null, "meaning": "white", "part_of_speech": "adjective", "frequency_rank": 58, "sample_sentence": "Vino blanco, por favor.", "is_phrase": false },
+            { "text": "negro", "romanization": null, "meaning": "black", "part_of_speech": "adjective", "frequency_rank": 52, "sample_sentence": "Café negro sin azúcar.", "is_phrase": false },
+            { "text": "amarillo", "romanization": null, "meaning": "yellow", "part_of_speech": "adjective", "frequency_rank": 165, "sample_sentence": "Las flores amarillas son bonitas.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "More Numbers",
+          "narrative": "Beyond one, two, three — prices, addresses, and phone numbers require bigger numbers. Spanish numbers are logical after ten.",
+          "words": [
+            { "text": "cuatro", "romanization": null, "meaning": "four", "part_of_speech": "number", "frequency_rank": 22, "sample_sentence": "Son las cuatro de la tarde.", "is_phrase": false },
+            { "text": "cinco", "romanization": null, "meaning": "five", "part_of_speech": "number", "frequency_rank": 18, "sample_sentence": "Cinco minutos más.", "is_phrase": false },
+            { "text": "seis", "romanization": null, "meaning": "six", "part_of_speech": "number", "frequency_rank": 35, "sample_sentence": "A las seis de la mañana.", "is_phrase": false },
+            { "text": "siete", "romanization": null, "meaning": "seven", "part_of_speech": "number", "frequency_rank": 38, "sample_sentence": "Siete días a la semana.", "is_phrase": false },
+            { "text": "ocho", "romanization": null, "meaning": "eight", "part_of_speech": "number", "frequency_rank": 42, "sample_sentence": "Ocho horas de sueño.", "is_phrase": false },
+            { "text": "nueve", "romanization": null, "meaning": "nine", "part_of_speech": "number", "frequency_rank": 48, "sample_sentence": "A las nueve en punto.", "is_phrase": false },
+            { "text": "diez", "romanization": null, "meaning": "ten", "part_of_speech": "number", "frequency_rank": 25, "sample_sentence": "Diez pesos.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Clothing & Appearance",
+          "narrative": "Shopping for huipiles? Describing what someone's wearing? From sombreros to huaraches, here's your fashion vocabulary.",
+          "words": [
+            { "text": "ropa", "romanization": null, "meaning": "clothes / clothing", "part_of_speech": "noun", "frequency_rank": 112, "sample_sentence": "Necesito ropa nueva.", "is_phrase": false },
+            { "text": "camisa", "romanization": null, "meaning": "shirt", "part_of_speech": "noun", "frequency_rank": 145, "sample_sentence": "Me gusta esa camisa.", "is_phrase": false },
+            { "text": "zapatos", "romanization": null, "meaning": "shoes", "part_of_speech": "noun", "frequency_rank": 138, "sample_sentence": "Necesito zapatos nuevos.", "is_phrase": false },
+            { "text": "vestido", "romanization": null, "meaning": "dress", "part_of_speech": "noun", "frequency_rank": 162, "sample_sentence": "El vestido es precioso.", "is_phrase": false },
+            { "text": "llevar", "romanization": null, "meaning": "to wear / carry", "part_of_speech": "verb", "frequency_rank": 22, "sample_sentence": "Llevo una camiseta azul.", "is_phrase": false },
+            { "text": "talla", "romanization": null, "meaning": "size (clothing)", "part_of_speech": "noun", "frequency_rank": 282, "sample_sentence": "¿Qué talla es?", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Giving Directions",
+          "narrative": "Now you can give directions too — and understand the detailed instructions locals give you with hand gestures and all.",
+          "words": [
+            { "text": "girar", "romanization": null, "meaning": "to turn", "part_of_speech": "verb", "frequency_rank": 192, "sample_sentence": "Gira a la derecha.", "is_phrase": false },
+            { "text": "enfrente", "romanization": null, "meaning": "in front of / across", "part_of_speech": "adverb", "frequency_rank": 172, "sample_sentence": "Está enfrente del parque.", "is_phrase": false },
+            { "text": "detrás", "romanization": null, "meaning": "behind", "part_of_speech": "adverb", "frequency_rank": 118, "sample_sentence": "Detrás de la iglesia.", "is_phrase": false },
+            { "text": "al lado", "romanization": null, "meaning": "next to / beside", "part_of_speech": "phrase", "frequency_rank": 108, "sample_sentence": "Al lado del banco.", "is_phrase": true },
+            { "text": "arriba", "romanization": null, "meaning": "up / above", "part_of_speech": "adverb", "frequency_rank": 62, "sample_sentence": "El baño está arriba.", "is_phrase": false },
+            { "text": "abajo", "romanization": null, "meaning": "down / below", "part_of_speech": "adverb", "frequency_rank": 65, "sample_sentence": "El restaurante está abajo.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Transportation",
+          "narrative": "Combis, metro, taxis, and Uber — Mexico City has every mode of transport. Here's how to navigate them all.",
+          "words": [
+            { "text": "coche", "romanization": null, "meaning": "car", "part_of_speech": "noun", "frequency_rank": 52, "sample_sentence": "Vamos en coche.", "is_phrase": false },
+            { "text": "autobús", "romanization": null, "meaning": "bus", "part_of_speech": "noun", "frequency_rank": 148, "sample_sentence": "El autobús sale a las diez.", "is_phrase": false },
+            { "text": "metro", "romanization": null, "meaning": "subway / metro", "part_of_speech": "noun", "frequency_rank": 165, "sample_sentence": "Vamos en metro.", "is_phrase": false },
+            { "text": "avión", "romanization": null, "meaning": "airplane", "part_of_speech": "noun", "frequency_rank": 138, "sample_sentence": "El avión sale a las tres.", "is_phrase": false },
+            { "text": "estación", "romanization": null, "meaning": "station", "part_of_speech": "noun", "frequency_rank": 92, "sample_sentence": "¿Dónde está la estación?", "is_phrase": false },
+            { "text": "boleto", "romanization": null, "meaning": "ticket", "part_of_speech": "noun", "frequency_rank": 178, "sample_sentence": "Un boleto, por favor.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Quantity & Size",
+          "narrative": "More salsa? Less ice? A lot of cilantro? These words help you fine-tune exactly how much of something you want.",
+          "words": [
+            { "text": "mucho", "romanization": null, "meaning": "a lot / much", "part_of_speech": "adjective", "frequency_rank": 5, "sample_sentence": "Tengo mucha hambre.", "is_phrase": false },
+            { "text": "poco", "romanization": null, "meaning": "a little / few", "part_of_speech": "adjective", "frequency_rank": 15, "sample_sentence": "Un poco de salsa.", "is_phrase": false },
+            { "text": "todo", "romanization": null, "meaning": "all / everything", "part_of_speech": "pronoun", "frequency_rank": 3, "sample_sentence": "Todo está bien.", "is_phrase": false },
+            { "text": "más", "romanization": null, "meaning": "more", "part_of_speech": "adverb", "frequency_rank": 3, "sample_sentence": "Más agua, por favor.", "is_phrase": false },
+            { "text": "suficiente", "romanization": null, "meaning": "enough", "part_of_speech": "adjective", "frequency_rank": 92, "sample_sentence": "Ya es suficiente.", "is_phrase": false },
+            { "text": "menos", "romanization": null, "meaning": "less / fewer", "part_of_speech": "adverb", "frequency_rank": 18, "sample_sentence": "Menos picante, por favor.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Animals",
+          "narrative": "From street dogs to tropical birds to iguanas basking in the sun, Mexican wildlife is colorful and everywhere.",
+          "words": [
+            { "text": "gato", "romanization": null, "meaning": "cat", "part_of_speech": "noun", "frequency_rank": 142, "sample_sentence": "El gato está dormido.", "is_phrase": false },
+            { "text": "perro", "romanization": null, "meaning": "dog", "part_of_speech": "noun", "frequency_rank": 75, "sample_sentence": "El perro es muy amigable.", "is_phrase": false },
+            { "text": "pájaro", "romanization": null, "meaning": "bird", "part_of_speech": "noun", "frequency_rank": 155, "sample_sentence": "Los pájaros cantan.", "is_phrase": false },
+            { "text": "pez", "romanization": null, "meaning": "fish", "part_of_speech": "noun", "frequency_rank": 148, "sample_sentence": "El pez nada en el agua.", "is_phrase": false },
+            { "text": "caballo", "romanization": null, "meaning": "horse", "part_of_speech": "noun", "frequency_rank": 98, "sample_sentence": "El caballo es grande.", "is_phrase": false },
+            { "text": "mariposa", "romanization": null, "meaning": "butterfly", "part_of_speech": "noun", "frequency_rank": 268, "sample_sentence": "Las mariposas monarca son hermosas.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Days of the Week",
+          "narrative": "Planning your itinerary? Markets are on certain days, museums close on Mondays. Know your lunes from your viernes.",
+          "words": [
+            { "text": "lunes", "romanization": null, "meaning": "Monday", "part_of_speech": "noun", "frequency_rank": 188, "sample_sentence": "El lunes empiezo.", "is_phrase": false },
+            { "text": "martes", "romanization": null, "meaning": "Tuesday", "part_of_speech": "noun", "frequency_rank": 195, "sample_sentence": "Nos vemos el martes.", "is_phrase": false },
+            { "text": "miércoles", "romanization": null, "meaning": "Wednesday", "part_of_speech": "noun", "frequency_rank": 202, "sample_sentence": "El miércoles hay clase.", "is_phrase": false },
+            { "text": "jueves", "romanization": null, "meaning": "Thursday", "part_of_speech": "noun", "frequency_rank": 208, "sample_sentence": "El jueves voy al mercado.", "is_phrase": false },
+            { "text": "viernes", "romanization": null, "meaning": "Friday", "part_of_speech": "noun", "frequency_rank": 185, "sample_sentence": "¡Por fin es viernes!", "is_phrase": false },
+            { "text": "sábado", "romanization": null, "meaning": "Saturday", "part_of_speech": "noun", "frequency_rank": 178, "sample_sentence": "El sábado vamos a bailar.", "is_phrase": false },
+            { "text": "domingo", "romanization": null, "meaning": "Sunday", "part_of_speech": "noun", "frequency_rank": 165, "sample_sentence": "El domingo es día de familia.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Cooking & Kitchen",
+          "narrative": "You join a cooking class and learn to make mole. The chef tosses chiles and spices — keep up with the instructions!",
+          "words": [
+            { "text": "cocinar", "romanization": null, "meaning": "to cook", "part_of_speech": "verb", "frequency_rank": 145, "sample_sentence": "Vamos a cocinar juntos.", "is_phrase": false },
+            { "text": "hervir", "romanization": null, "meaning": "to boil", "part_of_speech": "verb", "frequency_rank": 248, "sample_sentence": "Hervir el agua primero.", "is_phrase": false },
+            { "text": "azúcar", "romanization": null, "meaning": "sugar", "part_of_speech": "noun", "frequency_rank": 172, "sample_sentence": "Sin azúcar, por favor.", "is_phrase": false },
+            { "text": "sal", "romanization": null, "meaning": "salt", "part_of_speech": "noun", "frequency_rank": 118, "sample_sentence": "Ponle más sal.", "is_phrase": false },
+            { "text": "verdura", "romanization": null, "meaning": "vegetable", "part_of_speech": "noun", "frequency_rank": 195, "sample_sentence": "Me gustan las verduras frescas.", "is_phrase": false },
+            { "text": "fruta", "romanization": null, "meaning": "fruit", "part_of_speech": "noun", "frequency_rank": 148, "sample_sentence": "La fruta del mercado es fresca.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Weather & Seasons",
+          "narrative": "Mexico City's weather is famously mild, but rainy season can surprise you. Here's how to talk about it.",
+          "words": [
+            { "text": "caliente", "romanization": null, "meaning": "hot (temperature)", "part_of_speech": "adjective", "frequency_rank": 95, "sample_sentence": "El café está caliente.", "is_phrase": false },
+            { "text": "frío", "romanization": null, "meaning": "cold", "part_of_speech": "adjective", "frequency_rank": 72, "sample_sentence": "Hace mucho frío.", "is_phrase": false },
+            { "text": "viento", "romanization": null, "meaning": "wind", "part_of_speech": "noun", "frequency_rank": 128, "sample_sentence": "Hay mucho viento.", "is_phrase": false },
+            { "text": "nube", "romanization": null, "meaning": "cloud", "part_of_speech": "noun", "frequency_rank": 192, "sample_sentence": "Hay muchas nubes.", "is_phrase": false },
+            { "text": "seco", "romanization": null, "meaning": "dry", "part_of_speech": "adjective", "frequency_rank": 172, "sample_sentence": "El clima es seco.", "is_phrase": false },
+            { "text": "mojado", "romanization": null, "meaning": "wet", "part_of_speech": "adjective", "frequency_rank": 218, "sample_sentence": "El piso está mojado.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Money & Banking",
+          "narrative": "Pesos, ATMs, tipping culture — navigate the financial side of Mexico with confidence.",
+          "words": [
+            { "text": "precio", "romanization": null, "meaning": "price", "part_of_speech": "noun", "frequency_rank": 75, "sample_sentence": "¿Cuál es el precio?", "is_phrase": false },
+            { "text": "propina", "romanization": null, "meaning": "tip (gratuity)", "part_of_speech": "noun", "frequency_rank": 268, "sample_sentence": "¿Cuánto de propina?", "is_phrase": false },
+            { "text": "cambio", "romanization": null, "meaning": "change (money)", "part_of_speech": "noun", "frequency_rank": 42, "sample_sentence": "¿Tiene cambio?", "is_phrase": false },
+            { "text": "tarjeta", "romanization": null, "meaning": "card (credit/debit)", "part_of_speech": "noun", "frequency_rank": 108, "sample_sentence": "¿Aceptan tarjeta?", "is_phrase": false },
+            { "text": "efectivo", "romanization": null, "meaning": "cash", "part_of_speech": "noun", "frequency_rank": 142, "sample_sentence": "Solo efectivo.", "is_phrase": false },
+            { "text": "cuenta", "romanization": null, "meaning": "bill / check", "part_of_speech": "noun", "frequency_rank": 28, "sample_sentence": "La cuenta, por favor.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Communication Verbs",
+          "narrative": "Speaking, writing, reading, listening — the verbs of communication. Essential meta-language about language itself.",
+          "words": [
+            { "text": "hablar", "romanization": null, "meaning": "to speak / talk", "part_of_speech": "verb", "frequency_rank": 12, "sample_sentence": "¿Habla inglés?", "is_phrase": false },
+            { "text": "escuchar", "romanization": null, "meaning": "to listen", "part_of_speech": "verb", "frequency_rank": 42, "sample_sentence": "Escucha esta canción.", "is_phrase": false },
+            { "text": "escribir", "romanization": null, "meaning": "to write", "part_of_speech": "verb", "frequency_rank": 35, "sample_sentence": "Escribe tu nombre aquí.", "is_phrase": false },
+            { "text": "contestar", "romanization": null, "meaning": "to answer", "part_of_speech": "verb", "frequency_rank": 112, "sample_sentence": "No me contestó.", "is_phrase": false },
+            { "text": "decir", "romanization": null, "meaning": "to say / tell", "part_of_speech": "verb", "frequency_rank": 3, "sample_sentence": "¿Cómo se dice?", "is_phrase": false },
+            { "text": "preguntar", "romanization": null, "meaning": "to ask (a question)", "part_of_speech": "verb", "frequency_rank": 42, "sample_sentence": "Quiero preguntar algo.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Religion & Culture",
+          "narrative": "Mexico's culture is a vivid blend of indigenous and Spanish traditions. Understanding cultural vocabulary shows deep respect.",
+          "words": [
+            { "text": "iglesia", "romanization": null, "meaning": "church", "part_of_speech": "noun", "frequency_rank": 62, "sample_sentence": "La iglesia es muy antigua.", "is_phrase": false },
+            { "text": "fiesta", "romanization": null, "meaning": "party / festival", "part_of_speech": "noun", "frequency_rank": 72, "sample_sentence": "¡Vamos a la fiesta!", "is_phrase": false },
+            { "text": "tradición", "romanization": null, "meaning": "tradition", "part_of_speech": "noun", "frequency_rank": 155, "sample_sentence": "Es una tradición mexicana.", "is_phrase": false },
+            { "text": "costumbre", "romanization": null, "meaning": "custom / habit", "part_of_speech": "noun", "frequency_rank": 165, "sample_sentence": "Esa es la costumbre aquí.", "is_phrase": false },
+            { "text": "Dios", "romanization": null, "meaning": "God", "part_of_speech": "noun", "frequency_rank": 18, "sample_sentence": "¡Dios mío!", "is_phrase": false },
+            { "text": "muerto", "romanization": null, "meaning": "dead / deceased", "part_of_speech": "noun", "frequency_rank": 48, "sample_sentence": "El Día de los Muertos es especial.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "More Useful Verbs",
+          "narrative": "Expand your action vocabulary. These verbs come up constantly and will make you sound much more natural.",
+          "words": [
+            { "text": "buscar", "romanization": null, "meaning": "to look for / search", "part_of_speech": "verb", "frequency_rank": 28, "sample_sentence": "Busco un buen restaurante.", "is_phrase": false },
+            { "text": "tomar", "romanization": null, "meaning": "to take / drink", "part_of_speech": "verb", "frequency_rank": 18, "sample_sentence": "Voy a tomar un café.", "is_phrase": false },
+            { "text": "traer", "romanization": null, "meaning": "to bring", "part_of_speech": "verb", "frequency_rank": 22, "sample_sentence": "Tráeme la cuenta.", "is_phrase": false },
+            { "text": "poner", "romanization": null, "meaning": "to put / place", "part_of_speech": "verb", "frequency_rank": 8, "sample_sentence": "Ponlo en la mesa.", "is_phrase": false },
+            { "text": "abrir", "romanization": null, "meaning": "to open", "part_of_speech": "verb", "frequency_rank": 42, "sample_sentence": "Abre la puerta.", "is_phrase": false },
+            { "text": "cerrar", "romanization": null, "meaning": "to close", "part_of_speech": "verb", "frequency_rank": 48, "sample_sentence": "Cierra la ventana.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Time Expressions",
+          "narrative": "Mexican time is flexible, but you still need to talk about when things happen — from 'ahorita' to 'la próxima semana'.",
+          "words": [
+            { "text": "semana", "romanization": null, "meaning": "week", "part_of_speech": "noun", "frequency_rank": 42, "sample_sentence": "La próxima semana.", "is_phrase": false },
+            { "text": "mes", "romanization": null, "meaning": "month", "part_of_speech": "noun", "frequency_rank": 48, "sample_sentence": "El mes que viene.", "is_phrase": false },
+            { "text": "año", "romanization": null, "meaning": "year", "part_of_speech": "noun", "frequency_rank": 12, "sample_sentence": "El año pasado fui a Oaxaca.", "is_phrase": false },
+            { "text": "antes", "romanization": null, "meaning": "before", "part_of_speech": "adverb", "frequency_rank": 12, "sample_sentence": "Antes de las diez.", "is_phrase": false },
+            { "text": "siempre", "romanization": null, "meaning": "always", "part_of_speech": "adverb", "frequency_rank": 15, "sample_sentence": "Siempre llega tarde.", "is_phrase": false },
+            { "text": "a veces", "romanization": null, "meaning": "sometimes", "part_of_speech": "phrase", "frequency_rank": 35, "sample_sentence": "A veces llueve por la tarde.", "is_phrase": true }
+          ]
+        },
+        {
+          "title": "Shopping & Markets",
+          "narrative": "From tianguis to supermarkets, Mexican shopping is an experience. Here's your expanded vocabulary for market adventures.",
+          "words": [
+            { "text": "tienda", "romanization": null, "meaning": "shop / store", "part_of_speech": "noun", "frequency_rank": 85, "sample_sentence": "La tienda cierra a las ocho.", "is_phrase": false },
+            { "text": "mercado", "romanization": null, "meaning": "market", "part_of_speech": "noun", "frequency_rank": 72, "sample_sentence": "Vamos al mercado.", "is_phrase": false },
+            { "text": "vender", "romanization": null, "meaning": "to sell", "part_of_speech": "verb", "frequency_rank": 48, "sample_sentence": "¿Qué venden aquí?", "is_phrase": false },
+            { "text": "elegir", "romanization": null, "meaning": "to choose", "part_of_speech": "verb", "frequency_rank": 98, "sample_sentence": "No puedo elegir.", "is_phrase": false },
+            { "text": "tamaño", "romanization": null, "meaning": "size", "part_of_speech": "noun", "frequency_rank": 148, "sample_sentence": "¿Qué tamaño quiere?", "is_phrase": false },
+            { "text": "descuento", "romanization": null, "meaning": "discount", "part_of_speech": "noun", "frequency_rank": 212, "sample_sentence": "¿Hay descuento?", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Restaurant & Ordering",
+          "narrative": "Beyond basic food words — how to navigate a Mexican menu, customize your order, and handle the bill like a local.",
+          "words": [
+            { "text": "menú", "romanization": null, "meaning": "menu", "part_of_speech": "noun", "frequency_rank": 188, "sample_sentence": "¿Me trae el menú?", "is_phrase": false },
+            { "text": "ordenar", "romanization": null, "meaning": "to order (food)", "part_of_speech": "verb", "frequency_rank": 135, "sample_sentence": "Quiero ordenar.", "is_phrase": false },
+            { "text": "cuchara", "romanization": null, "meaning": "spoon", "part_of_speech": "noun", "frequency_rank": 228, "sample_sentence": "¿Me da una cuchara?", "is_phrase": false },
+            { "text": "tenedor", "romanization": null, "meaning": "fork", "part_of_speech": "noun", "frequency_rank": 242, "sample_sentence": "Necesito un tenedor.", "is_phrase": false },
+            { "text": "plato", "romanization": null, "meaning": "plate / dish", "part_of_speech": "noun", "frequency_rank": 82, "sample_sentence": "El plato del día.", "is_phrase": false },
+            { "text": "vaso", "romanization": null, "meaning": "glass", "part_of_speech": "noun", "frequency_rank": 142, "sample_sentence": "Un vaso de agua.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Verbs of Motion",
+          "narrative": "Running, swimming, climbing — Mexico is an adventure. These action words keep you moving through it.",
+          "words": [
+            { "text": "correr", "romanization": null, "meaning": "to run", "part_of_speech": "verb", "frequency_rank": 65, "sample_sentence": "Vamos a correr en el parque.", "is_phrase": false },
+            { "text": "nadar", "romanization": null, "meaning": "to swim", "part_of_speech": "verb", "frequency_rank": 155, "sample_sentence": "Vamos a nadar en el cenote.", "is_phrase": false },
+            { "text": "sentarse", "romanization": null, "meaning": "to sit down", "part_of_speech": "verb", "frequency_rank": 42, "sample_sentence": "Siéntese, por favor.", "is_phrase": false },
+            { "text": "levantarse", "romanization": null, "meaning": "to stand up / get up", "part_of_speech": "verb", "frequency_rank": 72, "sample_sentence": "Me levanto temprano.", "is_phrase": false },
+            { "text": "entrar", "romanization": null, "meaning": "to enter", "part_of_speech": "verb", "frequency_rank": 35, "sample_sentence": "Puede entrar.", "is_phrase": false },
+            { "text": "salir", "romanization": null, "meaning": "to leave / go out", "part_of_speech": "verb", "frequency_rank": 12, "sample_sentence": "Vamos a salir.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Abstract Concepts",
+          "narrative": "As your Spanish grows, express bigger ideas — time, life, truth, freedom. These abstract words elevate your conversations.",
+          "words": [
+            { "text": "tiempo", "romanization": null, "meaning": "time / weather", "part_of_speech": "noun", "frequency_rank": 8, "sample_sentence": "No tengo tiempo.", "is_phrase": false },
+            { "text": "vida", "romanization": null, "meaning": "life", "part_of_speech": "noun", "frequency_rank": 8, "sample_sentence": "La vida es bella.", "is_phrase": false },
+            { "text": "problema", "romanization": null, "meaning": "problem", "part_of_speech": "noun", "frequency_rank": 18, "sample_sentence": "No hay problema.", "is_phrase": false },
+            { "text": "manera", "romanization": null, "meaning": "way / manner", "part_of_speech": "noun", "frequency_rank": 25, "sample_sentence": "De alguna manera.", "is_phrase": false },
+            { "text": "sueño", "romanization": null, "meaning": "dream / sleep", "part_of_speech": "noun", "frequency_rank": 52, "sample_sentence": "Tengo sueño.", "is_phrase": false },
+            { "text": "esperanza", "romanization": null, "meaning": "hope", "part_of_speech": "noun", "frequency_rank": 118, "sample_sentence": "Hay esperanza.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Expressing Needs",
+          "narrative": "When you urgently need something — directions, medicine, a bathroom — these words get your point across immediately.",
+          "words": [
+            { "text": "necesitar", "romanization": null, "meaning": "to need", "part_of_speech": "verb", "frequency_rank": 15, "sample_sentence": "Necesito ayuda.", "is_phrase": false },
+            { "text": "deber", "romanization": null, "meaning": "must / should", "part_of_speech": "verb", "frequency_rank": 8, "sample_sentence": "Debo irme.", "is_phrase": false },
+            { "text": "querer", "romanization": null, "meaning": "to want", "part_of_speech": "verb", "frequency_rank": 5, "sample_sentence": "Quiero aprender.", "is_phrase": false },
+            { "text": "intentar", "romanization": null, "meaning": "to try", "part_of_speech": "verb", "frequency_rank": 35, "sample_sentence": "Voy a intentar.", "is_phrase": false },
+            { "text": "esperar", "romanization": null, "meaning": "to hope / wait", "part_of_speech": "verb", "frequency_rank": 28, "sample_sentence": "Espero que sí.", "is_phrase": false },
+            { "text": "preferir", "romanization": null, "meaning": "to prefer", "part_of_speech": "verb", "frequency_rank": 62, "sample_sentence": "Prefiero caminar.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Places in Town",
+          "narrative": "Navigating a new Mexican city? You need to know the bank, the hospital, the pharmacy, the park — here's your urban vocabulary.",
+          "words": [
+            { "text": "banco", "romanization": null, "meaning": "bank", "part_of_speech": "noun", "frequency_rank": 62, "sample_sentence": "¿Dónde hay un banco?", "is_phrase": false },
+            { "text": "hospital", "romanization": null, "meaning": "hospital", "part_of_speech": "noun", "frequency_rank": 72, "sample_sentence": "El hospital está lejos.", "is_phrase": false },
+            { "text": "aeropuerto", "romanization": null, "meaning": "airport", "part_of_speech": "noun", "frequency_rank": 148, "sample_sentence": "Vamos al aeropuerto.", "is_phrase": false },
+            { "text": "parque", "romanization": null, "meaning": "park", "part_of_speech": "noun", "frequency_rank": 78, "sample_sentence": "El parque es bonito.", "is_phrase": false },
+            { "text": "farmacia", "romanization": null, "meaning": "pharmacy", "part_of_speech": "noun", "frequency_rank": 218, "sample_sentence": "¿Dónde hay una farmacia?", "is_phrase": false },
+            { "text": "museo", "romanization": null, "meaning": "museum", "part_of_speech": "noun", "frequency_rank": 108, "sample_sentence": "El museo abre a las diez.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Comparisons & Superlatives",
+          "narrative": "Which is bigger, better, cheaper? Spanish comparisons are elegant and logical — learn them and describe the world with precision.",
+          "words": [
+            { "text": "mejor", "romanization": null, "meaning": "better / best", "part_of_speech": "adjective", "frequency_rank": 12, "sample_sentence": "Este es mejor.", "is_phrase": false },
+            { "text": "peor", "romanization": null, "meaning": "worse / worst", "part_of_speech": "adjective", "frequency_rank": 62, "sample_sentence": "Puede ser peor.", "is_phrase": false },
+            { "text": "igual", "romanization": null, "meaning": "equal / same", "part_of_speech": "adjective", "frequency_rank": 28, "sample_sentence": "Es igual.", "is_phrase": false },
+            { "text": "diferente", "romanization": null, "meaning": "different", "part_of_speech": "adjective", "frequency_rank": 52, "sample_sentence": "Es muy diferente.", "is_phrase": false },
+            { "text": "tan", "romanization": null, "meaning": "so / as", "part_of_speech": "adverb", "frequency_rank": 5, "sample_sentence": "Es tan bonito.", "is_phrase": false },
+            { "text": "demasiado", "romanization": null, "meaning": "too much / too many", "part_of_speech": "adverb", "frequency_rank": 42, "sample_sentence": "Es demasiado caro.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Mexican Slang",
+          "narrative": "Hanging out with locals in a cantina in Guadalajara, you'll hear colorful slang that no textbook teaches. These informal Mexican expressions make you sound like a true cuate.",
+          "words": [
+            { "text": "chido", "romanization": null, "meaning": "cool / awesome (Mexican slang)", "part_of_speech": "adjective", "frequency_rank": 380, "sample_sentence": "¡Qué chido está ese lugar!", "is_phrase": false },
+            { "text": "neta", "romanization": null, "meaning": "truth / for real (slang)", "part_of_speech": "noun", "frequency_rank": 395, "sample_sentence": "¿Neta? No te creo.", "is_phrase": false },
+            { "text": "güey", "romanization": null, "meaning": "dude / buddy (informal)", "part_of_speech": "noun", "frequency_rank": 310, "sample_sentence": "¡No manches, güey!", "is_phrase": false },
+            { "text": "naco", "romanization": null, "meaning": "tacky / uncouth (slang)", "part_of_speech": "adjective", "frequency_rank": 420, "sample_sentence": "No seas naco.", "is_phrase": false },
+            { "text": "chafa", "romanization": null, "meaning": "low quality / crappy (slang)", "part_of_speech": "adjective", "frequency_rank": 445, "sample_sentence": "Esa película estuvo bien chafa.", "is_phrase": false },
+            { "text": "mero", "romanization": null, "meaning": "the very one / exactly (Mexican)", "part_of_speech": "adjective", "frequency_rank": 350, "sample_sentence": "Ese mero es el que quiero.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Cooking Methods",
+          "narrative": "You're taking a hands-on cooking class in Oaxaca. The chef demonstrates techniques as fragrant smoke rises from the comal. Time to learn the verbs of the kitchen.",
+          "words": [
+            { "text": "hornear", "romanization": null, "meaning": "to bake", "part_of_speech": "verb", "frequency_rank": 320, "sample_sentence": "Vamos a hornear un pastel.", "is_phrase": false },
+            { "text": "asar", "romanization": null, "meaning": "to roast / grill", "part_of_speech": "verb", "frequency_rank": 335, "sample_sentence": "Voy a asar la carne en el carbón.", "is_phrase": false },
+            { "text": "freír", "romanization": null, "meaning": "to fry", "part_of_speech": "verb", "frequency_rank": 345, "sample_sentence": "Hay que freír las tortillas en aceite.", "is_phrase": false },
+            { "text": "picar", "romanization": null, "meaning": "to chop / mince", "part_of_speech": "verb", "frequency_rank": 290, "sample_sentence": "Pica la cebolla en trozos pequeños.", "is_phrase": false },
+            { "text": "mezclar", "romanization": null, "meaning": "to mix / blend", "part_of_speech": "verb", "frequency_rank": 310, "sample_sentence": "Mezcla todos los ingredientes.", "is_phrase": false },
+            { "text": "pelar", "romanization": null, "meaning": "to peel", "part_of_speech": "verb", "frequency_rank": 355, "sample_sentence": "Primero hay que pelar los chiles.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Geography",
+          "narrative": "Mexico's landscape is stunningly diverse — from tropical jungles to desert valleys, volcanic mountains to Caribbean coasts. Describe the geography around you.",
+          "words": [
+            { "text": "isla", "romanization": null, "meaning": "island", "part_of_speech": "noun", "frequency_rank": 205, "sample_sentence": "Isla Mujeres es un lugar hermoso.", "is_phrase": false },
+            { "text": "río", "romanization": null, "meaning": "river", "part_of_speech": "noun", "frequency_rank": 210, "sample_sentence": "El río pasa por el pueblo.", "is_phrase": false },
+            { "text": "lago", "romanization": null, "meaning": "lake", "part_of_speech": "noun", "frequency_rank": 225, "sample_sentence": "El lago de Pátzcuaro es muy bonito.", "is_phrase": false },
+            { "text": "selva", "romanization": null, "meaning": "jungle / rainforest", "part_of_speech": "noun", "frequency_rank": 310, "sample_sentence": "La selva lacandona es impresionante.", "is_phrase": false },
+            { "text": "valle", "romanization": null, "meaning": "valley", "part_of_speech": "noun", "frequency_rank": 245, "sample_sentence": "El Valle de México es enorme.", "is_phrase": false },
+            { "text": "costa", "romanization": null, "meaning": "coast", "part_of_speech": "noun", "frequency_rank": 215, "sample_sentence": "La costa del Pacífico tiene playas increíbles.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Sports & Exercise",
+          "narrative": "You join a pick-up soccer game at a local park, or hit the gym with your Mexican roommate. Sports vocabulary keeps you in the game.",
+          "words": [
+            { "text": "deporte", "romanization": null, "meaning": "sport", "part_of_speech": "noun", "frequency_rank": 210, "sample_sentence": "Mi deporte favorito es el fútbol.", "is_phrase": false },
+            { "text": "fútbol", "romanization": null, "meaning": "soccer / football", "part_of_speech": "noun", "frequency_rank": 205, "sample_sentence": "¿Quieres jugar fútbol?", "is_phrase": false },
+            { "text": "gimnasio", "romanization": null, "meaning": "gym", "part_of_speech": "noun", "frequency_rank": 305, "sample_sentence": "Voy al gimnasio todos los días.", "is_phrase": false },
+            { "text": "entrenar", "romanization": null, "meaning": "to train / work out", "part_of_speech": "verb", "frequency_rank": 275, "sample_sentence": "Entreno tres veces a la semana.", "is_phrase": false },
+            { "text": "ganar", "romanization": null, "meaning": "to win", "part_of_speech": "verb", "frequency_rank": 210, "sample_sentence": "¡Vamos a ganar el partido!", "is_phrase": false },
+            { "text": "equipo", "romanization": null, "meaning": "team", "part_of_speech": "noun", "frequency_rank": 225, "sample_sentence": "Nuestro equipo jugó muy bien.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Music & Art",
+          "narrative": "From mariachi in Plaza Garibaldi to murals by Rivera, Mexico pulses with artistic energy. Here's how to talk about the creative world.",
+          "words": [
+            { "text": "arte", "romanization": null, "meaning": "art", "part_of_speech": "noun", "frequency_rank": 205, "sample_sentence": "El Palacio de Bellas Artes tiene mucho arte.", "is_phrase": false },
+            { "text": "pintura", "romanization": null, "meaning": "painting", "part_of_speech": "noun", "frequency_rank": 255, "sample_sentence": "Esa pintura es de Frida Kahlo.", "is_phrase": false },
+            { "text": "cantar", "romanization": null, "meaning": "to sing", "part_of_speech": "verb", "frequency_rank": 215, "sample_sentence": "Los mariachis cantan muy bonito.", "is_phrase": false },
+            { "text": "instrumento", "romanization": null, "meaning": "instrument", "part_of_speech": "noun", "frequency_rank": 275, "sample_sentence": "¿Tocas algún instrumento?", "is_phrase": false },
+            { "text": "concierto", "romanization": null, "meaning": "concert", "part_of_speech": "noun", "frequency_rank": 290, "sample_sentence": "Vamos al concierto esta noche.", "is_phrase": false },
+            { "text": "dibujo", "romanization": null, "meaning": "drawing / sketch", "part_of_speech": "noun", "frequency_rank": 310, "sample_sentence": "Hice un dibujo del volcán.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Social Media",
+          "narrative": "Your new Mexican friends want to follow you online. Social media is universal, but the Spanish vocabulary for it has its own flavor.",
+          "words": [
+            { "text": "cuenta", "romanization": null, "meaning": "account (social media)", "part_of_speech": "noun", "frequency_rank": 210, "sample_sentence": "¿Cuál es tu cuenta de Instagram?", "is_phrase": false },
+            { "text": "seguir", "romanization": null, "meaning": "to follow", "part_of_speech": "verb", "frequency_rank": 225, "sample_sentence": "Te voy a seguir en redes sociales.", "is_phrase": false },
+            { "text": "publicar", "romanization": null, "meaning": "to post / publish", "part_of_speech": "verb", "frequency_rank": 265, "sample_sentence": "Voy a publicar esta foto.", "is_phrase": false },
+            { "text": "compartir", "romanization": null, "meaning": "to share", "part_of_speech": "verb", "frequency_rank": 240, "sample_sentence": "¿Puedes compartir el enlace?", "is_phrase": false },
+            { "text": "comentario", "romanization": null, "meaning": "comment", "part_of_speech": "noun", "frequency_rank": 255, "sample_sentence": "Dejé un comentario en tu foto.", "is_phrase": false },
+            { "text": "viral", "romanization": null, "meaning": "viral", "part_of_speech": "adjective", "frequency_rank": 380, "sample_sentence": "Ese video se hizo viral.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Business",
+          "narrative": "You're meeting a potential business partner at a trendy café in Polanco. From pitching ideas to closing deals, these words keep you professional.",
+          "words": [
+            { "text": "negocio", "romanization": null, "meaning": "business", "part_of_speech": "noun", "frequency_rank": 215, "sample_sentence": "Tengo un negocio de comida.", "is_phrase": false },
+            { "text": "cliente", "romanization": null, "meaning": "client / customer", "part_of_speech": "noun", "frequency_rank": 235, "sample_sentence": "El cliente siempre tiene la razón.", "is_phrase": false },
+            { "text": "producto", "romanization": null, "meaning": "product", "part_of_speech": "noun", "frequency_rank": 250, "sample_sentence": "Nuestro producto es de alta calidad.", "is_phrase": false },
+            { "text": "venta", "romanization": null, "meaning": "sale", "part_of_speech": "noun", "frequency_rank": 260, "sample_sentence": "Las ventas aumentaron este mes.", "is_phrase": false },
+            { "text": "ganancia", "romanization": null, "meaning": "profit / earnings", "part_of_speech": "noun", "frequency_rank": 340, "sample_sentence": "La ganancia fue buena este trimestre.", "is_phrase": false },
+            { "text": "contrato", "romanization": null, "meaning": "contract", "part_of_speech": "noun", "frequency_rank": 285, "sample_sentence": "Necesito revisar el contrato.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Legal & Official",
+          "narrative": "Renewing a visa, signing a rental agreement, or filling out forms at a government office — bureaucracy requires its own vocabulary.",
+          "words": [
+            { "text": "documento", "romanization": null, "meaning": "document", "part_of_speech": "noun", "frequency_rank": 230, "sample_sentence": "Necesito mis documentos de identificación.", "is_phrase": false },
+            { "text": "formulario", "romanization": null, "meaning": "form (paperwork)", "part_of_speech": "noun", "frequency_rank": 320, "sample_sentence": "Llene este formulario, por favor.", "is_phrase": false },
+            { "text": "firma", "romanization": null, "meaning": "signature", "part_of_speech": "noun", "frequency_rank": 295, "sample_sentence": "Ponga su firma aquí.", "is_phrase": false },
+            { "text": "oficial", "romanization": null, "meaning": "official", "part_of_speech": "adjective", "frequency_rank": 245, "sample_sentence": "Es un documento oficial.", "is_phrase": false },
+            { "text": "permiso", "romanization": null, "meaning": "permit / permission", "part_of_speech": "noun", "frequency_rank": 265, "sample_sentence": "Necesito un permiso de trabajo.", "is_phrase": false },
+            { "text": "registro", "romanization": null, "meaning": "registration / record", "part_of_speech": "noun", "frequency_rank": 280, "sample_sentence": "El registro civil está en el centro.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Advanced Emotions",
+          "narrative": "Beyond happy and sad — express the nuanced feelings of daily life. Frustrated by traffic? Proud of your Spanish progress? Say it with precision.",
+          "words": [
+            { "text": "frustrado", "romanization": null, "meaning": "frustrated", "part_of_speech": "adjective", "frequency_rank": 355, "sample_sentence": "Estoy frustrado con el tráfico.", "is_phrase": false },
+            { "text": "decepcionado", "romanization": null, "meaning": "disappointed", "part_of_speech": "adjective", "frequency_rank": 370, "sample_sentence": "Estoy decepcionado con el servicio.", "is_phrase": false },
+            { "text": "orgulloso", "romanization": null, "meaning": "proud", "part_of_speech": "adjective", "frequency_rank": 305, "sample_sentence": "Estoy orgulloso de mi progreso.", "is_phrase": false },
+            { "text": "avergonzado", "romanization": null, "meaning": "embarrassed / ashamed", "part_of_speech": "adjective", "frequency_rank": 385, "sample_sentence": "Estoy avergonzado por mi error.", "is_phrase": false },
+            { "text": "ansioso", "romanization": null, "meaning": "anxious", "part_of_speech": "adjective", "frequency_rank": 340, "sample_sentence": "Me siento ansioso antes del examen.", "is_phrase": false },
+            { "text": "relajado", "romanization": null, "meaning": "relaxed", "part_of_speech": "adjective", "frequency_rank": 325, "sample_sentence": "Hoy me siento muy relajado.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Household Items",
+          "narrative": "Settling into your Airbnb or staying with a host family, you need to know the stuff that fills a Mexican home — from blankets to fans.",
+          "words": [
+            { "text": "armario", "romanization": null, "meaning": "closet / wardrobe", "part_of_speech": "noun", "frequency_rank": 310, "sample_sentence": "La ropa está en el armario.", "is_phrase": false },
+            { "text": "espejo", "romanization": null, "meaning": "mirror", "part_of_speech": "noun", "frequency_rank": 275, "sample_sentence": "Hay un espejo en el baño.", "is_phrase": false },
+            { "text": "cobija", "romanization": null, "meaning": "blanket", "part_of_speech": "noun", "frequency_rank": 350, "sample_sentence": "Necesito otra cobija, hace frío.", "is_phrase": false },
+            { "text": "almohada", "romanization": null, "meaning": "pillow", "part_of_speech": "noun", "frequency_rank": 335, "sample_sentence": "¿Hay una almohada extra?", "is_phrase": false },
+            { "text": "lámpara", "romanization": null, "meaning": "lamp", "part_of_speech": "noun", "frequency_rank": 290, "sample_sentence": "Prende la lámpara, por favor.", "is_phrase": false },
+            { "text": "ventilador", "romanization": null, "meaning": "fan (electric)", "part_of_speech": "noun", "frequency_rank": 365, "sample_sentence": "¿Funciona el ventilador?", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Garden & Plants",
+          "narrative": "Mexican gardens burst with bougainvillea, cactus, and tropical flowers. Whether tending a rooftop garden or visiting a botanical park, here's your green vocabulary.",
+          "words": [
+            { "text": "jardín", "romanization": null, "meaning": "garden", "part_of_speech": "noun", "frequency_rank": 245, "sample_sentence": "El jardín tiene muchas flores.", "is_phrase": false },
+            { "text": "planta", "romanization": null, "meaning": "plant", "part_of_speech": "noun", "frequency_rank": 230, "sample_sentence": "Esa planta necesita más agua.", "is_phrase": false },
+            { "text": "flor", "romanization": null, "meaning": "flower", "part_of_speech": "noun", "frequency_rank": 215, "sample_sentence": "Las flores de cempasúchil son naranjas.", "is_phrase": false },
+            { "text": "semilla", "romanization": null, "meaning": "seed", "part_of_speech": "noun", "frequency_rank": 320, "sample_sentence": "Plantamos las semillas en primavera.", "is_phrase": false },
+            { "text": "sembrar", "romanization": null, "meaning": "to plant / sow", "part_of_speech": "verb", "frequency_rank": 335, "sample_sentence": "Mi abuela siembra tomates en el jardín.", "is_phrase": false },
+            { "text": "crecer", "romanization": null, "meaning": "to grow", "part_of_speech": "verb", "frequency_rank": 250, "sample_sentence": "Las plantas crecen rápido con la lluvia.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Parties & Celebrations",
+          "narrative": "Mexican celebrations are legendary — from quinceañeras to posadas, Día de los Muertos to casual weekend fiestas. Join the party with the right words.",
+          "words": [
+            { "text": "regalo", "romanization": null, "meaning": "gift / present", "part_of_speech": "noun", "frequency_rank": 225, "sample_sentence": "Te traje un regalo.", "is_phrase": false },
+            { "text": "invitación", "romanization": null, "meaning": "invitation", "part_of_speech": "noun", "frequency_rank": 295, "sample_sentence": "Recibí una invitación a la boda.", "is_phrase": false },
+            { "text": "cumpleaños", "romanization": null, "meaning": "birthday", "part_of_speech": "noun", "frequency_rank": 260, "sample_sentence": "¡Feliz cumpleaños!", "is_phrase": false },
+            { "text": "celebrar", "romanization": null, "meaning": "to celebrate", "part_of_speech": "verb", "frequency_rank": 270, "sample_sentence": "Vamos a celebrar con una cena.", "is_phrase": false },
+            { "text": "decoración", "romanization": null, "meaning": "decoration", "part_of_speech": "noun", "frequency_rank": 340, "sample_sentence": "La decoración de la fiesta está preciosa.", "is_phrase": false },
+            { "text": "pastel", "romanization": null, "meaning": "cake", "part_of_speech": "noun", "frequency_rank": 285, "sample_sentence": "El pastel de tres leches está delicioso.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Marine Life",
+          "narrative": "Snorkeling in the cenotes of the Yucatán or diving off Cozumel, Mexico's waters teem with life. Here's your underwater vocabulary.",
+          "words": [
+            { "text": "arrecife", "romanization": null, "meaning": "reef", "part_of_speech": "noun", "frequency_rank": 380, "sample_sentence": "El arrecife de coral es espectacular.", "is_phrase": false },
+            { "text": "tortuga", "romanization": null, "meaning": "turtle / sea turtle", "part_of_speech": "noun", "frequency_rank": 295, "sample_sentence": "Vimos una tortuga marina en la playa.", "is_phrase": false },
+            { "text": "delfín", "romanization": null, "meaning": "dolphin", "part_of_speech": "noun", "frequency_rank": 330, "sample_sentence": "Los delfines nadan cerca del barco.", "is_phrase": false },
+            { "text": "ola", "romanization": null, "meaning": "wave", "part_of_speech": "noun", "frequency_rank": 255, "sample_sentence": "Las olas están muy grandes hoy.", "is_phrase": false },
+            { "text": "bucear", "romanization": null, "meaning": "to scuba dive", "part_of_speech": "verb", "frequency_rank": 365, "sample_sentence": "Quiero bucear en Cozumel.", "is_phrase": false },
+            { "text": "snorkel", "romanization": null, "meaning": "snorkel / snorkeling", "part_of_speech": "noun", "frequency_rank": 410, "sample_sentence": "Rentamos equipo de snorkel en la playa.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Mexican Drinks",
+          "narrative": "Beyond beer and tequila, Mexico has a world of traditional drinks — from sweet horchata to tangy tamarindo. Refresh yourself with these words.",
+          "words": [
+            { "text": "horchata", "romanization": null, "meaning": "sweet rice and cinnamon drink", "part_of_speech": "noun", "frequency_rank": 395, "sample_sentence": "Una horchata bien fría, por favor.", "is_phrase": false },
+            { "text": "agua fresca", "romanization": null, "meaning": "fresh fruit water drink", "part_of_speech": "noun", "frequency_rank": 360, "sample_sentence": "¿Qué sabores de agua fresca tienen?", "is_phrase": true },
+            { "text": "michelada", "romanization": null, "meaning": "beer with lime, salt, and chili", "part_of_speech": "noun", "frequency_rank": 405, "sample_sentence": "Quiero una michelada bien picosa.", "is_phrase": false },
+            { "text": "pulque", "romanization": null, "meaning": "fermented agave drink", "part_of_speech": "noun", "frequency_rank": 420, "sample_sentence": "El pulque es una bebida prehispánica.", "is_phrase": false },
+            { "text": "jamaica", "romanization": null, "meaning": "hibiscus drink", "part_of_speech": "noun", "frequency_rank": 375, "sample_sentence": "El agua de jamaica es mi favorita.", "is_phrase": false },
+            { "text": "tamarindo", "romanization": null, "meaning": "tamarind drink", "part_of_speech": "noun", "frequency_rank": 390, "sample_sentence": "Un agua de tamarindo con chile.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Crafts & Artisanry",
+          "narrative": "Mexico's artisan traditions stretch back millennia. From Oaxacan pottery to Chiapas textiles, these words connect you to the creative heritage.",
+          "words": [
+            { "text": "barro", "romanization": null, "meaning": "clay / earthenware", "part_of_speech": "noun", "frequency_rank": 335, "sample_sentence": "Este plato es de barro negro.", "is_phrase": false },
+            { "text": "cerámica", "romanization": null, "meaning": "ceramics / pottery", "part_of_speech": "noun", "frequency_rank": 345, "sample_sentence": "La cerámica de Talavera es famosa.", "is_phrase": false },
+            { "text": "tejido", "romanization": null, "meaning": "textile / weaving", "part_of_speech": "noun", "frequency_rank": 355, "sample_sentence": "Los tejidos de Chiapas son coloridos.", "is_phrase": false },
+            { "text": "plata", "romanization": null, "meaning": "silver", "part_of_speech": "noun", "frequency_rank": 270, "sample_sentence": "Taxco es famoso por su plata.", "is_phrase": false },
+            { "text": "tallado", "romanization": null, "meaning": "carving / carved", "part_of_speech": "noun", "frequency_rank": 380, "sample_sentence": "Compré un tallado de madera.", "is_phrase": false },
+            { "text": "bordado", "romanization": null, "meaning": "embroidery / embroidered", "part_of_speech": "noun", "frequency_rank": 390, "sample_sentence": "La blusa tiene un bordado precioso.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Daily Errands",
+          "narrative": "Running everyday errands in Mexico — waiting in line at the bank, sending a package, doing laundry. These practical words save you time.",
+          "words": [
+            { "text": "fila", "romanization": null, "meaning": "line / queue", "part_of_speech": "noun", "frequency_rank": 280, "sample_sentence": "La fila en el banco es larga.", "is_phrase": false },
+            { "text": "recargar", "romanization": null, "meaning": "to top up / recharge", "part_of_speech": "verb", "frequency_rank": 350, "sample_sentence": "Necesito recargar mi teléfono.", "is_phrase": false },
+            { "text": "copiar", "romanization": null, "meaning": "to copy", "part_of_speech": "verb", "frequency_rank": 305, "sample_sentence": "¿Puede copiar este documento?", "is_phrase": false },
+            { "text": "lavar ropa", "romanization": null, "meaning": "to do laundry", "part_of_speech": "phrase", "frequency_rank": 315, "sample_sentence": "Necesito lavar ropa esta tarde.", "is_phrase": true },
+            { "text": "estacionar", "romanization": null, "meaning": "to park (a vehicle)", "part_of_speech": "verb", "frequency_rank": 330, "sample_sentence": "¿Dónde puedo estacionar?", "is_phrase": false },
+            { "text": "recoger", "romanization": null, "meaning": "to pick up / collect", "part_of_speech": "verb", "frequency_rank": 265, "sample_sentence": "Voy a recoger un paquete.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Mexican Cuisine",
+          "narrative": "Beyond tacos — Mexico's cuisine is a UNESCO treasure. From complex mole sauces to steaming tamales, these are the dishes every visitor must know.",
+          "words": [
+            { "text": "mole", "romanization": null, "meaning": "complex chili-chocolate sauce", "part_of_speech": "noun", "frequency_rank": 355, "sample_sentence": "El mole poblano lleva más de veinte ingredientes.", "is_phrase": false },
+            { "text": "tamales", "romanization": null, "meaning": "steamed corn dough with filling", "part_of_speech": "noun", "frequency_rank": 340, "sample_sentence": "Los tamales de mi abuela son los mejores.", "is_phrase": false },
+            { "text": "pozole", "romanization": null, "meaning": "hominy and meat stew", "part_of_speech": "noun", "frequency_rank": 375, "sample_sentence": "El pozole rojo es mi favorito.", "is_phrase": false },
+            { "text": "elote", "romanization": null, "meaning": "corn on the cob (Mexican style)", "part_of_speech": "noun", "frequency_rank": 360, "sample_sentence": "Quiero un elote con mayonesa y chile.", "is_phrase": false },
+            { "text": "churros", "romanization": null, "meaning": "fried dough pastry", "part_of_speech": "noun", "frequency_rank": 385, "sample_sentence": "Vamos por unos churros con chocolate.", "is_phrase": false },
+            { "text": "guacamole", "romanization": null, "meaning": "mashed avocado dip", "part_of_speech": "noun", "frequency_rank": 370, "sample_sentence": "El guacamole tiene aguacate, limón y cilantro.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Environmental",
+          "narrative": "Mexico faces real environmental challenges — and its people are increasingly eco-conscious. Talk about sustainability and the natural world.",
+          "words": [
+            { "text": "basura", "romanization": null, "meaning": "trash / garbage", "part_of_speech": "noun", "frequency_rank": 260, "sample_sentence": "No tires basura en la calle.", "is_phrase": false },
+            { "text": "reciclar", "romanization": null, "meaning": "to recycle", "part_of_speech": "verb", "frequency_rank": 345, "sample_sentence": "Es importante reciclar el plástico.", "is_phrase": false },
+            { "text": "contaminación", "romanization": null, "meaning": "pollution / contamination", "part_of_speech": "noun", "frequency_rank": 330, "sample_sentence": "La contaminación en la ciudad es un problema.", "is_phrase": false },
+            { "text": "naturaleza", "romanization": null, "meaning": "nature", "part_of_speech": "noun", "frequency_rank": 255, "sample_sentence": "Me encanta estar en la naturaleza.", "is_phrase": false },
+            { "text": "ambiente", "romanization": null, "meaning": "environment", "part_of_speech": "noun", "frequency_rank": 240, "sample_sentence": "Hay que cuidar el medio ambiente.", "is_phrase": false },
+            { "text": "ahorrar", "romanization": null, "meaning": "to save (resources/money)", "part_of_speech": "verb", "frequency_rank": 290, "sample_sentence": "Debemos ahorrar agua.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Describing People",
+          "narrative": "Talking about someone's character is essential in social settings. Whether praising a new friend or warning about a sketchy taxi driver, these words help.",
+          "words": [
+            { "text": "amable", "romanization": null, "meaning": "kind / friendly", "part_of_speech": "adjective", "frequency_rank": 245, "sample_sentence": "La gente aquí es muy amable.", "is_phrase": false },
+            { "text": "educado", "romanization": null, "meaning": "polite / well-mannered", "part_of_speech": "adjective", "frequency_rank": 295, "sample_sentence": "Es un joven muy educado.", "is_phrase": false },
+            { "text": "honesto", "romanization": null, "meaning": "honest", "part_of_speech": "adjective", "frequency_rank": 305, "sample_sentence": "Necesitamos ser honestos.", "is_phrase": false },
+            { "text": "tacaño", "romanization": null, "meaning": "stingy / cheap", "part_of_speech": "adjective", "frequency_rank": 385, "sample_sentence": "No seas tacaño, invita la cena.", "is_phrase": false },
+            { "text": "generoso", "romanization": null, "meaning": "generous", "part_of_speech": "adjective", "frequency_rank": 315, "sample_sentence": "Mi vecino es muy generoso.", "is_phrase": false },
+            { "text": "simpático", "romanization": null, "meaning": "nice / likeable", "part_of_speech": "adjective", "frequency_rank": 280, "sample_sentence": "Tu amigo es muy simpático.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Travel Logistics",
+          "narrative": "Booking confirmations, schedule changes, cancellations — the behind-the-scenes vocabulary of travel that keeps your trip running smoothly.",
+          "words": [
+            { "text": "horario", "romanization": null, "meaning": "schedule / timetable", "part_of_speech": "noun", "frequency_rank": 255, "sample_sentence": "¿Cuál es el horario de salidas?", "is_phrase": false },
+            { "text": "reserva", "romanization": null, "meaning": "reservation / booking", "part_of_speech": "noun", "frequency_rank": 270, "sample_sentence": "Hice una reserva para dos personas.", "is_phrase": false },
+            { "text": "confirmar", "romanization": null, "meaning": "to confirm", "part_of_speech": "verb", "frequency_rank": 285, "sample_sentence": "¿Puede confirmar mi reservación?", "is_phrase": false },
+            { "text": "cancelar", "romanization": null, "meaning": "to cancel", "part_of_speech": "verb", "frequency_rank": 300, "sample_sentence": "Necesito cancelar mi vuelo.", "is_phrase": false },
+            { "text": "reembolso", "romanization": null, "meaning": "refund", "part_of_speech": "noun", "frequency_rank": 385, "sample_sentence": "¿Es posible obtener un reembolso?", "is_phrase": false },
+            { "text": "garantía", "romanization": null, "meaning": "guarantee / warranty", "part_of_speech": "noun", "frequency_rank": 340, "sample_sentence": "El producto tiene un año de garantía.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Clothing Details",
+          "narrative": "At a tailor's shop in San Miguel de Allende, or browsing traditional huipiles, you need the vocabulary to describe fabrics and garment details.",
+          "words": [
+            { "text": "manga", "romanization": null, "meaning": "sleeve", "part_of_speech": "noun", "frequency_rank": 310, "sample_sentence": "Quiero una camisa de manga corta.", "is_phrase": false },
+            { "text": "bolsillo", "romanization": null, "meaning": "pocket", "part_of_speech": "noun", "frequency_rank": 295, "sample_sentence": "Guarda las llaves en el bolsillo.", "is_phrase": false },
+            { "text": "tela", "romanization": null, "meaning": "fabric / cloth", "part_of_speech": "noun", "frequency_rank": 275, "sample_sentence": "Esta tela es de buena calidad.", "is_phrase": false },
+            { "text": "algodón", "romanization": null, "meaning": "cotton", "part_of_speech": "noun", "frequency_rank": 325, "sample_sentence": "La camiseta es de algodón.", "is_phrase": false },
+            { "text": "seda", "romanization": null, "meaning": "silk", "part_of_speech": "noun", "frequency_rank": 340, "sample_sentence": "El rebozo de seda es hermoso.", "is_phrase": false },
+            { "text": "lana", "romanization": null, "meaning": "wool", "part_of_speech": "noun", "frequency_rank": 310, "sample_sentence": "El suéter de lana es calientito.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Kitchen Utensils",
+          "narrative": "Cooking in your Airbnb kitchen or helping your host family prepare dinner, you'll need to ask for the right tools.",
+          "words": [
+            { "text": "olla", "romanization": null, "meaning": "pot", "part_of_speech": "noun", "frequency_rank": 280, "sample_sentence": "Pon el agua a hervir en la olla.", "is_phrase": false },
+            { "text": "sartén", "romanization": null, "meaning": "frying pan / skillet", "part_of_speech": "noun", "frequency_rank": 310, "sample_sentence": "Calienta el aceite en la sartén.", "is_phrase": false },
+            { "text": "cuchillo", "romanization": null, "meaning": "knife", "part_of_speech": "noun", "frequency_rank": 265, "sample_sentence": "Pásame el cuchillo para cortar.", "is_phrase": false },
+            { "text": "licuadora", "romanization": null, "meaning": "blender", "part_of_speech": "noun", "frequency_rank": 355, "sample_sentence": "Pon los ingredientes en la licuadora.", "is_phrase": false },
+            { "text": "horno", "romanization": null, "meaning": "oven", "part_of_speech": "noun", "frequency_rank": 290, "sample_sentence": "Precalienta el horno a 180 grados.", "is_phrase": false },
+            { "text": "estufa", "romanization": null, "meaning": "stove / range", "part_of_speech": "noun", "frequency_rank": 305, "sample_sentence": "La estufa tiene cuatro quemadores.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Professions",
+          "narrative": "Meeting people from all walks of life — from lawyers to journalists, engineers to nurses. Know how to ask and describe what people do for a living.",
+          "words": [
+            { "text": "abogado", "romanization": null, "meaning": "lawyer", "part_of_speech": "noun", "frequency_rank": 255, "sample_sentence": "Mi hermano es abogado.", "is_phrase": false },
+            { "text": "ingeniero", "romanization": null, "meaning": "engineer", "part_of_speech": "noun", "frequency_rank": 270, "sample_sentence": "Ella es ingeniera civil.", "is_phrase": false },
+            { "text": "enfermera", "romanization": null, "meaning": "nurse", "part_of_speech": "noun", "frequency_rank": 285, "sample_sentence": "La enfermera me tomó la presión.", "is_phrase": false },
+            { "text": "arquitecto", "romanization": null, "meaning": "architect", "part_of_speech": "noun", "frequency_rank": 315, "sample_sentence": "El arquitecto diseñó esta casa.", "is_phrase": false },
+            { "text": "contador", "romanization": null, "meaning": "accountant", "part_of_speech": "noun", "frequency_rank": 330, "sample_sentence": "Necesito hablar con mi contador.", "is_phrase": false },
+            { "text": "periodista", "romanization": null, "meaning": "journalist", "part_of_speech": "noun", "frequency_rank": 295, "sample_sentence": "La periodista escribió un buen artículo.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Body Actions",
+          "narrative": "At the pharmacy explaining symptoms, or just describing what happens when you catch a cold at 2,200 meters altitude — your body has its own vocabulary.",
+          "words": [
+            { "text": "toser", "romanization": null, "meaning": "to cough", "part_of_speech": "verb", "frequency_rank": 340, "sample_sentence": "No paro de toser.", "is_phrase": false },
+            { "text": "estornudar", "romanization": null, "meaning": "to sneeze", "part_of_speech": "verb", "frequency_rank": 395, "sample_sentence": "Estornudo mucho por la alergia.", "is_phrase": false },
+            { "text": "bostezar", "romanization": null, "meaning": "to yawn", "part_of_speech": "verb", "frequency_rank": 415, "sample_sentence": "Estoy bostezando de tanto sueño.", "is_phrase": false },
+            { "text": "respirar", "romanization": null, "meaning": "to breathe", "part_of_speech": "verb", "frequency_rank": 285, "sample_sentence": "Respira profundo y relájate.", "is_phrase": false },
+            { "text": "sudar", "romanization": null, "meaning": "to sweat", "part_of_speech": "verb", "frequency_rank": 355, "sample_sentence": "Sudo mucho con el calor.", "is_phrase": false },
+            { "text": "tragar", "romanization": null, "meaning": "to swallow", "part_of_speech": "verb", "frequency_rank": 335, "sample_sentence": "Me duele tragar comida.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Textures & Materials",
+          "narrative": "Touch the rough volcanic stone, the smooth obsidian, the soft alpaca wool. Mexico is a sensory experience — describe what you feel.",
+          "words": [
+            { "text": "suave", "romanization": null, "meaning": "soft / smooth", "part_of_speech": "adjective", "frequency_rank": 235, "sample_sentence": "Esta tela es muy suave.", "is_phrase": false },
+            { "text": "duro", "romanization": null, "meaning": "hard", "part_of_speech": "adjective", "frequency_rank": 220, "sample_sentence": "El pan está duro.", "is_phrase": false },
+            { "text": "liso", "romanization": null, "meaning": "smooth / flat", "part_of_speech": "adjective", "frequency_rank": 310, "sample_sentence": "La superficie es lisa.", "is_phrase": false },
+            { "text": "áspero", "romanization": null, "meaning": "rough / coarse", "part_of_speech": "adjective", "frequency_rank": 345, "sample_sentence": "La piedra volcánica es áspera.", "is_phrase": false },
+            { "text": "pegajoso", "romanization": null, "meaning": "sticky", "part_of_speech": "adjective", "frequency_rank": 385, "sample_sentence": "La miel está pegajosa.", "is_phrase": false },
+            { "text": "resbaloso", "romanization": null, "meaning": "slippery", "part_of_speech": "adjective", "frequency_rank": 370, "sample_sentence": "Cuidado, el piso está resbaloso.", "is_phrase": false }
+          ]
+        }
+      ]
+    }
+  ],
+  "travel_packs": [
+    {
+      "title": "2 Weeks in Mexico City",
+      "situations": [
+        {
+          "title": "At the Airport",
+          "narrative": "You've landed at Mexico City's Benito Juárez International Airport. The altitude hits you as you exit the plane. Navigate customs and find your ride.",
+          "words": [
+            { "text": "aeropuerto", "romanization": null, "meaning": "airport", "part_of_speech": "noun", "frequency_rank": 148, "sample_sentence": "Bienvenido al aeropuerto.", "is_phrase": false },
+            { "text": "pasaporte", "romanization": null, "meaning": "passport", "part_of_speech": "noun", "frequency_rank": 195, "sample_sentence": "Su pasaporte, por favor.", "is_phrase": false },
+            { "text": "aduana", "romanization": null, "meaning": "customs", "part_of_speech": "noun", "frequency_rank": 328, "sample_sentence": "Pase por la aduana.", "is_phrase": false },
+            { "text": "equipaje", "romanization": null, "meaning": "luggage", "part_of_speech": "noun", "frequency_rank": 252, "sample_sentence": "Mi equipaje no llegó.", "is_phrase": false },
+            { "text": "vuelo", "romanization": null, "meaning": "flight", "part_of_speech": "noun", "frequency_rank": 148, "sample_sentence": "Mi vuelo se retrasó.", "is_phrase": false },
+            { "text": "salida", "romanization": null, "meaning": "exit / departure", "part_of_speech": "noun", "frequency_rank": 72, "sample_sentence": "¿Dónde está la salida?", "is_phrase": false },
+            { "text": "llegada", "romanization": null, "meaning": "arrival", "part_of_speech": "noun", "frequency_rank": 172, "sample_sentence": "Llegadas internacionales.", "is_phrase": false },
+            { "text": "maleta", "romanization": null, "meaning": "suitcase", "part_of_speech": "noun", "frequency_rank": 235, "sample_sentence": "Mi maleta es la negra.", "is_phrase": false },
+            { "text": "declarar", "romanization": null, "meaning": "to declare (customs)", "part_of_speech": "verb", "frequency_rank": 295, "sample_sentence": "¿Tiene algo que declarar?", "is_phrase": false },
+            { "text": "migración", "romanization": null, "meaning": "immigration (checkpoint)", "part_of_speech": "noun", "frequency_rank": 310, "sample_sentence": "La fila de migración es larga.", "is_phrase": false },
+            { "text": "puerta de embarque", "romanization": null, "meaning": "boarding gate", "part_of_speech": "phrase", "frequency_rank": 340, "sample_sentence": "¿Cuál es la puerta de embarque?", "is_phrase": true },
+            { "text": "retraso", "romanization": null, "meaning": "delay", "part_of_speech": "noun", "frequency_rank": 285, "sample_sentence": "El vuelo tiene un retraso de dos horas.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Getting Around CDMX",
+          "narrative": "Mexico City's transport system is vast — the metro is cheap and efficient, combis are an adventure, and Uber is everywhere. Navigate like a local.",
+          "words": [
+            { "text": "combi", "romanization": null, "meaning": "minibus / shared van", "part_of_speech": "noun", "frequency_rank": 345, "sample_sentence": "La combi va a Coyoacán.", "is_phrase": false },
+            { "text": "pesero", "romanization": null, "meaning": "public minibus (CDMX)", "part_of_speech": "noun", "frequency_rank": 365, "sample_sentence": "El pesero cuesta cinco pesos.", "is_phrase": false },
+            { "text": "taxímetro", "romanization": null, "meaning": "taxi meter", "part_of_speech": "noun", "frequency_rank": 385, "sample_sentence": "¿Puede poner el taxímetro?", "is_phrase": false },
+            { "text": "tráfico", "romanization": null, "meaning": "traffic", "part_of_speech": "noun", "frequency_rank": 218, "sample_sentence": "Hay mucho tráfico.", "is_phrase": false },
+            { "text": "cuadra", "romanization": null, "meaning": "block (city)", "part_of_speech": "noun", "frequency_rank": 245, "sample_sentence": "Dos cuadras más adelante.", "is_phrase": false },
+            { "text": "esquina", "romanization": null, "meaning": "corner (street)", "part_of_speech": "noun", "frequency_rank": 148, "sample_sentence": "En la esquina de la calle.", "is_phrase": false },
+            { "text": "bájame aquí", "romanization": null, "meaning": "drop me off here", "part_of_speech": "phrase", "frequency_rank": 310, "sample_sentence": "Bájame aquí, por favor.", "is_phrase": true },
+            { "text": "transbordo", "romanization": null, "meaning": "transfer (transit)", "part_of_speech": "noun", "frequency_rank": 345, "sample_sentence": "Necesitas hacer transbordo en Pino Suárez.", "is_phrase": false },
+            { "text": "tarjeta de metro", "romanization": null, "meaning": "metro card", "part_of_speech": "phrase", "frequency_rank": 355, "sample_sentence": "Compra una tarjeta de metro en la taquilla.", "is_phrase": true },
+            { "text": "ciclovía", "romanization": null, "meaning": "bike lane", "part_of_speech": "noun", "frequency_rank": 390, "sample_sentence": "Hay ciclovía en Paseo de la Reforma.", "is_phrase": false },
+            { "text": "semáforo", "romanization": null, "meaning": "traffic light", "part_of_speech": "noun", "frequency_rank": 320, "sample_sentence": "Da vuelta en el semáforo.", "is_phrase": false },
+            { "text": "atajo", "romanization": null, "meaning": "shortcut", "part_of_speech": "noun", "frequency_rank": 365, "sample_sentence": "Conozco un atajo para evitar el tráfico.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Mexican Food & Restaurants",
+          "narrative": "From tacos al pastor at midnight to chilaquiles for breakfast, Mexico City's food scene is unparalleled. Order like a local.",
+          "words": [
+            { "text": "tacos al pastor", "romanization": null, "meaning": "spit-roasted pork tacos", "part_of_speech": "noun", "frequency_rank": 350, "sample_sentence": "Tres tacos al pastor, por favor.", "is_phrase": false },
+            { "text": "quesadilla", "romanization": null, "meaning": "folded tortilla with cheese", "part_of_speech": "noun", "frequency_rank": 355, "sample_sentence": "Una quesadilla de huitlacoche.", "is_phrase": false },
+            { "text": "chilaquiles", "romanization": null, "meaning": "fried tortilla in salsa (breakfast dish)", "part_of_speech": "noun", "frequency_rank": 362, "sample_sentence": "Chilaquiles verdes para desayunar.", "is_phrase": false },
+            { "text": "salsa", "romanization": null, "meaning": "sauce", "part_of_speech": "noun", "frequency_rank": 128, "sample_sentence": "¿Cuál salsa quiere?", "is_phrase": false },
+            { "text": "tortilla", "romanization": null, "meaning": "corn/flour flatbread", "part_of_speech": "noun", "frequency_rank": 198, "sample_sentence": "Tortilla de maíz, por favor.", "is_phrase": false },
+            { "text": "mezcal", "romanization": null, "meaning": "agave spirit (smoky)", "part_of_speech": "noun", "frequency_rank": 372, "sample_sentence": "Un mezcal con sal de gusano.", "is_phrase": false },
+            { "text": "antojitos", "romanization": null, "meaning": "street food / snacks", "part_of_speech": "noun", "frequency_rank": 378, "sample_sentence": "Vamos por unos antojitos.", "is_phrase": false },
+            { "text": "propina", "romanization": null, "meaning": "tip (gratuity)", "part_of_speech": "noun", "frequency_rank": 268, "sample_sentence": "Dejé buena propina al mesero.", "is_phrase": false },
+            { "text": "mesero", "romanization": null, "meaning": "waiter", "part_of_speech": "noun", "frequency_rank": 295, "sample_sentence": "Mesero, la cuenta por favor.", "is_phrase": false },
+            { "text": "comida corrida", "romanization": null, "meaning": "set lunch menu", "part_of_speech": "phrase", "frequency_rank": 360, "sample_sentence": "La comida corrida incluye sopa y postre.", "is_phrase": true },
+            { "text": "para llevar", "romanization": null, "meaning": "to go / takeaway", "part_of_speech": "phrase", "frequency_rank": 280, "sample_sentence": "Quiero los tacos para llevar.", "is_phrase": true },
+            { "text": "fonda", "romanization": null, "meaning": "small family restaurant", "part_of_speech": "noun", "frequency_rank": 370, "sample_sentence": "La fonda de la esquina tiene comida casera.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "At the Hotel / Airbnb",
+          "narrative": "You're staying in a charming colonia in Roma Norte. Here's how to handle check-in, requests, and daily needs.",
+          "words": [
+            { "text": "reservación", "romanization": null, "meaning": "reservation", "part_of_speech": "noun", "frequency_rank": 258, "sample_sentence": "Tengo una reservación.", "is_phrase": false },
+            { "text": "toalla", "romanization": null, "meaning": "towel", "part_of_speech": "noun", "frequency_rank": 268, "sample_sentence": "Necesito más toallas.", "is_phrase": false },
+            { "text": "limpio", "romanization": null, "meaning": "clean", "part_of_speech": "adjective", "frequency_rank": 128, "sample_sentence": "La habitación está limpia.", "is_phrase": false },
+            { "text": "ruidoso", "romanization": null, "meaning": "noisy", "part_of_speech": "adjective", "frequency_rank": 305, "sample_sentence": "La calle es muy ruidosa.", "is_phrase": false },
+            { "text": "calefacción", "romanization": null, "meaning": "heating", "part_of_speech": "noun", "frequency_rank": 325, "sample_sentence": "¿Hay calefacción?", "is_phrase": false },
+            { "text": "sábanas", "romanization": null, "meaning": "sheets (bed)", "part_of_speech": "noun", "frequency_rank": 315, "sample_sentence": "¿Puede cambiar las sábanas?", "is_phrase": false },
+            { "text": "recepción", "romanization": null, "meaning": "front desk / reception", "part_of_speech": "noun", "frequency_rank": 275, "sample_sentence": "Pregunte en la recepción.", "is_phrase": false },
+            { "text": "desayuno incluido", "romanization": null, "meaning": "breakfast included", "part_of_speech": "phrase", "frequency_rank": 310, "sample_sentence": "¿El desayuno está incluido?", "is_phrase": true },
+            { "text": "regadera", "romanization": null, "meaning": "shower (Mexican Spanish)", "part_of_speech": "noun", "frequency_rank": 340, "sample_sentence": "La regadera no tiene agua caliente.", "is_phrase": false },
+            { "text": "piso", "romanization": null, "meaning": "floor / story", "part_of_speech": "noun", "frequency_rank": 225, "sample_sentence": "Mi habitación está en el tercer piso.", "is_phrase": false },
+            { "text": "caja fuerte", "romanization": null, "meaning": "safe / safety deposit box", "part_of_speech": "phrase", "frequency_rank": 355, "sample_sentence": "Guarda tu pasaporte en la caja fuerte.", "is_phrase": true }
+          ]
+        },
+        {
+          "title": "Shopping & Markets",
+          "narrative": "From the massive Mercado de la Merced to boutiques in Polanco, shopping in CDMX is an adventure. Bargain, browse, and buy.",
+          "words": [
+            { "text": "regatear", "romanization": null, "meaning": "to bargain / haggle", "part_of_speech": "verb", "frequency_rank": 332, "sample_sentence": "¿Se puede regatear?", "is_phrase": false },
+            { "text": "artesanía", "romanization": null, "meaning": "handicraft / artisan goods", "part_of_speech": "noun", "frequency_rank": 308, "sample_sentence": "Busco artesanías mexicanas.", "is_phrase": false },
+            { "text": "recuerdo", "romanization": null, "meaning": "souvenir / memory", "part_of_speech": "noun", "frequency_rank": 72, "sample_sentence": "Quiero un recuerdo de México.", "is_phrase": false },
+            { "text": "hecho a mano", "romanization": null, "meaning": "handmade", "part_of_speech": "phrase", "frequency_rank": 298, "sample_sentence": "¿Es hecho a mano?", "is_phrase": true },
+            { "text": "bolsa", "romanization": null, "meaning": "bag", "part_of_speech": "noun", "frequency_rank": 112, "sample_sentence": "¿Tiene bolsa?", "is_phrase": false },
+            { "text": "probador", "romanization": null, "meaning": "fitting room", "part_of_speech": "noun", "frequency_rank": 338, "sample_sentence": "¿Dónde está el probador?", "is_phrase": false },
+            { "text": "ganga", "romanization": null, "meaning": "bargain / deal", "part_of_speech": "noun", "frequency_rank": 352, "sample_sentence": "¡Qué ganga!", "is_phrase": false },
+            { "text": "devolver", "romanization": null, "meaning": "to return (item)", "part_of_speech": "verb", "frequency_rank": 265, "sample_sentence": "¿Puedo devolver esto?", "is_phrase": false },
+            { "text": "recibo", "romanization": null, "meaning": "receipt", "part_of_speech": "noun", "frequency_rank": 280, "sample_sentence": "¿Me da un recibo, por favor?", "is_phrase": false },
+            { "text": "oferta", "romanization": null, "meaning": "offer / sale (promotion)", "part_of_speech": "noun", "frequency_rank": 245, "sample_sentence": "Hay una oferta de dos por uno.", "is_phrase": false },
+            { "text": "envolver", "romanization": null, "meaning": "to wrap (gift)", "part_of_speech": "verb", "frequency_rank": 310, "sample_sentence": "¿Puede envolver esto para regalo?", "is_phrase": false },
+            { "text": "tianguis", "romanization": null, "meaning": "open-air street market", "part_of_speech": "noun", "frequency_rank": 375, "sample_sentence": "El tianguis de los martes tiene de todo.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Sightseeing & Culture",
+          "narrative": "Teotihuacán pyramids, Frida Kahlo's house, Xochimilco canals — Mexico City is a cultural wonderland. Here's how to explore it.",
+          "words": [
+            { "text": "pirámide", "romanization": null, "meaning": "pyramid", "part_of_speech": "noun", "frequency_rank": 295, "sample_sentence": "La pirámide del Sol es enorme.", "is_phrase": false },
+            { "text": "ruinas", "romanization": null, "meaning": "ruins", "part_of_speech": "noun", "frequency_rank": 248, "sample_sentence": "Las ruinas son impresionantes.", "is_phrase": false },
+            { "text": "catedral", "romanization": null, "meaning": "cathedral", "part_of_speech": "noun", "frequency_rank": 205, "sample_sentence": "La Catedral Metropolitana es hermosa.", "is_phrase": false },
+            { "text": "mural", "romanization": null, "meaning": "mural", "part_of_speech": "noun", "frequency_rank": 285, "sample_sentence": "Los murales de Diego Rivera.", "is_phrase": false },
+            { "text": "entrada", "romanization": null, "meaning": "entrance / admission", "part_of_speech": "noun", "frequency_rank": 55, "sample_sentence": "¿Cuánto cuesta la entrada?", "is_phrase": false },
+            { "text": "guía", "romanization": null, "meaning": "guide", "part_of_speech": "noun", "frequency_rank": 82, "sample_sentence": "¿Hay visita guiada?", "is_phrase": false },
+            { "text": "horario", "romanization": null, "meaning": "schedule / hours", "part_of_speech": "noun", "frequency_rank": 172, "sample_sentence": "¿Cuál es el horario?", "is_phrase": false },
+            { "text": "recorrido", "romanization": null, "meaning": "tour / route", "part_of_speech": "noun", "frequency_rank": 290, "sample_sentence": "El recorrido dura dos horas.", "is_phrase": false },
+            { "text": "patrimonio", "romanization": null, "meaning": "heritage / patrimony", "part_of_speech": "noun", "frequency_rank": 305, "sample_sentence": "Es patrimonio de la humanidad.", "is_phrase": false },
+            { "text": "exposición", "romanization": null, "meaning": "exhibition", "part_of_speech": "noun", "frequency_rank": 275, "sample_sentence": "Hay una exposición temporal de Frida Kahlo.", "is_phrase": false },
+            { "text": "mirador", "romanization": null, "meaning": "viewpoint / lookout", "part_of_speech": "noun", "frequency_rank": 340, "sample_sentence": "Desde el mirador se ve toda la ciudad.", "is_phrase": false },
+            { "text": "galería", "romanization": null, "meaning": "gallery", "part_of_speech": "noun", "frequency_rank": 285, "sample_sentence": "Visitamos una galería de arte contemporáneo.", "is_phrase": false }
+          ]
+        },
+        {
+          "title": "Emergency in Mexico",
+          "narrative": "You hope you won't need these, but just in case — from stomach bugs to lost wallets, be prepared for the unexpected.",
+          "words": [
+            { "text": "farmacia", "romanization": null, "meaning": "pharmacy", "part_of_speech": "noun", "frequency_rank": 218, "sample_sentence": "¿Dónde hay una farmacia?", "is_phrase": false },
+            { "text": "alergia", "romanization": null, "meaning": "allergy", "part_of_speech": "noun", "frequency_rank": 298, "sample_sentence": "Tengo alergia a los mariscos.", "is_phrase": false },
+            { "text": "ambulancia", "romanization": null, "meaning": "ambulance", "part_of_speech": "noun", "frequency_rank": 268, "sample_sentence": "¡Llamen una ambulancia!", "is_phrase": false },
+            { "text": "perdido", "romanization": null, "meaning": "lost", "part_of_speech": "adjective", "frequency_rank": 78, "sample_sentence": "Estoy perdido.", "is_phrase": false },
+            { "text": "cartera", "romanization": null, "meaning": "wallet", "part_of_speech": "noun", "frequency_rank": 185, "sample_sentence": "Perdí mi cartera.", "is_phrase": false },
+            { "text": "seguro", "romanization": null, "meaning": "insurance / safe", "part_of_speech": "noun", "frequency_rank": 28, "sample_sentence": "Tengo seguro de viaje.", "is_phrase": false },
+            { "text": "embajada", "romanization": null, "meaning": "embassy", "part_of_speech": "noun", "frequency_rank": 285, "sample_sentence": "¿Dónde está la embajada?", "is_phrase": false },
+            { "text": "denuncia", "romanization": null, "meaning": "police report / complaint", "part_of_speech": "noun", "frequency_rank": 305, "sample_sentence": "Necesito levantar una denuncia.", "is_phrase": false },
+            { "text": "robo", "romanization": null, "meaning": "theft / robbery", "part_of_speech": "noun", "frequency_rank": 270, "sample_sentence": "Quiero reportar un robo.", "is_phrase": false },
+            { "text": "pastilla", "romanization": null, "meaning": "pill / tablet", "part_of_speech": "noun", "frequency_rank": 290, "sample_sentence": "¿Tiene pastillas para el dolor de cabeza?", "is_phrase": false },
+            { "text": "consulta médica", "romanization": null, "meaning": "medical appointment", "part_of_speech": "phrase", "frequency_rank": 330, "sample_sentence": "Necesito una consulta médica urgente.", "is_phrase": true },
+            { "text": "intoxicación", "romanization": null, "meaning": "food poisoning", "part_of_speech": "noun", "frequency_rank": 355, "sample_sentence": "Creo que tengo una intoxicación.", "is_phrase": false }
+          ]
+        }
+      ]
+    }
+  ]
+}
