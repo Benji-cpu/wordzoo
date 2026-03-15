@@ -146,4 +146,134 @@ CREATE TABLE IF NOT EXISTS scene_words (
   sort_order INTEGER NOT NULL DEFAULT 0,
   PRIMARY KEY (scene_id, word_id)
 );
+
+-- User Paths (active/completed path tracking)
+CREATE TABLE IF NOT EXISTS user_paths (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  path_id UUID NOT NULL REFERENCES paths(id) ON DELETE CASCADE,
+  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'completed', 'abandoned')),
+  started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  completed_at TIMESTAMPTZ,
+  UNIQUE(user_id, path_id)
+);
+
+-- Tutor Sessions
+CREATE TABLE IF NOT EXISTS tutor_sessions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  language_id UUID NOT NULL REFERENCES languages(id) ON DELETE CASCADE,
+  mode TEXT NOT NULL CHECK (mode IN ('free_chat','role_play','word_review','grammar_glimpse','pronunciation_coach')),
+  scenario TEXT,
+  started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  ended_at TIMESTAMPTZ,
+  summary JSONB,
+  tokens_used INTEGER NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS idx_tutor_sessions_user ON tutor_sessions(user_id, started_at DESC);
+
+-- Tutor Messages
+CREATE TABLE IF NOT EXISTS tutor_messages (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  session_id UUID NOT NULL REFERENCES tutor_sessions(id) ON DELETE CASCADE,
+  role TEXT NOT NULL CHECK (role IN ('user','model')),
+  content TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_tutor_messages_session ON tutor_messages(session_id, created_at);
+
+-- Community Mnemonics (submitted to community)
+CREATE TABLE IF NOT EXISTS community_mnemonics (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  mnemonic_id UUID NOT NULL REFERENCES mnemonics(id) ON DELETE CASCADE,
+  submitted_by UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','approved','rejected','flagged')),
+  submitted_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  reviewed_at TIMESTAMPTZ,
+  UNIQUE(mnemonic_id)
+);
+CREATE INDEX IF NOT EXISTS idx_community_mnemonics_status ON community_mnemonics(status);
+
+-- Mnemonic Votes (one upvote per user per mnemonic)
+CREATE TABLE IF NOT EXISTS mnemonic_votes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  mnemonic_id UUID NOT NULL REFERENCES mnemonics(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE(user_id, mnemonic_id)
+);
+CREATE INDEX IF NOT EXISTS idx_mnemonic_votes_mnemonic ON mnemonic_votes(mnemonic_id);
+
+-- Mnemonic Flags (user reports)
+CREATE TABLE IF NOT EXISTS mnemonic_flags (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  mnemonic_id UUID NOT NULL REFERENCES mnemonics(id) ON DELETE CASCADE,
+  reason TEXT NOT NULL CHECK (reason IN ('offensive','spam','misleading','other')),
+  detail TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  resolved BOOLEAN NOT NULL DEFAULT false,
+  UNIQUE(user_id, mnemonic_id)
+);
+
+-- Share Events
+CREATE TABLE IF NOT EXISTS share_events (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  mnemonic_id UUID NOT NULL REFERENCES mnemonics(id) ON DELETE CASCADE,
+  word_id UUID NOT NULL REFERENCES words(id) ON DELETE CASCADE,
+  platform TEXT,
+  format TEXT NOT NULL DEFAULT 'square' CHECK (format IN ('square','story')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_share_events_user ON share_events(user_id, created_at DESC);
+
+-- Referrals
+CREATE TABLE IF NOT EXISTS referrals (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  referrer_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  referred_user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  click_ip TEXT,
+  click_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  signup_at TIMESTAMPTZ,
+  status TEXT NOT NULL DEFAULT 'clicked' CHECK (status IN ('clicked','signed_up'))
+);
+CREATE INDEX IF NOT EXISTS idx_referrals_referrer ON referrals(referrer_id);
+
+-- Subscriptions
+CREATE TABLE IF NOT EXISTS subscriptions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  stripe_customer_id TEXT NOT NULL,
+  stripe_subscription_id TEXT NOT NULL UNIQUE,
+  plan TEXT NOT NULL CHECK (plan IN ('monthly', 'yearly')),
+  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'canceled', 'past_due', 'incomplete')),
+  current_period_end TIMESTAMPTZ NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_user ON subscriptions(user_id);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_stripe_customer ON subscriptions(stripe_customer_id);
+
+-- Purchases (travel pack one-time purchases)
+CREATE TABLE IF NOT EXISTS purchases (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  pack_id UUID NOT NULL REFERENCES paths(id) ON DELETE CASCADE,
+  stripe_payment_id TEXT NOT NULL UNIQUE,
+  purchased_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_purchases_user ON purchases(user_id);
+
+-- Daily Usage (free tier limit tracking)
+CREATE TABLE IF NOT EXISTS daily_usage (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  date DATE NOT NULL DEFAULT CURRENT_DATE,
+  words_learned INTEGER NOT NULL DEFAULT 0,
+  tutor_messages INTEGER NOT NULL DEFAULT 0,
+  hands_free_seconds INTEGER NOT NULL DEFAULT 0,
+  regenerations INTEGER NOT NULL DEFAULT 0,
+  UNIQUE(user_id, date)
+);
+CREATE INDEX IF NOT EXISTS idx_daily_usage_user_date ON daily_usage(user_id, date DESC);
 `;

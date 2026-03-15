@@ -59,3 +59,55 @@ export async function generateChat(
     tokensUsed: response.usageMetadata?.totalTokenCount ?? 0,
   };
 }
+
+export async function generateChatStream(
+  messages: GeminiChatMessage[],
+  systemPrompt: string,
+  options?: { temperature?: number; maxOutputTokens?: number }
+): Promise<{ stream: ReadableStream<string>; tokensPromise: Promise<number> }> {
+  const ai = getClient();
+
+  const contents = messages.map((m) => ({
+    role: m.role === 'model' ? ('model' as const) : ('user' as const),
+    parts: [{ text: m.content }],
+  }));
+
+  const response = await ai.models.generateContentStream({
+    model: DEFAULT_MODEL,
+    contents,
+    config: {
+      systemInstruction: systemPrompt,
+      temperature: options?.temperature ?? 0.7,
+      maxOutputTokens: options?.maxOutputTokens ?? 1024,
+    },
+  });
+
+  let totalTokens = 0;
+  let resolveTokens: (tokens: number) => void;
+  const tokensPromise = new Promise<number>((resolve) => {
+    resolveTokens = resolve;
+  });
+
+  const stream = new ReadableStream<string>({
+    async start(controller) {
+      try {
+        for await (const chunk of response) {
+          const text = chunk.text ?? '';
+          if (text) {
+            controller.enqueue(text);
+          }
+          if (chunk.usageMetadata?.totalTokenCount) {
+            totalTokens = chunk.usageMetadata.totalTokenCount;
+          }
+        }
+        controller.close();
+        resolveTokens(totalTokens);
+      } catch (error) {
+        controller.error(error);
+        resolveTokens(totalTokens);
+      }
+    },
+  });
+
+  return { stream, tokensPromise };
+}

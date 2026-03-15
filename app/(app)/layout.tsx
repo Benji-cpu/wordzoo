@@ -1,5 +1,9 @@
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
+import { BottomNav } from './BottomNav';
+import { OfflineIndicator } from '@/components/offline/OfflineIndicator';
+import { SyncProvider } from '@/components/offline/SyncProvider';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
 
 export default async function AppLayout({
   children,
@@ -12,14 +16,37 @@ export default async function AppLayout({
   }
 
   return (
-    <div className="min-h-screen">
-      <header className="border-b px-6 py-4">
-        <nav className="flex items-center justify-between">
-          <span className="text-xl font-bold">WordZoo</span>
-          <span className="text-sm text-gray-600">{session.user.email}</span>
-        </nav>
-      </header>
-      <main className="p-6">{children}</main>
-    </div>
+    <SyncProvider>
+      <div className="min-h-screen bg-background text-foreground">
+        {/* Top bar */}
+        <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-card-border px-4 py-3">
+          <nav className="flex items-center justify-between max-w-lg mx-auto">
+            <span className="text-lg font-bold text-foreground">WordZoo</span>
+            <div className="flex items-center gap-2">
+              <OfflineIndicator />
+              <ThemeToggle />
+              {session.user.image ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={session.user.image}
+                alt=""
+                className="w-8 h-8 rounded-full border border-card-border"
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-card-surface border border-card-border flex items-center justify-center text-xs text-text-secondary">
+                {session.user.email?.[0]?.toUpperCase()}
+              </div>
+            )}
+            </div>
+          </nav>
+        </header>
+
+        {/* Main content */}
+        <main className="p-4 pb-24">{children}</main>
+
+        {/* Bottom navigation */}
+        <BottomNav />
+      </div>
+    </SyncProvider>
   );
 }

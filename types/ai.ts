@@ -32,6 +32,12 @@ export interface StabilityImageResponse {
 // Mnemonic generation types
 export interface MnemonicCandidate {
   keyword: string;
+  phoneticLink: string; // e.g. "KOO-ching sounds like couching"
   sceneDescription: string;
   imagePrompt: string;
+}
+
+export interface MnemonicGenerationResult {
+  candidates: MnemonicCandidate[];
+  recommended: number; // index of best candidate
 }

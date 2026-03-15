@@ -6,6 +6,7 @@ import NeonAdapter from '@auth/neon-adapter';
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  trustHost: true,
   adapter: NeonAdapter(pool),
   providers: [
     Google({

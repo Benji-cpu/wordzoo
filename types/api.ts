@@ -55,11 +55,122 @@ export const TutorModeEnum = z.enum(['free_chat', 'role_play', 'word_review', 'g
 export const TutorSessionSchema = z.object({
   mode: TutorModeEnum,
   languageId: z.string().uuid(),
+  scenario: z.string().max(500).optional(),
+});
+
+export const TutorEndSessionSchema = z.object({
+  sessionId: z.string().uuid(),
 });
 
 export const TutorMessageSchema = z.object({
   sessionId: z.string().uuid(),
   message: z.string().min(1).max(2000),
+});
+
+// Words
+export const WordIdParamSchema = z.object({
+  wordId: z.string().uuid(),
+});
+
+// Path params
+export const PathIdParamSchema = z.object({
+  pathId: z.string().uuid(),
+});
+
+export const SceneIdParamSchema = z.object({
+  sceneId: z.string().uuid(),
+});
+
+// Travel pack
+export const TravelPackSchema = z.object({
+  destination: z.string().min(1).max(200),
+  duration: z.string().min(1).max(100),
+  languageId: z.string().uuid(),
+});
+
+// Graduation
+export const GraduatePathSchema = z.object({
+  quizScore: z.number().min(0).max(100),
+});
+
+// Billing
+export const CheckoutSchema = z.object({
+  plan: z.enum(['monthly', 'yearly']),
+});
+
+export const TravelPackCheckoutSchema = z.object({
+  packId: z.string().uuid(),
+});
+
+export const BillingFeatureEnum = z.enum([
+  'new_word',
+  'regenerate_mnemonic',
+  'hands_free',
+  'tutor_message',
+  'custom_path',
+  'offline_download',
+  'community_submit',
+]);
+
+export const CheckAccessSchema = z.object({
+  feature: BillingFeatureEnum,
+});
+
+export const IncrementUsageSchema = z.object({
+  feature: BillingFeatureEnum,
+  amount: z.number().int().min(1).optional().default(1),
+});
+
+export type CheckoutInput = z.infer<typeof CheckoutSchema>;
+export type TravelPackCheckoutInput = z.infer<typeof TravelPackCheckoutSchema>;
+export type BillingFeature = z.infer<typeof BillingFeatureEnum>;
+export type CheckAccessInput = z.infer<typeof CheckAccessSchema>;
+export type IncrementUsageInput = z.infer<typeof IncrementUsageSchema>;
+
+// Offline sync
+export const SyncEventSchema = z.object({
+  id: z.string().uuid(),
+  user_id: z.string().uuid(),
+  word_id: z.string().uuid(),
+  direction: ReviewDirectionEnum,
+  rating: ReviewRatingEnum,
+  reviewed_at: z.string(),
+  created_at: z.string(),
+});
+
+export const BatchSyncSchema = z.object({
+  events: z.array(SyncEventSchema),
+});
+
+// Community
+export const SubmitCommunityMnemonicSchema = z.object({
+  mnemonicId: z.string().uuid(),
+});
+
+export const VoteMnemonicSchema = z.object({
+  mnemonicId: z.string().uuid(),
+});
+
+export const FlagReasonEnum = z.enum(['offensive', 'spam', 'misleading', 'other']);
+
+export const FlagMnemonicSchema = z.object({
+  mnemonicId: z.string().uuid(),
+  reason: FlagReasonEnum,
+  detail: z.string().max(500).optional(),
+});
+
+export const AdoptMnemonicSchema = z.object({
+  mnemonicId: z.string().uuid(),
+  wordId: z.string().uuid(),
+});
+
+export const CommunityListQuerySchema = z.object({
+  sort: z.enum(['top', 'new']).optional().default('top'),
+  page: z.coerce.number().int().min(1).optional().default(1),
+});
+
+export const ShareImageQuerySchema = z.object({
+  format: z.enum(['square', 'story']).optional().default('square'),
 });
 
 // Type exports from schemas
@@ -70,3 +181,12 @@ export type CustomPathInput = z.infer<typeof CustomPathSchema>;
 export type RecordReviewInput = z.infer<typeof RecordReviewSchema>;
 export type TutorSessionInput = z.infer<typeof TutorSessionSchema>;
 export type TutorMessageInput = z.infer<typeof TutorMessageSchema>;
+export type TutorEndSessionInput = z.infer<typeof TutorEndSessionSchema>;
+export type TravelPackInput = z.infer<typeof TravelPackSchema>;
+export type GraduatePathInput = z.infer<typeof GraduatePathSchema>;
+export type SubmitCommunityMnemonicInput = z.infer<typeof SubmitCommunityMnemonicSchema>;
+export type VoteMnemonicInput = z.infer<typeof VoteMnemonicSchema>;
+export type FlagMnemonicInput = z.infer<typeof FlagMnemonicSchema>;
+export type AdoptMnemonicInput = z.infer<typeof AdoptMnemonicSchema>;
+export type CommunityListQuery = z.infer<typeof CommunityListQuerySchema>;
+export type ShareImageQuery = z.infer<typeof ShareImageQuerySchema>;

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { TutorSessionSchema } from '@/types/api';
 import type { ApiResponse } from '@/types/api';
 import { checkRateLimit } from '@/lib/rate-limit';
+import { auth } from '@/lib/auth';
+import { startSession } from '@/lib/services/tutor-service';
 
 export async function POST(request: NextRequest) {
   const ip = request.headers.get('x-forwarded-for') ?? 'anonymous';
@@ -10,6 +12,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json<ApiResponse<null>>(
       { data: null, error: 'Rate limit exceeded' },
       { status: 429 }
+    );
+  }
+
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json<ApiResponse<null>>(
+      { data: null, error: 'Unauthorized' },
+      { status: 401 }
     );
   }
 
@@ -22,8 +32,17 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  return NextResponse.json<ApiResponse<null>>(
-    { data: null, error: 'Not implemented' },
-    { status: 501 }
-  );
+  try {
+    const { mode, languageId, scenario } = parsed.data;
+    const result = await startSession(session.user.id, mode, languageId, scenario);
+    return NextResponse.json<ApiResponse<typeof result>>(
+      { data: result, error: null }
+    );
+  } catch (error) {
+    console.error('Tutor session error:', error);
+    return NextResponse.json<ApiResponse<null>>(
+      { data: null, error: 'Failed to start tutor session' },
+      { status: 500 }
+    );
+  }
 }

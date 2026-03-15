@@ -9,6 +9,21 @@ export default auth((req) => {
     return NextResponse.next();
   }
 
+  // Allow share routes through (for social crawlers)
+  if (pathname.startsWith('/api/share')) {
+    return NextResponse.next();
+  }
+
+  // Allow Stripe webhook (verified by Stripe signature, not session)
+  if (pathname === '/api/billing/webhook') {
+    return NextResponse.next();
+  }
+
+  // Allow cron routes (verified by CRON_SECRET bearer token)
+  if (pathname.startsWith('/api/cron/')) {
+    return NextResponse.next();
+  }
+
   // Protect all other API routes
   if (pathname.startsWith('/api') && !req.auth) {
     return NextResponse.json(

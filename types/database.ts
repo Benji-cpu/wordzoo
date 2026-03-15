@@ -107,3 +107,107 @@ export interface SceneWord {
   word_id: string;
   sort_order: number;
 }
+
+export interface UserPath {
+  id: string;
+  user_id: string;
+  path_id: string;
+  status: 'active' | 'completed' | 'abandoned';
+  started_at: Date;
+  completed_at: Date | null;
+}
+
+export interface TutorSession {
+  id: string;
+  user_id: string;
+  language_id: string;
+  mode: 'free_chat' | 'role_play' | 'word_review' | 'grammar_glimpse' | 'pronunciation_coach';
+  scenario: string | null;
+  started_at: Date;
+  ended_at: Date | null;
+  summary: Record<string, unknown> | null;
+  tokens_used: number;
+}
+
+export interface TutorMessage {
+  id: string;
+  session_id: string;
+  role: 'user' | 'model';
+  content: string;
+  created_at: Date;
+}
+
+export interface Subscription {
+  id: string;
+  user_id: string;
+  stripe_customer_id: string;
+  stripe_subscription_id: string;
+  plan: 'monthly' | 'yearly';
+  status: 'active' | 'canceled' | 'past_due' | 'incomplete';
+  current_period_end: Date;
+  created_at: Date;
+}
+
+export interface Purchase {
+  id: string;
+  user_id: string;
+  pack_id: string;
+  stripe_payment_id: string;
+  purchased_at: Date;
+}
+
+export interface DailyUsage {
+  id: string;
+  user_id: string;
+  date: string;
+  words_learned: number;
+  tutor_messages: number;
+  hands_free_seconds: number;
+  regenerations: number;
+}
+
+export interface CommunityMnemonic {
+  id: string;
+  mnemonic_id: string;
+  submitted_by: string;
+  status: 'pending' | 'approved' | 'rejected' | 'flagged';
+  submitted_at: Date;
+  reviewed_at: Date | null;
+}
+
+export interface MnemonicVote {
+  id: string;
+  user_id: string;
+  mnemonic_id: string;
+  created_at: Date;
+}
+
+export interface MnemonicFlag {
+  id: string;
+  user_id: string;
+  mnemonic_id: string;
+  reason: 'offensive' | 'spam' | 'misleading' | 'other';
+  detail: string | null;
+  created_at: Date;
+  resolved: boolean;
+}
+
+export interface ShareEvent {
+  id: string;
+  user_id: string | null;
+  mnemonic_id: string;
+  word_id: string;
+  platform: string | null;
+  format: 'square' | 'story';
+  created_at: Date;
+}
+
+export interface Referral {
+  id: string;
+  referrer_id: string;
+  referred_user_id: string | null;
+  click_ip: string | null;
+  click_at: Date;
+  signup_at: Date | null;
+  status: 'clicked' | 'signed_up';
+}

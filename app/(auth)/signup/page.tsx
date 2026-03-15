@@ -1,12 +1,16 @@
 import { signIn } from '@/lib/auth';
+import { ImportOnboardingAfterAuth } from './import-onboarding';
 
 export default function SignupPage() {
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-center">Create your WordZoo account</h1>
-      <p className="text-center text-gray-600">
-        Sign up to save your progress and unlock all features.
-      </p>
+      <div className="text-center">
+        <h1 className="text-3xl font-bold">🦁</h1>
+        <h2 className="text-2xl font-bold mt-2">Create your WordZoo account</h2>
+        <p className="text-text-secondary text-sm mt-1">
+          Sign up to save your progress and unlock all features.
+        </p>
+      </div>
       <form
         action={async () => {
           'use server';
@@ -15,11 +19,12 @@ export default function SignupPage() {
       >
         <button
           type="submit"
-          className="w-full rounded-lg bg-blue-600 px-4 py-3 text-white hover:bg-blue-700"
+          className="w-full rounded-xl bg-accent-default px-4 py-3 text-white font-medium hover:bg-accent-default/80 transition-colors"
         >
           Continue with Google
         </button>
       </form>
+      <ImportOnboardingAfterAuth />
     </div>
   );
 }

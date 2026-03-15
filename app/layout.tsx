@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AuthSessionProvider } from "@/components/auth/session-provider";
+import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -16,6 +17,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "WordZoo",
   description: "Learn languages with memorable mnemonics",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'WordZoo',
+  },
 };
 
 export default function RootLayout({
@@ -24,11 +30,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AuthSessionProvider>{children}</AuthSessionProvider>
+        <AuthSessionProvider>
+          <ThemeProvider>{children}</ThemeProvider>
+        </AuthSessionProvider>
       </body>
     </html>
   );
