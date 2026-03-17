@@ -7,9 +7,11 @@ import {
   buildGeneratePrompt,
   buildRegeneratePrompt,
   buildCustomKeywordPrompt,
+  buildFeedbackRegeneratePrompt,
 } from '@/lib/ai/prompts';
 import { filterMnemonicContent } from '@/lib/ai/safety';
 import { getWordById, insertMnemonic } from '@/lib/db/queries';
+import { getMnemonicById, getNegativeCommentsForMnemonic } from '@/lib/db/admin-queries';
 
 function parseCandidates(text: string): MnemonicCandidate[] {
   // Strip markdown code fences if present
@@ -151,6 +153,60 @@ export async function generateFromUserKeyword(
 export async function generateSceneImage(imagePrompt: string): Promise<string> {
   const result = await generateImage(imagePrompt);
   return result.imageUrl;
+}
+
+export function sanitizeFeedbackComments(comments: string[]): string[] {
+  return comments
+    .slice(0, 5)
+    .map((c) =>
+      c
+        .replace(/[^a-zA-Z0-9\s.,!?'"-]/g, '')
+        .trim()
+        .slice(0, 100)
+    )
+    .filter((c) => c.length > 0);
+}
+
+export async function regenerateMnemonicFromFeedback(
+  mnemonicId: string
+): Promise<Mnemonic> {
+  const mnemonic = await getMnemonicById(mnemonicId);
+  if (!mnemonic) {
+    throw new Error(`Mnemonic not found: ${mnemonicId}`);
+  }
+
+  const word = await fetchWord(mnemonic.word_id);
+  const rawComments = await getNegativeCommentsForMnemonic(mnemonicId);
+  const sanitizedComments = sanitizeFeedbackComments(rawComments);
+
+  const prompt = `${MNEMONIC_SYSTEM_PROMPT}\n\n${buildFeedbackRegeneratePrompt(
+    word.romanization || word.text,
+    word.meaning_en,
+    word.language_name,
+    sanitizedComments
+  )}`;
+
+  const response = await generateText(prompt, {
+    temperature: 0.9,
+    maxOutputTokens: 2048,
+  });
+
+  const candidates = parseCandidates(response.text);
+  const safeCandidates = candidates.filter(
+    (c) => filterMnemonicContent(c).safe
+  );
+
+  if (safeCandidates.length === 0) {
+    throw new Error('All generated candidates were filtered by safety check. Please try again.');
+  }
+
+  const best = safeCandidates[0];
+
+  // Generate image for the best candidate
+  const imageUrl = await generateSceneImage(best.imagePrompt);
+
+  // Create a NEW mnemonic row (old one is preserved)
+  return saveMnemonic(mnemonic.word_id, null, best, imageUrl, false);
 }
 
 export async function saveMnemonic(

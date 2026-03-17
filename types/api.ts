@@ -173,6 +173,25 @@ export const ShareImageQuerySchema = z.object({
   format: z.enum(['square', 'story']).optional().default('square'),
 });
 
+// Mnemonic Feedback
+export const FeedbackRatingEnum = z.enum(['thumbs_up', 'thumbs_down']);
+
+export const SubmitFeedbackSchema = z.object({
+  mnemonicId: z.string().uuid(),
+  rating: FeedbackRatingEnum,
+  comment: z.string().min(3).max(500).optional(),
+});
+
+// Admin
+export const AdminRegenerateMnemonicSchema = z.object({
+  mnemonicId: z.string().uuid(),
+});
+
+export const AdminFeedbackQuerySchema = z.object({
+  sort: z.enum(['worst', 'best', 'recent']).optional().default('worst'),
+  page: z.coerce.number().int().min(1).optional().default(1),
+});
+
 // Type exports from schemas
 export type GenerateMnemonicInput = z.infer<typeof GenerateMnemonicSchema>;
 export type RegenerateMnemonicInput = z.infer<typeof RegenerateMnemonicSchema>;
@@ -190,3 +209,6 @@ export type FlagMnemonicInput = z.infer<typeof FlagMnemonicSchema>;
 export type AdoptMnemonicInput = z.infer<typeof AdoptMnemonicSchema>;
 export type CommunityListQuery = z.infer<typeof CommunityListQuerySchema>;
 export type ShareImageQuery = z.infer<typeof ShareImageQuerySchema>;
+export type SubmitFeedbackInput = z.infer<typeof SubmitFeedbackSchema>;
+export type AdminRegenerateMnemonicInput = z.infer<typeof AdminRegenerateMnemonicSchema>;
+export type AdminFeedbackQuery = z.infer<typeof AdminFeedbackQuerySchema>;

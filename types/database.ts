@@ -56,6 +56,8 @@ export interface Mnemonic {
   audio_url: string | null;
   is_custom: boolean;
   upvote_count: number;
+  thumbs_up_count: number;
+  thumbs_down_count: number;
   created_at: Date;
 }
 
@@ -190,6 +192,16 @@ export interface MnemonicFlag {
   detail: string | null;
   created_at: Date;
   resolved: boolean;
+}
+
+export interface MnemonicFeedback {
+  id: string;
+  user_id: string;
+  mnemonic_id: string;
+  rating: 'thumbs_up' | 'thumbs_down';
+  comment: string | null;
+  created_at: Date;
+  updated_at: Date;
 }
 
 export interface ShareEvent {

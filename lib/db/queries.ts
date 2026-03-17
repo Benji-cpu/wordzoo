@@ -1,5 +1,5 @@
 import { sql } from './client';
-import type { Word, Mnemonic, Path, Scene, Language, UserPath, TutorSession, TutorMessage, Subscription, Purchase, DailyUsage } from '@/types/database';
+import type { Word, Mnemonic, Path, Scene, Language, UserPath, TutorSession, TutorMessage, Subscription, Purchase, DailyUsage, MnemonicFeedback } from '@/types/database';
 
 export interface WordWithLanguage extends Word {
   language_code: string;
@@ -143,6 +143,73 @@ export async function getSceneWordsWithDetails(
     ORDER BY sw.sort_order
   `;
   return rows as SceneWordWithDetails[];
+}
+
+export async function getSceneWordsForLearning(
+  sceneId: string,
+  userId: string | null
+): Promise<SceneWordWithDetails[]> {
+  const rows = await sql`
+    SELECT
+      w.id AS word_id, w.text, w.romanization, w.pronunciation_audio_url,
+      w.meaning_en, w.part_of_speech, w.frequency_rank,
+      sw.sort_order,
+      m.id AS mnemonic_id, m.keyword_text, m.scene_description, m.image_url,
+      uw.status AS user_word_status
+    FROM scene_words sw
+    JOIN words w ON w.id = sw.word_id
+    LEFT JOIN user_words uw ON uw.word_id = w.id AND uw.user_id = ${userId}
+    LEFT JOIN LATERAL (
+      SELECT id, keyword_text, scene_description, image_url
+      FROM mnemonics
+      WHERE word_id = w.id
+        AND (user_id IS NULL OR user_id = ${userId})
+      ORDER BY
+        CASE WHEN user_id = ${userId} THEN 0 ELSE 1 END,
+        upvote_count DESC
+      LIMIT 1
+    ) m ON true
+    WHERE sw.scene_id = ${sceneId}
+    ORDER BY sw.sort_order
+  `;
+  return rows as SceneWordWithDetails[];
+}
+
+export async function getSceneWithLanguage(sceneId: string): Promise<{
+  scene_id: string;
+  scene_title: string;
+  scene_description: string | null;
+  path_id: string;
+  language_name: string;
+  language_id: string;
+} | null> {
+  const rows = await sql`
+    SELECT s.id AS scene_id, s.title AS scene_title, s.description AS scene_description,
+      s.path_id, l.name AS language_name, l.id AS language_id
+    FROM scenes s
+    JOIN paths p ON p.id = s.path_id
+    JOIN languages l ON l.id = p.language_id
+    WHERE s.id = ${sceneId}
+  `;
+  return (rows[0] as { scene_id: string; scene_title: string; scene_description: string | null; path_id: string; language_name: string; language_id: string }) ?? null;
+}
+
+export async function getDistractorsForWord(
+  wordId: string,
+  languageId: string,
+  correctMeaning: string,
+  count: number = 3
+): Promise<string[]> {
+  const rows = await sql`
+    SELECT meaning_en FROM words
+    WHERE language_id = ${languageId}
+      AND id != ${wordId}
+      AND meaning_en != ${correctMeaning}
+    GROUP BY meaning_en
+    ORDER BY RANDOM()
+    LIMIT ${count}
+  `;
+  return rows.map((r) => (r as { meaning_en: string }).meaning_en);
 }
 
 export interface SceneMasteryRow {
@@ -657,10 +724,89 @@ export async function resetAllDailyUsage(): Promise<void> {
   `;
 }
 
+export interface PremadePathRow {
+  id: string;
+  language_id: string;
+  type: string;
+  title: string;
+  description: string | null;
+  language_name: string;
+  word_count: number;
+}
+
+export async function getAllPremadePaths(): Promise<PremadePathRow[]> {
+  const rows = await sql`
+    SELECT p.id, p.language_id, p.type, p.title, p.description,
+      l.name AS language_name,
+      COUNT(DISTINCT pw.word_id)::int AS word_count
+    FROM paths p
+    JOIN languages l ON l.id = p.language_id
+    LEFT JOIN path_words pw ON pw.path_id = p.id
+    WHERE p.type = 'premade'
+    GROUP BY p.id, p.language_id, p.type, p.title, p.description, l.name
+    ORDER BY p.created_at
+  `;
+  return rows as PremadePathRow[];
+}
+
+export async function getAllLanguages(): Promise<Language[]> {
+  const rows = await sql`
+    SELECT * FROM languages ORDER BY name
+  `;
+  return rows as Language[];
+}
+
 export async function getExpiringSubscriptions(): Promise<Subscription[]> {
   const rows = await sql`
     SELECT * FROM subscriptions
     WHERE status = 'active' AND current_period_end < NOW()
   `;
   return rows as Subscription[];
+}
+
+// --- Mnemonic Feedback Queries ---
+
+export async function upsertMnemonicFeedback(
+  userId: string,
+  mnemonicId: string,
+  rating: 'thumbs_up' | 'thumbs_down',
+  comment?: string
+): Promise<MnemonicFeedback> {
+  const rows = await sql`
+    WITH old_feedback AS (
+      SELECT rating FROM mnemonic_feedback
+      WHERE user_id = ${userId} AND mnemonic_id = ${mnemonicId}
+    ),
+    upsert AS (
+      INSERT INTO mnemonic_feedback (user_id, mnemonic_id, rating, comment)
+      VALUES (${userId}, ${mnemonicId}, ${rating}, ${comment ?? null})
+      ON CONFLICT (user_id, mnemonic_id)
+      DO UPDATE SET rating = ${rating}, comment = ${comment ?? null}, updated_at = NOW()
+      RETURNING *
+    ),
+    update_counters AS (
+      UPDATE mnemonics SET
+        thumbs_up_count = GREATEST(thumbs_up_count
+          + CASE WHEN ${rating} = 'thumbs_up' AND (SELECT rating FROM old_feedback) IS DISTINCT FROM ${rating} THEN 1 ELSE 0 END
+          - CASE WHEN (SELECT rating FROM old_feedback) = 'thumbs_up' AND (SELECT rating FROM old_feedback) IS DISTINCT FROM ${rating} THEN 1 ELSE 0 END, 0),
+        thumbs_down_count = GREATEST(thumbs_down_count
+          + CASE WHEN ${rating} = 'thumbs_down' AND (SELECT rating FROM old_feedback) IS DISTINCT FROM ${rating} THEN 1 ELSE 0 END
+          - CASE WHEN (SELECT rating FROM old_feedback) = 'thumbs_down' AND (SELECT rating FROM old_feedback) IS DISTINCT FROM ${rating} THEN 1 ELSE 0 END, 0)
+      WHERE id = ${mnemonicId}
+        AND (SELECT rating FROM old_feedback) IS DISTINCT FROM ${rating}
+    )
+    SELECT * FROM upsert
+  `;
+  return rows[0] as MnemonicFeedback;
+}
+
+export async function getUserFeedbackForMnemonic(
+  userId: string,
+  mnemonicId: string
+): Promise<MnemonicFeedback | null> {
+  const rows = await sql`
+    SELECT * FROM mnemonic_feedback
+    WHERE user_id = ${userId} AND mnemonic_id = ${mnemonicId}
+  `;
+  return (rows[0] as MnemonicFeedback) ?? null;
 }

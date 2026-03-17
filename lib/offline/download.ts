@@ -54,6 +54,8 @@ interface PathData {
         audio_url: string | null;
         is_custom: boolean;
         upvote_count: number;
+        thumbs_up_count: number;
+        thumbs_down_count: number;
         created_at: string;
       };
     }>;

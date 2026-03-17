@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Card } from '@/components/ui/Card';
+import { FeedbackButtons } from '@/components/learn/FeedbackButtons';
 import type { Word, Mnemonic } from '@/types/database';
 
 interface ReviewCardProps {
@@ -74,6 +75,9 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed }: ReviewC
                 <p className="text-sm text-text-secondary">
                   &ldquo;{mnemonic.keyword_text}&rdquo; — {mnemonic.scene_description}
                 </p>
+                <div className="mt-3" onClick={(e) => e.stopPropagation()}>
+                  <FeedbackButtons mnemonicId={mnemonic.id} context="review" />
+                </div>
               </div>
             )}
 
@@ -104,6 +108,9 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed }: ReviewC
                 <p className="text-sm text-text-secondary mt-2">
                   &ldquo;{mnemonic.keyword_text}&rdquo;
                 </p>
+                <div className="mt-3" onClick={(e) => e.stopPropagation()}>
+                  <FeedbackButtons mnemonicId={mnemonic.id} context="review" />
+                </div>
               </div>
             )}
 

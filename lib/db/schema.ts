@@ -13,6 +13,19 @@ CREATE TABLE IF NOT EXISTS users (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- Ensure custom columns exist when NextAuth adapter created users table first
+ALTER TABLE users ADD COLUMN IF NOT EXISTS native_language TEXT NOT NULL DEFAULT 'en';
+ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_tier TEXT NOT NULL DEFAULT 'free';
+ALTER TABLE users ADD COLUMN IF NOT EXISTS preferences JSONB NOT NULL DEFAULT '{"audio_speed": 1, "absurdity_level": "medium", "hands_free_mode": false}';
+ALTER TABLE users ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
+ALTER TABLE users ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
+
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'users_subscription_tier_check') THEN
+    ALTER TABLE users ADD CONSTRAINT users_subscription_tier_check CHECK (subscription_tier IN ('free', 'premium'));
+  END IF;
+END $$;
+
 -- Auth.js required tables
 CREATE TABLE IF NOT EXISTS accounts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -276,4 +289,21 @@ CREATE TABLE IF NOT EXISTS daily_usage (
   UNIQUE(user_id, date)
 );
 CREATE INDEX IF NOT EXISTS idx_daily_usage_user_date ON daily_usage(user_id, date DESC);
+
+-- Mnemonic feedback counter columns
+ALTER TABLE mnemonics ADD COLUMN IF NOT EXISTS thumbs_up_count INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE mnemonics ADD COLUMN IF NOT EXISTS thumbs_down_count INTEGER NOT NULL DEFAULT 0;
+
+-- Mnemonic Feedback (thumbs up/down + optional comment)
+CREATE TABLE IF NOT EXISTS mnemonic_feedback (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  mnemonic_id UUID NOT NULL REFERENCES mnemonics(id) ON DELETE CASCADE,
+  rating TEXT NOT NULL CHECK (rating IN ('thumbs_up', 'thumbs_down')),
+  comment TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE(user_id, mnemonic_id)
+);
+CREATE INDEX IF NOT EXISTS idx_mnemonic_feedback_mnemonic ON mnemonic_feedback(mnemonic_id);
 `;

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { Card } from '@/components/ui/Card';
 import { ShareButton } from '@/components/community/ShareButton';
+import { FeedbackButtons } from '@/components/learn/FeedbackButtons';
 
 interface MnemonicCardProps {
   wordText: string;
@@ -30,31 +31,36 @@ export function MnemonicCard({
   return (
     <Card className="animate-slide-up overflow-hidden" onClick={onContinue}>
       <p className="text-sm text-text-secondary mb-2">Remember it like this:</p>
-      <p className="text-lg text-foreground mb-4">
+      <p className="text-lg text-foreground mb-2">
         <span className="font-bold text-accent-id">{wordText}</span>{' '}
         sounds like{' '}
         <span className="font-bold text-foreground">&ldquo;{keyword}&rdquo;</span>
       </p>
 
       {imageUrl && (
-        <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden mb-4 bg-white/5">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={imageUrl}
-            alt={sceneDescription}
-            className="w-full h-full object-cover"
-          />
-        </div>
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={imageUrl}
+          alt={sceneDescription}
+          className="max-w-full max-h-[36vh] rounded-xl mx-auto block mb-2"
+        />
       )}
 
-      <p className="text-sm text-text-secondary leading-relaxed">
+      <p className="text-sm text-text-secondary leading-relaxed line-clamp-3">
         {sceneDescription}
       </p>
+
+      {/* Feedback */}
+      {mnemonicId && (
+        <div className="mt-2" onClick={(e) => e.stopPropagation()}>
+          <FeedbackButtons mnemonicId={mnemonicId} context="learn" />
+        </div>
+      )}
 
       {/* Share + Community actions */}
       {mnemonicId && wordId && (
         <div
-          className="flex items-center gap-3 mt-4"
+          className="flex items-center gap-3 mt-2"
           onClick={(e) => e.stopPropagation()}
         >
           <ShareButton
@@ -79,7 +85,7 @@ export function MnemonicCard({
         </div>
       )}
 
-      <p className="text-sm text-text-secondary mt-6 text-center">Tap to continue</p>
+      <p className="text-sm text-text-secondary mt-3 text-center">Tap to continue</p>
     </Card>
   );
 }
