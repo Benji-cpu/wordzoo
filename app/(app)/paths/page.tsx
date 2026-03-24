@@ -1,18 +1,83 @@
-import { getMockPaths, getMockSceneList } from '@/lib/mocks/learning-data';
+import { auth } from '@/lib/auth';
+import { redirect } from 'next/navigation';
+import {
+  getPathWordStats,
+  getPathsByLanguage,
+  getAllLanguages,
+  getUserActivePath,
+  getSceneMasteryForPath,
+} from '@/lib/db/queries';
+import type { SceneMasteryRow } from '@/lib/db/queries';
 import { PathCard } from '@/components/learn/PathCard';
 import { TravelPackCard } from '@/components/learn/TravelPackCard';
 import { PathsClientSection } from './PathsClientSection';
+import type { Path } from '@/types/database';
 
-export default function PathsPage() {
-  const allPaths = getMockPaths();
-  const scenes = getMockSceneList();
+function isSceneComplete(s: SceneMasteryRow): boolean {
+  return s.scene_type === 'dialogue' ? s.scene_completed : s.mastered_words >= s.total_words;
+}
 
-  const premade = allPaths.filter(p => p.path.type === 'premade');
-  const travel = allPaths.filter(p => p.path.type === 'travel');
-  const custom = allPaths.filter(p => p.path.type === 'custom');
+export default async function PathsPage() {
+  const session = await auth();
+  if (!session?.user?.id) redirect('/login');
+  const userId = session.user.id;
 
-  // For navigation: first scene id
-  const firstSceneId = scenes[0]?.id;
+  // Determine default language from active path or first language
+  const languages = await getAllLanguages();
+  const activePath = await getUserActivePath(userId);
+  const activeLanguageId = activePath?.path_language_id ?? languages[0]?.id ?? null;
+
+  const allPathsRaw: Path[] = [];
+  for (const lang of languages) {
+    try {
+      const paths = await getPathsByLanguage(lang.id, userId);
+      allPathsRaw.push(...paths);
+    } catch (e) {
+      console.error(`PathsPage: getPathsByLanguage failed for language ${lang.id}:`, e);
+    }
+  }
+
+  // Deduplicate (in case a path shows up under multiple queries)
+  const seen = new Set<string>();
+  const uniquePaths = allPathsRaw.filter(p => {
+    if (seen.has(p.id)) return false;
+    seen.add(p.id);
+    return true;
+  });
+
+  // Get word stats and scene mastery for each path in parallel
+  let statsResults: Awaited<ReturnType<typeof getPathWordStats>>[];
+  let masteryResults: Awaited<ReturnType<typeof getSceneMasteryForPath>>[];
+  try {
+    [statsResults, masteryResults] = await Promise.all([
+      Promise.all(uniquePaths.map(p => getPathWordStats(userId, p.id))),
+      Promise.all(uniquePaths.map(p => getSceneMasteryForPath(userId, p.id))),
+    ]);
+  } catch (e) {
+    console.error('PathsPage: stats/mastery fetch failed:', e);
+    statsResults = uniquePaths.map(() => ({ total_words: 0, words_learned: 0, words_mastered: 0 }));
+    masteryResults = uniquePaths.map(() => []);
+  }
+
+  const pathsWithStats = uniquePaths.map((path, i) => {
+    const mastery = masteryResults[i];
+    const scenesCompleted = mastery.filter(isSceneComplete).length;
+    const totalScenes = mastery.length;
+    return {
+      path,
+      wordCount: statsResults[i].total_words,
+      wordsCompleted: statsResults[i].words_learned,
+      progress: statsResults[i].total_words > 0
+        ? Math.round((statsResults[i].words_learned / statsResults[i].total_words) * 100)
+        : 0,
+      scenesCompleted,
+      totalScenes,
+    };
+  });
+
+  const premade = pathsWithStats.filter(p => p.path.type === 'premade');
+  const travel = pathsWithStats.filter(p => p.path.type === 'travel');
+  const custom = pathsWithStats.filter(p => p.path.type === 'custom');
 
   return (
     <div className="max-w-lg mx-auto space-y-6 pb-24">
@@ -37,6 +102,8 @@ export default function PathsPage() {
                 wordCount={p.wordCount}
                 wordsCompleted={p.wordsCompleted}
                 progress={p.progress}
+                scenesCompleted={p.scenesCompleted}
+                totalScenes={p.totalScenes}
               />
             ))}
           </div>
@@ -71,11 +138,13 @@ export default function PathsPage() {
                 wordCount={p.wordCount}
                 wordsCompleted={p.wordsCompleted}
                 progress={p.progress}
+                scenesCompleted={p.scenesCompleted}
+                totalScenes={p.totalScenes}
               />
             ))}
           </div>
         )}
-        <PathsClientSection />
+        <PathsClientSection languageId={activeLanguageId} />
       </section>
     </div>
   );
