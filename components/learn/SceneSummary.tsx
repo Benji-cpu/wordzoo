@@ -1,18 +1,25 @@
 'use client';
 
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import type { MockWordWithMnemonic } from '@/lib/mocks/learning-data';
 import { UpgradePrompt } from '@/components/billing/UpgradePrompt';
+
+interface SummaryWord {
+  word: { id: string; text: string; meaning_en: string };
+  mnemonic: { keyword_text: string } | null;
+}
 
 interface SceneSummaryProps {
   sceneTitle: string;
-  words: MockWordWithMnemonic[];
+  words: SummaryWord[];
   showUpgrade?: boolean;
+  nextScene?: { id: string; title: string } | null;
+  pathId?: string;
 }
 
-export function SceneSummary({ sceneTitle, words, showUpgrade = false }: SceneSummaryProps) {
+export function SceneSummary({ sceneTitle, words, showUpgrade = false, nextScene, pathId }: SceneSummaryProps) {
   const router = useRouter();
 
   return (
@@ -43,14 +50,43 @@ export function SceneSummary({ sceneTitle, words, showUpgrade = false }: SceneSu
         </div>
       )}
 
-      <div className="flex gap-3">
-        <Button variant="secondary" className="flex-1" onClick={() => router.push('/dashboard')}>
-          Dashboard
-        </Button>
-        <Button className="flex-1" onClick={() => router.push('/review')}>
-          Practice
-        </Button>
-      </div>
+      {nextScene ? (
+        <div className="space-y-3">
+          <Link href={`/learn/${nextScene.id}`} className="block">
+            <Button className="w-full">
+              Next: {nextScene.title} →
+            </Button>
+          </Link>
+          <div className="flex gap-3">
+            <Button variant="secondary" className="flex-1" onClick={() => router.push('/')}>
+              Dashboard
+            </Button>
+            {pathId && (
+              <Link href={`/paths/${pathId}`} className="flex-1">
+                <Button variant="secondary" className="w-full">All Scenes</Button>
+              </Link>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {pathId && (
+            <div className="text-center mb-2">
+              <p className="text-sm font-medium text-accent-id">Path Complete!</p>
+            </div>
+          )}
+          <div className="flex gap-3">
+            <Button variant="secondary" className="flex-1" onClick={() => router.push('/')}>
+              Dashboard
+            </Button>
+            {pathId && (
+              <Link href={`/paths/${pathId}`} className="flex-1">
+                <Button variant="secondary" className="w-full">View Path</Button>
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

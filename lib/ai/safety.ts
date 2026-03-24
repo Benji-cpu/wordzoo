@@ -32,6 +32,7 @@ export interface SafetyResult {
 export function filterMnemonicContent(candidate: MnemonicCandidate): SafetyResult {
   const textToCheck = [
     candidate.keyword,
+    candidate.bridgeSentence,
     candidate.sceneDescription,
     candidate.imagePrompt,
     candidate.phoneticLink,

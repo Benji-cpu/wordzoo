@@ -1,0 +1,43 @@
+import { notFound, redirect } from 'next/navigation';
+import { auth } from '@/lib/auth';
+import {
+  getPathById,
+  verifyPathAccess,
+  getSceneMasteryForPath,
+  getPathWordStats,
+  getLanguageById,
+} from '@/lib/db/queries';
+import { PathDetailClient } from './PathDetailClient';
+
+interface PageProps {
+  params: Promise<{ pathId: string }>;
+}
+
+export default async function PathDetailPage({ params }: PageProps) {
+  const { pathId } = await params;
+
+  const session = await auth();
+  if (!session?.user?.id) redirect('/login');
+  const userId = session.user.id;
+
+  const path = await getPathById(pathId);
+  if (!path) return notFound();
+
+  const hasAccess = await verifyPathAccess(pathId, userId);
+  if (!hasAccess) return notFound();
+
+  const [sceneMastery, wordStats, language] = await Promise.all([
+    getSceneMasteryForPath(userId, pathId),
+    getPathWordStats(userId, pathId),
+    getLanguageById(path.language_id),
+  ]);
+
+  return (
+    <PathDetailClient
+      path={path}
+      languageName={language?.name ?? 'Unknown'}
+      sceneMastery={sceneMastery}
+      wordStats={wordStats}
+    />
+  );
+}

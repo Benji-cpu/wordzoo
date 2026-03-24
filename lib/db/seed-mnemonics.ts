@@ -1,33 +1,15 @@
 import dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
 import { neon } from '@neondatabase/serverless';
-import { generateText } from '../ai/gemini';
-import { generateImage } from '../ai/stability';
-import {
-  MNEMONIC_SYSTEM_PROMPT,
-  buildGeneratePrompt,
-} from '../ai/prompts';
-import { filterMnemonicContent } from '../ai/safety';
-import type { MnemonicCandidate } from '../../types/ai';
-
-function parseCandidates(text: string): MnemonicCandidate[] {
-  const cleaned = text.replace(/```(?:json)?\s*/g, '').replace(/```\s*/g, '').trim();
-  const parsed = JSON.parse(cleaned);
-  if (!Array.isArray(parsed)) throw new Error('Expected JSON array');
-  return parsed.map((c: Record<string, unknown>) => ({
-    keyword: String(c.keyword ?? ''),
-    phoneticLink: String(c.phoneticLink ?? ''),
-    sceneDescription: String(c.sceneDescription ?? ''),
-    imagePrompt: String(c.imagePrompt ?? ''),
-  }));
-}
+import { generateImage } from '../ai/image-generation';
+import { MNEMONIC_DATA } from './mnemonic-data';
 
 // Language IDs from seed.ts
 const ID_LANG = 'a1b2c3d4-0001-4000-8000-000000000001';
 const ES_LANG = 'a1b2c3d4-0001-4000-8000-000000000002';
 const JA_LANG = 'a1b2c3d4-0001-4000-8000-000000000003';
 
-// Words to add that aren't in the existing seed
+// Extra words to add that aren't in the base seed
 const NEW_WORDS = [
   // Indonesian
   { id: 'b1000000-0001-4000-8000-000000000021', languageId: ID_LANG, text: 'kucing', meaning: 'cat', pos: 'noun', rank: 21 },
@@ -41,27 +23,11 @@ const NEW_WORDS = [
   { id: 'b3000000-0001-4000-8000-000000000022', languageId: JA_LANG, text: 'かわいい', romanization: 'kawaii', meaning: 'cute', pos: 'adjective', rank: 22 },
 ];
 
-// All 15 onboarding words: { wordId, text (for prompt), meaning, language }
-const ONBOARDING_WORDS = [
-  // Indonesian (5)
-  { wordId: 'b1000000-0001-4000-8000-000000000021', text: 'kucing', meaning: 'cat', language: 'Indonesian' },
-  { wordId: 'b1000000-0001-4000-8000-000000000022', text: 'besar', meaning: 'big', language: 'Indonesian' },
-  { wordId: 'b1000000-0001-4000-8000-000000000012', text: 'makan', meaning: 'eat', language: 'Indonesian' },
-  { wordId: 'b1000000-0001-4000-8000-000000000001', text: 'saya', meaning: 'I / me', language: 'Indonesian' },
-  { wordId: 'b1000000-0001-4000-8000-000000000009', text: 'nama', meaning: 'name', language: 'Indonesian' },
-  // Spanish (5)
-  { wordId: 'b2000000-0001-4000-8000-000000000021', text: 'mariposa', meaning: 'butterfly', language: 'Spanish' },
-  { wordId: 'b2000000-0001-4000-8000-000000000022', text: 'cerveza', meaning: 'beer', language: 'Spanish' },
-  { wordId: 'b2000000-0001-4000-8000-000000000023', text: 'perezoso', meaning: 'lazy', language: 'Spanish' },
-  { wordId: 'b2000000-0001-4000-8000-000000000001', text: 'hola', meaning: 'hello', language: 'Spanish' },
-  { wordId: 'b2000000-0001-4000-8000-000000000002', text: 'gracias', meaning: 'thank you', language: 'Spanish' },
-  // Japanese (5)
-  { wordId: 'b3000000-0001-4000-8000-000000000021', text: 'neko', meaning: 'cat', language: 'Japanese' },
-  { wordId: 'b3000000-0001-4000-8000-000000000022', text: 'kawaii', meaning: 'cute', language: 'Japanese' },
-  { wordId: 'b3000000-0001-4000-8000-000000000008', text: 'taberu', meaning: 'to eat', language: 'Japanese' },
-  { wordId: 'b3000000-0001-4000-8000-000000000003', text: 'arigatou', meaning: 'thank you', language: 'Japanese' },
-  { wordId: 'b3000000-0001-4000-8000-000000000015', text: 'oishii', meaning: 'delicious', language: 'Japanese' },
-];
+// Parse --only=word1,word2,... flag for selective regeneration
+const onlyWords = process.argv.find(a => a.startsWith('--only='))
+  ?.replace('--only=', '')
+  .split(',')
+  .map(w => w.trim());
 
 async function seedMnemonics() {
   const databaseUrl = process.env.DATABASE_URL;
@@ -72,10 +38,14 @@ async function seedMnemonics() {
 
   const sql = neon(databaseUrl);
 
-  console.log('=== Seeding Onboarding Mnemonics ===\n');
+  if (onlyWords) {
+    console.log(`=== Selective Seeding: ${onlyWords.join(', ')} ===\n`);
+  } else {
+    console.log('=== Seeding Mnemonics for ALL Words ===\n');
+  }
 
-  // Step 1: Insert new words that aren't in the DB
-  console.log('Inserting new onboarding words...');
+  // Step 1: Insert extra words that aren't in the DB
+  console.log('Inserting extra words...');
   for (const w of NEW_WORDS) {
     const rom = 'romanization' in w ? (w as { romanization: string }).romanization : null;
     await sql`
@@ -86,61 +56,90 @@ async function seedMnemonics() {
     console.log(`  + ${w.text} (${w.meaning})`);
   }
 
-  // Step 2: Generate mnemonics for each onboarding word
-  let successCount = 0;
-  let failCount = 0;
+  // Step 2: Query ALL words with their language names
+  const allWords = await sql`
+    SELECT w.id, w.text, w.romanization, w.meaning_en, l.name AS language_name
+    FROM words w
+    JOIN languages l ON l.id = w.language_id
+    ORDER BY l.name, w.frequency_rank
+  `;
 
-  for (const word of ONBOARDING_WORDS) {
-    console.log(`\n--- Generating mnemonic for "${word.text}" (${word.meaning}) [${word.language}] ---`);
+  console.log(`\nFound ${allWords.length} words total.\n`);
+
+  // Step 3: Generate mnemonics for each word without one
+  let successCount = 0;
+  let skipCount = 0;
+  let failCount = 0;
+  let noDataCount = 0;
+
+  for (let i = 0; i < allWords.length; i++) {
+    const word = allWords[i];
+    const wordText = word.romanization || word.text; // Use romanization for Japanese
+    const displayText = word.romanization ? `${word.text} (${word.romanization})` : word.text;
+
+    console.log(`\n--- [${i + 1}/${allWords.length}] "${displayText}" -> ${word.meaning_en} [${word.language_name}] ---`);
+
+    // If --only flag is set, skip words not in the list
+    if (onlyWords) {
+      const matchesOnly = onlyWords.some(w => w === wordText || w === word.text);
+      if (!matchesOnly) {
+        console.log('  Skipping -- not in --only list');
+        skipCount++;
+        continue;
+      }
+    }
+
+    // Look up pre-generated mnemonic data
+    // Try both the original text and romanization as keys
+    const key1 = `${word.language_name}:${word.text}`;
+    const key2 = word.romanization ? `${word.language_name}:${word.romanization}` : null;
+    const data = MNEMONIC_DATA[key1] ?? (key2 ? MNEMONIC_DATA[key2] : undefined);
+
+    if (!data) {
+      console.log(`  No pre-generated mnemonic data found (tried: ${key1}${key2 ? `, ${key2}` : ''})`);
+      noDataCount++;
+      continue;
+    }
 
     try {
-      // Check if mnemonic already exists for this word (shared/default)
-      const existing = await sql`
-        SELECT id FROM mnemonics WHERE word_id = ${word.wordId} AND user_id IS NULL LIMIT 1
-      `;
-      if (existing.length > 0) {
-        console.log('  Skipping — already has a shared mnemonic');
-        successCount++;
-        continue;
+      // For --only mode, delete existing mnemonic first (re-seeding)
+      if (onlyWords) {
+        await sql`DELETE FROM mnemonics WHERE word_id = ${word.id} AND user_id IS NULL`;
+        console.log('  Deleted existing shared mnemonic (re-seeding)');
+      } else {
+        // Check if shared mnemonic already exists
+        const existing = await sql`
+          SELECT id FROM mnemonics WHERE word_id = ${word.id} AND user_id IS NULL LIMIT 1
+        `;
+        if (existing.length > 0) {
+          console.log('  Skipping -- already has a shared mnemonic');
+          skipCount++;
+          continue;
+        }
       }
 
-      // Generate candidates via Gemini
-      const prompt = `${MNEMONIC_SYSTEM_PROMPT}\n\n${buildGeneratePrompt(word.text, word.meaning, word.language)}`;
-      const response = await generateText(prompt, { temperature: 0.9, maxOutputTokens: 2048 });
-      const candidates = parseCandidates(response.text);
+      console.log(`  Keyword: "${data.keyword}"`);
+      console.log(`  Scene: ${data.sceneDescription.substring(0, 100)}...`);
 
-      // Find first safe candidate
-      const safeCandidates = candidates.filter((c) => filterMnemonicContent(c).safe);
-      if (safeCandidates.length === 0) {
-        console.error('  All candidates filtered by safety check!');
-        failCount++;
-        continue;
-      }
-
-      const best = safeCandidates[0];
-      console.log(`  Keyword: "${best.keyword}"`);
-      console.log(`  Phonetic: ${best.phoneticLink}`);
-      console.log(`  Scene: ${best.sceneDescription.substring(0, 80)}...`);
-
-      // Generate image
+      // Generate image via Nano Banana 2
       console.log('  Generating image...');
-      const imageResult = await generateImage(best.imagePrompt);
+      const imageResult = await generateImage(data.imagePrompt);
       console.log(`  Image URL: ${imageResult.imageUrl}`);
 
       // Save to database with user_id = NULL (shared mnemonic)
       await sql`
-        INSERT INTO mnemonics (word_id, user_id, keyword_text, scene_description, image_url, is_custom)
-        VALUES (${word.wordId}, ${null}, ${best.keyword}, ${best.sceneDescription}, ${imageResult.imageUrl}, false)
+        INSERT INTO mnemonics (word_id, user_id, keyword_text, scene_description, bridge_sentence, image_url, is_custom)
+        VALUES (${word.id}, ${null}, ${data.keyword}, ${data.sceneDescription}, ${data.bridgeSentence}, ${imageResult.imageUrl}, false)
       `;
       console.log('  Saved to database!');
       successCount++;
     } catch (error) {
-      console.error(`  Failed: ${error instanceof Error ? error.message : error}`);
+      console.error(`  FAIL: ${error instanceof Error ? error.message : error}`);
       failCount++;
     }
   }
 
-  console.log(`\n=== Done! ${successCount} succeeded, ${failCount} failed ===`);
+  console.log(`\n=== Done! ${successCount} generated, ${skipCount} skipped, ${noDataCount} missing data, ${failCount} failed ===`);
 }
 
 seedMnemonics();

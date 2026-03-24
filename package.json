@@ -10,7 +10,9 @@
     "db:migrate": "npx tsx lib/db/migrate.ts",
     "db:seed": "npx tsx lib/db/seed.ts",
     "db:import": "npx tsx data/import.ts",
-    "db:seed-mnemonics": "npx tsx lib/db/seed-mnemonics.ts"
+    "db:seed-mnemonics": "npx tsx lib/db/seed-mnemonics.ts",
+    "db:seed-audio": "npx tsx lib/db/seed-audio.ts",
+    "db:seed-dialogues": "npx tsx lib/db/seed-dialogues.ts"
   },
   "dependencies": {
     "@auth/neon-adapter": "^1.11.1",

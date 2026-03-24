@@ -13,7 +13,7 @@ export function QuickReviewCard({ dueCount }: QuickReviewCardProps) {
           <span className="text-2xl">✅</span>
           <div>
             <h3 className="text-foreground font-medium">All caught up!</h3>
-            <p className="text-sm text-text-secondary">No words due for review right now.</p>
+            <p className="text-sm text-text-secondary">Nothing due for review right now.</p>
           </div>
         </div>
       </Card>
@@ -30,7 +30,7 @@ export function QuickReviewCard({ dueCount }: QuickReviewCardProps) {
             </div>
             <div>
               <h3 className="text-foreground font-medium">
-                {dueCount} {dueCount === 1 ? 'word wants' : 'words want'} to say hi
+                {dueCount} {dueCount === 1 ? 'item' : 'items'} due for review
               </h3>
               <p className="text-sm text-text-secondary">Quick review to keep them fresh</p>
             </div>

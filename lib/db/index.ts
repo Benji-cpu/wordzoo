@@ -23,6 +23,7 @@ export {
   insertWord,
   findWordByTextAndLanguage,
   getRandomPathWordsForQuiz,
+  getFirstSceneIdForPath,
   getSceneCountForPath,
   getSceneNumberInPath,
   verifyPathAccess,
@@ -35,6 +36,11 @@ export {
   getUserKnownWords,
   getUserDueWords,
   getUserVocabWithMnemonics,
+  getDueWordsForReview,
+  updateWordSRS,
+  getOrCreateUserWord,
+  getUserStreak,
+  updateUserStreak,
 } from './queries';
 export type {
   WordWithLanguage,
@@ -44,4 +50,24 @@ export type {
   PathWordStats,
   KnownWordRow,
   VocabWithMnemonic,
+  DueWordForReview,
+  UserStreakData,
 } from './queries';
+export {
+  getSceneFlowData,
+  getSceneDialogues,
+  getScenePhrases,
+  getScenePatternExercises,
+  getPhraseWords,
+  getOrCreateSceneProgress,
+  updateSceneProgress,
+  getOrCreateUserPhrase,
+  updatePhraseSRS,
+  getDuePhrasesForReview,
+  insertGuidedConversationSession,
+} from './scene-flow-queries';
+export type {
+  SceneFlowData,
+  ScenePhraseWithWords,
+  DuePhraseForReview,
+} from './scene-flow-queries';

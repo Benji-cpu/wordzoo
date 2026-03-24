@@ -17,7 +17,7 @@ export default async function AppLayout({
 
   return (
     <SyncProvider>
-      <div className="min-h-screen bg-background text-foreground">
+      <div className="h-dvh flex flex-col bg-background text-foreground">
         {/* Top bar */}
         <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-card-border px-4 py-3">
           <nav className="flex items-center justify-between max-w-lg mx-auto">
@@ -42,7 +42,7 @@ export default async function AppLayout({
         </header>
 
         {/* Main content */}
-        <main className="p-4 pb-24">{children}</main>
+        <main className="flex-1 overflow-y-auto p-4 pb-24">{children}</main>
 
         {/* Bottom navigation */}
         <BottomNav />

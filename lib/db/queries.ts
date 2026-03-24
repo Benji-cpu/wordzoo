@@ -21,12 +21,13 @@ export async function insertMnemonic(data: {
   userId: string | null;
   keywordText: string;
   sceneDescription: string;
+  bridgeSentence: string | null;
   imageUrl: string | null;
   isCustom: boolean;
 }): Promise<Mnemonic> {
   const rows = await sql`
-    INSERT INTO mnemonics (word_id, user_id, keyword_text, scene_description, image_url, is_custom)
-    VALUES (${data.wordId}, ${data.userId}, ${data.keywordText}, ${data.sceneDescription}, ${data.imageUrl}, ${data.isCustom})
+    INSERT INTO mnemonics (word_id, user_id, keyword_text, scene_description, bridge_sentence, image_url, is_custom)
+    VALUES (${data.wordId}, ${data.userId}, ${data.keywordText}, ${data.sceneDescription}, ${data.bridgeSentence}, ${data.imageUrl}, ${data.isCustom})
     RETURNING *
   `;
   return rows[0] as Mnemonic;
@@ -101,6 +102,16 @@ export async function getScenesByPathId(pathId: string): Promise<Scene[]> {
   return rows as Scene[];
 }
 
+export async function getFirstSceneIdForPath(pathId: string): Promise<string | null> {
+  const rows = await sql`
+    SELECT id FROM scenes
+    WHERE path_id = ${pathId}
+    ORDER BY sort_order
+    LIMIT 1
+  `;
+  return (rows[0] as { id: string })?.id ?? null;
+}
+
 export async function getSceneById(sceneId: string): Promise<Scene | null> {
   const rows = await sql`
     SELECT * FROM scenes WHERE id = ${sceneId}
@@ -120,6 +131,7 @@ export interface SceneWordWithDetails {
   mnemonic_id: string | null;
   keyword_text: string | null;
   scene_description: string | null;
+  bridge_sentence: string | null;
   image_url: string | null;
   user_word_status: string | null;
 }
@@ -133,7 +145,7 @@ export async function getSceneWordsWithDetails(
       w.id AS word_id, w.text, w.romanization, w.pronunciation_audio_url,
       w.meaning_en, w.part_of_speech, w.frequency_rank,
       sw.sort_order,
-      m.id AS mnemonic_id, m.keyword_text, m.scene_description, m.image_url,
+      m.id AS mnemonic_id, m.keyword_text, m.scene_description, m.bridge_sentence, m.image_url,
       uw.status AS user_word_status
     FROM scene_words sw
     JOIN words w ON w.id = sw.word_id
@@ -154,13 +166,13 @@ export async function getSceneWordsForLearning(
       w.id AS word_id, w.text, w.romanization, w.pronunciation_audio_url,
       w.meaning_en, w.part_of_speech, w.frequency_rank,
       sw.sort_order,
-      m.id AS mnemonic_id, m.keyword_text, m.scene_description, m.image_url,
+      m.id AS mnemonic_id, m.keyword_text, m.scene_description, m.bridge_sentence, m.image_url,
       uw.status AS user_word_status
     FROM scene_words sw
     JOIN words w ON w.id = sw.word_id
     LEFT JOIN user_words uw ON uw.word_id = w.id AND uw.user_id = ${userId}
     LEFT JOIN LATERAL (
-      SELECT id, keyword_text, scene_description, image_url
+      SELECT id, keyword_text, scene_description, bridge_sentence, image_url
       FROM mnemonics
       WHERE word_id = w.id
         AND (user_id IS NULL OR user_id = ${userId})
@@ -179,19 +191,37 @@ export async function getSceneWithLanguage(sceneId: string): Promise<{
   scene_id: string;
   scene_title: string;
   scene_description: string | null;
+  scene_type: 'legacy' | 'dialogue';
+  scene_context: string | null;
+  sort_order: number;
   path_id: string;
   language_name: string;
   language_id: string;
+  language_code: string;
 } | null> {
   const rows = await sql`
     SELECT s.id AS scene_id, s.title AS scene_title, s.description AS scene_description,
-      s.path_id, l.name AS language_name, l.id AS language_id
+      s.scene_type, s.scene_context, s.sort_order,
+      s.path_id, l.name AS language_name, l.id AS language_id, l.code AS language_code
     FROM scenes s
     JOIN paths p ON p.id = s.path_id
     JOIN languages l ON l.id = p.language_id
     WHERE s.id = ${sceneId}
   `;
-  return (rows[0] as { scene_id: string; scene_title: string; scene_description: string | null; path_id: string; language_name: string; language_id: string }) ?? null;
+  return (rows[0] as { scene_id: string; scene_title: string; scene_description: string | null; scene_type: 'legacy' | 'dialogue'; scene_context: string | null; sort_order: number; path_id: string; language_name: string; language_id: string; language_code: string }) ?? null;
+}
+
+export async function getNextSceneInPath(
+  pathId: string,
+  currentSortOrder: number
+): Promise<{ id: string; title: string } | null> {
+  const rows = await sql`
+    SELECT id, title FROM scenes
+    WHERE path_id = ${pathId} AND sort_order > ${currentSortOrder}
+    ORDER BY sort_order
+    LIMIT 1
+  `;
+  return (rows[0] as { id: string; title: string }) ?? null;
 }
 
 export async function getDistractorsForWord(
@@ -217,8 +247,11 @@ export interface SceneMasteryRow {
   sort_order: number;
   title: string;
   description: string | null;
+  scene_type: 'legacy' | 'dialogue';
   total_words: number;
   mastered_words: number;
+  current_phase: string | null;
+  scene_completed: boolean;
 }
 
 export async function getSceneMasteryForPath(
@@ -226,14 +259,17 @@ export async function getSceneMasteryForPath(
   pathId: string
 ): Promise<SceneMasteryRow[]> {
   const rows = await sql`
-    SELECT s.id, s.sort_order, s.title, s.description,
-      COUNT(sw.word_id)::int AS total_words,
-      COUNT(CASE WHEN uw.status IN ('reviewing', 'mastered') THEN 1 END)::int AS mastered_words
+    SELECT s.id, s.sort_order, s.title, s.description, s.scene_type,
+      COUNT(DISTINCT sw.word_id)::int AS total_words,
+      COUNT(DISTINCT CASE WHEN uw.status IN ('reviewing', 'mastered') THEN sw.word_id END)::int AS mastered_words,
+      usp.current_phase,
+      COALESCE(usp.completed_at IS NOT NULL, false) AS scene_completed
     FROM scenes s
     LEFT JOIN scene_words sw ON sw.scene_id = s.id
     LEFT JOIN user_words uw ON uw.word_id = sw.word_id AND uw.user_id = ${userId}
+    LEFT JOIN user_scene_progress usp ON usp.scene_id = s.id AND usp.user_id = ${userId}
     WHERE s.path_id = ${pathId}
-    GROUP BY s.id, s.sort_order, s.title, s.description
+    GROUP BY s.id, s.sort_order, s.title, s.description, s.scene_type, usp.current_phase, usp.completed_at
     ORDER BY s.sort_order
   `;
   return rows as SceneMasteryRow[];
@@ -279,6 +315,7 @@ export interface OverdueWordRow {
   mnemonic_id: string | null;
   keyword_text: string | null;
   scene_description: string | null;
+  bridge_sentence: string | null;
   image_url: string | null;
   user_word_status: string;
   next_review_at: Date;
@@ -294,7 +331,7 @@ export async function getOverdueWordsForPreviousScenes(
     SELECT DISTINCT ON (uw.word_id)
       uw.word_id, w.text, w.romanization, w.pronunciation_audio_url,
       w.meaning_en, w.part_of_speech,
-      m.id AS mnemonic_id, m.keyword_text, m.scene_description, m.image_url,
+      m.id AS mnemonic_id, m.keyword_text, m.scene_description, m.bridge_sentence, m.image_url,
       uw.status AS user_word_status, uw.next_review_at
     FROM user_words uw
     JOIN words w ON w.id = uw.word_id
@@ -576,6 +613,7 @@ export interface VocabWithMnemonic {
   pronunciation_audio_url: string | null;
   keyword_text: string | null;
   scene_description: string | null;
+  bridge_sentence: string | null;
 }
 
 export async function getUserVocabWithMnemonics(
@@ -584,7 +622,7 @@ export async function getUserVocabWithMnemonics(
 ): Promise<VocabWithMnemonic[]> {
   const rows = await sql`
     SELECT w.id AS word_id, w.text, w.romanization, w.meaning_en,
-      w.pronunciation_audio_url, m.keyword_text, m.scene_description
+      w.pronunciation_audio_url, m.keyword_text, m.scene_description, m.bridge_sentence
     FROM user_words uw
     JOIN words w ON w.id = uw.word_id
     LEFT JOIN mnemonics m ON m.id = uw.current_mnemonic_id
@@ -800,6 +838,97 @@ export async function upsertMnemonicFeedback(
   return rows[0] as MnemonicFeedback;
 }
 
+// --- SRS Review Queries ---
+
+export interface DueWordForReview {
+  word_id: string;
+  text: string;
+  romanization: string | null;
+  pronunciation_audio_url: string | null;
+  meaning_en: string;
+  part_of_speech: string;
+  language_id: string;
+  frequency_rank: number;
+  mnemonic_id: string | null;
+  keyword_text: string | null;
+  scene_description: string | null;
+  bridge_sentence: string | null;
+  image_url: string | null;
+  user_word_id: string;
+  status: string;
+  ease_factor: number;
+  interval_days: number;
+  times_reviewed: number;
+  times_correct: number;
+  direction: string;
+}
+
+export async function getDueWordsForReview(
+  userId: string,
+  limit: number = 20
+): Promise<DueWordForReview[]> {
+  const rows = await sql`
+    SELECT
+      w.id AS word_id, w.text, w.romanization, w.pronunciation_audio_url,
+      w.meaning_en, w.part_of_speech, w.language_id, w.frequency_rank,
+      m.id AS mnemonic_id, m.keyword_text, m.scene_description, m.bridge_sentence, m.image_url,
+      uw.id AS user_word_id, uw.status, uw.ease_factor, uw.interval_days,
+      uw.times_reviewed, uw.times_correct, uw.direction
+    FROM user_words uw
+    JOIN words w ON w.id = uw.word_id
+    LEFT JOIN mnemonics m ON m.id = uw.current_mnemonic_id
+    WHERE uw.user_id = ${userId}
+      AND uw.next_review_at <= NOW()
+      AND uw.status != 'new'
+    ORDER BY uw.next_review_at ASC
+    LIMIT ${limit}
+  `;
+  return rows as DueWordForReview[];
+}
+
+export async function updateWordSRS(
+  userWordId: string,
+  data: {
+    easeFactor: number;
+    intervalDays: number;
+    nextReviewAt: Date;
+    timesReviewed: number;
+    timesCorrect: number;
+    status: string;
+    direction: string;
+    lastReviewedAt: Date;
+  }
+): Promise<void> {
+  await sql`
+    UPDATE user_words SET
+      ease_factor = ${data.easeFactor},
+      interval_days = ${data.intervalDays},
+      next_review_at = ${data.nextReviewAt.toISOString()},
+      times_reviewed = ${data.timesReviewed},
+      times_correct = ${data.timesCorrect},
+      status = ${data.status},
+      direction = ${data.direction},
+      last_reviewed_at = ${data.lastReviewedAt.toISOString()},
+      updated_at = NOW()
+    WHERE id = ${userWordId}
+  `;
+}
+
+export async function getOrCreateUserWord(
+  userId: string,
+  wordId: string,
+  mnemonicId: string | null
+): Promise<{ id: string; ease_factor: number; interval_days: number; times_reviewed: number; times_correct: number; status: string; direction: string }> {
+  const rows = await sql`
+    INSERT INTO user_words (user_id, word_id, current_mnemonic_id, status)
+    VALUES (${userId}, ${wordId}, ${mnemonicId}, 'learning')
+    ON CONFLICT (user_id, word_id)
+    DO UPDATE SET current_mnemonic_id = COALESCE(user_words.current_mnemonic_id, ${mnemonicId})
+    RETURNING id, ease_factor, interval_days, times_reviewed, times_correct, status, direction
+  `;
+  return rows[0] as { id: string; ease_factor: number; interval_days: number; times_reviewed: number; times_correct: number; status: string; direction: string };
+}
+
 export async function getUserFeedbackForMnemonic(
   userId: string,
   mnemonicId: string
@@ -809,4 +938,64 @@ export async function getUserFeedbackForMnemonic(
     WHERE user_id = ${userId} AND mnemonic_id = ${mnemonicId}
   `;
   return (rows[0] as MnemonicFeedback) ?? null;
+}
+
+// --- Streak Queries ---
+
+export interface UserStreakData {
+  current_streak: number;
+  longest_streak: number;
+}
+
+export async function getUserStreak(userId: string): Promise<UserStreakData> {
+  const rows = await sql`
+    SELECT current_streak, longest_streak, last_active_date
+    FROM user_streaks
+    WHERE user_id = ${userId}
+  `;
+  if (!rows[0]) return { current_streak: 0, longest_streak: 0 };
+  const row = rows[0] as { current_streak: number; longest_streak: number; last_active_date: string | null };
+  if (!row.last_active_date) return { current_streak: 0, longest_streak: row.longest_streak };
+
+  const lastActive = new Date(row.last_active_date);
+  const today = new Date();
+  // Compare dates in UTC to avoid timezone issues
+  const lastActiveDay = Date.UTC(lastActive.getFullYear(), lastActive.getMonth(), lastActive.getDate());
+  const todayDay = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
+  const daysDiff = Math.floor((todayDay - lastActiveDay) / (1000 * 60 * 60 * 24));
+
+  if (daysDiff <= 1) {
+    return { current_streak: row.current_streak, longest_streak: row.longest_streak };
+  }
+  // Streak has lapsed — return 0 without updating DB
+  return { current_streak: 0, longest_streak: row.longest_streak };
+}
+
+export async function updateUserStreak(userId: string): Promise<void> {
+  await sql`
+    INSERT INTO user_streaks (user_id, current_streak, longest_streak, last_active_date, updated_at)
+    VALUES (
+      ${userId},
+      1,
+      1,
+      CURRENT_DATE,
+      NOW()
+    )
+    ON CONFLICT (user_id) DO UPDATE SET
+      current_streak = CASE
+        WHEN user_streaks.last_active_date = CURRENT_DATE THEN user_streaks.current_streak
+        WHEN user_streaks.last_active_date = CURRENT_DATE - INTERVAL '1 day' THEN user_streaks.current_streak + 1
+        ELSE 1
+      END,
+      longest_streak = GREATEST(
+        user_streaks.longest_streak,
+        CASE
+          WHEN user_streaks.last_active_date = CURRENT_DATE THEN user_streaks.current_streak
+          WHEN user_streaks.last_active_date = CURRENT_DATE - INTERVAL '1 day' THEN user_streaks.current_streak + 1
+          ELSE 1
+        END
+      ),
+      last_active_date = CURRENT_DATE,
+      updated_at = NOW()
+  `;
 }

@@ -28,6 +28,7 @@ export async function getWorstMnemonics(
   id: string;
   keyword_text: string;
   scene_description: string;
+  bridge_sentence: string | null;
   image_url: string | null;
   thumbs_up_count: number;
   thumbs_down_count: number;
@@ -37,7 +38,7 @@ export async function getWorstMnemonics(
 }>> {
   const rows = await sql`
     SELECT
-      m.id, m.keyword_text, m.scene_description, m.image_url,
+      m.id, m.keyword_text, m.scene_description, m.bridge_sentence, m.image_url,
       m.thumbs_up_count, m.thumbs_down_count,
       w.text AS word_text, w.meaning_en,
       l.name AS language_name
@@ -52,6 +53,7 @@ export async function getWorstMnemonics(
     id: string;
     keyword_text: string;
     scene_description: string;
+    bridge_sentence: string | null;
     image_url: string | null;
     thumbs_up_count: number;
     thumbs_down_count: number;
@@ -70,6 +72,7 @@ export async function getBestMnemonics(
   id: string;
   keyword_text: string;
   scene_description: string;
+  bridge_sentence: string | null;
   image_url: string | null;
   thumbs_up_count: number;
   thumbs_down_count: number;
@@ -79,7 +82,7 @@ export async function getBestMnemonics(
 }>> {
   const rows = await sql`
     SELECT
-      m.id, m.keyword_text, m.scene_description, m.image_url,
+      m.id, m.keyword_text, m.scene_description, m.bridge_sentence, m.image_url,
       m.thumbs_up_count, m.thumbs_down_count,
       w.text AS word_text, w.meaning_en,
       l.name AS language_name
@@ -94,6 +97,7 @@ export async function getBestMnemonics(
     id: string;
     keyword_text: string;
     scene_description: string;
+    bridge_sentence: string | null;
     image_url: string | null;
     thumbs_up_count: number;
     thumbs_down_count: number;
@@ -169,4 +173,56 @@ export async function getMnemonicById(
     SELECT * FROM mnemonics WHERE id = ${mnemonicId}
   `;
   return (rows[0] as Mnemonic) ?? null;
+}
+
+// --- Image Review Queries ---
+
+export async function getUnreviewedMnemonicImages(
+  limit: number,
+  offset: number
+): Promise<Array<{
+  id: string;
+  keyword_text: string;
+  bridge_sentence: string | null;
+  image_url: string;
+  word_text: string;
+  meaning_en: string;
+  language_name: string;
+}>> {
+  const rows = await sql`
+    SELECT
+      m.id, m.keyword_text, m.bridge_sentence, m.image_url,
+      w.text AS word_text, w.meaning_en,
+      l.name AS language_name
+    FROM mnemonics m
+    JOIN words w ON w.id = m.word_id
+    JOIN languages l ON l.id = w.language_id
+    WHERE m.image_reviewed = false AND m.image_url IS NOT NULL
+    ORDER BY m.created_at DESC
+    LIMIT ${limit} OFFSET ${offset}
+  `;
+  return rows as Array<{
+    id: string;
+    keyword_text: string;
+    bridge_sentence: string | null;
+    image_url: string;
+    word_text: string;
+    meaning_en: string;
+    language_name: string;
+  }>;
+}
+
+export async function markImageReviewed(
+  mnemonicId: string,
+  approved: boolean
+): Promise<void> {
+  if (approved) {
+    await sql`
+      UPDATE mnemonics SET image_reviewed = true WHERE id = ${mnemonicId}
+    `;
+  } else {
+    await sql`
+      UPDATE mnemonics SET image_reviewed = true, image_url = NULL WHERE id = ${mnemonicId}
+    `;
+  }
 }

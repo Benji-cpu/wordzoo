@@ -1,15 +1,18 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { PronunciationButton } from '@/components/audio/PronunciationButton';
 
 interface QuizOptionsProps {
   wordText: string;
+  wordId: string;
   correctAnswer: string;
   distractors: string[];
   onCorrect: () => void;
+  onAnswer?: (correct: boolean) => void;
 }
 
-export function QuizOptions({ wordText, correctAnswer, distractors, onCorrect }: QuizOptionsProps) {
+export function QuizOptions({ wordText, wordId, correctAnswer, distractors, onCorrect, onAnswer }: QuizOptionsProps) {
   const [selected, setSelected] = useState<string | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
 
@@ -21,6 +24,7 @@ export function QuizOptions({ wordText, correctAnswer, distractors, onCorrect }:
     setSelected(option);
     const correct = option === correctAnswer;
     setIsCorrect(correct);
+    onAnswer?.(correct);
 
     if (correct) {
       setTimeout(onCorrect, 600);
@@ -39,7 +43,12 @@ export function QuizOptions({ wordText, correctAnswer, distractors, onCorrect }:
       <p className="text-center text-text-secondary text-sm mb-2">
         What does this mean?
       </p>
-      <p className="text-center text-2xl font-bold text-accent-id mb-6">{wordText}</p>
+      <div className="flex items-center justify-center gap-1 mb-6">
+        <p className="text-2xl font-bold text-accent-id">{wordText}</p>
+        <div onClick={(e) => e.stopPropagation()}>
+          <PronunciationButton wordId={wordId} size={20} />
+        </div>
+      </div>
       <div className="grid grid-cols-2 gap-3">
         {options.map((option) => {
           let className =

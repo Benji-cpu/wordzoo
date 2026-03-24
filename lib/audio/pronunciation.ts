@@ -30,19 +30,53 @@ async function fetchWord(wordId: string): Promise<WordWithMnemonic | null> {
   return json.data as WordWithMnemonic;
 }
 
-export async function playWordPronunciation(wordId: string): Promise<void> {
+interface PlayWordOptions {
+  audioUrl?: string | null;
+  text?: string;
+  languageCode?: SupportedLanguageCode;
+}
+
+export async function playWordPronunciation(
+  wordId: string,
+  options?: PlayWordOptions
+): Promise<void> {
   stopPlayback();
 
+  const speed = getPlaybackSpeed();
+
+  // 1. Try pre-generated audio URL
+  if (options?.audioUrl) {
+    try {
+      return await playAudioUrl(options.audioUrl, speed);
+    } catch {
+      // URL failed, continue to fallbacks
+    }
+  }
+
+  // 2. Try direct TTS (no API call needed)
+  if (options?.text && options?.languageCode) {
+    return playViaTTS(options.text, options.languageCode, speed);
+  }
+
+  // 3. Last resort: fetch from API (slow path)
   const word = await fetchWord(wordId);
   if (!word) return;
-
-  const speed = getPlaybackSpeed();
 
   if (word.pronunciation_audio_url) {
     return playAudioUrl(word.pronunciation_audio_url, speed);
   }
 
   return playViaTTS(word.text, word.language_code, speed);
+}
+
+/**
+ * Play an audio URL directly without needing a word ID or API call.
+ * Useful when the audio URL is already available from server-rendered data.
+ */
+export async function playAudioDirect(url: string): Promise<void> {
+  stopPlayback();
+  const speed = getPlaybackSpeed();
+  return playAudioUrl(url, speed);
 }
 
 function playAudioUrl(url: string, speed: PlaybackSpeed): Promise<void> {

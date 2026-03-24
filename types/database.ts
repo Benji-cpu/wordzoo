@@ -52,12 +52,14 @@ export interface Mnemonic {
   user_id: string | null;
   keyword_text: string;
   scene_description: string;
+  bridge_sentence: string | null;
   image_url: string | null;
   audio_url: string | null;
   is_custom: boolean;
   upvote_count: number;
   thumbs_up_count: number;
   thumbs_down_count: number;
+  image_reviewed: boolean;
   created_at: Date;
 }
 
@@ -100,6 +102,8 @@ export interface Scene {
   title: string;
   description: string | null;
   combined_scene_image_url: string | null;
+  scene_type: 'legacy' | 'dialogue';
+  scene_context: string | null;
   sort_order: number;
   created_at: Date;
 }
@@ -123,7 +127,8 @@ export interface TutorSession {
   id: string;
   user_id: string;
   language_id: string;
-  mode: 'free_chat' | 'role_play' | 'word_review' | 'grammar_glimpse' | 'pronunciation_coach';
+  mode: 'free_chat' | 'role_play' | 'word_review' | 'grammar_glimpse' | 'pronunciation_coach' | 'guided_conversation';
+  scene_id: string | null;
   scenario: string | null;
   started_at: Date;
   ended_at: Date | null;
@@ -222,4 +227,82 @@ export interface Referral {
   click_at: Date;
   signup_at: Date | null;
   status: 'clicked' | 'signed_up';
+}
+
+// --- Dialogue-based learning types ---
+
+export interface SceneDialogue {
+  id: string;
+  scene_id: string;
+  speaker: string;
+  text_target: string;
+  text_en: string;
+  audio_url: string | null;
+  sort_order: number;
+  created_at: Date;
+}
+
+export interface ScenePhrase {
+  id: string;
+  scene_id: string;
+  text_target: string;
+  text_en: string;
+  literal_translation: string | null;
+  audio_url: string | null;
+  usage_note: string | null;
+  sort_order: number;
+  created_at: Date;
+}
+
+export interface PhraseWord {
+  phrase_id: string;
+  word_id: string;
+  position: number;
+}
+
+export interface ScenePatternExercise {
+  id: string;
+  scene_id: string;
+  pattern_template: string;
+  pattern_en: string;
+  explanation: string | null;
+  prompt: string;
+  hint_en: string | null;
+  correct_answer: string;
+  distractors: string[];
+  sort_order: number;
+  created_at: Date;
+}
+
+export interface UserPhrase {
+  id: string;
+  user_id: string;
+  phrase_id: string;
+  status: 'new' | 'learning' | 'reviewing' | 'mastered';
+  ease_factor: number;
+  interval_days: number;
+  next_review_at: Date;
+  times_reviewed: number;
+  times_correct: number;
+  last_reviewed_at: Date | null;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export type SceneFlowPhase = 'dialogue' | 'phrases' | 'vocabulary' | 'patterns' | 'conversation' | 'summary';
+
+export interface UserSceneProgress {
+  id: string;
+  user_id: string;
+  scene_id: string;
+  current_phase: SceneFlowPhase;
+  phase_index: number;
+  dialogue_completed: boolean;
+  phrases_completed: boolean;
+  vocabulary_completed: boolean;
+  patterns_completed: boolean;
+  conversation_completed: boolean;
+  completed_at: Date | null;
+  created_at: Date;
+  updated_at: Date;
 }

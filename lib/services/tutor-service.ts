@@ -7,9 +7,12 @@ import {
   getUserKnownWords,
   getUserDueWords,
   getLanguageById,
+  insertGuidedConversationSession,
+  getSceneDialogues,
+  getScenePhrases,
 } from '@/lib/db';
 import { generateChat, generateChatStream } from '@/lib/ai/gemini';
-import { buildTutorSystemPrompt } from '@/lib/ai/tutor-prompts';
+import { buildTutorSystemPrompt, buildGuidedConversationPrompt } from '@/lib/ai/tutor-prompts';
 import type { GeminiChatMessage } from '@/types/ai';
 
 export async function startSession(
@@ -47,6 +50,49 @@ export async function startSession(
   return { sessionId: session.id, greeting: response.text };
 }
 
+export async function startGuidedSession(
+  userId: string,
+  languageId: string,
+  sceneId: string,
+  sceneContext: string
+): Promise<{ sessionId: string; greeting: string }> {
+  const session = await insertGuidedConversationSession(userId, languageId, sceneId, sceneContext);
+
+  const language = await getLanguageById(languageId);
+  if (!language) throw new Error('Language not found');
+
+  const [dialogues, phrases, knownWords] = await Promise.all([
+    getSceneDialogues(sceneId),
+    getScenePhrases(sceneId),
+    getUserKnownWords(userId, languageId),
+  ]);
+
+  const systemPrompt = buildGuidedConversationPrompt({
+    languageName: language.name,
+    sceneContext,
+    dialogueLines: dialogues.map((d) => ({
+      speaker: d.speaker,
+      text_target: d.text_target,
+      text_en: d.text_en,
+    })),
+    phrases: phrases.map((p) => ({
+      text_target: p.text_target,
+      text_en: p.text_en,
+    })),
+    knownWords,
+  });
+
+  const greetingMessages: GeminiChatMessage[] = [
+    { role: 'user', content: 'Start the practice conversation with a greeting.' },
+  ];
+
+  const response = await generateChat(greetingMessages, systemPrompt);
+  await insertTutorMessage(session.id, 'model', response.text);
+  await updateTutorSession(session.id, { tokensUsed: response.tokensUsed });
+
+  return { sessionId: session.id, greeting: response.text };
+}
+
 export async function sendMessage(
   sessionId: string,
   userId: string,
@@ -68,18 +114,41 @@ export async function sendMessage(
   const language = await getLanguageById(session.language_id);
   if (!language) throw new Error('Language not found');
 
-  const [knownWords, dueWords] = await Promise.all([
-    getUserKnownWords(userId, session.language_id),
-    getUserDueWords(userId, session.language_id),
-  ]);
+  let systemPrompt: string;
 
-  const systemPrompt = buildTutorSystemPrompt({
-    languageName: language.name,
-    mode: session.mode,
-    scenario: session.scenario,
-    knownWords,
-    dueWords,
-  });
+  if (session.mode === 'guided_conversation' && session.scene_id) {
+    const [dialogues, phrases, knownWords] = await Promise.all([
+      getSceneDialogues(session.scene_id),
+      getScenePhrases(session.scene_id),
+      getUserKnownWords(userId, session.language_id),
+    ]);
+    systemPrompt = buildGuidedConversationPrompt({
+      languageName: language.name,
+      sceneContext: session.scenario ?? '',
+      dialogueLines: dialogues.map((d) => ({
+        speaker: d.speaker,
+        text_target: d.text_target,
+        text_en: d.text_en,
+      })),
+      phrases: phrases.map((p) => ({
+        text_target: p.text_target,
+        text_en: p.text_en,
+      })),
+      knownWords,
+    });
+  } else {
+    const [knownWords, dueWords] = await Promise.all([
+      getUserKnownWords(userId, session.language_id),
+      getUserDueWords(userId, session.language_id),
+    ]);
+    systemPrompt = buildTutorSystemPrompt({
+      languageName: language.name,
+      mode: session.mode,
+      scenario: session.scenario,
+      knownWords,
+      dueWords,
+    });
+  }
 
   const { stream, tokensPromise } = await generateChatStream(chatMessages, systemPrompt);
 

@@ -15,24 +15,16 @@ export interface GeminiTextResponse {
   tokensUsed: number;
 }
 
-// Stability AI types
-export interface StabilityImageOptions {
-  width?: number;
-  height?: number;
-  cfgScale?: number;
-  steps?: number;
-  style?: string;
-}
-
-export interface StabilityImageResponse {
+// Image generation types
+export interface ImageGenerationResponse {
   imageUrl: string;
-  seed: number;
 }
 
 // Mnemonic generation types
 export interface MnemonicCandidate {
   keyword: string;
   phoneticLink: string; // e.g. "KOO-ching sounds like couching"
+  bridgeSentence: string; // e.g. "EENIE meenie — THIS is the one!"
   sceneDescription: string;
   imagePrompt: string;
 }

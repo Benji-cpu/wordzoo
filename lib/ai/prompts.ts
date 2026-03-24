@@ -9,6 +9,14 @@ KEYWORD RULES:
 - Keyword should be a commonly known English word — not slang, not technical jargon
 - Prefer concrete nouns and verbs over phrases — a single vivid word beats a multi-word phrase
 
+BRIDGE SENTENCE RULES:
+- Max 12 words
+- Must contain BOTH the keyword sound AND the meaning word
+- The meaning word must be in ALL CAPS
+- Must read naturally and be instantly memorable
+- The bridge sentence IS the mnemonic — it's the one line the learner remembers
+- Examples: "EENIE meenie — THIS is the one!", "The cat MEOWs because it WANTS a treat!"
+
 SCENE RULES:
 - Visually connects the English keyword to the foreign word's meaning
 - Must be ABSURD: use scale distortion, impossible actions, or humor
@@ -18,12 +26,11 @@ SCENE RULES:
 - Image-only test: would someone seeing ONLY the generated image guess the word's meaning within 2 tries?
 
 IMAGE PROMPT RULES:
-- Optimized for Stability AI image generation
-- Always end with: "digital illustration, vibrant colors, slightly surreal, centered composition, single focal point, no text no words no letters"
+- Derived from the bridge sentence — illustrate what it describes
+- The meaning word must appear as VISIBLE TEXT in the image
+- Always end with: "bold text overlay reading [MEANING_WORD], digital illustration, vibrant colors, slightly surreal, centered composition, single focal point"
 - Max 75 words total
 - Describe the scene visually, not conceptually
-- Lean into Stability AI strengths: distinctive objects, scale distortion, single characters with clear visual identity (costume, species, props)
-- Avoid depending on: specific hand gestures, text/labels, abstract spatial concepts, or multiple characters interacting in nuanced ways
 - The most important visual element (the one that bridges keyword → meaning) must be described FIRST in the prompt
 
 OUTPUT FORMAT:
@@ -31,6 +38,7 @@ Return ONLY a valid JSON array of exactly 3 candidates. No markdown, no explanat
 Each candidate must have these fields:
 - "keyword": string
 - "phoneticLink": string (e.g. "KOO-ching sounds like couching")
+- "bridgeSentence": string
 - "sceneDescription": string
 - "imagePrompt": string`;
 

@@ -33,6 +33,7 @@ export async function GET(request: NextRequest) {
       error: null,
     });
   } catch (error) {
+    console.error('[billing/status] Error:', error);
     const message = error instanceof Error ? error.message : 'Failed to get billing status';
     return NextResponse.json<ApiResponse<null>>(
       { data: null, error: message },

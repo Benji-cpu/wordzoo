@@ -112,8 +112,11 @@ export async function* downloadPack(
     if (word.mnemonic) {
       const existingMnemonic = await getCachedMnemonic(word.mnemonic.id);
       if (!existingMnemonic) {
+        const m = word.mnemonic as Record<string, unknown>;
         const cachedMnemonic: CachedMnemonic = {
           ...word.mnemonic,
+          bridge_sentence: (m.bridge_sentence as string) ?? null,
+          image_reviewed: (m.image_reviewed as boolean) ?? false,
           created_at: new Date(word.mnemonic.created_at),
           image_blob: null,
           cached_at: new Date(),
@@ -232,6 +235,8 @@ export async function* downloadPack(
     title: s.title,
     description: s.description,
     combined_scene_image_url: s.combined_scene_image_url,
+    scene_type: (s as { scene_type?: string }).scene_type as 'legacy' | 'dialogue' ?? 'legacy',
+    scene_context: (s as { scene_context?: string }).scene_context ?? null,
     sort_order: s.sort_order,
     created_at: new Date(s.created_at),
     word_ids: s.words.map((w) => w.id),

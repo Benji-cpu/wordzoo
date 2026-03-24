@@ -1,7 +1,7 @@
 import type { MnemonicCandidate, MnemonicGenerationResult } from '@/types/ai';
 import type { Mnemonic } from '@/types/database';
 import { generateText } from '@/lib/ai/gemini';
-import { generateImage } from '@/lib/ai/stability';
+import { generateImage } from '@/lib/ai/image-generation';
 import {
   MNEMONIC_SYSTEM_PROMPT,
   buildGeneratePrompt,
@@ -25,6 +25,7 @@ function parseCandidates(text: string): MnemonicCandidate[] {
   return parsed.map((c: Record<string, unknown>) => ({
     keyword: String(c.keyword ?? ''),
     phoneticLink: String(c.phoneticLink ?? ''),
+    bridgeSentence: String(c.bridgeSentence ?? ''),
     sceneDescription: String(c.sceneDescription ?? ''),
     imagePrompt: String(c.imagePrompt ?? ''),
   }));
@@ -116,6 +117,7 @@ export async function generateFromUserKeyword(
   const keywordCheck = filterMnemonicContent({
     keyword,
     phoneticLink: '',
+    bridgeSentence: '',
     sceneDescription: '',
     imagePrompt: '',
   });
@@ -221,6 +223,7 @@ export async function saveMnemonic(
     userId,
     keywordText: candidate.keyword,
     sceneDescription: candidate.sceneDescription,
+    bridgeSentence: candidate.bridgeSentence || null,
     imageUrl,
     isCustom,
   });

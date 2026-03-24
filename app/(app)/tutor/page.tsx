@@ -26,6 +26,7 @@ export default function TutorPage() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [languageId, setLanguageId] = useState<string | null>(null);
   const [langCode, setLangCode] = useState('en');
+  const [isLoadingLanguage, setIsLoadingLanguage] = useState(true);
   const [isStarting, setIsStarting] = useState(false);
   const [isEnding, setIsEnding] = useState(false);
   const [summaryData, setSummaryData] = useState<SessionSummaryData | null>(null);
@@ -52,6 +53,8 @@ export default function TutorPage() {
         }
       } catch {
         // Fallback: languageId will be null, user can still try
+      } finally {
+        setIsLoadingLanguage(false);
       }
     }
     fetchLanguage();
@@ -155,6 +158,15 @@ export default function TutorPage() {
       startListening();
     }
   }, [isListening, startListening, stopListening]);
+
+  if (isLoadingLanguage) {
+    return (
+      <div className="max-w-lg mx-auto px-4 pt-8 text-center">
+        <h1 className="text-2xl font-bold text-foreground">AI Tutor</h1>
+        <p className="mt-2 text-text-secondary">Loading...</p>
+      </div>
+    );
+  }
 
   if (!languageId) {
     return (

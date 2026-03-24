@@ -9,7 +9,7 @@ function getClient() {
   return new GoogleGenAI({ apiKey });
 }
 
-const DEFAULT_MODEL = 'gemini-2.0-flash';
+const DEFAULT_MODEL = 'gemini-2.5-flash';
 
 export async function generateText(
   prompt: string,

@@ -5,11 +5,12 @@ import { useState, useEffect } from 'react';
 interface FeedbackButtonsProps {
   mnemonicId: string;
   context: 'learn' | 'review';
+  compact?: boolean;
 }
 
 type Rating = 'thumbs_up' | 'thumbs_down';
 
-export function FeedbackButtons({ mnemonicId, context }: FeedbackButtonsProps) {
+export function FeedbackButtons({ mnemonicId, context, compact = false }: FeedbackButtonsProps) {
   const [selectedRating, setSelectedRating] = useState<Rating | null>(null);
   const [showComment, setShowComment] = useState(false);
   const [commentText, setCommentText] = useState('');
@@ -60,7 +61,7 @@ export function FeedbackButtons({ mnemonicId, context }: FeedbackButtonsProps) {
   return (
     <div onClick={(e) => e.stopPropagation()}>
       {/* Header + thumb buttons row */}
-      <div className="flex items-center justify-center gap-3">
+      <div className={`flex items-center ${compact ? 'gap-2' : 'justify-center gap-3'}`}>
         <button
           onClick={() => handleRate('thumbs_up')}
           disabled={selectedRating !== null}
@@ -79,7 +80,11 @@ export function FeedbackButtons({ mnemonicId, context }: FeedbackButtonsProps) {
           </svg>
         </button>
 
-        <span className="text-xs text-text-secondary">{headerText}</span>
+        {!compact && (
+          <span className="text-xs text-text-secondary">
+            {headerText}
+          </span>
+        )}
 
         <button
           onClick={() => handleRate('thumbs_down')}

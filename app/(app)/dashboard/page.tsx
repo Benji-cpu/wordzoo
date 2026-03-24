@@ -6,7 +6,10 @@ import {
   getSceneMasteryForPath,
   getPathWordStats,
   getUserDueWords,
+  getLanguageById,
+  getUserStreak,
 } from '@/lib/db/queries';
+import { getDuePhrasesForReview } from '@/lib/db/scene-flow-queries';
 import { ContinueLearningCard } from '@/components/learn/ContinueLearningCard';
 import { QuickReviewCard } from '@/components/learn/QuickReviewCard';
 import { ProgressStats } from '@/components/learn/ProgressStats';
@@ -48,23 +51,44 @@ export default async function DashboardPage() {
   const pathId = activePath.path_id;
   const languageId = activePath.path_language_id;
 
-  // Fetch scene mastery, word stats, and due words in parallel
-  const [sceneMastery, wordStats, dueWords] = await Promise.all([
+  // Fetch scene mastery, word stats, due words/phrases, and language in parallel
+  const [sceneMastery, wordStats, dueWords, duePhrases, language, streakData] = await Promise.all([
     getSceneMasteryForPath(userId, pathId),
     getPathWordStats(userId, pathId),
     getUserDueWords(userId, languageId),
+    getDuePhrasesForReview(userId, 100),
+    getLanguageById(languageId),
+    getUserStreak(userId),
   ]);
 
-  // Find next incomplete scene (first where mastered_words < total_words)
-  const nextScene = sceneMastery.find(s => s.mastered_words < s.total_words) ?? sceneMastery[0];
+  // Find next incomplete scene
+  // For dialogue scenes: completed when scene_completed = true
+  // For legacy scenes: completed when mastered_words >= total_words
+  const isSceneComplete = (s: typeof sceneMastery[0]) =>
+    s.scene_type === 'dialogue' ? s.scene_completed : s.mastered_words >= s.total_words;
+
+  const nextScene = sceneMastery.find(s => !isSceneComplete(s)) ?? sceneMastery[0];
 
   // Calculate scene progress percentage
-  const sceneProgress = nextScene && nextScene.total_words > 0
-    ? Math.round((nextScene.mastered_words / nextScene.total_words) * 100)
-    : 0;
+  const PHASE_WEIGHTS: Record<string, number> = {
+    dialogue: 15, phrases: 30, vocabulary: 55, patterns: 70, conversation: 85, summary: 100,
+  };
+  let sceneProgress: number;
+  if (!nextScene) {
+    sceneProgress = 0;
+  } else if (nextScene.scene_type === 'dialogue') {
+    sceneProgress = nextScene.scene_completed
+      ? 100
+      : PHASE_WEIGHTS[nextScene.current_phase ?? 'dialogue'] ?? 0;
+  } else {
+    sceneProgress = nextScene.total_words > 0
+      ? Math.round((nextScene.mastered_words / nextScene.total_words) * 100)
+      : 0;
+  }
 
-  // Streak: placeholder for now (no streak table yet)
-  const streak = 0;
+  const totalDueCount = dueWords.length + duePhrases.length;
+
+  const streak = streakData.current_streak;
 
   return (
     <div className="max-w-lg mx-auto space-y-4 pb-24">
@@ -76,7 +100,7 @@ export default async function DashboardPage() {
         <div>
           <h1 className="text-2xl font-bold text-foreground">Welcome back</h1>
           <p className="text-sm text-text-secondary mt-0.5">
-            Keep building your Indonesian vocabulary
+            Keep building your {language?.name ?? 'language'} vocabulary
           </p>
         </div>
         <StreakCounter streak={streak} />
@@ -102,7 +126,7 @@ export default async function DashboardPage() {
         <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wider mb-2">
           Review
         </h2>
-        <QuickReviewCard dueCount={dueWords.length} />
+        <QuickReviewCard dueCount={totalDueCount} />
       </section>
 
       {/* Progress Stats */}

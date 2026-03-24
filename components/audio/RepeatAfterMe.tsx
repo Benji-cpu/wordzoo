@@ -53,7 +53,7 @@ export function RepeatAfterMe({ wordId, languageCode, onResult, className = '' }
 
   if (!available) {
     return (
-      <div className={`flex items-center gap-2 text-sm text-gray-400 ${className}`}>
+      <div className={`flex items-center gap-2 text-sm text-text-secondary ${className}`}>
         <MicIcon size={20} />
         <span>Pronunciation practice not available</span>
       </div>
@@ -68,8 +68,8 @@ export function RepeatAfterMe({ wordId, languageCode, onResult, className = '' }
         disabled={state !== 'idle'}
         className={`relative inline-flex items-center justify-center rounded-full p-3 transition-colors ${
           state === 'listening'
-            ? 'bg-red-100 text-red-600'
-            : 'bg-gray-100 text-gray-700 hover:bg-gray-200 active:bg-gray-300'
+            ? 'bg-red-500/20 text-red-400'
+            : 'bg-white/10 text-text-secondary hover:bg-white/15 active:bg-white/20'
         } disabled:opacity-70`}
         aria-label={state === 'listening' ? 'Listening...' : 'Start pronunciation practice'}
       >
@@ -80,11 +80,11 @@ export function RepeatAfterMe({ wordId, languageCode, onResult, className = '' }
       </button>
 
       {state === 'listening' && (
-        <span className="text-sm text-red-600 font-medium">Listening...</span>
+        <span className="text-sm text-red-400 font-medium">Listening...</span>
       )}
 
       {state === 'processing' && (
-        <span className="text-sm text-gray-500">Processing...</span>
+        <span className="text-sm text-text-secondary">Processing...</span>
       )}
 
       {state === 'showing_result' && result && (
@@ -96,9 +96,9 @@ export function RepeatAfterMe({ wordId, languageCode, onResult, className = '' }
 
 function ScoreDisplay({ result }: { result: PronunciationResult }) {
   const config = {
-    close_enough: { icon: '✓', color: 'text-green-600', bg: 'bg-green-50' },
-    getting_there: { icon: '◐', color: 'text-amber-600', bg: 'bg-amber-50' },
-    try_again: { icon: '↻', color: 'text-orange-600', bg: 'bg-orange-50' },
+    close_enough: { icon: '✓', color: 'text-green-400', bg: 'bg-green-500/20' },
+    getting_there: { icon: '◐', color: 'text-amber-400', bg: 'bg-amber-500/20' },
+    try_again: { icon: '↻', color: 'text-orange-400', bg: 'bg-orange-500/20' },
   }[result.score];
 
   return (

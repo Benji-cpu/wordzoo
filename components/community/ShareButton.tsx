@@ -8,9 +8,10 @@ interface ShareButtonProps {
   wordText: string;
   meaningEn: string;
   languageName: string;
+  compact?: boolean;
 }
 
-export function ShareButton({ mnemonicId, wordId, wordText, meaningEn, languageName }: ShareButtonProps) {
+export function ShareButton({ mnemonicId, wordId, wordText, meaningEn, languageName, compact = false }: ShareButtonProps) {
   const [copied, setCopied] = useState(false);
 
   async function handleShare() {
@@ -51,7 +52,7 @@ export function ShareButton({ mnemonicId, wordId, wordText, meaningEn, languageN
         <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
         <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
       </svg>
-      <span>{copied ? 'Copied!' : 'Share'}</span>
+      <span className={compact ? 'hidden sm:inline' : ''}>{copied ? 'Copied!' : 'Share'}</span>
     </button>
   );
 }

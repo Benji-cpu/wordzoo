@@ -5,11 +5,14 @@ import { playWordPronunciation, stopPlayback } from '@/lib/audio';
 
 interface PronunciationButtonProps {
   wordId: string;
+  audioUrl?: string | null;
+  text?: string;
+  languageCode?: string;
   size?: number;
   className?: string;
 }
 
-export function PronunciationButton({ wordId, size = 24, className = '' }: PronunciationButtonProps) {
+export function PronunciationButton({ wordId, audioUrl, text, languageCode, size = 24, className = '' }: PronunciationButtonProps) {
   const [isPlaying, setIsPlaying] = useState(false);
 
   const handleClick = useCallback(async () => {
@@ -21,24 +24,24 @@ export function PronunciationButton({ wordId, size = 24, className = '' }: Pronu
 
     setIsPlaying(true);
     try {
-      await playWordPronunciation(wordId);
+      await playWordPronunciation(wordId, { audioUrl, text, languageCode: languageCode as import('@/types/audio').SupportedLanguageCode | undefined });
     } catch {
       // Playback failed — silently ignore
     } finally {
       setIsPlaying(false);
     }
-  }, [wordId, isPlaying]);
+  }, [wordId, audioUrl, text, languageCode, isPlaying]);
 
   return (
     <button
       type="button"
       onClick={handleClick}
       disabled={isPlaying}
-      className={`relative inline-flex items-center justify-center rounded-full p-2 text-blue-600 hover:bg-blue-50 active:bg-blue-100 transition-colors disabled:opacity-70 ${className}`}
+      className={`relative inline-flex items-center justify-center rounded-full p-2 text-accent-id hover:bg-white/10 active:bg-white/15 transition-colors disabled:opacity-70 ${className}`}
       aria-label={isPlaying ? 'Playing pronunciation' : 'Play pronunciation'}
     >
       {isPlaying && (
-        <span className="absolute inset-0 rounded-full bg-blue-400/30 animate-ping" />
+        <span className="absolute inset-0 rounded-full bg-accent-id/30 animate-ping" />
       )}
       <svg
         width={size}

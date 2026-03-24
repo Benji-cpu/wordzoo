@@ -5,7 +5,7 @@ export default function AuthLayout({
 }) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background text-foreground">
-      <div className="w-full max-w-md p-8 glass-card mx-4">{children}</div>
+      <div className="w-full max-w-sm mx-4">{children}</div>
     </div>
   );
 }

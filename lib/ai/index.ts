@@ -1,5 +1,5 @@
 export { generateText, generateChat, generateChatStream } from './gemini';
-export { generateImage } from './stability';
+export { generateImage } from './image-generation';
 export {
   MNEMONIC_SYSTEM_PROMPT,
   buildGeneratePrompt,

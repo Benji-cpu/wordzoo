@@ -1,155 +1,147 @@
-'use client';
+import { notFound, redirect } from 'next/navigation';
+import {
+  getSceneWithLanguage,
+  getSceneWordsForLearning,
+  getDistractorsForWord,
+  getNextSceneInPath,
+  getSceneMasteryForPath,
+} from '@/lib/db/queries';
+import { getSceneFlowData, getOrCreateSceneProgress } from '@/lib/db/scene-flow-queries';
+import { auth } from '@/lib/auth';
+import { LearnClient, type LearnWord } from '@/components/learn/LearnClient';
+import { SceneFlowClient } from '@/components/learn/SceneFlowClient';
+import type { SupportedLanguageCode } from '@/types/audio';
 
-import { useParams } from 'next/navigation';
-import { useState, useEffect, useCallback } from 'react';
-import { getMockScene, getMockDueWords, type MockWordWithMnemonic } from '@/lib/mocks/learning-data';
-import { SceneHeader } from '@/components/learn/SceneHeader';
-import { WordCard } from '@/components/learn/WordCard';
-import { MnemonicCard } from '@/components/learn/MnemonicCard';
-import { QuizOptions } from '@/components/learn/QuizOptions';
-import { SceneSummary } from '@/components/learn/SceneSummary';
-import { PreSceneReview } from '@/components/learn/PreSceneReview';
+interface PageProps {
+  params: Promise<{ sceneId: string }>;
+}
 
-type SceneState =
-  | { phase: 'pre_review'; dueCount: number }
-  | { phase: 'word_learning'; wordIndex: number; step: 'word' | 'mnemonic' | 'quiz' }
-  | { phase: 'scene_complete' };
-
-export default function LearnPage() {
-  const params = useParams<{ sceneId: string }>();
-  const sceneId = params.sceneId;
-
-  const sceneData = getMockScene(sceneId);
-  const dueWords = getMockDueWords();
-  const dueCount = dueWords.length;
-
-  const [state, setState] = useState<SceneState>(
-    dueCount > 0
-      ? { phase: 'pre_review', dueCount }
-      : { phase: 'word_learning', wordIndex: 0, step: 'word' }
+async function buildWordsArray(
+  sceneId: string,
+  languageId: string,
+  userId: string | null
+): Promise<LearnWord[]> {
+  const sceneWords = await getSceneWordsForLearning(sceneId, userId);
+  return Promise.all(
+    sceneWords.map(async (sw) => {
+      const distractors = await getDistractorsForWord(
+        sw.word_id,
+        languageId,
+        sw.meaning_en,
+        3
+      );
+      return {
+        word: {
+          id: sw.word_id,
+          text: sw.text,
+          romanization: sw.romanization,
+          meaning_en: sw.meaning_en,
+          part_of_speech: sw.part_of_speech,
+          pronunciation_audio_url: sw.pronunciation_audio_url,
+        },
+        mnemonic: sw.mnemonic_id
+          ? {
+              id: sw.mnemonic_id,
+              keyword_text: sw.keyword_text!,
+              scene_description: sw.scene_description!,
+              bridge_sentence: sw.bridge_sentence ?? null,
+              image_url: sw.image_url,
+            }
+          : null,
+        distractors,
+        userWordStatus: sw.user_word_status ?? null,
+      };
+    })
   );
+}
 
-  const words = sceneData.words;
-  const currentWord: MockWordWithMnemonic | undefined =
-    state.phase === 'word_learning' ? words[state.wordIndex] : undefined;
+export default async function LearnPage({ params }: PageProps) {
+  const { sceneId } = await params;
 
-  // Pre-fetch next word's image
-  useEffect(() => {
-    if (state.phase === 'word_learning' && state.step === 'mnemonic') {
-      const nextIndex = state.wordIndex + 1;
-      if (nextIndex < words.length) {
-        const nextImg = words[nextIndex].mnemonic?.image_url;
-        if (nextImg) {
-          const img = new Image();
-          img.src = nextImg;
+  const scene = await getSceneWithLanguage(sceneId);
+  if (!scene) return notFound();
+
+  const session = await auth();
+  const userId = session?.user?.id ?? null;
+
+  // Auto-advance: if user is logged in and scene is complete, redirect to next incomplete
+  if (userId) {
+    const sceneMastery = await getSceneMasteryForPath(userId, scene.path_id);
+    const currentRow = sceneMastery.find(s => s.id === sceneId);
+    if (currentRow) {
+      const isComplete = currentRow.scene_type === 'dialogue'
+        ? currentRow.scene_completed
+        : currentRow.mastered_words >= currentRow.total_words;
+      if (isComplete) {
+        const nextIncomplete = sceneMastery.find(s => {
+          if (s.sort_order <= currentRow.sort_order) return false;
+          return s.scene_type === 'dialogue' ? !s.scene_completed : s.mastered_words < s.total_words;
+        });
+        if (nextIncomplete) {
+          redirect(`/learn/${nextIncomplete.id}`);
+        } else {
+          redirect(`/paths/${scene.path_id}`);
         }
       }
     }
-  }, [state, words]);
+  }
 
-  const advanceWord = useCallback(() => {
-    if (state.phase !== 'word_learning') return;
-    const { wordIndex, step } = state;
+  // Fetch next scene for navigation
+  const nextScene = await getNextSceneInPath(scene.path_id, scene.sort_order);
 
-    if (step === 'word') {
-      setState({ phase: 'word_learning', wordIndex, step: 'mnemonic' });
-    } else if (step === 'mnemonic') {
-      setState({ phase: 'word_learning', wordIndex, step: 'quiz' });
-    }
-  }, [state]);
+  // Legacy scenes use the original LearnClient
+  if (scene.scene_type === 'legacy') {
+    const words = await buildWordsArray(sceneId, scene.language_id, userId);
+    return (
+      <LearnClient
+        sceneId={sceneId}
+        sceneTitle={scene.scene_title}
+        languageName={scene.language_name}
+        languageCode={scene.language_code as SupportedLanguageCode}
+        words={words}
+        nextScene={nextScene}
+        pathId={scene.path_id}
+      />
+    );
+  }
 
-  const onQuizCorrect = useCallback(() => {
-    if (state.phase !== 'word_learning') return;
-    const nextIndex = state.wordIndex + 1;
-    if (nextIndex >= words.length) {
-      setState({ phase: 'scene_complete' });
-    } else {
-      setState({ phase: 'word_learning', wordIndex: nextIndex, step: 'word' });
-    }
-  }, [state, words.length]);
+  // Dialogue scenes use the new SceneFlowClient
+  const [flowData, words, progress] = await Promise.all([
+    getSceneFlowData(sceneId),
+    buildWordsArray(sceneId, scene.language_id, userId),
+    userId ? getOrCreateSceneProgress(userId, sceneId) : null,
+  ]);
 
-  // Handle swipe right to advance
-  useEffect(() => {
-    let startX = 0;
-
-    function onTouchStart(e: TouchEvent) {
-      startX = e.touches[0].clientX;
-    }
-    function onTouchEnd(e: TouchEvent) {
-      const diff = e.changedTouches[0].clientX - startX;
-      if (diff > 60 && state.phase === 'word_learning' && state.step !== 'quiz') {
-        advanceWord();
-      }
-    }
-
-    document.addEventListener('touchstart', onTouchStart, { passive: true });
-    document.addEventListener('touchend', onTouchEnd, { passive: true });
-    return () => {
-      document.removeEventListener('touchstart', onTouchStart);
-      document.removeEventListener('touchend', onTouchEnd);
-    };
-  }, [state, advanceWord]);
+  const defaultProgress = {
+    id: '',
+    user_id: userId ?? '',
+    scene_id: sceneId,
+    current_phase: 'dialogue' as const,
+    phase_index: 0,
+    dialogue_completed: false,
+    phrases_completed: false,
+    vocabulary_completed: false,
+    patterns_completed: false,
+    conversation_completed: false,
+    completed_at: null,
+    created_at: new Date(),
+    updated_at: new Date(),
+  };
 
   return (
-    <div className="max-w-lg mx-auto pb-24">
-      {state.phase === 'pre_review' && (
-        <PreSceneReview
-          dueCount={state.dueCount}
-          onStartReview={() => {
-            // In a real app, this would navigate to /review with a return URL
-            setState({ phase: 'word_learning', wordIndex: 0, step: 'word' });
-          }}
-          onSkip={() => setState({ phase: 'word_learning', wordIndex: 0, step: 'word' })}
-        />
-      )}
-
-      {state.phase === 'word_learning' && currentWord && (
-        <>
-          <SceneHeader
-            title={sceneData.scene.title}
-            current={state.wordIndex + 1}
-            total={words.length}
-          />
-
-          {state.step === 'word' && (
-            <WordCard
-              text={currentWord.word.text}
-              romanization={currentWord.word.romanization}
-              meaningEn={currentWord.word.meaning_en}
-              partOfSpeech={currentWord.word.part_of_speech}
-              onContinue={advanceWord}
-            />
-          )}
-
-          {state.step === 'mnemonic' && (
-            <MnemonicCard
-              wordText={currentWord.word.text}
-              keyword={currentWord.mnemonic.keyword_text}
-              sceneDescription={currentWord.mnemonic.scene_description}
-              imageUrl={currentWord.mnemonic.image_url}
-              mnemonicId={currentWord.mnemonic.id}
-              wordId={currentWord.word.id}
-              meaningEn={currentWord.word.meaning_en}
-              languageName="Indonesian"
-              onContinue={advanceWord}
-            />
-          )}
-
-          {state.step === 'quiz' && (
-            <QuizOptions
-              key={currentWord.word.id}
-              wordText={currentWord.word.text}
-              correctAnswer={currentWord.word.meaning_en}
-              distractors={currentWord.distractors}
-              onCorrect={onQuizCorrect}
-            />
-          )}
-        </>
-      )}
-
-      {state.phase === 'scene_complete' && (
-        <SceneSummary sceneTitle={sceneData.scene.title} words={words} />
-      )}
-    </div>
+    <SceneFlowClient
+      sceneId={sceneId}
+      sceneTitle={scene.scene_title}
+      languageName={scene.language_name}
+      languageCode={scene.language_code as SupportedLanguageCode}
+      dialogues={flowData.dialogues}
+      phrases={flowData.phrases}
+      words={words}
+      patternExercises={flowData.patternExercises}
+      initialProgress={progress ?? defaultProgress}
+      sceneContext={scene.scene_context}
+      nextScene={nextScene}
+      pathId={scene.path_id}
+    />
   );
 }

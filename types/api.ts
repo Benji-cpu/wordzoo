@@ -50,7 +50,7 @@ export const DueWordsQuerySchema = z.object({
 });
 
 // Tutor
-export const TutorModeEnum = z.enum(['free_chat', 'role_play', 'word_review', 'grammar_glimpse', 'pronunciation_coach']);
+export const TutorModeEnum = z.enum(['free_chat', 'role_play', 'word_review', 'grammar_glimpse', 'pronunciation_coach', 'guided_conversation']);
 
 export const TutorSessionSchema = z.object({
   mode: TutorModeEnum,
@@ -212,3 +212,29 @@ export type ShareImageQuery = z.infer<typeof ShareImageQuerySchema>;
 export type SubmitFeedbackInput = z.infer<typeof SubmitFeedbackSchema>;
 export type AdminRegenerateMnemonicInput = z.infer<typeof AdminRegenerateMnemonicSchema>;
 export type AdminFeedbackQuery = z.infer<typeof AdminFeedbackQuerySchema>;
+
+// Scene Flow Progress
+export const SceneFlowPhaseEnum = z.enum(['dialogue', 'phrases', 'vocabulary', 'patterns', 'conversation', 'summary']);
+
+export const UpdateSceneProgressSchema = z.object({
+  currentPhase: SceneFlowPhaseEnum,
+  phaseIndex: z.number().int().min(0),
+  phaseCompleted: z.string().optional(), // e.g. 'dialogue', 'phrases', etc.
+});
+
+export type UpdateSceneProgressInput = z.infer<typeof UpdateSceneProgressSchema>;
+
+// Guided Conversation
+export const StartGuidedSessionSchema = z.object({
+  sceneId: z.string().uuid(),
+});
+
+export type StartGuidedSessionInput = z.infer<typeof StartGuidedSessionSchema>;
+
+// Phrase Review
+export const RecordPhraseReviewSchema = z.object({
+  phraseId: z.string().uuid(),
+  rating: ReviewRatingEnum,
+});
+
+export type RecordPhraseReviewInput = z.infer<typeof RecordPhraseReviewSchema>;

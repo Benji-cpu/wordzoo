@@ -3,7 +3,19 @@
 import { useState, useEffect, useRef } from 'react';
 import { Card } from '@/components/ui/Card';
 import { FeedbackButtons } from '@/components/learn/FeedbackButtons';
+import { PronunciationButton } from '@/components/audio/PronunciationButton';
 import type { Word, Mnemonic } from '@/types/database';
+
+function renderBridgeSentence(sentence: string) {
+  const parts = sentence.split(/\b([A-Z]{2,}(?:\s+[A-Z]{2,})*)\b/);
+  return parts.map((part, i) =>
+    /^[A-Z]{2,}(?:\s+[A-Z]{2,})*$/.test(part) ? (
+      <span key={i} className="font-bold text-accent-id not-italic">{part}</span>
+    ) : (
+      <span key={i}>{part}</span>
+    )
+  );
+}
 
 interface ReviewCardProps {
   word: Word;
@@ -62,6 +74,9 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed }: ReviewC
             {word.romanization && (
               <p className="text-lg text-text-secondary">{word.romanization}</p>
             )}
+            <div onClick={(e) => e.stopPropagation()}>
+              <PronunciationButton wordId={word.id} audioUrl={word.pronunciation_audio_url} text={word.text} />
+            </div>
 
             {revealed && (
               <div className="mt-6 pt-6 border-t border-card-border animate-slide-up">
@@ -73,8 +88,13 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed }: ReviewC
                   </div>
                 )}
                 <p className="text-sm text-text-secondary">
-                  &ldquo;{mnemonic.keyword_text}&rdquo; — {mnemonic.scene_description}
+                  sounds like &ldquo;{mnemonic.keyword_text}&rdquo;
                 </p>
+                {mnemonic.bridge_sentence && (
+                  <p className="text-sm text-text-secondary italic mt-1">
+                    {renderBridgeSentence(mnemonic.bridge_sentence)}
+                  </p>
+                )}
                 <div className="mt-3" onClick={(e) => e.stopPropagation()}>
                   <FeedbackButtons mnemonicId={mnemonic.id} context="review" />
                 </div>
@@ -105,9 +125,17 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed }: ReviewC
                 {word.romanization && (
                   <p className="text-lg text-text-secondary">{word.romanization}</p>
                 )}
+                <div onClick={(e) => e.stopPropagation()}>
+                  <PronunciationButton wordId={word.id} audioUrl={word.pronunciation_audio_url} text={word.text} />
+                </div>
                 <p className="text-sm text-text-secondary mt-2">
                   &ldquo;{mnemonic.keyword_text}&rdquo;
                 </p>
+                {mnemonic.bridge_sentence && (
+                  <p className="text-sm text-text-secondary italic mt-1">
+                    {renderBridgeSentence(mnemonic.bridge_sentence)}
+                  </p>
+                )}
                 <div className="mt-3" onClick={(e) => e.stopPropagation()}>
                   <FeedbackButtons mnemonicId={mnemonic.id} context="review" />
                 </div>

@@ -6,9 +6,10 @@ import { Card } from '@/components/ui/Card';
 
 interface CustomPathInputProps {
   onSubmit: (topic: string) => void;
+  disabled?: boolean;
 }
 
-export function CustomPathInput({ onSubmit }: CustomPathInputProps) {
+export function CustomPathInput({ onSubmit, disabled }: CustomPathInputProps) {
   const [topic, setTopic] = useState('');
   const [isOpen, setIsOpen] = useState(false);
 
@@ -36,9 +37,10 @@ export function CustomPathInput({ onSubmit }: CustomPathInputProps) {
         className="w-full px-4 py-3 rounded-xl bg-white/5 border border-card-border text-foreground placeholder:text-text-secondary focus:outline-none focus:border-accent-id/50 transition-colors mb-3"
         maxLength={200}
         autoFocus
+        disabled={disabled}
       />
       <div className="flex gap-2">
-        <Button variant="ghost" onClick={() => setIsOpen(false)} className="flex-1">
+        <Button variant="ghost" onClick={() => setIsOpen(false)} className="flex-1" disabled={disabled}>
           Cancel
         </Button>
         <Button
@@ -46,13 +48,12 @@ export function CustomPathInput({ onSubmit }: CustomPathInputProps) {
             if (topic.trim()) {
               onSubmit(topic.trim());
               setTopic('');
-              setIsOpen(false);
             }
           }}
-          disabled={!topic.trim()}
+          disabled={!topic.trim() || disabled}
           className="flex-1"
         >
-          Create Path
+          {disabled ? 'Creating...' : 'Create Path'}
         </Button>
       </div>
     </Card>

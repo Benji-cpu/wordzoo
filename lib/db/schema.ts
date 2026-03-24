@@ -294,6 +294,10 @@ CREATE INDEX IF NOT EXISTS idx_daily_usage_user_date ON daily_usage(user_id, dat
 ALTER TABLE mnemonics ADD COLUMN IF NOT EXISTS thumbs_up_count INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE mnemonics ADD COLUMN IF NOT EXISTS thumbs_down_count INTEGER NOT NULL DEFAULT 0;
 
+-- Bridge sentence and image review columns
+ALTER TABLE mnemonics ADD COLUMN IF NOT EXISTS bridge_sentence TEXT;
+ALTER TABLE mnemonics ADD COLUMN IF NOT EXISTS image_reviewed BOOLEAN NOT NULL DEFAULT false;
+
 -- Mnemonic Feedback (thumbs up/down + optional comment)
 CREATE TABLE IF NOT EXISTS mnemonic_feedback (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -306,4 +310,138 @@ CREATE TABLE IF NOT EXISTS mnemonic_feedback (
   UNIQUE(user_id, mnemonic_id)
 );
 CREATE INDEX IF NOT EXISTS idx_mnemonic_feedback_mnemonic ON mnemonic_feedback(mnemonic_id);
+
+-- Scene type + context columns for dialogue-based learning
+ALTER TABLE scenes ADD COLUMN IF NOT EXISTS scene_type TEXT NOT NULL DEFAULT 'legacy';
+ALTER TABLE scenes ADD COLUMN IF NOT EXISTS scene_context TEXT;
+
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'scenes_scene_type_check') THEN
+    ALTER TABLE scenes ADD CONSTRAINT scenes_scene_type_check CHECK (scene_type IN ('legacy', 'dialogue'));
+  END IF;
+END $$;
+
+-- Tutor sessions: add scene linkage + expand mode
+ALTER TABLE tutor_sessions ADD COLUMN IF NOT EXISTS scene_id UUID REFERENCES scenes(id) ON DELETE SET NULL;
+
+DO $$
+DECLARE
+  _conname TEXT;
+BEGIN
+  SELECT conname INTO _conname FROM pg_constraint
+  WHERE conrelid = 'tutor_sessions'::regclass AND contype = 'c' AND pg_get_constraintdef(oid) LIKE '%mode%';
+  IF _conname IS NOT NULL THEN
+    EXECUTE format('ALTER TABLE tutor_sessions DROP CONSTRAINT %I', _conname);
+  END IF;
+  ALTER TABLE tutor_sessions ADD CONSTRAINT tutor_sessions_mode_check
+    CHECK (mode IN ('free_chat','role_play','word_review','grammar_glimpse','pronunciation_coach','guided_conversation'));
+END $$;
+
+-- Scene Dialogues (anchor dialogue lines per scene)
+CREATE TABLE IF NOT EXISTS scene_dialogues (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  scene_id UUID NOT NULL REFERENCES scenes(id) ON DELETE CASCADE,
+  speaker TEXT NOT NULL,
+  text_target TEXT NOT NULL,
+  text_en TEXT NOT NULL,
+  audio_url TEXT,
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_scene_dialogues_scene ON scene_dialogues(scene_id, sort_order);
+
+-- Scene Phrases (key functional phrases per scene)
+CREATE TABLE IF NOT EXISTS scene_phrases (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  scene_id UUID NOT NULL REFERENCES scenes(id) ON DELETE CASCADE,
+  text_target TEXT NOT NULL,
+  text_en TEXT NOT NULL,
+  literal_translation TEXT,
+  audio_url TEXT,
+  usage_note TEXT,
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_scene_phrases_scene ON scene_phrases(scene_id, sort_order);
+
+-- Phrase Words (links phrases to constituent vocabulary)
+CREATE TABLE IF NOT EXISTS phrase_words (
+  phrase_id UUID NOT NULL REFERENCES scene_phrases(id) ON DELETE CASCADE,
+  word_id UUID NOT NULL REFERENCES words(id) ON DELETE CASCADE,
+  position INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (phrase_id, word_id)
+);
+
+-- Scene Pattern Exercises (grammar patterns with fill-in exercises)
+CREATE TABLE IF NOT EXISTS scene_pattern_exercises (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  scene_id UUID NOT NULL REFERENCES scenes(id) ON DELETE CASCADE,
+  pattern_template TEXT NOT NULL,
+  pattern_en TEXT NOT NULL,
+  explanation TEXT,
+  prompt TEXT NOT NULL,
+  hint_en TEXT,
+  correct_answer TEXT NOT NULL,
+  distractors TEXT[] NOT NULL,
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_scene_pattern_exercises_scene ON scene_pattern_exercises(scene_id, sort_order);
+
+-- User Phrases (SRS tracking for phrases, mirrors user_words)
+CREATE TABLE IF NOT EXISTS user_phrases (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  phrase_id UUID NOT NULL REFERENCES scene_phrases(id) ON DELETE CASCADE,
+  status TEXT NOT NULL DEFAULT 'new' CHECK (status IN ('new','learning','reviewing','mastered')),
+  ease_factor REAL NOT NULL DEFAULT 2.5,
+  interval_days INTEGER NOT NULL DEFAULT 0,
+  next_review_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  times_reviewed INTEGER NOT NULL DEFAULT 0,
+  times_correct INTEGER NOT NULL DEFAULT 0,
+  last_reviewed_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE(user_id, phrase_id)
+);
+CREATE INDEX IF NOT EXISTS idx_user_phrases_review ON user_phrases(user_id, next_review_at);
+
+-- User Scene Progress (tracks 6-phase completion per scene)
+CREATE TABLE IF NOT EXISTS user_scene_progress (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  scene_id UUID NOT NULL REFERENCES scenes(id) ON DELETE CASCADE,
+  current_phase TEXT NOT NULL DEFAULT 'dialogue' CHECK (current_phase IN ('dialogue','phrases','vocabulary','patterns','conversation','summary')),
+  phase_index INTEGER NOT NULL DEFAULT 0,
+  dialogue_completed BOOLEAN NOT NULL DEFAULT false,
+  phrases_completed BOOLEAN NOT NULL DEFAULT false,
+  vocabulary_completed BOOLEAN NOT NULL DEFAULT false,
+  patterns_completed BOOLEAN NOT NULL DEFAULT false,
+  conversation_completed BOOLEAN NOT NULL DEFAULT false,
+  completed_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE(user_id, scene_id)
+);
+
+-- Performance indexes for core queries
+CREATE INDEX IF NOT EXISTS idx_user_words_user_next_review ON user_words(user_id, next_review_at);
+CREATE INDEX IF NOT EXISTS idx_user_words_user_status ON user_words(user_id, status);
+CREATE INDEX IF NOT EXISTS idx_mnemonics_word ON mnemonics(word_id);
+CREATE INDEX IF NOT EXISTS idx_scenes_path_sort ON scenes(path_id, sort_order);
+CREATE INDEX IF NOT EXISTS idx_paths_language ON paths(language_id);
+CREATE INDEX IF NOT EXISTS idx_words_language ON words(language_id);
+
+-- User Streaks
+CREATE TABLE IF NOT EXISTS user_streaks (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  current_streak INTEGER NOT NULL DEFAULT 0,
+  longest_streak INTEGER NOT NULL DEFAULT 0,
+  last_active_date DATE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE(user_id)
+);
+CREATE INDEX IF NOT EXISTS idx_user_streaks_user ON user_streaks(user_id);
 `;

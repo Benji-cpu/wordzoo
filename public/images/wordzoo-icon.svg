@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
+  <!-- Ears -->
+  <path d="M12 10 L16 18 L20 12 Z" fill="currentColor"/>
+  <path d="M36 10 L32 18 L28 12 Z" fill="currentColor"/>
+  <!-- Eyes -->
+  <circle cx="19.5" cy="24" r="2" fill="currentColor"/>
+  <circle cx="28.5" cy="24" r="2" fill="currentColor"/>
+  <!-- Nose -->
+  <path d="M22.5 28.5 L24 30.5 L25.5 28.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Smile -->
+  <path d="M20.5 32 Q24 35 27.5 32" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+</svg>

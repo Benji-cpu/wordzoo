@@ -70,3 +70,57 @@ export function buildTutorSystemPrompt(opts: TutorPromptOptions): string {
 
   return blocks.join('\n\n');
 }
+
+// --- Guided Conversation Prompt ---
+
+interface GuidedConversationOptions {
+  languageName: string;
+  sceneContext: string;
+  dialogueLines: { speaker: string; text_target: string; text_en: string }[];
+  phrases: { text_target: string; text_en: string }[];
+  knownWords: KnownWordRow[];
+}
+
+export function buildGuidedConversationPrompt(opts: GuidedConversationOptions): string {
+  const blocks: string[] = [];
+
+  blocks.push(
+    `You are a friendly, encouraging language tutor for ${opts.languageName}. ` +
+    `You are guiding the student through a practice conversation based on a scene they just studied. ` +
+    `Be warm, patient, and supportive. Speak mostly in ${opts.languageName} with English hints when needed.`
+  );
+
+  blocks.push(
+    `Scene context: ${opts.sceneContext}\n\n` +
+    `The student just studied this model dialogue:\n` +
+    opts.dialogueLines.map((l) => `${l.speaker}: ${l.text_target} (${l.text_en})`).join('\n')
+  );
+
+  if (opts.phrases.length > 0) {
+    blocks.push(
+      `Key phrases the student learned:\n` +
+      opts.phrases.map((p) => `- ${p.text_target} = ${p.text_en}`).join('\n')
+    );
+  }
+
+  if (opts.knownWords.length > 0) {
+    const wordList = opts.knownWords
+      .map((w) => `${w.text}${w.romanization ? ` (${w.romanization})` : ''} = ${w.meaning_en}`)
+      .join(', ');
+    blocks.push(`The student knows these words: ${wordList}`);
+  }
+
+  blocks.push(
+    `Instructions:\n` +
+    `- Role-play a similar conversation to the model dialogue, but don't repeat it exactly\n` +
+    `- Start with a greeting and set the scene\n` +
+    `- Keep your responses to 1-2 sentences\n` +
+    `- Encourage the student to use the phrases they just learned\n` +
+    `- If the student makes a mistake, gently recast (repeat correctly without saying "wrong")\n` +
+    `- After 3-5 exchanges, wrap up the conversation naturally\n` +
+    `- Bold target-language words: **word** (meaning)\n` +
+    `- Keep it encouraging and fun`
+  );
+
+  return blocks.join('\n\n');
+}
