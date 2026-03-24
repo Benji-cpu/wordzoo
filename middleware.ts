@@ -24,17 +24,34 @@ export default auth((req) => {
     return NextResponse.next();
   }
 
-  // Protect all other API routes
-  if (pathname.startsWith('/api') && !req.auth) {
-    return NextResponse.json(
-      { data: null, error: 'Unauthorized' },
-      { status: 401 }
-    );
+  // For unauthenticated requests:
+  if (!req.auth) {
+    // API routes → return 401 JSON
+    if (pathname.startsWith('/api')) {
+      return NextResponse.json(
+        { data: null, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+    // Page routes → redirect to login
+    const loginUrl = new URL('/login', req.nextUrl.origin);
+    return NextResponse.redirect(loginUrl);
   }
 
   return NextResponse.next();
 });
 
 export const config = {
-  matcher: ['/api/:path*'],
+  matcher: [
+    '/api/:path*',
+    '/dashboard/:path*',
+    '/paths/:path*',
+    '/learn/:path*',
+    '/review/:path*',
+    '/tutor/:path*',
+    '/settings/:path*',
+    '/gallery/:path*',
+    '/admin/:path*',
+    '/community/:path*',
+  ],
 };
