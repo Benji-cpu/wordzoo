@@ -111,7 +111,13 @@ interface SceneFlowClientProps {
 
 Phrase sub-steps: `show -> montage -> quiz` (was `show -> quiz`).
 
+The `FlowState` union type in `SceneFlowClient.tsx` must be updated — the phrases branch changes from `step: 'show' | 'quiz'` to `step: 'show' | 'montage' | 'quiz'`.
+
 The montage step is skipped if zero words in the phrase have mnemonics (same pattern as MnemonicCard being skipped for words without mnemonics).
+
+### Data fetching
+
+`getSceneFlowData` absorbs the new `getPhraseWordsWithMnemonics` call internally — it already accepts a `sceneId` and can derive phrase IDs from its existing `getScenePhrases` call. The `userId` parameter is added to `getSceneFlowData`'s signature (it currently doesn't take one). The server component in `page.tsx` passes `userId` from the auth session, which it already has access to.
 
 ### PhraseMontage component
 
