@@ -28,20 +28,27 @@ Patterns and guided conversation remain text-only.
 
 Many phrases in `dialogue-data.ts` have `wordTexts: []`. All phrases must have their constituent vocabulary words linked so `phrase_words` rows exist in the DB.
 
-Example fixes:
-- "Senang bertemu" -> `['senang']`
-- "Terlalu mahal" -> `['mahal']`
-- "Enak sekali!" -> `['enak']`
+**Scoping rule:** A phrase's `wordTexts` entries must be a subset of that scene's `newWords` + `existingWordTexts`. Do not reference words from other scenes — the seeder resolves word texts against `wordIdMap`, which is built exclusively from the scene's own word lists. Words not in those lists produce a warning and are silently skipped.
 
-After updating, re-seed with `npm run db:seed` to populate `phrase_words`.
+Example fixes:
+- "Senang bertemu" -> `['senang']` (senang is a scene 1 newWord)
+- "Terlalu mahal" -> `['mahal']` (mahal is a scene 4 newWord)
+- "Enak sekali!" -> `['enak']` (enak is a scene 5 newWord)
+- "Dari mana?" -> `['dari']` (dari is a scene 1 newWord)
+
+After updating, re-seed with `npm run db:seed` to populate `phrase_words`. Note: `seed-dialogues.ts` uses `ON CONFLICT DO NOTHING` for `phrase_words`, so re-seeding is additive — existing rows are preserved, new ones are added.
 
 ### New query: `getPhraseWordsWithMnemonics`
 
 ```
-getPhraseWordsWithMnemonics(phraseIds: string[], userId: string)
+getPhraseWordsWithMnemonics(phraseIds: string[], userId: string | null)
 ```
 
-Joins `phrase_words -> words -> mnemonics` using the same LATERAL subquery pattern from `getSceneWordsForLearning`. Returns an ordered array per phrase:
+Joins `phrase_words -> words -> mnemonics` using the same LATERAL subquery pattern from `getSceneWordsForLearning`. The `userId` parameter is `string | null` (consistent with the existing pattern where learn pages handle unauthenticated state). When `userId` is null, the LATERAL subquery omits user-specific mnemonic preferences and returns the default mnemonic.
+
+Returns flat rows (not pre-grouped). Grouping by `phrase_id` into `words[]` arrays happens in the application layer, consistent with the existing `getSceneFlowData` pattern (lines 37-47 of `scene-flow-queries.ts`).
+
+Row shape:
 
 ```ts
 {
@@ -58,6 +65,8 @@ Joins `phrase_words -> words -> mnemonics` using the same LATERAL subquery patte
 
 ### New type: `ScenePhraseWithMnemonics`
 
+Replaces the existing `ScenePhraseWithWords` interface (which only had `{ word_id, position }[]`). The richer type is used throughout the learn flow — `getSceneFlowData` is updated to return `ScenePhraseWithMnemonics[]` instead of `ScenePhraseWithWords[]`.
+
 ```ts
 interface PhraseWordMnemonic {
   word_id: string;
@@ -73,6 +82,28 @@ interface ScenePhraseWithMnemonics extends ScenePhrase {
   words: PhraseWordMnemonic[];
 }
 ```
+
+**Null `image_url` handling:** A word with a mnemonic record but `image_url: null` (image generation failed) is treated the same as a word without a mnemonic for montage display purposes — it renders as a text placeholder card showing the keyword text instead.
+
+### Updated `SceneFlowClientProps`
+
+The `phrases` prop on `SceneFlowClient` changes from `ScenePhrase[]` to `ScenePhraseWithMnemonics[]`. This is the primary integration point — the server component fetches the richer type and passes it through:
+
+```ts
+// Before
+interface SceneFlowClientProps {
+  phrases: ScenePhrase[];
+  // ...
+}
+
+// After
+interface SceneFlowClientProps {
+  phrases: ScenePhraseWithMnemonics[];
+  // ...
+}
+```
+
+`SceneFlowClient` passes phrase data to both `PhraseCard` (unchanged — uses `text_target`, `text_en`, etc.) and the new `PhraseMontage` (uses the `words` array).
 
 ## Phrase Montage Step
 
@@ -104,6 +135,10 @@ Full-screen card (same card style as MnemonicCard) with three sections:
 
 Tapping an image card shows a brief overlay with keyword + bridge sentence. Tap again or tap elsewhere to dismiss. Not a full navigation — just a quick recall prompt.
 
+### Swipe gesture
+
+The swipe-to-advance handler in `SceneFlowClient` (which currently checks `state.step === 'show'`) must be updated to also handle `state.step === 'montage'`. Swiping on the montage step advances to quiz, same as tapping Continue.
+
 ## Dialogue Tappable Words
 
 ### TappableWord component
@@ -115,7 +150,9 @@ Wraps vocabulary words in dialogue chat bubbles:
 
 ### Word matching
 
-Simple string tokenizer splits each dialogue line's `text_target` and matches against the scene's vocabulary words. Uses already-loaded scene vocabulary data (no new DB queries needed).
+Tokenizer splits each dialogue line's `text_target` and matches against the scene's vocabulary words. Uses already-loaded scene vocabulary data (no new DB queries needed).
+
+**Multi-token matching:** The vocabulary includes compound entries like `terima kasih`, `selamat pagi`, `di mana`. The tokenizer must attempt longest-match-first before falling back to single tokens. Algorithm: sort vocabulary entries by word count (descending), then for each entry check if it appears as a substring in the dialogue text. Mark matched spans to prevent overlapping matches.
 
 - Words in dialogue that aren't in this scene's vocab: not tappable (plain text)
 - After all dialogue lines are revealed, tappable words remain interactive for review
@@ -134,13 +171,13 @@ Scene vocabulary words (already fetched by `getSceneFlowData`) are passed to `Di
 
 | File | Change |
 |---|---|
-| `lib/db/dialogue-data.ts` | Fill empty `wordTexts` arrays for all phrases |
-| `lib/db/scene-flow-queries.ts` | New `getPhraseWordsWithMnemonics` query |
+| `lib/db/dialogue-data.ts` | Fill empty `wordTexts` arrays for all phrases (scene-scoped only) |
+| `lib/db/scene-flow-queries.ts` | New `getPhraseWordsWithMnemonics` query; update `getSceneFlowData` to return `ScenePhraseWithMnemonics[]`; remove `ScenePhraseWithWords` interface |
 | `types/database.ts` | New `PhraseWordMnemonic` and `ScenePhraseWithMnemonics` types |
 | `components/learn/PhraseMontage.tsx` | **NEW** — montage step component |
 | `components/learn/TappableWord.tsx` | **NEW** — tappable word with mnemonic popover |
 | `components/learn/DialoguePlayer.tsx` | Integrate TappableWord, accept vocab data prop |
-| `components/learn/SceneFlowClient.tsx` | Add `montage` sub-step to phrase phase, pass mnemonic data |
+| `components/learn/SceneFlowClient.tsx` | Update `phrases` prop to `ScenePhraseWithMnemonics[]`; add `montage` sub-step; update swipe handler |
 | `app/(app)/learn/[sceneId]/page.tsx` | Fetch phrase mnemonic data in server component |
 
 ## Verification
