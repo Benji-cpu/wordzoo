@@ -5,6 +5,7 @@ import {
   getDistractorsForWord,
   getNextSceneInPath,
   getSceneMasteryForPath,
+  upsertUserPath,
 } from '@/lib/db/queries';
 import { getSceneFlowData, getOrCreateSceneProgress } from '@/lib/db/scene-flow-queries';
 import { auth } from '@/lib/auth';
@@ -66,6 +67,9 @@ export default async function LearnPage({ params }: PageProps) {
 
   // Auto-advance: if user is logged in and scene is complete, redirect to next incomplete
   if (userId) {
+    // Auto-enroll user in this path (fire-and-forget)
+    upsertUserPath(userId, scene.path_id, 'active').catch(() => {});
+
     const sceneMastery = await getSceneMasteryForPath(userId, scene.path_id);
     const currentRow = sceneMastery.find(s => s.id === sceneId);
     if (currentRow) {
