@@ -104,3 +104,62 @@ Generate ONLY 1 candidate using the user's keyword. Create an absurd, vivid scen
 
 Return a JSON array with exactly 1 candidate.`;
 }
+
+export function buildSceneGenerationPrompt(
+  topic: string,
+  languageName: string,
+  languageCode: string,
+  existingWords: string[],
+  wordCount: number = 10
+): string {
+  return `Generate a language learning scene for ${languageName} (code: ${languageCode}) about "${topic}".
+
+Return a JSON object with this exact structure:
+{
+  "title": "Scene title (in English, 3-5 words)",
+  "description": "Brief description of the scenario (1 sentence)",
+  "scene_context": "Context for AI tutor conversations about this topic (1-2 sentences)",
+  "words": [
+    {
+      "text": "word in ${languageName}",
+      "meaning_en": "English meaning",
+      "part_of_speech": "noun|verb|adjective|adverb|pronoun|conjunction|preposition|interjection",
+      "romanization": "romanized form if applicable, or null"
+    }
+  ],
+  "mnemonics": [
+    {
+      "word_text": "the ${languageName} word this mnemonic is for",
+      "keyword_text": "English keyword that sounds like the word",
+      "scene_description": "Vivid 2-3 sentence scene connecting the keyword to the meaning. Use sensory details.",
+      "bridge_sentence": "One sentence connecting keyword sound to word meaning"
+    }
+  ],
+  "dialogues": [
+    {
+      "speaker": "Person A or Person B",
+      "text_target": "dialogue line in ${languageName}",
+      "text_en": "English translation"
+    }
+  ],
+  "phrases": [
+    {
+      "text_target": "useful phrase in ${languageName}",
+      "text_en": "English meaning",
+      "literal_translation": "word-by-word translation",
+      "usage_note": "when/how to use this phrase"
+    }
+  ]
+}
+
+Requirements:
+- Generate exactly ${wordCount} words. Focus on practical, high-frequency vocabulary for the topic.
+- Do NOT include these words (already in the database): ${existingWords.join(', ')}
+- Each word must have a mnemonic with a vivid, memorable scene description.
+- Generate 4-6 dialogue lines showing natural conversation using the words.
+- Generate 3-5 useful phrases related to the topic.
+- All ${languageName} text must be accurate and natural-sounding.
+- Mnemonics should use English words that SOUND LIKE the ${languageName} word (keyword method).
+
+Return ONLY the JSON object, no markdown or explanation.`;
+}
