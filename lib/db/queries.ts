@@ -886,6 +886,28 @@ export async function getDueWordsForReview(
   return rows as DueWordForReview[];
 }
 
+export async function getAllLearnedWordsForPractice(
+  userId: string,
+  limit: number = 50
+): Promise<DueWordForReview[]> {
+  const rows = await sql`
+    SELECT
+      w.id AS word_id, w.text, w.romanization, w.pronunciation_audio_url,
+      w.meaning_en, w.part_of_speech, w.language_id, w.frequency_rank,
+      m.id AS mnemonic_id, m.keyword_text, m.scene_description, m.bridge_sentence, m.image_url,
+      uw.id AS user_word_id, uw.status, uw.ease_factor, uw.interval_days,
+      uw.times_reviewed, uw.times_correct, uw.direction
+    FROM user_words uw
+    JOIN words w ON w.id = uw.word_id
+    LEFT JOIN mnemonics m ON m.id = uw.current_mnemonic_id
+    WHERE uw.user_id = ${userId}
+      AND uw.status != 'new'
+    ORDER BY uw.last_reviewed_at ASC NULLS FIRST
+    LIMIT ${limit}
+  `;
+  return rows as DueWordForReview[];
+}
+
 export async function updateWordSRS(
   userWordId: string,
   data: {

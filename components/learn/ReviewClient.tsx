@@ -52,25 +52,29 @@ function toMnemonic(dw: DueWordForReview): Mnemonic {
 interface ReviewClientProps {
   dueWords: DueWordForReview[];
   duePhrases: DuePhraseForReview[];
+  practiceWords?: DueWordForReview[];
 }
 
-export function ReviewClient({ dueWords, duePhrases }: ReviewClientProps) {
+export function ReviewClient({ dueWords, duePhrases, practiceWords = [] }: ReviewClientProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
   const [done, setDone] = useState(false);
   const startXRef = useRef(0);
+  const [practiceMode, setPracticeMode] = useState(false);
 
-  // Interleave words and phrases
+  // In practice mode, use all learned words; otherwise use SRS-due items
+  const effectiveWords = practiceMode ? practiceWords : dueWords;
+  const effectivePhrases = practiceMode ? [] as DuePhraseForReview[] : duePhrases;
+
   const items: ReviewItem[] = [];
-  const wLen = dueWords.length;
-  const pLen = duePhrases.length;
+  const wLen = effectiveWords.length;
+  const pLen = effectivePhrases.length;
   let wi = 0, pi = 0;
   while (wi < wLen || pi < pLen) {
-    // Alternate: 2 words, 1 phrase (roughly)
-    if (wi < wLen) { items.push({ type: 'word', data: dueWords[wi++] }); }
-    if (wi < wLen) { items.push({ type: 'word', data: dueWords[wi++] }); }
-    if (pi < pLen) { items.push({ type: 'phrase', data: duePhrases[pi++] }); }
+    if (wi < wLen) { items.push({ type: 'word', data: effectiveWords[wi++] }); }
+    if (wi < wLen) { items.push({ type: 'word', data: effectiveWords[wi++] }); }
+    if (pi < pLen) { items.push({ type: 'phrase', data: effectivePhrases[pi++] }); }
   }
 
   const current = items[currentIndex];
@@ -146,18 +150,31 @@ export function ReviewClient({ dueWords, duePhrases }: ReviewClientProps) {
     };
   }, [revealed, handleRate]);
 
-  if (items.length === 0) {
+  if (items.length === 0 && !practiceMode) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] animate-slide-up">
         <p className="text-4xl mb-4">✅</p>
         <h2 className="text-xl font-bold text-foreground mb-1">No items due for review</h2>
-        <p className="text-text-secondary mb-6">Keep learning to build your review queue!</p>
-        <Link
-          href="/paths"
-          className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-accent-id text-white font-medium hover:bg-accent-id/90 transition-colors"
-        >
-          Go to Learning Paths
-        </Link>
+        <p className="text-text-secondary mb-6 text-center">
+          {practiceWords.length > 0
+            ? `You have ${practiceWords.length} words you can practice now.`
+            : 'Keep learning to build your review queue!'}
+        </p>
+        {practiceWords.length > 0 ? (
+          <button
+            onClick={() => setPracticeMode(true)}
+            className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-accent-id text-white font-medium hover:bg-accent-id/90 transition-colors"
+          >
+            Practice Now ({practiceWords.length} words)
+          </button>
+        ) : (
+          <Link
+            href="/paths"
+            className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-accent-id text-white font-medium hover:bg-accent-id/90 transition-colors"
+          >
+            Go to Learning Paths
+          </Link>
+        )}
       </div>
     );
   }
