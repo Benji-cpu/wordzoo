@@ -1021,3 +1021,46 @@ export async function updateUserStreak(userId: string): Promise<void> {
       updated_at = NOW()
   `;
 }
+
+// --- Gallery Queries ---
+
+export interface GalleryWord {
+  word_id: string;
+  text: string;
+  romanization: string | null;
+  meaning_en: string;
+  pronunciation_audio_url: string | null;
+  language_name: string;
+  path_title: string;
+  mnemonic_id: string;
+  keyword_text: string;
+  scene_description: string;
+  bridge_sentence: string | null;
+  image_url: string | null;
+  status: string;
+}
+
+export async function getLearnedWordsWithMnemonics(
+  userId: string
+): Promise<GalleryWord[]> {
+  const rows = await sql`
+    SELECT DISTINCT ON (w.id)
+      w.id AS word_id, w.text, w.romanization, w.meaning_en, w.pronunciation_audio_url,
+      l.name AS language_name,
+      COALESCE(p.title, 'Unknown') AS path_title,
+      m.id AS mnemonic_id, m.keyword_text, m.scene_description, m.bridge_sentence, m.image_url,
+      uw.status
+    FROM user_words uw
+    JOIN words w ON w.id = uw.word_id
+    JOIN languages l ON l.id = w.language_id
+    LEFT JOIN scene_words sw ON sw.word_id = w.id
+    LEFT JOIN scenes s ON s.id = sw.scene_id
+    LEFT JOIN paths p ON p.id = s.path_id
+    LEFT JOIN mnemonics m ON m.id = uw.current_mnemonic_id
+    WHERE uw.user_id = ${userId}
+      AND uw.status != 'new'
+      AND m.id IS NOT NULL
+    ORDER BY w.id, uw.last_reviewed_at DESC NULLS LAST
+  `;
+  return rows as GalleryWord[];
+}
