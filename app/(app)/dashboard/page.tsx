@@ -8,11 +8,12 @@ import {
   getUserDueWords,
   getLanguageById,
   getUserStreak,
+  getWordMasteryDistribution,
 } from '@/lib/db/queries';
 import { getDuePhrasesForReview } from '@/lib/db/scene-flow-queries';
 import { ContinueLearningCard } from '@/components/learn/ContinueLearningCard';
 import { QuickReviewCard } from '@/components/learn/QuickReviewCard';
-import { ProgressStats } from '@/components/learn/ProgressStats';
+import { ProgressChart } from '@/components/learn/ProgressChart';
 import { StreakCounter } from '@/components/learn/StreakCounter';
 import Link from 'next/link';
 import { DashboardUpgradeBanner } from './DashboardUpgradeBanner';
@@ -51,14 +52,15 @@ export default async function DashboardPage() {
   const pathId = activePath.path_id;
   const languageId = activePath.path_language_id;
 
-  // Fetch scene mastery, word stats, due words/phrases, and language in parallel
-  const [sceneMastery, wordStats, dueWords, duePhrases, language, streakData] = await Promise.all([
+  // Fetch scene mastery, word stats, due words/phrases, language, and mastery distribution in parallel
+  const [sceneMastery, wordStats, dueWords, duePhrases, language, streakData, masteryDist] = await Promise.all([
     getSceneMasteryForPath(userId, pathId),
     getPathWordStats(userId, pathId),
     getUserDueWords(userId, languageId),
     getDuePhrasesForReview(userId, 100),
     getLanguageById(languageId),
     getUserStreak(userId),
+    getWordMasteryDistribution(userId),
   ]);
 
   // Find next incomplete scene
@@ -134,11 +136,7 @@ export default async function DashboardPage() {
         <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wider mb-2">
           Your Progress
         </h2>
-        <ProgressStats
-          wordsLearned={wordStats.words_learned}
-          wordsMastered={wordStats.words_mastered}
-          streak={streak}
-        />
+        <ProgressChart distribution={masteryDist} streak={streak} />
       </section>
 
       {/* Admin link — only visible to admin users */}

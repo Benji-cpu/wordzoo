@@ -1064,3 +1064,29 @@ export async function getLearnedWordsWithMnemonics(
   `;
   return rows as GalleryWord[];
 }
+
+// --- Mastery Distribution ---
+
+export interface MasteryDistribution {
+  new_count: number;
+  learning_count: number;
+  reviewing_count: number;
+  mastered_count: number;
+  total_count: number;
+}
+
+export async function getWordMasteryDistribution(userId: string): Promise<MasteryDistribution> {
+  const rows = await sql`
+    SELECT
+      COUNT(*) FILTER (WHERE status = 'new')::int AS new_count,
+      COUNT(*) FILTER (WHERE status = 'learning')::int AS learning_count,
+      COUNT(*) FILTER (WHERE status = 'reviewing')::int AS reviewing_count,
+      COUNT(*) FILTER (WHERE status = 'mastered')::int AS mastered_count,
+      COUNT(*)::int AS total_count
+    FROM user_words
+    WHERE user_id = ${userId}
+  `;
+  return (rows[0] as MasteryDistribution) ?? {
+    new_count: 0, learning_count: 0, reviewing_count: 0, mastered_count: 0, total_count: 0,
+  };
+}
