@@ -134,6 +134,43 @@ export interface TutorSession {
   ended_at: Date | null;
   summary: Record<string, unknown> | null;
   tokens_used: number;
+  learner_context: Record<string, unknown> | null;
+}
+
+export interface LearnerProfile {
+  user_id: string;
+  language_id: string;
+  weakness_patterns: string[];
+  topics_covered: string[];
+  correction_history: Record<string, unknown>;
+  proficiency_estimate: string;
+  session_count: number;
+  total_messages: number;
+  total_practice_minutes: number;
+  recent_session_summaries: Record<string, unknown>[];
+  updated_at: Date;
+}
+
+export interface TutorWordReview {
+  id: string;
+  session_id: string;
+  user_id: string;
+  word_id: string;
+  language_id: string;
+  usage_type: 'correct' | 'corrected' | 'introduced' | 'missed';
+  srs_quality: number | null;
+  created_at: Date;
+}
+
+export interface TutorNudge {
+  id: string;
+  user_id: string;
+  nudge_type: string;
+  context: Record<string, unknown> | null;
+  shown_at: Date | null;
+  dismissed_at: Date | null;
+  accepted_at: Date | null;
+  created_at: Date;
 }
 
 export interface TutorMessage {
@@ -258,6 +295,21 @@ export interface PhraseWord {
   phrase_id: string;
   word_id: string;
   position: number;
+}
+
+export interface PhraseWordMnemonic {
+  word_id: string;
+  word_text: string;
+  word_en: string;
+  part_of_speech: string;
+  position: number;
+  keyword_text: string | null;
+  bridge_sentence: string | null;
+  image_url: string | null;
+}
+
+export interface ScenePhraseWithMnemonics extends ScenePhrase {
+  words: PhraseWordMnemonic[];
 }
 
 export interface ScenePatternExercise {

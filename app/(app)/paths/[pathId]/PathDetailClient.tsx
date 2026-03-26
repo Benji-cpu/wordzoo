@@ -128,12 +128,7 @@ export function PathDetailClient({ path, languageName, sceneMastery, wordStats }
 
                     {/* Scene info */}
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium text-foreground truncate">{s.title}</p>
-                        <Badge variant="default" className="shrink-0">
-                          {s.scene_type === 'dialogue' ? 'Dialogue' : 'Words'}
-                        </Badge>
-                      </div>
+                      <p className="text-sm font-medium text-foreground truncate">{s.title}</p>
                       <div className="flex items-center gap-2 mt-1">
                         <p className={`text-xs ${complete ? 'text-green-400' : 'text-text-secondary'}`}>
                           {status}

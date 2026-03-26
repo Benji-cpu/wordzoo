@@ -1,5 +1,5 @@
 import { sql } from './client';
-import type { Word, Mnemonic, Path, Scene, Language, UserPath, TutorSession, TutorMessage, Subscription, Purchase, DailyUsage, MnemonicFeedback } from '@/types/database';
+import type { Word, Mnemonic, Path, Scene, Language, UserPath, TutorSession, TutorMessage, Subscription, Purchase, DailyUsage, MnemonicFeedback, LearnerProfile, TutorWordReview, TutorNudge } from '@/types/database';
 
 export interface WordWithLanguage extends Word {
   language_code: string;
@@ -1089,4 +1089,165 @@ export async function getWordMasteryDistribution(userId: string): Promise<Master
   return (rows[0] as MasteryDistribution) ?? {
     new_count: 0, learning_count: 0, reviewing_count: 0, mastered_count: 0, total_count: 0,
   };
+}
+
+// --- Learner Profile Queries ---
+
+export async function getOrCreateLearnerProfile(
+  userId: string,
+  languageId: string
+): Promise<LearnerProfile> {
+  await sql`
+    INSERT INTO learner_profiles (user_id, language_id)
+    VALUES (${userId}, ${languageId})
+    ON CONFLICT (user_id, language_id) DO NOTHING
+  `;
+  const rows = await sql`
+    SELECT * FROM learner_profiles
+    WHERE user_id = ${userId} AND language_id = ${languageId}
+  `;
+  return rows[0] as LearnerProfile;
+}
+
+export async function updateLearnerProfile(
+  userId: string,
+  languageId: string,
+  updates: {
+    weaknessPatterns?: unknown[];
+    topicsCovered?: unknown[];
+    correctionHistory?: Record<string, unknown>;
+    proficiencyEstimate?: string;
+    sessionCountIncrement?: number;
+    messagesIncrement?: number;
+    minutesIncrement?: number;
+    recentSessionSummaries?: unknown[];
+  }
+): Promise<void> {
+  if (updates.weaknessPatterns !== undefined) {
+    await sql`UPDATE learner_profiles SET weakness_patterns = ${JSON.stringify(updates.weaknessPatterns)}, updated_at = NOW()
+      WHERE user_id = ${userId} AND language_id = ${languageId}`;
+  }
+  if (updates.topicsCovered !== undefined) {
+    await sql`UPDATE learner_profiles SET topics_covered = ${JSON.stringify(updates.topicsCovered)}, updated_at = NOW()
+      WHERE user_id = ${userId} AND language_id = ${languageId}`;
+  }
+  if (updates.correctionHistory !== undefined) {
+    await sql`UPDATE learner_profiles SET correction_history = ${JSON.stringify(updates.correctionHistory)}, updated_at = NOW()
+      WHERE user_id = ${userId} AND language_id = ${languageId}`;
+  }
+  if (updates.proficiencyEstimate !== undefined) {
+    await sql`UPDATE learner_profiles SET proficiency_estimate = ${updates.proficiencyEstimate}, updated_at = NOW()
+      WHERE user_id = ${userId} AND language_id = ${languageId}`;
+  }
+  if (updates.sessionCountIncrement) {
+    await sql`UPDATE learner_profiles SET session_count = session_count + ${updates.sessionCountIncrement}, updated_at = NOW()
+      WHERE user_id = ${userId} AND language_id = ${languageId}`;
+  }
+  if (updates.messagesIncrement) {
+    await sql`UPDATE learner_profiles SET total_messages = total_messages + ${updates.messagesIncrement}, updated_at = NOW()
+      WHERE user_id = ${userId} AND language_id = ${languageId}`;
+  }
+  if (updates.minutesIncrement) {
+    await sql`UPDATE learner_profiles SET total_practice_minutes = total_practice_minutes + ${updates.minutesIncrement}, updated_at = NOW()
+      WHERE user_id = ${userId} AND language_id = ${languageId}`;
+  }
+  if (updates.recentSessionSummaries !== undefined) {
+    await sql`UPDATE learner_profiles SET recent_session_summaries = ${JSON.stringify(updates.recentSessionSummaries)}, updated_at = NOW()
+      WHERE user_id = ${userId} AND language_id = ${languageId}`;
+  }
+}
+
+export async function getWeakWords(
+  userId: string,
+  languageId: string,
+  easeThreshold: number = 2.0
+): Promise<KnownWordRow[]> {
+  const rows = await sql`
+    SELECT w.id AS word_id, w.text, w.romanization, w.meaning_en
+    FROM user_words uw
+    JOIN words w ON w.id = uw.word_id
+    WHERE uw.user_id = ${userId} AND w.language_id = ${languageId}
+      AND uw.ease_factor < ${easeThreshold}
+      AND uw.status IN ('learning', 'reviewing')
+    ORDER BY uw.ease_factor ASC
+    LIMIT 20
+  `;
+  return rows as KnownWordRow[];
+}
+
+export async function getWordsByTexts(
+  texts: string[],
+  languageId: string
+): Promise<{ id: string; text: string; meaning_en: string }[]> {
+  if (texts.length === 0) return [];
+  const rows = await sql`
+    SELECT id, text, meaning_en FROM words
+    WHERE language_id = ${languageId} AND LOWER(text) = ANY(${texts.map(t => t.toLowerCase())})
+  `;
+  return rows as { id: string; text: string; meaning_en: string }[];
+}
+
+// --- Tutor Word Review Queries ---
+
+export async function insertTutorWordReviews(
+  reviews: { sessionId: string; userId: string; wordId: string; languageId: string; usageType: string; srsQuality: number | null }[]
+): Promise<void> {
+  if (reviews.length === 0) return;
+  for (const r of reviews) {
+    await sql`
+      INSERT INTO tutor_word_reviews (session_id, user_id, word_id, language_id, usage_type, srs_quality)
+      VALUES (${r.sessionId}, ${r.userId}, ${r.wordId}, ${r.languageId}, ${r.usageType}, ${r.srsQuality})
+    `;
+  }
+}
+
+// --- Tutor Nudge Queries ---
+
+export async function getRecentNudges(
+  userId: string,
+  sinceDate: Date
+): Promise<TutorNudge[]> {
+  const rows = await sql`
+    SELECT * FROM tutor_nudges
+    WHERE user_id = ${userId} AND created_at >= ${sinceDate.toISOString()}
+    ORDER BY created_at DESC
+  `;
+  return rows as TutorNudge[];
+}
+
+export async function insertNudge(
+  userId: string,
+  nudgeType: string,
+  context: Record<string, unknown> | null
+): Promise<TutorNudge> {
+  const rows = await sql`
+    INSERT INTO tutor_nudges (user_id, nudge_type, context)
+    VALUES (${userId}, ${nudgeType}, ${context ? JSON.stringify(context) : null})
+    RETURNING *
+  `;
+  return rows[0] as TutorNudge;
+}
+
+export async function updateNudge(
+  nudgeId: string,
+  updates: { shownAt?: string; dismissedAt?: string; acceptedAt?: string }
+): Promise<void> {
+  if (updates.shownAt) {
+    await sql`UPDATE tutor_nudges SET shown_at = ${updates.shownAt} WHERE id = ${nudgeId}`;
+  }
+  if (updates.dismissedAt) {
+    await sql`UPDATE tutor_nudges SET dismissed_at = ${updates.dismissedAt} WHERE id = ${nudgeId}`;
+  }
+  if (updates.acceptedAt) {
+    await sql`UPDATE tutor_nudges SET accepted_at = ${updates.acceptedAt} WHERE id = ${nudgeId}`;
+  }
+}
+
+// --- Tutor Session: learner_context ---
+
+export async function updateTutorSessionLearnerContext(
+  sessionId: string,
+  learnerContext: Record<string, unknown>
+): Promise<void> {
+  await sql`UPDATE tutor_sessions SET learner_context = ${JSON.stringify(learnerContext)} WHERE id = ${sessionId}`;
 }

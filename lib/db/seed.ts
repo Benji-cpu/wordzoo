@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
 import { neon } from '@neondatabase/serverless';
+import { seedDialogueScenes } from './seed-dialogues';
 
 async function seed() {
   const databaseUrl = process.env.DATABASE_URL;
@@ -120,16 +121,9 @@ async function seed() {
       ON CONFLICT DO NOTHING
     `;
 
-    // --- Scenes (3 per path) ---
+    // --- Scenes ---
     console.log('Seeding scenes...');
-    // Indonesian scenes
-    await sql`
-      INSERT INTO scenes (id, path_id, title, description, sort_order) VALUES
-        ('d1000000-0001-4000-8000-000000000001', 'c1000000-0001-4000-8000-000000000001', 'Meeting Someone', 'Greetings and introductions in Bahasa Indonesia', 1),
-        ('d1000000-0001-4000-8000-000000000002', 'c1000000-0001-4000-8000-000000000001', 'Getting Food', 'Ordering food and drinks at a warung', 2),
-        ('d1000000-0001-4000-8000-000000000003', 'c1000000-0001-4000-8000-000000000001', 'Finding Your Way', 'Asking for and understanding directions', 3)
-      ON CONFLICT DO NOTHING
-    `;
+    // Indonesian scenes: dialogue scenes seeded below after scene_words
     // Spanish scenes
     await sql`
       INSERT INTO scenes (id, path_id, title, description, sort_order) VALUES
@@ -158,21 +152,7 @@ async function seed() {
 
     // --- Scene Words ---
     console.log('Seeding scene_words...');
-    // Indonesian: Meeting Someone (words 1,3,4,9,10,11,20)
-    const idMeeting = ['001', '003', '004', '009', '010', '011', '020'];
-    for (let i = 0; i < idMeeting.length; i++) {
-      await sql`INSERT INTO scene_words (scene_id, word_id, sort_order) VALUES ('d1000000-0001-4000-8000-000000000001', ${'b1000000-0001-4000-8000-000000000' + idMeeting[i]}, ${i + 1}) ON CONFLICT DO NOTHING`;
-    }
-    // Indonesian: Getting Food (words 8,12,13,14,19)
-    const idFood = ['008', '012', '013', '014', '019'];
-    for (let i = 0; i < idFood.length; i++) {
-      await sql`INSERT INTO scene_words (scene_id, word_id, sort_order) VALUES ('d1000000-0001-4000-8000-000000000002', ${'b1000000-0001-4000-8000-000000000' + idFood[i]}, ${i + 1}) ON CONFLICT DO NOTHING`;
-    }
-    // Indonesian: Finding Your Way (words 7,15,16,17,18)
-    const idDirections = ['007', '015', '016', '017', '018'];
-    for (let i = 0; i < idDirections.length; i++) {
-      await sql`INSERT INTO scene_words (scene_id, word_id, sort_order) VALUES ('d1000000-0001-4000-8000-000000000003', ${'b1000000-0001-4000-8000-000000000' + idDirections[i]}, ${i + 1}) ON CONFLICT DO NOTHING`;
-    }
+    // Indonesian scene_words are handled by dialogue seeding below
 
     // Spanish: Meeting Someone (words 1,3,4,5,11,15)
     const esMeeting = ['001', '003', '004', '005', '011', '015'];
@@ -206,7 +186,11 @@ async function seed() {
       await sql`INSERT INTO scene_words (scene_id, word_id, sort_order) VALUES ('d3000000-0001-4000-8000-000000000003', ${'b3000000-0001-4000-8000-000000000' + jaDirections[i]}, ${i + 1}) ON CONFLICT DO NOTHING`;
     }
 
-    console.log('Seeding complete!');
+    // --- Indonesian Dialogue Scenes ---
+    console.log('\nSeeding Indonesian dialogue scenes...');
+    await seedDialogueScenes(sql);
+
+    console.log('\nSeeding complete!');
   } catch (error) {
     console.error('Seeding failed:', error);
     process.exit(1);

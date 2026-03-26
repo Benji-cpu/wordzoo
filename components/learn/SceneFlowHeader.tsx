@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { IconButton } from '@/components/ui/IconButton';
 
 const PHASE_LABELS = ['Dialogue', 'Phrases', 'Vocab', 'Patterns', 'Chat', 'Summary'] as const;
@@ -9,16 +8,16 @@ const PHASE_KEYS = ['dialogue', 'phrases', 'vocabulary', 'patterns', 'conversati
 interface SceneFlowHeaderProps {
   title: string;
   currentPhase: string;
+  onBack: () => void;
 }
 
-export function SceneFlowHeader({ title, currentPhase }: SceneFlowHeaderProps) {
-  const router = useRouter();
+export function SceneFlowHeader({ title, currentPhase, onBack }: SceneFlowHeaderProps) {
   const currentIdx = PHASE_KEYS.indexOf(currentPhase as typeof PHASE_KEYS[number]);
 
   return (
     <div className="mb-6">
       <div className="flex items-center gap-3 mb-3">
-        <IconButton label="Go back" onClick={() => router.push('/dashboard')} size="sm">
+        <IconButton label="Go back" onClick={onBack} size="sm">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>

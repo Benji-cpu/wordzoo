@@ -58,7 +58,7 @@ const scene1: DialogueSceneData = {
   title: 'Selamat! (Hello!)',
   description: 'Meeting someone at a cafe — greetings and introductions',
   scene_context: 'You are at a small cafe in Bali. A friendly local sits at the next table and starts a conversation. Practice greetings, introducing yourself, and basic polite exchanges.',
-  sort_order: 4, // After the 3 existing legacy scenes
+  sort_order: 1,
   dialogues: [
     { id: 'e1000000-0004-4000-8000-000000000001', speaker: 'Adi', text_target: 'Selamat pagi! Apa kabar?', text_en: 'Good morning! How are you?' },
     { id: 'e1000000-0004-4000-8000-000000000002', speaker: 'You', text_target: 'Selamat pagi! Baik, terima kasih.', text_en: 'Good morning! Good, thank you.' },
@@ -89,7 +89,7 @@ const scene1: DialogueSceneData = {
       text_en: 'Nice to meet you',
       literal_translation: 'Happy to meet',
       usage_note: 'Used when meeting someone for the first time. Add "juga" (also) to say "nice to meet you too".',
-      wordTexts: [],
+      wordTexts: ['senang', 'bertemu'],
     },
     {
       id: 'f1000000-0004-4000-8000-000000000004',
@@ -97,7 +97,7 @@ const scene1: DialogueSceneData = {
       text_en: 'Where from?',
       literal_translation: 'From where?',
       usage_note: 'Short for "Anda dari mana?" — asking where someone is from.',
-      wordTexts: [],
+      wordTexts: ['dari'],
     },
   ],
   patterns: [
@@ -148,7 +148,7 @@ const scene2: DialogueSceneData = {
   title: 'Siapa Itu? (Who\'s That?)',
   description: 'Introducing friends and talking about people',
   scene_context: 'You are at a gathering with your new friend Adi. He introduces you to his friend Sari. Practice introductions and talking about where people are from.',
-  sort_order: 5,
+  sort_order: 2,
   dialogues: [
     { id: 'e1000000-0005-4000-8000-000000000001', speaker: 'Adi', text_target: 'Ini teman saya, Sari.', text_en: 'This is my friend, Sari.' },
     { id: 'e1000000-0005-4000-8000-000000000002', speaker: 'Sari', text_target: 'Halo! Senang bertemu!', text_en: 'Hello! Nice to meet you!' },
@@ -171,7 +171,7 @@ const scene2: DialogueSceneData = {
       text_en: 'He/she is from ...',
       literal_translation: 'He/she from ...',
       usage_note: '"Dia" is gender-neutral — it means both "he" and "she".',
-      wordTexts: [],
+      wordTexts: ['dia', 'dari'],
     },
     {
       id: 'f1000000-0005-4000-8000-000000000003',
@@ -179,7 +179,7 @@ const scene2: DialogueSceneData = {
       text_en: 'Nice to meet you too',
       literal_translation: 'Happy meet also',
       usage_note: 'Add "juga" (also/too) to respond to "Senang bertemu".',
-      wordTexts: [],
+      wordTexts: ['senang', 'bertemu', 'juga'],
     },
     {
       id: 'f1000000-0005-4000-8000-000000000004',
@@ -228,7 +228,7 @@ const scene2: DialogueSceneData = {
     { id: 'b1000000-0001-4000-8000-000000000027', text: 'juga', meaning_en: 'also / too', part_of_speech: 'adverb' },
     { id: 'b1000000-0001-4000-8000-000000000028', text: 'sekali', meaning_en: 'very / once', part_of_speech: 'adverb' },
   ],
-  existingWordTexts: ['ini', 'saya', 'dan', 'baik'],
+  existingWordTexts: ['ini', 'saya', 'dan', 'baik', 'dari', 'senang', 'bertemu'],
 };
 
 // ── Scene 3: Saya Mau... (I Want...) ───────────────────────────────
@@ -238,7 +238,7 @@ const scene3: DialogueSceneData = {
   title: 'Saya Mau... (I Want...)',
   description: 'Ordering food and drinks at a warung',
   scene_context: 'You are at a small warung (food stall) with Adi. The server asks what you want to order. Practice ordering food and drinks.',
-  sort_order: 6,
+  sort_order: 3,
   dialogues: [
     { id: 'e1000000-0006-4000-8000-000000000001', speaker: 'Server', text_target: 'Selamat pagi! Mau pesan apa?', text_en: 'Good morning! What would you like to order?' },
     { id: 'e1000000-0006-4000-8000-000000000002', speaker: 'Adi', text_target: 'Saya mau nasi goreng dan es teh.', text_en: 'I want fried rice and iced tea.' },
@@ -327,7 +327,7 @@ const scene4: DialogueSceneData = {
   title: 'Berapa Harganya? (How Much?)',
   description: 'Shopping at a market — asking prices and bargaining',
   scene_context: 'You are at a traditional market in Ubud. You see some souvenirs and want to buy something. Practice asking prices and basic bargaining.',
-  sort_order: 7,
+  sort_order: 4,
   dialogues: [
     { id: 'e1000000-0007-4000-8000-000000000001', speaker: 'You', text_target: 'Permisi, berapa harganya?', text_en: 'Excuse me, how much is it?' },
     { id: 'e1000000-0007-4000-8000-000000000002', speaker: 'Seller', text_target: 'Itu seratus ribu rupiah.', text_en: 'That is one hundred thousand rupiah.' },
@@ -350,7 +350,7 @@ const scene4: DialogueSceneData = {
       text_en: 'Too expensive',
       literal_translation: 'Too expensive',
       usage_note: 'Use this to start bargaining. "Terlalu" means "too much".',
-      wordTexts: [],
+      wordTexts: ['mahal'],
     },
     {
       id: 'f1000000-0007-4000-8000-000000000003',
@@ -358,7 +358,7 @@ const scene4: DialogueSceneData = {
       text_en: 'Can you lower it?',
       literal_translation: 'Can less?',
       usage_note: 'A polite way to ask for a discount. "Bisa" = can, "kurang" = less.',
-      wordTexts: [],
+      wordTexts: ['bisa'],
     },
     {
       id: 'f1000000-0007-4000-8000-000000000004',
@@ -416,7 +416,7 @@ const scene5: DialogueSceneData = {
   title: 'Enak Sekali! (So Delicious!)',
   description: 'Talking about food preferences and flavors',
   scene_context: 'You are eating at the warung with Adi. The food arrives and you talk about what you like. Practice expressing food preferences and complimenting food.',
-  sort_order: 8,
+  sort_order: 5,
   dialogues: [
     { id: 'e1000000-0008-4000-8000-000000000001', speaker: 'Adi', text_target: 'Ini nasi goreng saya. Enak sekali!', text_en: 'This is my fried rice. So delicious!' },
     { id: 'e1000000-0008-4000-8000-000000000002', speaker: 'You', text_target: 'Saya suka mie goreng ini!', text_en: 'I like this fried noodle!' },
@@ -431,7 +431,7 @@ const scene5: DialogueSceneData = {
       text_en: 'So delicious!',
       literal_translation: 'Delicious very!',
       usage_note: 'A big compliment for food. "Enak" = delicious, "sekali" = very.',
-      wordTexts: [],
+      wordTexts: ['enak', 'sekali'],
     },
     {
       id: 'f1000000-0008-4000-8000-000000000002',
@@ -495,7 +495,95 @@ const scene5: DialogueSceneData = {
     { id: 'b1000000-0001-4000-8000-000000000036', text: 'suka', meaning_en: 'to like', part_of_speech: 'verb' },
     { id: 'b1000000-0001-4000-8000-000000000037', text: 'coba', meaning_en: 'to try', part_of_speech: 'verb' },
   ],
-  existingWordTexts: ['saya', 'ini', 'tidak', 'pedas', 'mau'],
+  existingWordTexts: ['saya', 'ini', 'tidak', 'pedas', 'mau', 'sekali'],
 };
 
-export const DIALOGUE_SCENES: DialogueSceneData[] = [scene1, scene2, scene3, scene4, scene5];
+// ── Scene 6: Di Mana...? (Where Is...?) ──────────────────────────
+
+const scene6: DialogueSceneData = {
+  id: 'd1000000-0001-4000-8000-000000000009',
+  title: 'Di Mana...? (Where Is...?)',
+  description: 'Asking for and understanding directions',
+  scene_context: 'You are walking around Ubud and need to find a pharmacy. You stop a friendly local to ask for directions. Practice asking where things are and understanding basic directions.',
+  sort_order: 6,
+  dialogues: [
+    { id: 'e1000000-0009-4000-8000-000000000001', speaker: 'You', text_target: 'Permisi, di mana apotek?', text_en: 'Excuse me, where is the pharmacy?' },
+    { id: 'e1000000-0009-4000-8000-000000000002', speaker: 'Local', text_target: 'Apotek? Jalan lurus, lalu belok kiri.', text_en: 'The pharmacy? Go straight, then turn left.' },
+    { id: 'e1000000-0009-4000-8000-000000000003', speaker: 'You', text_target: 'Belok kiri? Itu dekat?', text_en: 'Turn left? Is it nearby?' },
+    { id: 'e1000000-0009-4000-8000-000000000004', speaker: 'Local', text_target: 'Ya, dekat sekali! Di kanan ada pasar.', text_en: 'Yes, very close! On the right there is a market.' },
+    { id: 'e1000000-0009-4000-8000-000000000005', speaker: 'You', text_target: 'Baik, terima kasih banyak!', text_en: 'Okay, thank you very much!' },
+  ],
+  phrases: [
+    {
+      id: 'f1000000-0009-4000-8000-000000000001',
+      text_target: 'Di mana ...?',
+      text_en: 'Where is ...?',
+      literal_translation: 'At where ...?',
+      usage_note: 'The essential direction phrase. "Di mana" + place to ask where something is.',
+      wordTexts: ['di mana'],
+    },
+    {
+      id: 'f1000000-0009-4000-8000-000000000002',
+      text_target: 'Jalan lurus',
+      text_en: 'Go straight',
+      literal_translation: 'Walk straight',
+      usage_note: '"Jalan" means to walk/go. "Lurus" means straight ahead.',
+      wordTexts: ['lurus'],
+    },
+    {
+      id: 'f1000000-0009-4000-8000-000000000003',
+      text_target: 'Belok kiri / belok kanan',
+      text_en: 'Turn left / turn right',
+      literal_translation: 'Turn left / turn right',
+      usage_note: '"Belok" means to turn. Pair with "kiri" (left) or "kanan" (right).',
+      wordTexts: ['kiri', 'kanan'],
+    },
+    {
+      id: 'f1000000-0009-4000-8000-000000000004',
+      text_target: 'Dekat sekali',
+      text_en: 'Very close / nearby',
+      literal_translation: 'Close very',
+      usage_note: 'Use "dekat" for close/nearby. Add "sekali" for emphasis.',
+      wordTexts: ['dekat', 'sekali'],
+    },
+  ],
+  patterns: [
+    {
+      id: '0a000000-0009-4000-8000-000000000001',
+      pattern_template: 'Di mana ___?',
+      pattern_en: 'Where is ___?',
+      explanation: '"Di mana" asks "where". Follow it with the place you are looking for.',
+      prompt: 'Di ___ apotek?',
+      hint_en: 'Where is the pharmacy?',
+      correct_answer: 'mana',
+      distractors: ['ini', 'itu', 'apa'],
+    },
+    {
+      id: '0a000000-0009-4000-8000-000000000002',
+      pattern_template: 'Belok ___',
+      pattern_en: 'Turn ___',
+      explanation: '"Belok" means to turn. Follow with a direction: "kiri" (left) or "kanan" (right).',
+      prompt: 'Belok ___.',
+      hint_en: 'Turn left.',
+      correct_answer: 'kiri',
+      distractors: ['lurus', 'dekat', 'di'],
+    },
+    {
+      id: '0a000000-0009-4000-8000-000000000003',
+      pattern_template: 'Di ___ ada ___',
+      pattern_en: 'On the ___ there is ___',
+      explanation: '"Di" + direction + "ada" = there is something in that direction.',
+      prompt: 'Di ___ ada pasar.',
+      hint_en: 'On the right there is a market.',
+      correct_answer: 'kanan',
+      distractors: ['mana', 'ini', 'itu'],
+    },
+  ],
+  newWords: [
+    { id: 'b1000000-0001-4000-8000-000000000038', text: 'belok', meaning_en: 'to turn', part_of_speech: 'verb' },
+    { id: 'b1000000-0001-4000-8000-000000000039', text: 'dekat', meaning_en: 'close / nearby', part_of_speech: 'adjective' },
+  ],
+  existingWordTexts: ['di', 'kiri', 'kanan', 'lurus', 'di mana', 'baik', 'terima kasih', 'sekali'],
+};
+
+export const DIALOGUE_SCENES: DialogueSceneData[] = [scene1, scene2, scene3, scene4, scene5, scene6];

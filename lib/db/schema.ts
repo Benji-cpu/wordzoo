@@ -444,4 +444,50 @@ CREATE TABLE IF NOT EXISTS user_streaks (
   UNIQUE(user_id)
 );
 CREATE INDEX IF NOT EXISTS idx_user_streaks_user ON user_streaks(user_id);
+
+-- Learner Profiles (adaptive tutor intelligence)
+CREATE TABLE IF NOT EXISTS learner_profiles (
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  language_id UUID NOT NULL REFERENCES languages(id) ON DELETE CASCADE,
+  weakness_patterns JSONB NOT NULL DEFAULT '[]',
+  topics_covered JSONB NOT NULL DEFAULT '[]',
+  correction_history JSONB NOT NULL DEFAULT '{}',
+  proficiency_estimate TEXT NOT NULL DEFAULT 'beginner',
+  session_count INT NOT NULL DEFAULT 0,
+  total_messages INT NOT NULL DEFAULT 0,
+  total_practice_minutes INT NOT NULL DEFAULT 0,
+  recent_session_summaries JSONB NOT NULL DEFAULT '[]',
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (user_id, language_id)
+);
+
+-- Tutor Word Reviews (SRS bridge tracking)
+CREATE TABLE IF NOT EXISTS tutor_word_reviews (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  session_id UUID NOT NULL REFERENCES tutor_sessions(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  word_id UUID NOT NULL REFERENCES words(id) ON DELETE CASCADE,
+  language_id UUID NOT NULL REFERENCES languages(id) ON DELETE CASCADE,
+  usage_type TEXT NOT NULL CHECK (usage_type IN ('correct','corrected','introduced','missed')),
+  srs_quality INT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_tutor_word_reviews_session ON tutor_word_reviews(session_id);
+CREATE INDEX IF NOT EXISTS idx_tutor_word_reviews_user ON tutor_word_reviews(user_id, language_id, created_at DESC);
+
+-- Tutor Nudges (smart suggestion tracking)
+CREATE TABLE IF NOT EXISTS tutor_nudges (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  nudge_type TEXT NOT NULL,
+  context JSONB,
+  shown_at TIMESTAMPTZ,
+  dismissed_at TIMESTAMPTZ,
+  accepted_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_tutor_nudges_user ON tutor_nudges(user_id, created_at DESC);
+
+-- Tutor Sessions: adaptive context snapshot
+ALTER TABLE tutor_sessions ADD COLUMN IF NOT EXISTS learner_context JSONB;
 `;

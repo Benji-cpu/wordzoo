@@ -10,9 +10,11 @@ import {
   insertGuidedConversationSession,
   getSceneDialogues,
   getScenePhrases,
+  updateTutorSessionLearnerContext,
 } from '@/lib/db';
 import { generateChat, generateChatStream } from '@/lib/ai/gemini';
 import { buildTutorSystemPrompt, buildGuidedConversationPrompt } from '@/lib/ai/tutor-prompts';
+import { buildAdaptiveContext } from '@/lib/services/learner-profile-service';
 import type { GeminiChatMessage } from '@/types/ai';
 
 export async function startSession(
@@ -26,9 +28,10 @@ export async function startSession(
   const language = await getLanguageById(languageId);
   if (!language) throw new Error('Language not found');
 
-  const [knownWords, dueWords] = await Promise.all([
+  const [knownWords, dueWords, adaptiveCtx] = await Promise.all([
     getUserKnownWords(userId, languageId),
     getUserDueWords(userId, languageId),
+    buildAdaptiveContext(userId, languageId),
   ]);
 
   const systemPrompt = buildTutorSystemPrompt({
@@ -37,7 +40,13 @@ export async function startSession(
     scenario,
     knownWords,
     dueWords,
+    adaptiveContext: adaptiveCtx,
   });
+
+  // Save adaptive context snapshot to session
+  if (adaptiveCtx) {
+    updateTutorSessionLearnerContext(session.id, { context: adaptiveCtx }).catch(() => {});
+  }
 
   const greetingMessages: GeminiChatMessage[] = [
     { role: 'user', content: 'Start the conversation with a greeting.' },
@@ -61,10 +70,11 @@ export async function startGuidedSession(
   const language = await getLanguageById(languageId);
   if (!language) throw new Error('Language not found');
 
-  const [dialogues, phrases, knownWords] = await Promise.all([
+  const [dialogues, phrases, knownWords, adaptiveCtx] = await Promise.all([
     getSceneDialogues(sceneId),
     getScenePhrases(sceneId),
     getUserKnownWords(userId, languageId),
+    buildAdaptiveContext(userId, languageId),
   ]);
 
   const systemPrompt = buildGuidedConversationPrompt({
@@ -80,7 +90,12 @@ export async function startGuidedSession(
       text_en: p.text_en,
     })),
     knownWords,
+    adaptiveContext: adaptiveCtx,
   });
+
+  if (adaptiveCtx) {
+    updateTutorSessionLearnerContext(session.id, { context: adaptiveCtx }).catch(() => {});
+  }
 
   const greetingMessages: GeminiChatMessage[] = [
     { role: 'user', content: 'Start the practice conversation with a greeting.' },
@@ -115,6 +130,7 @@ export async function sendMessage(
   if (!language) throw new Error('Language not found');
 
   let systemPrompt: string;
+  const adaptiveCtx = await buildAdaptiveContext(userId, session.language_id);
 
   if (session.mode === 'guided_conversation' && session.scene_id) {
     const [dialogues, phrases, knownWords] = await Promise.all([
@@ -135,6 +151,7 @@ export async function sendMessage(
         text_en: p.text_en,
       })),
       knownWords,
+      adaptiveContext: adaptiveCtx,
     });
   } else {
     const [knownWords, dueWords] = await Promise.all([
@@ -147,6 +164,7 @@ export async function sendMessage(
       scenario: session.scenario,
       knownWords,
       dueWords,
+      adaptiveContext: adaptiveCtx,
     });
   }
 
@@ -196,7 +214,7 @@ export async function endSession(
   const startedAt = new Date(session.started_at);
   const durationMinutes = Math.round((Date.now() - startedAt.getTime()) / 60000);
 
-  const summary = {
+  const summary: Record<string, unknown> = {
     messageCount: messages.length,
     userMessageCount: userMessages.length,
     modelMessageCount: modelMessages.length,
@@ -210,6 +228,37 @@ export async function endSession(
     endedAt: new Date().toISOString(),
     summary,
   });
+
+  // Fire-and-forget: SRS bridge analysis + learner profile update
+  (async () => {
+    try {
+      const { analyzeSessionWordUsage, recordConversationReviews } = await import('@/lib/services/tutor-srs-bridge');
+      const { updateFromSession } = await import('@/lib/services/learner-profile-service');
+
+      const [knownWords, dueWords] = await Promise.all([
+        getUserKnownWords(userId, session.language_id),
+        getUserDueWords(userId, session.language_id),
+      ]);
+
+      const wordUsage = await analyzeSessionWordUsage(messages, knownWords, dueWords, session.language_id);
+      const srsResult = await recordConversationReviews(userId, sessionId, session.language_id, wordUsage);
+
+      // Enrich session summary with SRS data
+      await updateTutorSession(sessionId, {
+        summary: {
+          ...summary,
+          srsReviewsRecorded: srsResult.reviewsRecorded,
+          wordsIntroduced: srsResult.wordsIntroduced,
+          accuracyRate: srsResult.accuracyRate,
+        },
+      });
+
+      // Update learner profile
+      await updateFromSession(userId, sessionId);
+    } catch (error) {
+      console.error(`[tutor-service] Background processing failed for session ${sessionId}:`, error);
+    }
+  })().catch(console.error);
 
   return summary;
 }

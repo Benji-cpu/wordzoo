@@ -111,7 +111,7 @@ export default async function LearnPage({ params }: PageProps) {
 
   // Dialogue scenes use the new SceneFlowClient
   const [flowData, words, progress] = await Promise.all([
-    getSceneFlowData(sceneId),
+    getSceneFlowData(sceneId, userId),
     buildWordsArray(sceneId, scene.language_id, userId),
     userId ? getOrCreateSceneProgress(userId, sceneId) : null,
   ]);

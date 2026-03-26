@@ -6,20 +6,6 @@ interface QuickReviewCardProps {
 }
 
 export function QuickReviewCard({ dueCount }: QuickReviewCardProps) {
-  if (dueCount === 0) {
-    return (
-      <Card className="animate-fade-in">
-        <div className="flex items-center gap-3">
-          <span className="text-2xl">✅</span>
-          <div>
-            <h3 className="text-foreground font-medium">All caught up!</h3>
-            <p className="text-sm text-text-secondary">Nothing due for review right now.</p>
-          </div>
-        </div>
-      </Card>
-    );
-  }
-
   return (
     <Link href="/review" className="block">
       <Card className="animate-fade-in hover:border-accent-id/30 transition-colors">

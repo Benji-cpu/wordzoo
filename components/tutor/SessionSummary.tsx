@@ -11,6 +11,9 @@ interface SessionSummaryProps {
     wordsUsed: string[];
     durationMinutes: number;
     mode: string;
+    srsReviewsRecorded?: number;
+    wordsIntroduced?: number;
+    accuracyRate?: number;
   };
   onNewSession: () => void;
 }
@@ -21,6 +24,7 @@ const MODE_LABELS: Record<string, string> = {
   word_review: 'Word Review',
   grammar_glimpse: 'Grammar',
   pronunciation_coach: 'Pronunciation',
+  guided_conversation: 'Guided',
 };
 
 export function SessionSummary({ summary, onNewSession }: SessionSummaryProps) {
@@ -54,6 +58,34 @@ export function SessionSummary({ summary, onNewSession }: SessionSummaryProps) {
           <div className="text-xs text-text-secondary text-center">mode</div>
         </Card>
       </div>
+
+      {/* SRS Integration Stats */}
+      {(summary.srsReviewsRecorded != null && summary.srsReviewsRecorded > 0) && (
+        <div className="grid grid-cols-3 gap-3">
+          <Card>
+            <div className="text-2xl font-bold text-green-400 text-center">
+              {summary.srsReviewsRecorded}
+            </div>
+            <div className="text-xs text-text-secondary text-center">SRS reviews</div>
+          </Card>
+          {summary.accuracyRate != null && (
+            <Card>
+              <div className="text-2xl font-bold text-accent-default text-center">
+                {summary.accuracyRate}%
+              </div>
+              <div className="text-xs text-text-secondary text-center">accuracy</div>
+            </Card>
+          )}
+          {summary.wordsIntroduced != null && summary.wordsIntroduced > 0 && (
+            <Card>
+              <div className="text-2xl font-bold text-blue-400 text-center">
+                {summary.wordsIntroduced}
+              </div>
+              <div className="text-xs text-text-secondary text-center">new words</div>
+            </Card>
+          )}
+        </div>
+      )}
 
       {summary.wordsUsed.length > 0 && (
         <Card>

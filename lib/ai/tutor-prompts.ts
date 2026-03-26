@@ -6,6 +6,7 @@ interface TutorPromptOptions {
   scenario?: string | null;
   knownWords: KnownWordRow[];
   dueWords: KnownWordRow[];
+  adaptiveContext?: string;
 }
 
 const MODE_INSTRUCTIONS: Record<string, string> = {
@@ -33,6 +34,11 @@ export function buildTutorSystemPrompt(opts: TutorPromptOptions): string {
   // Mode instructions
   const modeInstructions = MODE_INSTRUCTIONS[opts.mode] ?? MODE_INSTRUCTIONS.free_chat;
   blocks.push(modeInstructions);
+
+  // Learner profile (adaptive context)
+  if (opts.adaptiveContext) {
+    blocks.push(`## Learner Profile\n${opts.adaptiveContext}`);
+  }
 
   // Scenario context for role_play
   if (opts.mode === 'role_play' && opts.scenario) {
@@ -79,6 +85,7 @@ interface GuidedConversationOptions {
   dialogueLines: { speaker: string; text_target: string; text_en: string }[];
   phrases: { text_target: string; text_en: string }[];
   knownWords: KnownWordRow[];
+  adaptiveContext?: string;
 }
 
 export function buildGuidedConversationPrompt(opts: GuidedConversationOptions): string {
@@ -89,6 +96,11 @@ export function buildGuidedConversationPrompt(opts: GuidedConversationOptions): 
     `You are guiding the student through a practice conversation based on a scene they just studied. ` +
     `Be warm, patient, and supportive. Speak mostly in ${opts.languageName} with English hints when needed.`
   );
+
+  // Learner profile (adaptive context)
+  if (opts.adaptiveContext) {
+    blocks.push(`## Learner Profile\n${opts.adaptiveContext}`);
+  }
 
   blocks.push(
     `Scene context: ${opts.sceneContext}\n\n` +

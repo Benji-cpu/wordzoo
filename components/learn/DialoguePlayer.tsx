@@ -2,16 +2,21 @@
 
 import { useState } from 'react';
 import { Card } from '@/components/ui/Card';
+import { TappableWord } from '@/components/learn/TappableWord';
+import { tokenizeDialogueLine } from '@/lib/utils/dialogue-tokenizer';
 import type { SceneDialogue } from '@/types/database';
+import type { LearnWord } from '@/components/learn/LearnClient';
 
 interface DialoguePlayerProps {
   dialogues: SceneDialogue[];
   onComplete: () => void;
   onLineAdvance?: (lineIndex: number) => void;
+  vocabWords?: LearnWord[];
+  initialVisibleCount?: number;
 }
 
-export function DialoguePlayer({ dialogues, onComplete, onLineAdvance }: DialoguePlayerProps) {
-  const [visibleCount, setVisibleCount] = useState(1);
+export function DialoguePlayer({ dialogues, onComplete, onLineAdvance, vocabWords, initialVisibleCount = 1 }: DialoguePlayerProps) {
+  const [visibleCount, setVisibleCount] = useState(initialVisibleCount);
 
   const handleTap = () => {
     if (visibleCount < dialogues.length) {
@@ -38,7 +43,17 @@ export function DialoguePlayer({ dialogues, onComplete, onLineAdvance }: Dialogu
               <div className={`max-w-[85%] ${isYou ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
                 <span className="text-xs text-text-secondary px-1">{line.speaker}</span>
                 <Card className={`!p-3 ${isYou ? 'bg-accent-id/10 border-accent-id/30' : ''}`}>
-                  <p className="text-base font-medium text-foreground">{line.text_target}</p>
+                  <p className="text-base font-medium text-foreground">
+                    {vocabWords && vocabWords.length > 0
+                      ? tokenizeDialogueLine(line.text_target, vocabWords).map((seg, j) =>
+                          seg.type === 'word' && seg.word ? (
+                            <TappableWord key={j} word={seg.word}>{seg.text}</TappableWord>
+                          ) : (
+                            <span key={j}>{seg.text}</span>
+                          )
+                        )
+                      : line.text_target}
+                  </p>
                   <p className="text-sm text-text-secondary mt-1">{line.text_en}</p>
                 </Card>
               </div>

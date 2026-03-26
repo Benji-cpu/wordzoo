@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { SceneFlowHeader } from '@/components/learn/SceneFlowHeader';
 import { DialoguePlayer } from '@/components/learn/DialoguePlayer';
 import { PhraseCard } from '@/components/learn/PhraseCard';
+import { PhraseBreakdown } from '@/components/learn/PhraseBreakdown';
 import { PhraseQuiz } from '@/components/learn/PhraseQuiz';
 import { WordCard } from '@/components/learn/WordCard';
 import { MnemonicCard } from '@/components/learn/MnemonicCard';
@@ -11,7 +13,7 @@ import { QuizOptions } from '@/components/learn/QuizOptions';
 import { PatternExercise } from '@/components/learn/PatternExercise';
 import { GuidedConversation } from '@/components/learn/GuidedConversation';
 import { SceneSummary } from '@/components/learn/SceneSummary';
-import type { SceneDialogue, ScenePhrase, ScenePatternExercise, UserSceneProgress } from '@/types/database';
+import type { SceneDialogue, ScenePhraseWithMnemonics, ScenePatternExercise, UserSceneProgress } from '@/types/database';
 import type { LearnWord } from '@/components/learn/LearnClient';
 import type { SupportedLanguageCode } from '@/types/audio';
 
@@ -21,7 +23,7 @@ interface SceneFlowClientProps {
   languageName: string;
   languageCode?: SupportedLanguageCode;
   dialogues: SceneDialogue[];
-  phrases: ScenePhrase[];
+  phrases: ScenePhraseWithMnemonics[];
   words: LearnWord[];
   patternExercises: ScenePatternExercise[];
   initialProgress: UserSceneProgress;
@@ -32,7 +34,7 @@ interface SceneFlowClientProps {
 
 type FlowState =
   | { phase: 'dialogue'; lineIndex: number }
-  | { phase: 'phrases'; phraseIndex: number; step: 'show' | 'quiz' }
+  | { phase: 'phrases'; phraseIndex: number; step: 'show' | 'breakdown' | 'quiz' }
   | { phase: 'vocabulary'; wordIndex: number; step: 'word' | 'mnemonic' | 'quiz' }
   | { phase: 'patterns'; exerciseIndex: number }
   | { phase: 'conversation' }
@@ -57,6 +59,104 @@ function initialStateFromProgress(p: UserSceneProgress, totalDialogues: number, 
   }
 }
 
+interface FlowContext {
+  dialogues: SceneDialogue[];
+  phrases: ScenePhraseWithMnemonics[];
+  words: LearnWord[];
+  patternExercises: ScenePatternExercise[];
+}
+
+/** Returns the previous FlowState, or null to exit the scene. */
+function computePreviousState(current: FlowState, ctx: FlowContext): FlowState | null {
+  switch (current.phase) {
+    case 'dialogue':
+      return null;
+
+    case 'phrases': {
+      if (current.step === 'quiz') {
+        const phrase = ctx.phrases[current.phraseIndex];
+        if (phrase?.words.some((w) => w.keyword_text !== null)) {
+          return { phase: 'phrases', phraseIndex: current.phraseIndex, step: 'breakdown' };
+        }
+        return { phase: 'phrases', phraseIndex: current.phraseIndex, step: 'show' };
+      }
+      if (current.step === 'breakdown') {
+        return { phase: 'phrases', phraseIndex: current.phraseIndex, step: 'show' };
+      }
+      // step === 'show'
+      if (current.phraseIndex > 0) {
+        return { phase: 'phrases', phraseIndex: current.phraseIndex - 1, step: 'show' };
+      }
+      // First phrase → back to dialogue (all lines visible) or exit
+      if (ctx.dialogues.length > 0) {
+        return { phase: 'dialogue', lineIndex: ctx.dialogues.length - 1 };
+      }
+      return null;
+    }
+
+    case 'vocabulary': {
+      if (current.step === 'quiz') {
+        const word = ctx.words[current.wordIndex];
+        if (word?.mnemonic) {
+          return { phase: 'vocabulary', wordIndex: current.wordIndex, step: 'mnemonic' };
+        }
+        return { phase: 'vocabulary', wordIndex: current.wordIndex, step: 'word' };
+      }
+      if (current.step === 'mnemonic') {
+        return { phase: 'vocabulary', wordIndex: current.wordIndex, step: 'word' };
+      }
+      // step === 'word'
+      if (current.wordIndex > 0) {
+        return { phase: 'vocabulary', wordIndex: current.wordIndex - 1, step: 'word' };
+      }
+      // First word → back to last phrase show, or dialogue, or exit
+      if (ctx.phrases.length > 0) {
+        return { phase: 'phrases', phraseIndex: ctx.phrases.length - 1, step: 'show' };
+      }
+      if (ctx.dialogues.length > 0) {
+        return { phase: 'dialogue', lineIndex: ctx.dialogues.length - 1 };
+      }
+      return null;
+    }
+
+    case 'patterns': {
+      if (current.exerciseIndex > 0) {
+        return { phase: 'patterns', exerciseIndex: current.exerciseIndex - 1 };
+      }
+      // First pattern → back to last vocab word, or last phrase, or dialogue, or exit
+      if (ctx.words.length > 0) {
+        return { phase: 'vocabulary', wordIndex: ctx.words.length - 1, step: 'word' };
+      }
+      if (ctx.phrases.length > 0) {
+        return { phase: 'phrases', phraseIndex: ctx.phrases.length - 1, step: 'show' };
+      }
+      if (ctx.dialogues.length > 0) {
+        return { phase: 'dialogue', lineIndex: ctx.dialogues.length - 1 };
+      }
+      return null;
+    }
+
+    case 'conversation': {
+      if (ctx.patternExercises.length > 0) {
+        return { phase: 'patterns', exerciseIndex: ctx.patternExercises.length - 1 };
+      }
+      if (ctx.words.length > 0) {
+        return { phase: 'vocabulary', wordIndex: ctx.words.length - 1, step: 'word' };
+      }
+      if (ctx.phrases.length > 0) {
+        return { phase: 'phrases', phraseIndex: ctx.phrases.length - 1, step: 'show' };
+      }
+      if (ctx.dialogues.length > 0) {
+        return { phase: 'dialogue', lineIndex: ctx.dialogues.length - 1 };
+      }
+      return null;
+    }
+
+    case 'summary':
+      return { phase: 'conversation' };
+  }
+}
+
 export function SceneFlowClient({
   sceneId,
   sceneTitle,
@@ -75,6 +175,7 @@ export function SceneFlowClient({
     initialStateFromProgress(initialProgress, dialogues.length, phrases.length, words.length, patternExercises.length)
   );
 
+  const router = useRouter();
   const progressRef = useRef(false);
 
   const saveProgress = useCallback((phase: string, phaseIndex: number, phaseCompleted?: string) => {
@@ -85,6 +186,17 @@ export function SceneFlowClient({
       body: JSON.stringify({ currentPhase: phase, phaseIndex, phaseCompleted }),
     }).catch(() => {});
   }, [sceneId]);
+
+  // --- Back Navigation ---
+  const handleBack = useCallback(() => {
+    const ctx: FlowContext = { dialogues, phrases, words, patternExercises };
+    const prev = computePreviousState(state, ctx);
+    if (prev) {
+      setState(prev);
+    } else {
+      router.push(pathId ? `/paths/${pathId}` : '/dashboard');
+    }
+  }, [state, dialogues, phrases, words, patternExercises, pathId, router]);
 
   // --- Dialogue Phase ---
   const handleDialogueComplete = useCallback(() => {
@@ -99,7 +211,17 @@ export function SceneFlowClient({
   // --- Phrases Phase ---
   const handlePhraseContinue = useCallback(() => {
     if (state.phase !== 'phrases') return;
-    // After showing, go to quiz
+    const phrase = phrases[state.phraseIndex];
+    // If phrase has words with mnemonics, show breakdown; otherwise skip to quiz
+    if (phrase?.words.some((w) => w.keyword_text !== null)) {
+      setState({ phase: 'phrases', phraseIndex: state.phraseIndex, step: 'breakdown' });
+    } else {
+      setState({ phase: 'phrases', phraseIndex: state.phraseIndex, step: 'quiz' });
+    }
+  }, [state, phrases]);
+
+  const handleBreakdownContinue = useCallback(() => {
+    if (state.phase !== 'phrases') return;
     setState({ phase: 'phrases', phraseIndex: state.phraseIndex, step: 'quiz' });
   }, [state]);
 
@@ -201,6 +323,7 @@ export function SceneFlowClient({
         if (state.phase === 'vocabulary' && state.step === 'word') handleWordContinue();
         else if (state.phase === 'vocabulary' && state.step === 'mnemonic') handleMnemonicContinue();
         else if (state.phase === 'phrases' && state.step === 'show') handlePhraseContinue();
+        else if (state.phase === 'phrases' && state.step === 'breakdown') handleBreakdownContinue();
       }
     }
     document.addEventListener('touchstart', onTouchStart, { passive: true });
@@ -209,7 +332,7 @@ export function SceneFlowClient({
       document.removeEventListener('touchstart', onTouchStart);
       document.removeEventListener('touchend', onTouchEnd);
     };
-  }, [state, handleWordContinue, handleMnemonicContinue, handlePhraseContinue]);
+  }, [state, handleWordContinue, handleMnemonicContinue, handlePhraseContinue, handleBreakdownContinue]);
 
   // Generate phrase distractors from other phrases in the same scene
   const getPhraseDistractors = useCallback((targetPhrase: string): string[] => {
@@ -221,7 +344,7 @@ export function SceneFlowClient({
 
   return (
     <div className="max-w-lg mx-auto">
-      <SceneFlowHeader title={sceneTitle} currentPhase={state.phase} />
+      <SceneFlowHeader title={sceneTitle} currentPhase={state.phase} onBack={handleBack} />
 
       {/* Dialogue Phase */}
       {state.phase === 'dialogue' && (
@@ -229,6 +352,8 @@ export function SceneFlowClient({
           dialogues={dialogues}
           onComplete={handleDialogueComplete}
           onLineAdvance={handleDialogueLineAdvance}
+          vocabWords={words}
+          initialVisibleCount={state.lineIndex + 1}
         />
       )}
 
@@ -238,6 +363,11 @@ export function SceneFlowClient({
           <PhraseCard
             phrase={phrases[state.phraseIndex]}
             onContinue={handlePhraseContinue}
+          />
+        ) : state.step === 'breakdown' ? (
+          <PhraseBreakdown
+            phrase={phrases[state.phraseIndex]}
+            onContinue={handleBreakdownContinue}
           />
         ) : (
           <PhraseQuiz

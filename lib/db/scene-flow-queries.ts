@@ -3,6 +3,8 @@ import type {
   SceneDialogue,
   ScenePhrase,
   PhraseWord,
+  PhraseWordMnemonic,
+  ScenePhraseWithMnemonics,
   ScenePatternExercise,
   UserSceneProgress,
   SceneFlowPhase,
@@ -12,41 +14,65 @@ import type {
 
 export interface SceneFlowData {
   dialogues: SceneDialogue[];
-  phrases: ScenePhraseWithWords[];
+  phrases: ScenePhraseWithMnemonics[];
   patternExercises: ScenePatternExercise[];
 }
 
-export interface ScenePhraseWithWords extends ScenePhrase {
-  words: { word_id: string; position: number }[];
+export async function getPhraseWordsWithMnemonics(
+  phraseIds: string[],
+  userId: string | null
+): Promise<(PhraseWordMnemonic & { phrase_id: string })[]> {
+  if (phraseIds.length === 0) return [];
+  const rows = await sql`
+    SELECT pw.phrase_id, w.id AS word_id, w.text AS word_text,
+           w.meaning_en AS word_en, w.part_of_speech, pw.position,
+           m.keyword_text, m.bridge_sentence, m.image_url
+    FROM phrase_words pw
+    JOIN words w ON w.id = pw.word_id
+    LEFT JOIN LATERAL (
+      SELECT keyword_text, bridge_sentence, image_url
+      FROM mnemonics WHERE word_id = w.id
+        AND (user_id IS NULL OR user_id = ${userId})
+      ORDER BY CASE WHEN user_id = ${userId} THEN 0 ELSE 1 END,
+               upvote_count DESC LIMIT 1
+    ) m ON true
+    WHERE pw.phrase_id = ANY(${phraseIds})
+    ORDER BY pw.phrase_id, pw.position
+  `;
+  return rows as (PhraseWordMnemonic & { phrase_id: string })[];
 }
 
-export async function getSceneFlowData(sceneId: string): Promise<SceneFlowData> {
-  const [dialogues, phrases, patternExercises, phraseWordRows] = await Promise.all([
+export async function getSceneFlowData(sceneId: string, userId: string | null = null): Promise<SceneFlowData> {
+  const [dialogues, phrases, patternExercises] = await Promise.all([
     getSceneDialogues(sceneId),
     getScenePhrases(sceneId),
     getScenePatternExercises(sceneId),
-    sql`
-      SELECT pw.phrase_id, pw.word_id, pw.position
-      FROM phrase_words pw
-      JOIN scene_phrases sp ON sp.id = pw.phrase_id
-      WHERE sp.scene_id = ${sceneId}
-      ORDER BY pw.position
-    `,
   ]);
 
-  const phraseWords = phraseWordRows as PhraseWord[];
-  const phraseWordMap = new Map<string, { word_id: string; position: number }[]>();
-  for (const pw of phraseWords) {
+  const phraseIds = phrases.map((p) => p.id);
+  const phraseWordRows = await getPhraseWordsWithMnemonics(phraseIds, userId);
+
+  const phraseWordMap = new Map<string, PhraseWordMnemonic[]>();
+  for (const pw of phraseWordRows) {
     if (!phraseWordMap.has(pw.phrase_id)) phraseWordMap.set(pw.phrase_id, []);
-    phraseWordMap.get(pw.phrase_id)!.push({ word_id: pw.word_id, position: pw.position });
+    phraseWordMap.get(pw.phrase_id)!.push({
+      word_id: pw.word_id,
+      word_text: pw.word_text,
+      word_en: pw.word_en,
+      part_of_speech: pw.part_of_speech,
+      position: pw.position,
+      keyword_text: pw.keyword_text,
+      bridge_sentence: pw.bridge_sentence,
+      image_url: pw.image_url,
+    });
   }
 
-  const phrasesWithWords: ScenePhraseWithWords[] = phrases.map((p) => ({
+  const phrasesWithMnemonics: ScenePhraseWithMnemonics[] = phrases.map((p) => ({
     ...p,
     words: phraseWordMap.get(p.id) ?? [],
   }));
 
-  return { dialogues, phrases: phrasesWithWords, patternExercises };
+  return { dialogues, phrases: phrasesWithMnemonics, patternExercises };
 }
 
 export async function getSceneDialogues(sceneId: string): Promise<SceneDialogue[]> {

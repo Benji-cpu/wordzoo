@@ -10,7 +10,7 @@ export function ProgressChart({ distribution, streak }: { distribution: MasteryD
   const active = distribution.total_count - distribution.new_count;
 
   return (
-    <div className="p-4 rounded-xl bg-card-surface border border-card-border space-y-4">
+    <div className="p-4 rounded-xl bg-card-surface border border-card-border space-y-3">
       {/* Mastery Bar */}
       {active > 0 ? (
         <div>
@@ -45,15 +45,15 @@ export function ProgressChart({ distribution, streak }: { distribution: MasteryD
       {/* Stats Row */}
       <div className="grid grid-cols-3 gap-3 text-center">
         <div>
-          <p className="text-xl font-bold text-foreground">{active}</p>
+          <p className="text-lg font-bold text-foreground">{active}</p>
           <p className="text-xs text-text-secondary">Words Active</p>
         </div>
         <div>
-          <p className="text-xl font-bold text-foreground">{distribution.mastered_count}</p>
+          <p className="text-lg font-bold text-foreground">{distribution.mastered_count}</p>
           <p className="text-xs text-text-secondary">Mastered</p>
         </div>
         <div>
-          <p className="text-xl font-bold text-foreground">{streak}d</p>
+          <p className="text-lg font-bold text-foreground">{streak}d</p>
           <p className="text-xs text-text-secondary">Streak</p>
         </div>
       </div>

@@ -238,3 +238,24 @@ export const RecordPhraseReviewSchema = z.object({
 });
 
 export type RecordPhraseReviewInput = z.infer<typeof RecordPhraseReviewSchema>;
+
+// Tutor Nudge
+export const NudgeQuerySchema = z.object({
+  languageId: z.string().uuid(),
+  page: z.string().min(1),
+});
+
+export const NudgeActionSchema = z.object({
+  nudgeId: z.string().uuid(),
+  action: z.enum(['dismissed', 'accepted']),
+});
+
+export type NudgeQueryInput = z.infer<typeof NudgeQuerySchema>;
+export type NudgeActionInput = z.infer<typeof NudgeActionSchema>;
+
+// Tutor Profile
+export const ProfileQuerySchema = z.object({
+  languageId: z.string().uuid(),
+});
+
+export type ProfileQueryInput = z.infer<typeof ProfileQuerySchema>;

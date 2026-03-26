@@ -41,6 +41,15 @@ export {
   getOrCreateUserWord,
   getUserStreak,
   updateUserStreak,
+  getOrCreateLearnerProfile,
+  updateLearnerProfile,
+  getWeakWords,
+  getWordsByTexts,
+  insertTutorWordReviews,
+  getRecentNudges,
+  insertNudge,
+  updateNudge,
+  updateTutorSessionLearnerContext,
 } from './queries';
 export type {
   WordWithLanguage,
@@ -68,6 +77,5 @@ export {
 } from './scene-flow-queries';
 export type {
   SceneFlowData,
-  ScenePhraseWithWords,
   DuePhraseForReview,
 } from './scene-flow-queries';

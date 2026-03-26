@@ -15,6 +15,9 @@ import { ContinueLearningCard } from '@/components/learn/ContinueLearningCard';
 import { QuickReviewCard } from '@/components/learn/QuickReviewCard';
 import { ProgressChart } from '@/components/learn/ProgressChart';
 import { StreakCounter } from '@/components/learn/StreakCounter';
+import { TutorNudgeCard } from '@/components/tutor/TutorNudgeCard';
+import { TutorInsights } from '@/components/tutor/TutorInsights';
+import { Card } from '@/components/ui/Card';
 import Link from 'next/link';
 import { DashboardUpgradeBanner } from './DashboardUpgradeBanner';
 
@@ -37,10 +40,10 @@ export default async function DashboardPage() {
   // If still no path (e.g. path doesn't exist in DB), show empty state
   if (!activePath) {
     return (
-      <div className="max-w-lg mx-auto space-y-4 pb-24">
+      <div className="max-w-lg mx-auto space-y-3">
         <DashboardUpgradeBanner />
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Welcome back</h1>
+          <h1 className="text-xl font-bold text-foreground">Welcome back</h1>
           <p className="text-sm text-text-secondary mt-0.5">
             No learning path found. Visit Paths to get started.
           </p>
@@ -93,14 +96,14 @@ export default async function DashboardPage() {
   const streak = streakData.current_streak;
 
   return (
-    <div className="max-w-lg mx-auto space-y-4 pb-24">
+    <div className="max-w-lg mx-auto space-y-3">
       {/* Upgrade banner for free tier near quota */}
       <DashboardUpgradeBanner />
 
       {/* Greeting + Streak */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Welcome back</h1>
+          <h1 className="text-xl font-bold text-foreground">Welcome back</h1>
           <p className="text-sm text-text-secondary mt-0.5">
             Keep building your {language?.name ?? 'language'} vocabulary
           </p>
@@ -108,35 +111,74 @@ export default async function DashboardPage() {
         <StreakCounter streak={streak} />
       </div>
 
-      {/* Continue Learning */}
-      {nextScene && (
-        <section>
-          <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wider mb-2">
-            Continue Learning
-          </h2>
-          <ContinueLearningCard
-            pathTitle={activePath.path_title}
-            sceneTitle={nextScene.title}
-            sceneId={nextScene.id}
-            progress={sceneProgress}
-          />
-        </section>
-      )}
+      {/* Guided Step Flow */}
+      {(() => {
+        const hasReviews = totalDueCount > 0;
+        const hasNextScene = !!nextScene;
+        let stepNumber = 1;
 
-      {/* Quick Review */}
-      <section>
-        <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wider mb-2">
-          Review
-        </h2>
-        <QuickReviewCard dueCount={totalDueCount} />
-      </section>
+        if (!hasReviews && !hasNextScene) {
+          // Path fully mastered, no reviews due
+          return (
+            <section>
+              <Card className="animate-fade-in text-center py-6">
+                <h3 className="text-foreground font-medium text-lg">Path complete!</h3>
+                <p className="text-sm text-text-secondary mt-1">
+                  You&apos;ve mastered everything. Check back later for new content.
+                </p>
+              </Card>
+            </section>
+          );
+        }
+
+        return (
+          <>
+            {hasReviews && (
+              <section>
+                <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wider mb-1">
+                  Step {stepNumber++}: Review
+                </h2>
+                <QuickReviewCard dueCount={totalDueCount} />
+              </section>
+            )}
+
+            {/* Tutor Nudge */}
+            <section>
+              <TutorNudgeCard />
+            </section>
+
+            {hasNextScene && (
+              <section>
+                <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wider mb-1">
+                  Step {stepNumber}: Continue Learning
+                </h2>
+                <ContinueLearningCard
+                  pathTitle={activePath.path_title}
+                  sceneTitle={nextScene!.title}
+                  sceneId={nextScene!.id}
+                  progress={sceneProgress}
+                  currentPhase={nextScene!.scene_type === 'dialogue' ? nextScene!.current_phase : undefined}
+                />
+              </section>
+            )}
+          </>
+        );
+      })()}
 
       {/* Progress Stats */}
       <section>
-        <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wider mb-2">
+        <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wider mb-1">
           Your Progress
         </h2>
         <ProgressChart distribution={masteryDist} streak={streak} />
+      </section>
+
+      {/* Tutor Insights */}
+      <section>
+        <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wider mb-1">
+          AI Tutor
+        </h2>
+        <TutorInsights languageId={languageId} />
       </section>
 
       {/* Admin link — only visible to admin users */}
