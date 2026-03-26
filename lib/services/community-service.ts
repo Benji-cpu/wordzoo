@@ -42,6 +42,7 @@ export async function submitMnemonicToCommunity(
     keyword: mnemonic.keyword_text,
     sceneDescription: mnemonic.scene_description,
     phoneticLink: '',
+    bridgeSentence: '',
     imagePrompt: '',
   });
 

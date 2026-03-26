@@ -235,6 +235,7 @@ export async function* downloadPack(
     title: s.title,
     description: s.description,
     combined_scene_image_url: s.combined_scene_image_url,
+    anchor_image_url: (s as { anchor_image_url?: string | null }).anchor_image_url ?? null,
     scene_type: (s as { scene_type?: string }).scene_type as 'legacy' | 'dialogue' ?? 'legacy',
     scene_context: (s as { scene_context?: string }).scene_context ?? null,
     sort_order: s.sort_order,

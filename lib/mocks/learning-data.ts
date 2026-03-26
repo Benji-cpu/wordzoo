@@ -59,9 +59,9 @@ const MOCK_DISTRACTORS: Record<string, string[]> = {
 const PATH_ID = uuid(300);
 
 const MOCK_SCENES: Scene[] = [
-  { id: uuid(301), path_id: PATH_ID, title: 'Meeting Someone', description: 'You walk into a cozy warung in Ubud. The owner smiles warmly and greets you.', combined_scene_image_url: null, scene_type: 'legacy', scene_context: null, sort_order: 0, created_at: new Date() },
-  { id: uuid(302), path_id: PATH_ID, title: 'Getting Food', description: 'The aroma of sate and nasi goreng fills the air as you sit down at a street food stall.', combined_scene_image_url: null, scene_type: 'legacy', scene_context: null, sort_order: 1, created_at: new Date() },
-  { id: uuid(303), path_id: PATH_ID, title: 'Shopping', description: 'You wander through a vibrant market in Bali. Colorful batik fabrics hang everywhere.', combined_scene_image_url: null, scene_type: 'legacy', scene_context: null, sort_order: 2, created_at: new Date() },
+  { id: uuid(301), path_id: PATH_ID, title: 'Meeting Someone', description: 'You walk into a cozy warung in Ubud. The owner smiles warmly and greets you.', combined_scene_image_url: null, anchor_image_url: null, scene_type: 'legacy', scene_context: null, sort_order: 0, created_at: new Date() },
+  { id: uuid(302), path_id: PATH_ID, title: 'Getting Food', description: 'The aroma of sate and nasi goreng fills the air as you sit down at a street food stall.', combined_scene_image_url: null, anchor_image_url: null, scene_type: 'legacy', scene_context: null, sort_order: 1, created_at: new Date() },
+  { id: uuid(303), path_id: PATH_ID, title: 'Shopping', description: 'You wander through a vibrant market in Bali. Colorful batik fabrics hang everywhere.', combined_scene_image_url: null, anchor_image_url: null, scene_type: 'legacy', scene_context: null, sort_order: 2, created_at: new Date() },
 ];
 
 const MOCK_SCENE_WORDS: Record<string, string[]> = {
