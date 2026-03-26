@@ -49,3 +49,4 @@ MEMORY.md
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+.worktrees/
