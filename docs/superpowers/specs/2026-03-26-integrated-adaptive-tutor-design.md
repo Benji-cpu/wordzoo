@@ -254,7 +254,7 @@ The `tutor_sessions.summary` JSONB gains richer data:
 
 1. Student is in a free_chat session. The tutor uses **harga** (price) naturally.
 2. Student responds: "Berapa harga ini?"
-3. At session end, `analyzeMessageForWordUsage` detects the student actively produced "harga" and "berapa" correctly.
+3. At session end, `analyzeSessionWordUsage` detects the student actively produced "harga" and "berapa" correctly.
 4. `recordConversationReviews` fires `recordReview` with quality 4 for both words.
 5. SRS intervals for "harga" and "berapa" advance — they won't come up for review as soon.
 6. If the student wrote "ini mahal sekali" but should have said "ini terlalu mahal", the tutor corrects → quality 3 for "mahal" (shorter interval).
