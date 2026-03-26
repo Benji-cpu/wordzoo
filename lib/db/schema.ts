@@ -490,4 +490,12 @@ CREATE INDEX IF NOT EXISTS idx_tutor_nudges_user ON tutor_nudges(user_id, create
 
 -- Tutor Sessions: adaptive context snapshot
 ALTER TABLE tutor_sessions ADD COLUMN IF NOT EXISTS learner_context JSONB;
+
+-- Scene anchor image (the memory palace "room")
+ALTER TABLE scenes ADD COLUMN IF NOT EXISTS anchor_image_url TEXT;
+
+-- Phrase-level mnemonic data
+ALTER TABLE scene_phrases ADD COLUMN IF NOT EXISTS phrase_bridge_sentence TEXT;
+ALTER TABLE scene_phrases ADD COLUMN IF NOT EXISTS composite_image_url TEXT;
+ALTER TABLE scene_phrases ADD COLUMN IF NOT EXISTS composite_scene_description TEXT;
 `;

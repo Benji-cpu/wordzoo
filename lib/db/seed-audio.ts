@@ -16,7 +16,8 @@ function delay(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function seedWordAudio(sql: ReturnType<typeof neon>) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function seedWordAudio(sql: any) {
   console.log('=== Seeding Word Pronunciation Audio ===\n');
 
   const allWords = await sql`
@@ -26,14 +27,15 @@ async function seedWordAudio(sql: ReturnType<typeof neon>) {
     ORDER BY l.code, w.frequency_rank
   `;
 
-  console.log(`Found ${allWords.length} words total.\n`);
+  const words = allWords as Record<string, unknown>[];
+  console.log(`Found ${words.length} words total.\n`);
 
   let successCount = 0;
   let skipCount = 0;
   let failCount = 0;
 
-  for (let i = 0; i < allWords.length; i++) {
-    const word = allWords[i] as {
+  for (let i = 0; i < words.length; i++) {
+    const word = words[i] as {
       id: string;
       text: string;
       romanization: string | null;
@@ -42,7 +44,7 @@ async function seedWordAudio(sql: ReturnType<typeof neon>) {
     };
     const displayText = word.romanization ? `${word.text} (${word.romanization})` : word.text;
 
-    console.log(`\n--- [${i + 1}/${allWords.length}] "${displayText}" [${word.language_code}] ---`);
+    console.log(`\n--- [${i + 1}/${words.length}] "${displayText}" [${word.language_code}] ---`);
 
     // Filter by --only flag
     if (onlyWords) {
@@ -82,7 +84,8 @@ async function seedWordAudio(sql: ReturnType<typeof neon>) {
   console.log(`\n=== Words Done! ${successCount} generated, ${skipCount} skipped, ${failCount} failed ===`);
 }
 
-async function seedNarrationAudio(sql: ReturnType<typeof neon>) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function seedNarrationAudio(sql: any) {
   console.log('=== Seeding Mnemonic Narration Audio ===\n');
 
   const mnemonics = await sql`
@@ -94,14 +97,15 @@ async function seedNarrationAudio(sql: ReturnType<typeof neon>) {
     ORDER BY w.text
   `;
 
-  console.log(`Found ${mnemonics.length} shared mnemonics.\n`);
+  const rows = mnemonics as Record<string, unknown>[];
+  console.log(`Found ${rows.length} shared mnemonics.\n`);
 
   let successCount = 0;
   let skipCount = 0;
   let failCount = 0;
 
-  for (let i = 0; i < mnemonics.length; i++) {
-    const m = mnemonics[i] as {
+  for (let i = 0; i < rows.length; i++) {
+    const m = rows[i] as {
       id: string;
       keyword_text: string;
       scene_description: string;
@@ -111,7 +115,7 @@ async function seedNarrationAudio(sql: ReturnType<typeof neon>) {
     };
     const displayText = m.romanization ? `${m.word_text} (${m.romanization})` : m.word_text;
 
-    console.log(`\n--- [${i + 1}/${mnemonics.length}] "${displayText}" — keyword: "${m.keyword_text}" ---`);
+    console.log(`\n--- [${i + 1}/${rows.length}] "${displayText}" — keyword: "${m.keyword_text}" ---`);
 
     // Filter by --only flag
     if (onlyWords) {
@@ -152,7 +156,8 @@ async function seedNarrationAudio(sql: ReturnType<typeof neon>) {
   console.log(`\n=== Narrations Done! ${successCount} generated, ${skipCount} skipped, ${failCount} failed ===`);
 }
 
-async function seedPhraseAudio(sql: ReturnType<typeof neon>) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function seedPhraseAudio(sql: any) {
   console.log('=== Seeding Phrase Audio ===\n');
 
   const phrases = await sql`
@@ -202,7 +207,8 @@ async function seedPhraseAudio(sql: ReturnType<typeof neon>) {
   console.log(`\n=== Phrases Done! ${successCount} generated, ${skipCount} skipped, ${failCount} failed ===`);
 }
 
-async function seedDialogueAudio(sql: ReturnType<typeof neon>) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function seedDialogueAudio(sql: any) {
   console.log('=== Seeding Dialogue Audio ===\n');
 
   const dialogues = await sql`

@@ -102,6 +102,7 @@ export interface Scene {
   title: string;
   description: string | null;
   combined_scene_image_url: string | null;
+  anchor_image_url: string | null;
   scene_type: 'legacy' | 'dialogue';
   scene_context: string | null;
   sort_order: number;
@@ -287,6 +288,9 @@ export interface ScenePhrase {
   literal_translation: string | null;
   audio_url: string | null;
   usage_note: string | null;
+  phrase_bridge_sentence: string | null;
+  composite_image_url: string | null;
+  composite_scene_description: string | null;
   sort_order: number;
   created_at: Date;
 }

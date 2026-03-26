@@ -13,6 +13,7 @@ export default function TutorPage() {
   const [isStarting, setIsStarting] = useState(false);
   const [isEnding, setIsEnding] = useState(false);
   const [summaryData, setSummaryData] = useState<SessionSummaryData | null>(null);
+  const [activeMode, setActiveMode] = useState<string | null>(null);
 
   const { messages, isStreaming, error, sendMessage, addGreeting } = useTutorChat(sessionId);
 
@@ -42,6 +43,7 @@ export default function TutorPage() {
     async (mode: string, scenario?: string) => {
       if (!languageId) return;
       setIsStarting(true);
+      setActiveMode(mode);
       try {
         const res = await fetch('/api/tutor/session', {
           method: 'POST',
@@ -50,6 +52,7 @@ export default function TutorPage() {
         });
         const json = await res.json();
         if (!res.ok || json.error) {
+          setActiveMode(null);
           throw new Error(json.error ?? 'Failed to start session');
         }
         setSessionId(json.data.sessionId);
@@ -86,6 +89,7 @@ export default function TutorPage() {
   const handleNewSession = useCallback(() => {
     setSessionId(null);
     setSummaryData(null);
+    setActiveMode(null);
   }, []);
 
   if (isLoadingLanguage) {
@@ -124,6 +128,7 @@ export default function TutorPage() {
         isStarting={isStarting}
         isEnding={isEnding}
         summaryData={summaryData}
+        activeMode={activeMode}
       />
     </div>
   );

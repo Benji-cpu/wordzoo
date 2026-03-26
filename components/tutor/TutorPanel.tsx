@@ -25,6 +25,7 @@ interface TutorPanelProps {
   onDismissNudge: () => void;
   onAcceptNudge: () => void;
   initialMode?: string;
+  activeMode?: string | null;
 }
 
 export function TutorPanel({
@@ -47,6 +48,7 @@ export function TutorPanel({
   onDismissNudge,
   onAcceptNudge,
   initialMode,
+  activeMode,
 }: TutorPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -145,6 +147,7 @@ export function TutorPanel({
               summaryData={summaryData}
               compact
               initialMode={initialMode}
+              activeMode={activeMode}
             />
           ) : (
             <div className="flex items-center justify-center h-full text-text-secondary text-sm">

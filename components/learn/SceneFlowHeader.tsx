@@ -2,8 +2,8 @@
 
 import { IconButton } from '@/components/ui/IconButton';
 
-const PHASE_LABELS = ['Dialogue', 'Phrases', 'Vocab', 'Patterns', 'Chat', 'Summary'] as const;
-const PHASE_KEYS = ['dialogue', 'phrases', 'vocabulary', 'patterns', 'conversation', 'summary'] as const;
+const PHASE_LABELS = ['Intro', 'Dialogue', 'Phrases', 'Vocab', 'Patterns', 'Chat', 'Summary'] as const;
+const PHASE_KEYS = ['scene-intro', 'dialogue', 'phrases', 'vocabulary', 'patterns', 'conversation', 'summary'] as const;
 
 interface SceneFlowHeaderProps {
   title: string;

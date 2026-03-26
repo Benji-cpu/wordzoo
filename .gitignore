@@ -38,6 +38,7 @@ yarn-error.log*
 MEMORY.md
 .mcp.json
 .playwright-mcp/
+.superpowers/
 
 # screenshots
 *.png

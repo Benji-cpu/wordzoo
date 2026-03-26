@@ -12,13 +12,13 @@ interface TutorPromptOptions {
 const MODE_INSTRUCTIONS: Record<string, string> = {
   free_chat: `You are having a casual conversation. Let the user lead the topic. Ask follow-up questions to keep the conversation going. Gently correct mistakes using recasting (repeat what they said correctly without explicitly pointing out the error).`,
 
-  role_play: `You are acting out a real-world scenario with the user. Stay in character and guide the conversation naturally through the scenario. Use vocabulary appropriate to the situation. If the user seems stuck, offer a helpful prompt or suggestion in the target language.`,
+  role_play: `You are acting out a real-world scenario with the user. Stay in character and guide the conversation naturally through the scenario. Use vocabulary appropriate to the situation. If the user seems stuck, offer a helpful prompt or suggestion in the target language. Begin your first message with a [CONTEXT: Scenario | brief scene description] card to set the stage.`,
 
-  word_review: `Focus on reviewing the user's vocabulary. Use the due words naturally in conversation. Ask questions that encourage the user to use specific words. When they use a word correctly, briefly acknowledge it. Prioritize due words over known words.`,
+  word_review: `Focus on reviewing the user's vocabulary. Use the due words naturally in conversation. Ask questions that encourage the user to use specific words. When they use a word correctly, briefly acknowledge it. Prioritize due words over known words. Include [SUGGEST:] chips that encourage using the due words in sentences.`,
 
-  grammar_glimpse: `Introduce one grammar concept per exchange. Use simple examples from the user's known vocabulary to illustrate the point. Keep explanations brief (1-2 sentences). Then ask the user to try using the pattern. Correct gently using recasting.`,
+  grammar_glimpse: `Introduce one grammar concept per exchange. Use simple examples from the user's known vocabulary to illustrate the point. Keep explanations brief (1-2 sentences). Then ask the user to try using the pattern. Correct gently using recasting. When teaching a grammar point, format it as: [GRAMMAR: rule name | explanation with examples]. Keep grammar cards focused on one concept.`,
 
-  pronunciation_coach: `Focus on pronunciation practice. Use words from the user's vocabulary and introduce romanization/phonetic guides. When the user writes a word, confirm the pronunciation and offer tips. Keep the pace slow and encouraging.`,
+  pronunciation_coach: `Focus on pronunciation practice. Use words from the user's vocabulary and introduce romanization/phonetic guides. When the user writes a word, confirm the pronunciation and offer tips. Keep the pace slow and encouraging. When introducing a word for pronunciation, include [CONTEXT: Pronunciation Focus | word (romanization)] to highlight it.`,
 };
 
 export function buildTutorSystemPrompt(opts: TutorPromptOptions): string {
@@ -70,8 +70,14 @@ export function buildTutorSystemPrompt(opts: TutorPromptOptions): string {
     `Formatting rules:\n` +
     `- Bold target-language words on first use in each message as **word** (meaning). Example: **rumah** (house)\n` +
     `- Keep responses 2-4 sentences long\n` +
-    `- Use recasting for corrections (repeat what the student said correctly, don't explicitly say "wrong")\n` +
-    `- When introducing a new word, always include the meaning in parentheses`
+    `- When introducing a new word, always include the meaning in parentheses\n` +
+    `- When correcting the student, format it as:\n` +
+    `  [CORRECT: what they said -> corrected version | brief encouraging explanation]\n` +
+    `  Then continue the conversation naturally. Keep explanations under 15 words.\n` +
+    `- After your response, suggest 2-3 things the student could say next:\n` +
+    `  [SUGGEST: suggestion1 | suggestion2 | suggestion3]\n` +
+    `  Make suggestions natural and at the student's level. Mix target-language and bilingual options.\n` +
+    `  Only include suggestions when the student might benefit from guidance.`
   );
 
   return blocks.join('\n\n');
@@ -128,10 +134,13 @@ export function buildGuidedConversationPrompt(opts: GuidedConversationOptions): 
     `- Start with a greeting and set the scene\n` +
     `- Keep your responses to 1-2 sentences\n` +
     `- Encourage the student to use the phrases they just learned\n` +
-    `- If the student makes a mistake, gently recast (repeat correctly without saying "wrong")\n` +
+    `- If the student makes a mistake, format the correction as:\n` +
+    `  [CORRECT: what they said -> corrected version | brief encouraging explanation]\n` +
     `- After 3-5 exchanges, wrap up the conversation naturally\n` +
     `- Bold target-language words: **word** (meaning)\n` +
-    `- Keep it encouraging and fun`
+    `- Keep it encouraging and fun\n` +
+    `- Include [SUGGEST:] chips using phrases the student just learned:\n` +
+    `  [SUGGEST: suggestion1 | suggestion2 | suggestion3]`
   );
 
   return blocks.join('\n\n');

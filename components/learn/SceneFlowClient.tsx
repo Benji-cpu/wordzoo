@@ -28,11 +28,13 @@ interface SceneFlowClientProps {
   patternExercises: ScenePatternExercise[];
   initialProgress: UserSceneProgress;
   sceneContext: string | null;
+  anchorImageUrl: string | null;
   nextScene?: { id: string; title: string } | null;
   pathId?: string;
 }
 
 type FlowState =
+  | { phase: 'scene-intro' }
   | { phase: 'dialogue'; lineIndex: number }
   | { phase: 'phrases'; phraseIndex: number; step: 'show' | 'breakdown' | 'quiz' }
   | { phase: 'vocabulary'; wordIndex: number; step: 'word' | 'mnemonic' | 'quiz' }
@@ -40,9 +42,13 @@ type FlowState =
   | { phase: 'conversation' }
   | { phase: 'summary' };
 
-function initialStateFromProgress(p: UserSceneProgress, totalDialogues: number, totalPhrases: number, totalWords: number, totalPatterns: number): FlowState {
+function initialStateFromProgress(p: UserSceneProgress, totalDialogues: number, totalPhrases: number, totalWords: number, totalPatterns: number, hasAnchorImage: boolean): FlowState {
   switch (p.current_phase) {
     case 'dialogue':
+      // Show scene intro before dialogue if user hasn't started yet and there's an anchor image
+      if (p.phase_index === 0 && !p.dialogue_completed && hasAnchorImage) {
+        return { phase: 'scene-intro' };
+      }
       return { phase: 'dialogue', lineIndex: Math.min(p.phase_index, totalDialogues - 1) };
     case 'phrases':
       return { phase: 'phrases', phraseIndex: Math.min(p.phase_index, totalPhrases - 1), step: 'show' };
@@ -55,7 +61,7 @@ function initialStateFromProgress(p: UserSceneProgress, totalDialogues: number, 
     case 'summary':
       return { phase: 'summary' };
     default:
-      return { phase: 'dialogue', lineIndex: 0 };
+      return hasAnchorImage ? { phase: 'scene-intro' } : { phase: 'dialogue', lineIndex: 0 };
   }
 }
 
@@ -67,10 +73,13 @@ interface FlowContext {
 }
 
 /** Returns the previous FlowState, or null to exit the scene. */
-function computePreviousState(current: FlowState, ctx: FlowContext): FlowState | null {
+function computePreviousState(current: FlowState, ctx: FlowContext & { hasAnchorImage: boolean }): FlowState | null {
   switch (current.phase) {
-    case 'dialogue':
+    case 'scene-intro':
       return null;
+
+    case 'dialogue':
+      return ctx.hasAnchorImage ? { phase: 'scene-intro' } : null;
 
     case 'phrases': {
       if (current.step === 'quiz') {
@@ -167,12 +176,14 @@ export function SceneFlowClient({
   words,
   patternExercises,
   initialProgress,
-  sceneContext: _sceneContext,
+  sceneContext,
+  anchorImageUrl,
   nextScene,
   pathId,
 }: SceneFlowClientProps) {
+  const hasAnchorImage = !!anchorImageUrl;
   const [state, setState] = useState<FlowState>(() =>
-    initialStateFromProgress(initialProgress, dialogues.length, phrases.length, words.length, patternExercises.length)
+    initialStateFromProgress(initialProgress, dialogues.length, phrases.length, words.length, patternExercises.length, hasAnchorImage)
   );
 
   const router = useRouter();
@@ -187,16 +198,21 @@ export function SceneFlowClient({
     }).catch(() => {});
   }, [sceneId]);
 
+  // --- Scene Intro ---
+  const handleSceneIntroContinue = useCallback(() => {
+    setState({ phase: 'dialogue', lineIndex: 0 });
+  }, []);
+
   // --- Back Navigation ---
   const handleBack = useCallback(() => {
-    const ctx: FlowContext = { dialogues, phrases, words, patternExercises };
+    const ctx: FlowContext & { hasAnchorImage: boolean } = { dialogues, phrases, words, patternExercises, hasAnchorImage };
     const prev = computePreviousState(state, ctx);
     if (prev) {
       setState(prev);
     } else {
       router.push(pathId ? `/paths/${pathId}` : '/dashboard');
     }
-  }, [state, dialogues, phrases, words, patternExercises, pathId, router]);
+  }, [state, dialogues, phrases, words, patternExercises, hasAnchorImage, pathId, router]);
 
   // --- Dialogue Phase ---
   const handleDialogueComplete = useCallback(() => {
@@ -345,6 +361,34 @@ export function SceneFlowClient({
   return (
     <div className="max-w-lg mx-auto">
       <SceneFlowHeader title={sceneTitle} currentPhase={state.phase} onBack={handleBack} />
+
+      {/* Scene Intro Phase */}
+      {state.phase === 'scene-intro' && (
+        <div className="animate-slide-up cursor-pointer" onClick={handleSceneIntroContinue}>
+          {anchorImageUrl && (
+            <div className="relative rounded-xl overflow-hidden mb-4 max-h-[40vh]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={anchorImageUrl}
+                alt={sceneTitle}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+              <h2 className="absolute bottom-4 left-4 right-4 text-2xl font-bold text-white">
+                {sceneTitle}
+              </h2>
+            </div>
+          )}
+          {sceneContext && (
+            <p className="text-sm text-text-secondary text-center px-4 mb-6">
+              {sceneContext}
+            </p>
+          )}
+          <p className="text-sm text-text-secondary text-center animate-pulse">
+            Tap to begin
+          </p>
+        </div>
+      )}
 
       {/* Dialogue Phase */}
       {state.phase === 'dialogue' && (

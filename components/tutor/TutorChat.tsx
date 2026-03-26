@@ -1,12 +1,15 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { ModeSelector } from '@/components/tutor/ModeSelector';
 import { ChatBubble } from '@/components/tutor/ChatBubble';
 import { ChatInput } from '@/components/tutor/ChatInput';
 import { WordPopover } from '@/components/tutor/WordPopover';
 import type { PopoverData } from '@/components/tutor/WordPopover';
 import { SessionSummary } from '@/components/tutor/SessionSummary';
+import { SuggestionChips } from '@/components/tutor/SuggestionChips';
+import { SessionProgressBar } from '@/components/tutor/SessionProgressBar';
+import { parseMessageContent, extractSuggestions } from '@/lib/tutor/message-parser';
 import { useSpeechInput } from '@/lib/hooks/useSpeechInput';
 
 export interface ChatMessage {
@@ -43,6 +46,7 @@ interface TutorChatProps {
   compact?: boolean;
   className?: string;
   initialMode?: string;
+  activeMode?: string | null;
 }
 
 function mapLanguageCode(code: string): string {
@@ -73,6 +77,7 @@ export function TutorChat({
   compact,
   className,
   initialMode,
+  activeMode,
 }: TutorChatProps) {
   const [popover, setPopover] = useState<{ data: PopoverData; rect: DOMRect } | null>(null);
   const [vocabMap, setVocabMap] = useState(() => new Map<string, PopoverData>());
@@ -135,6 +140,18 @@ export function TutorChat({
     }
   }, [isListening, startListening, stopListening]);
 
+  // Extract suggestion chips from last model message (only when not streaming)
+  const suggestionOptions = useMemo(() => {
+    if (isStreaming) return [];
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].role === 'model') {
+        const segments = parseMessageContent(messages[i].content);
+        return extractSuggestions(segments);
+      }
+    }
+    return [];
+  }, [messages, isStreaming]);
+
   return (
     <div className={`flex flex-col ${compact ? 'h-full' : 'h-[calc(100dvh-8rem)]'} ${className ?? ''}`}>
       {view === 'mode_select' && (
@@ -148,11 +165,14 @@ export function TutorChat({
         <>
           {/* Header */}
           <div className={`flex items-center justify-between ${compact ? 'px-3 py-2' : 'px-4 py-3'} border-b border-card-border`}>
-            <h2 className={`font-semibold text-foreground ${compact ? 'text-sm' : ''}`}>AI Tutor</h2>
+            <div className="flex items-center gap-2 min-w-0">
+              <h2 className={`font-semibold text-foreground ${compact ? 'text-sm' : ''} shrink-0`}>AI Tutor</h2>
+              <SessionProgressBar activeMode={activeMode ?? null} messages={messages} />
+            </div>
             <button
               onClick={onEndSession}
               disabled={isEnding || isStreaming}
-              className="text-sm text-red-400 hover:text-red-300 disabled:opacity-50"
+              className="text-sm text-red-400 hover:text-red-300 disabled:opacity-50 shrink-0"
             >
               {isEnding ? 'Ending...' : 'End Session'}
             </button>
@@ -174,6 +194,11 @@ export function TutorChat({
             )}
             <div ref={messagesEndRef} />
           </div>
+
+          {/* Suggestion chips */}
+          {suggestionOptions.length > 0 && (
+            <SuggestionChips options={suggestionOptions} onSelect={onSendMessage} />
+          )}
 
           {/* Input */}
           <ChatInput
@@ -197,7 +222,13 @@ export function TutorChat({
 
       {view === 'summary' && summaryData && (
         <div className={compact ? 'px-3 pt-4' : 'px-4 pt-8'}>
-          <SessionSummary summary={summaryData} onNewSession={onNewSession} />
+          <SessionSummary
+            summary={summaryData}
+            onNewSession={onNewSession}
+            onStartSession={onStartSession}
+            mode={activeMode ?? undefined}
+            messages={messages}
+          />
         </div>
       )}
     </div>

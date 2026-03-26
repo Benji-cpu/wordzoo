@@ -163,3 +163,69 @@ Requirements:
 
 Return ONLY the JSON object, no markdown or explanation.`;
 }
+
+// --- Phrase-Level Mnemonic Prompts ---
+
+export const PHRASE_MNEMONIC_SYSTEM_PROMPT = `You are a phrase-level mnemonic engine for language learners. You combine individual word keyword mnemonics into unified phrase-level memory aids.
+
+PHRASE BRIDGE SENTENCE RULES:
+- 1-2 sentences max
+- Must weave ALL word keywords together into a single narrative
+- Each keyword's sound-alike appears naturally in the text
+- The phrase's English meaning appears in ALL CAPS
+- Must be vivid, absurd, and instantly memorable
+- Example: "The SUN-GONG rings and the BEAR TEAM MOOs — so NICE TO MEET you!"
+
+COMPOSITE SCENE DESCRIPTION RULES:
+- 2-3 sentences describing one unified visual scene
+- All word keyword characters/objects appear together
+- The scene captures the phrase's overall meaning
+- Single focal point, absurd scale/action
+
+COMPOSITE IMAGE PROMPT RULES:
+- Must include visual elements from ALL word keywords
+- Max 100 words
+- Always end with: "bold text overlay reading [PHRASE_MEANING], digital illustration, vibrant colors, slightly surreal, centered composition, single focal point"
+
+OUTPUT FORMAT:
+Return ONLY a valid JSON object. No markdown, no explanation, no code fences.
+Fields:
+- "phraseBridgeSentence": string
+- "compositeSceneDescription": string
+- "compositeImagePrompt": string`;
+
+export function buildPhraseMnemonicPrompt(
+  phraseText: string,
+  phraseMeaning: string,
+  literalTranslation: string,
+  wordKeywords: { word: string; keyword: string; meaning: string }[]
+): string {
+  const keywordList = wordKeywords
+    .map((w) => `"${w.word}" → keyword "${w.keyword}" (means "${w.meaning}")`)
+    .join('\n  ');
+
+  return `Generate a phrase-level mnemonic for this phrase:
+
+Phrase: "${phraseText}"
+Meaning: "${phraseMeaning}"
+Literal translation: "${literalTranslation}"
+
+Word keywords to weave together:
+  ${keywordList}
+
+Create a bridge sentence that weaves ALL keywords into a memorable narrative with the meaning in ALL CAPS, a composite scene description with all keyword characters together, and an image prompt combining all visual elements.`;
+}
+
+export function buildSceneAnchorPrompt(
+  sceneTitle: string,
+  sceneContext: string
+): string {
+  return `Generate an atmospheric establishing shot image prompt for a language learning scene location.
+
+Scene: "${sceneTitle}"
+Context: "${sceneContext}"
+
+Create a warm, inviting, detailed image prompt that establishes this Balinese location. Max 80 words. End with: "digital illustration, warm colors, atmospheric lighting, wide composition, establishing shot". Do NOT include text overlays.
+
+Return ONLY the image prompt text, no JSON, no explanation.`;
+}

@@ -193,6 +193,7 @@ export async function getSceneWithLanguage(sceneId: string): Promise<{
   scene_description: string | null;
   scene_type: 'legacy' | 'dialogue';
   scene_context: string | null;
+  anchor_image_url: string | null;
   sort_order: number;
   path_id: string;
   language_name: string;
@@ -201,14 +202,14 @@ export async function getSceneWithLanguage(sceneId: string): Promise<{
 } | null> {
   const rows = await sql`
     SELECT s.id AS scene_id, s.title AS scene_title, s.description AS scene_description,
-      s.scene_type, s.scene_context, s.sort_order,
+      s.scene_type, s.scene_context, s.anchor_image_url, s.sort_order,
       s.path_id, l.name AS language_name, l.id AS language_id, l.code AS language_code
     FROM scenes s
     JOIN paths p ON p.id = s.path_id
     JOIN languages l ON l.id = p.language_id
     WHERE s.id = ${sceneId}
   `;
-  return (rows[0] as { scene_id: string; scene_title: string; scene_description: string | null; scene_type: 'legacy' | 'dialogue'; scene_context: string | null; sort_order: number; path_id: string; language_name: string; language_id: string; language_code: string }) ?? null;
+  return (rows[0] as { scene_id: string; scene_title: string; scene_description: string | null; scene_type: 'legacy' | 'dialogue'; scene_context: string | null; anchor_image_url: string | null; sort_order: number; path_id: string; language_name: string; language_id: string; language_code: string }) ?? null;
 }
 
 export async function getNextSceneInPath(

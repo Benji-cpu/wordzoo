@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
+import { parseMessageContent, type MessageSegment } from '@/lib/tutor/message-parser';
 import type { PopoverData } from './WordPopover';
 
 interface ChatBubbleProps {
@@ -18,19 +19,17 @@ export function ChatBubble({ role, content, vocabMap, onWordTap }: ChatBubblePro
       const rect = (e.target as HTMLElement).getBoundingClientRect();
       const lowerWord = word.toLowerCase();
 
-      // Check vocab map for full data
       const vocabEntry = vocabMap.get(lowerWord);
       if (vocabEntry) {
         onWordTap(vocabEntry, rect);
       } else {
-        // Use inline meaning from tutor text
         onWordTap({ text: word, romanization: null, meaning_en: meaning }, rect);
       }
     },
     [vocabMap, onWordTap]
   );
 
-  const rendered = renderContent(content, handleWordClick);
+  const segments = useMemo(() => parseMessageContent(content), [content]);
 
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-3`}>
@@ -41,47 +40,82 @@ export function ChatBubble({ role, content, vocabMap, onWordTap }: ChatBubblePro
             : 'bg-card-surface border border-card-border text-foreground rounded-bl-md'
         }`}
       >
-        {rendered}
+        {segments.map((seg, i) => (
+          <SegmentRenderer key={i} segment={seg} onWordClick={handleWordClick} />
+        ))}
       </div>
     </div>
   );
 }
 
-function renderContent(
-  content: string,
-  onWordClick: (word: string, meaning: string, e: React.MouseEvent<HTMLSpanElement>) => void
-) {
-  // Parse **word** (meaning) patterns
-  const pattern = /\*\*([^*]+)\*\*\s*\(([^)]+)\)/g;
-  const parts: React.ReactNode[] = [];
-  let lastIndex = 0;
-  let match;
+function SegmentRenderer({
+  segment,
+  onWordClick,
+}: {
+  segment: MessageSegment;
+  onWordClick: (word: string, meaning: string, e: React.MouseEvent<HTMLSpanElement>) => void;
+}) {
+  switch (segment.type) {
+    case 'text':
+      return <>{segment.content}</>;
 
-  while ((match = pattern.exec(content)) !== null) {
-    // Text before the match
-    if (match.index > lastIndex) {
-      parts.push(content.slice(lastIndex, match.index));
-    }
+    case 'vocab_word':
+      return (
+        <>
+          <span
+            className="font-bold underline decoration-dotted cursor-pointer hover:opacity-80"
+            onClick={(e) => onWordClick(segment.word, segment.meaning, e)}
+          >
+            {segment.word}
+          </span>
+          <span className="opacity-70"> ({segment.meaning})</span>
+        </>
+      );
 
-    const word = match[1];
-    const meaning = match[2];
-    parts.push(
-      <span
-        key={match.index}
-        className="font-bold underline decoration-dotted cursor-pointer hover:opacity-80"
-        onClick={(e) => onWordClick(word, meaning, e)}
-      >
-        {word}
-      </span>,
-      <span key={`m-${match.index}`} className="opacity-70"> ({meaning})</span>
-    );
+    case 'suggestion':
+      // Suggestions are extracted and rendered outside the bubble by TutorChat
+      return null;
 
-    lastIndex = match.index + match[0].length;
+    case 'correction':
+      return (
+        <div className="my-2 rounded-xl overflow-hidden animate-fade-in">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-red-500/10">
+            <span className="text-red-400 text-xs font-bold shrink-0">&times;</span>
+            <span className="text-red-400 line-through">{segment.original}</span>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-green-500/10">
+            <span className="text-green-400 text-xs font-bold shrink-0">&check;</span>
+            <span className="text-green-400">{segment.corrected}</span>
+          </div>
+          {segment.explanation && (
+            <div className="px-3 py-1.5 bg-white/5">
+              <span className="text-text-secondary text-xs">{segment.explanation}</span>
+            </div>
+          )}
+        </div>
+      );
+
+    case 'grammar_note':
+      return (
+        <div className="my-2 bg-white/5 border-l-2 border-accent-default rounded-lg px-3 py-2 animate-fade-in">
+          <div className="text-xs text-text-secondary uppercase tracking-wider mb-1">Grammar Note</div>
+          <div className="font-semibold text-foreground text-sm">{segment.title}</div>
+          <div className="text-sm text-text-secondary mt-1">{segment.body}</div>
+        </div>
+      );
+
+    case 'context_card':
+      return (
+        <div className="my-2 bg-white/5 rounded-lg px-3 py-2 animate-fade-in">
+          <div className="text-xs text-text-secondary uppercase tracking-wider">{segment.label}</div>
+          <div className="text-sm text-foreground mt-0.5">{segment.content}</div>
+        </div>
+      );
+
+    default:
+      return null;
   }
-
-  if (lastIndex < content.length) {
-    parts.push(content.slice(lastIndex));
-  }
-
-  return parts.length > 0 ? parts : content;
 }
+
+/** Re-export parseMessageContent for consumers that need to extract segments */
+export { parseMessageContent, extractSuggestions } from '@/lib/tutor/message-parser';

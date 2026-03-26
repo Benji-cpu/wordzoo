@@ -39,6 +39,23 @@ export function PhraseBreakdown({ phrase, onContinue }: PhraseBreakdownProps) {
       <h2 className="text-3xl font-bold text-accent-id mb-2">{phrase.text_target}</h2>
       <p className="text-lg text-foreground mb-2">{phrase.text_en}</p>
 
+      {/* Phrase-level composite mnemonic */}
+      {phrase.composite_image_url && (
+        <div className="my-4 px-2" onClick={(e) => e.stopPropagation()}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={phrase.composite_image_url}
+            alt={phrase.text_en}
+            className="max-h-[200px] rounded-lg object-cover mx-auto"
+          />
+        </div>
+      )}
+      {phrase.phrase_bridge_sentence && (
+        <p className="text-sm text-foreground italic px-4 mb-2" onClick={(e) => e.stopPropagation()}>
+          {renderBridgeSentence(phrase.phrase_bridge_sentence)}
+        </p>
+      )}
+
       <p className="text-xs text-text-secondary mt-4 mb-2">Tap a word to explore</p>
 
       <div className="flex flex-wrap gap-2 justify-center mb-4">

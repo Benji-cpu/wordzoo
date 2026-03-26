@@ -17,6 +17,7 @@ export interface TutorContextValue {
   dismissNudge: () => void;
   languageId: string | null;
   sessionId: string | null;
+  activeMode: string | null;
   messages: ChatMessage[];
   isStreaming: boolean;
   sendMessage: (text: string) => void;
@@ -45,6 +46,7 @@ export function TutorProvider({ children }: { children: React.ReactNode }) {
   const [isEnding, setIsEnding] = useState(false);
   const [summaryData, setSummaryData] = useState<SessionSummaryData | null>(null);
   const [activeNudge, setActiveNudge] = useState<NudgeResult | null>(null);
+  const [activeMode, setActiveMode] = useState<string | null>(null);
   const [pendingMode, setPendingMode] = useState<string | undefined>(undefined);
   const [isOnline, setIsOnline] = useState(true);
 
@@ -117,6 +119,7 @@ export function TutorProvider({ children }: { children: React.ReactNode }) {
       if (!languageId) return;
       setIsStarting(true);
       setPendingMode(undefined);
+      setActiveMode(mode);
       try {
         const res = await fetch('/api/tutor/session', {
           method: 'POST',
@@ -125,6 +128,7 @@ export function TutorProvider({ children }: { children: React.ReactNode }) {
         });
         const json = await res.json();
         if (!res.ok || json.error) {
+          setActiveMode(null);
           throw new Error(json.error ?? 'Failed to start session');
         }
         setSessionId(json.data.sessionId);
@@ -161,6 +165,7 @@ export function TutorProvider({ children }: { children: React.ReactNode }) {
   const handleNewSession = useCallback(() => {
     setSessionId(null);
     setSummaryData(null);
+    setActiveMode(null);
   }, []);
 
   const openPanel = useCallback((mode?: string) => {
@@ -217,6 +222,7 @@ export function TutorProvider({ children }: { children: React.ReactNode }) {
     dismissNudge,
     languageId,
     sessionId,
+    activeMode,
     messages,
     isStreaming,
     sendMessage,
@@ -256,6 +262,7 @@ export function TutorProvider({ children }: { children: React.ReactNode }) {
             onDismissNudge={dismissNudge}
             onAcceptNudge={acceptNudge}
             initialMode={pendingMode}
+            activeMode={activeMode}
           />
         </>
       )}

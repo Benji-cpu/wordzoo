@@ -144,6 +144,7 @@ export default async function LearnPage({ params }: PageProps) {
       patternExercises={flowData.patternExercises}
       initialProgress={progress ?? defaultProgress}
       sceneContext={scene.scene_context}
+      anchorImageUrl={scene.anchor_image_url}
       nextScene={nextScene}
       pathId={scene.path_id}
     />
