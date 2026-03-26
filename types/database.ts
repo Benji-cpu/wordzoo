@@ -128,7 +128,7 @@ export interface TutorSession {
   id: string;
   user_id: string;
   language_id: string;
-  mode: 'free_chat' | 'role_play' | 'word_review' | 'grammar_glimpse' | 'pronunciation_coach' | 'guided_conversation';
+  mode: 'free_chat' | 'role_play' | 'word_review' | 'grammar_glimpse' | 'pronunciation_coach' | 'guided_conversation' | 'path_builder';
   scene_id: string | null;
   scenario: string | null;
   started_at: Date;
@@ -209,6 +209,7 @@ export interface DailyUsage {
   tutor_messages: number;
   hands_free_seconds: number;
   regenerations: number;
+  custom_paths_created: number;
 }
 
 export interface CommunityMnemonic {
@@ -359,6 +360,67 @@ export interface UserSceneProgress {
   patterns_completed: boolean;
   conversation_completed: boolean;
   completed_at: Date | null;
+  created_at: Date;
+  updated_at: Date;
+}
+
+// --- Path Builder Draft types ---
+
+export interface PathBuilderVocabItem {
+  tempId: string;
+  word: string;
+  romanization: string;
+  meaning: string;
+  mnemonicHint: string;
+  partOfSpeech: string;
+  status: 'pending' | 'kept' | 'removed';
+}
+
+export interface PathBuilderPhraseItem {
+  tempId: string;
+  phrase: string;
+  meaning: string;
+  breakdown: string;
+  usageNote: string;
+  status: 'pending' | 'kept' | 'removed';
+}
+
+export interface PathBuilderDialogueItem {
+  tempId: string;
+  title: string;
+  context: string;
+  linesTarget: string[];
+  linesEn: string[];
+  speakers: string[];
+  status: 'pending' | 'kept' | 'removed';
+}
+
+export interface PathBuilderDraftContent {
+  vocabulary: PathBuilderVocabItem[];
+  phrases: PathBuilderPhraseItem[];
+  dialogues: PathBuilderDialogueItem[];
+}
+
+export interface PathBuilderScenarioContext {
+  scenario: string;
+  proficiency: string;
+  subtopics: string[];
+  preferences: string[];
+  targetLanguage: string;
+}
+
+export type PathBuilderPhase = 'discovery' | 'vocabulary' | 'phrases' | 'dialogues' | 'confirm' | 'completed';
+
+export interface PathBuilderDraft {
+  id: string;
+  user_id: string;
+  session_id: string;
+  language_id: string;
+  title: string | null;
+  description: string | null;
+  scenario_context: PathBuilderScenarioContext;
+  current_phase: PathBuilderPhase;
+  draft_content: PathBuilderDraftContent;
   created_at: Date;
   updated_at: Date;
 }

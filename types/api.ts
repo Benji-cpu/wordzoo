@@ -50,7 +50,7 @@ export const DueWordsQuerySchema = z.object({
 });
 
 // Tutor
-export const TutorModeEnum = z.enum(['free_chat', 'role_play', 'word_review', 'grammar_glimpse', 'pronunciation_coach', 'guided_conversation']);
+export const TutorModeEnum = z.enum(['free_chat', 'role_play', 'word_review', 'grammar_glimpse', 'pronunciation_coach', 'guided_conversation', 'path_builder']);
 
 export const TutorSessionSchema = z.object({
   mode: TutorModeEnum,
@@ -259,3 +259,13 @@ export const ProfileQuerySchema = z.object({
 });
 
 export type ProfileQueryInput = z.infer<typeof ProfileQuerySchema>;
+
+// Path Builder
+export const PathBuilderActionSchema = z.object({
+  sessionId: z.string().uuid(),
+  action: z.enum(['keep', 'remove', 'different', 'advance_phase']),
+  itemType: z.enum(['vocabulary', 'phrase', 'dialogue']).optional(),
+  tempId: z.string().optional(),
+});
+
+export type PathBuilderActionInput = z.infer<typeof PathBuilderActionSchema>;
