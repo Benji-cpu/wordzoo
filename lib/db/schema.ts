@@ -498,4 +498,45 @@ ALTER TABLE scenes ADD COLUMN IF NOT EXISTS anchor_image_url TEXT;
 ALTER TABLE scene_phrases ADD COLUMN IF NOT EXISTS phrase_bridge_sentence TEXT;
 ALTER TABLE scene_phrases ADD COLUMN IF NOT EXISTS composite_image_url TEXT;
 ALTER TABLE scene_phrases ADD COLUMN IF NOT EXISTS composite_scene_description TEXT;
+
+-- Path Builder Drafts (in-progress path builds from tutor)
+CREATE TABLE IF NOT EXISTS path_builder_drafts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  session_id UUID NOT NULL REFERENCES tutor_sessions(id) ON DELETE CASCADE,
+  language_id UUID NOT NULL REFERENCES languages(id) ON DELETE CASCADE,
+  title TEXT,
+  description TEXT,
+  scenario_context JSONB NOT NULL DEFAULT '{}',
+  current_phase TEXT NOT NULL DEFAULT 'discovery'
+    CHECK (current_phase IN ('discovery','vocabulary','phrases','dialogues','confirm','completed')),
+  draft_content JSONB NOT NULL DEFAULT '{"vocabulary":[],"phrases":[],"dialogues":[]}',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_path_builder_drafts_user
+  ON path_builder_drafts(user_id);
+CREATE INDEX IF NOT EXISTS idx_path_builder_drafts_session
+  ON path_builder_drafts(session_id);
+
+-- Extend tutor_sessions mode to include path_builder (re-applies constraint)
+DO $$
+DECLARE _conname TEXT;
+BEGIN
+  SELECT conname INTO _conname FROM pg_constraint
+  WHERE conrelid = 'tutor_sessions'::regclass AND contype = 'c'
+    AND pg_get_constraintdef(oid) LIKE '%mode%';
+  IF _conname IS NOT NULL THEN
+    EXECUTE format('ALTER TABLE tutor_sessions DROP CONSTRAINT %I', _conname);
+  END IF;
+  ALTER TABLE tutor_sessions ADD CONSTRAINT tutor_sessions_mode_check
+    CHECK (mode IN (
+      'free_chat','role_play','word_review','grammar_glimpse',
+      'pronunciation_coach','guided_conversation','path_builder'
+    ));
+END $$;
+
+-- Track custom path creation for free tier limits
+ALTER TABLE daily_usage
+  ADD COLUMN IF NOT EXISTS custom_paths_created INTEGER NOT NULL DEFAULT 0;
 `;
