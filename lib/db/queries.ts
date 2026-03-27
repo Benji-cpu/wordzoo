@@ -526,6 +526,30 @@ export async function getTutorSessionById(sessionId: string): Promise<TutorSessi
   return (rows[0] as TutorSession) ?? null;
 }
 
+export interface LastTutorSessionRow {
+  id: string;
+  mode: string;
+  scenario: string | null;
+  started_at: Date;
+  ended_at: Date;
+}
+
+export async function getLastTutorSession(
+  userId: string,
+  languageId: string
+): Promise<LastTutorSessionRow | null> {
+  const rows = await sql`
+    SELECT id, mode, scenario, started_at, ended_at
+    FROM tutor_sessions
+    WHERE user_id = ${userId}
+      AND language_id = ${languageId}
+      AND ended_at IS NOT NULL
+    ORDER BY ended_at DESC
+    LIMIT 1
+  `;
+  return (rows[0] as LastTutorSessionRow) ?? null;
+}
+
 export async function updateTutorSession(
   sessionId: string,
   updates: { endedAt?: string; summary?: Record<string, unknown>; tokensUsed?: number }

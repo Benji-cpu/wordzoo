@@ -30,6 +30,7 @@ export {
   verifySceneAccess,
   insertTutorSession,
   getTutorSessionById,
+  getLastTutorSession,
   updateTutorSession,
   insertTutorMessage,
   getTutorMessages,
@@ -64,6 +65,7 @@ export type {
   PathWordStats,
   KnownWordRow,
   VocabWithMnemonic,
+  LastTutorSessionRow,
   DueWordForReview,
   UserStreakData,
 } from './queries';

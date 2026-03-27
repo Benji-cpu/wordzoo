@@ -2,17 +2,8 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { parseMessageContent } from '@/lib/tutor/message-parser';
+import { MODE_LABELS } from '@/lib/tutor/modes';
 import type { ChatMessage } from '@/components/tutor/TutorChat';
-
-const MODE_LABELS: Record<string, string> = {
-  free_chat: 'Free Chat',
-  role_play: 'Role Play',
-  word_review: 'Word Review',
-  grammar_glimpse: 'Grammar',
-  pronunciation_coach: 'Pronunciation',
-  guided_conversation: 'Guided',
-  path_builder: 'Build a Path',
-};
 
 interface SessionProgressBarProps {
   activeMode: string | null;

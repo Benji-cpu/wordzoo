@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import Link from 'next/link';
-import { ModeSelector } from '@/components/tutor/ModeSelector';
+import { TutorHero } from '@/components/tutor/TutorHero';
 import { ChatBubble } from '@/components/tutor/ChatBubble';
 import { ChatInput } from '@/components/tutor/ChatInput';
 import { WordPopover } from '@/components/tutor/WordPopover';
@@ -12,6 +12,7 @@ import { SuggestionChips } from '@/components/tutor/SuggestionChips';
 import { SessionProgressBar } from '@/components/tutor/SessionProgressBar';
 import { parseMessageContent, extractSuggestions } from '@/lib/tutor/message-parser';
 import { useSpeechInput } from '@/lib/hooks/useSpeechInput';
+import type { TutorRecommendation } from '@/app/api/tutor/recommendation/route';
 
 export interface ChatMessage {
   role: 'user' | 'model';
@@ -48,6 +49,9 @@ interface TutorChatProps {
   className?: string;
   initialMode?: string;
   activeMode?: string | null;
+  recommendation?: TutorRecommendation | null;
+  isLoadingRecommendation?: boolean;
+  onStartGuidedSession?: (sceneId: string) => void;
 }
 
 function mapLanguageCode(code: string): string {
@@ -79,6 +83,9 @@ export function TutorChat({
   className,
   initialMode,
   activeMode,
+  recommendation,
+  isLoadingRecommendation,
+  onStartGuidedSession,
 }: TutorChatProps) {
   const [popover, setPopover] = useState<{ data: PopoverData; rect: DOMRect } | null>(null);
   const [vocabMap, setVocabMap] = useState(() => new Map<string, PopoverData>());
@@ -216,7 +223,13 @@ export function TutorChat({
       {view === 'mode_select' && (
         <div className={compact ? 'px-3 pt-3' : 'px-4 pt-4'}>
           {!compact && <h1 className="text-2xl font-bold text-foreground mb-4">AI Tutor</h1>}
-          <ModeSelector onSelect={onStartSession} disabled={isStarting} />
+          <TutorHero
+            recommendation={recommendation ?? null}
+            onSelect={onStartSession}
+            onStartGuided={onStartGuidedSession}
+            disabled={isStarting}
+            isLoading={isLoadingRecommendation}
+          />
         </div>
       )}
 

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { TutorChat } from '@/components/tutor/TutorChat';
 import type { SessionSummaryData } from '@/components/tutor/TutorChat';
 import { useTutorChat } from '@/lib/hooks/useTutorChat';
+import type { TutorRecommendation } from '@/app/api/tutor/recommendation/route';
 
 export default function TutorPage() {
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -14,6 +15,8 @@ export default function TutorPage() {
   const [isEnding, setIsEnding] = useState(false);
   const [summaryData, setSummaryData] = useState<SessionSummaryData | null>(null);
   const [activeMode, setActiveMode] = useState<string | null>(null);
+  const [recommendation, setRecommendation] = useState<TutorRecommendation | null>(null);
+  const [isLoadingRecommendation, setIsLoadingRecommendation] = useState(false);
 
   const { messages, isStreaming, error, sendMessage, addGreeting } = useTutorChat(sessionId);
 
@@ -38,6 +41,28 @@ export default function TutorPage() {
     }
     fetchLanguage();
   }, []);
+
+  // Fetch recommendation when languageId is available and no active session
+  useEffect(() => {
+    if (!languageId || sessionId) return;
+    async function fetchRecommendation() {
+      setIsLoadingRecommendation(true);
+      try {
+        const res = await fetch(`/api/tutor/recommendation?languageId=${languageId}`);
+        if (res.ok) {
+          const json = await res.json();
+          if (json.data) {
+            setRecommendation(json.data);
+          }
+        }
+      } catch {
+        // Non-critical — fallback state will show
+      } finally {
+        setIsLoadingRecommendation(false);
+      }
+    }
+    fetchRecommendation();
+  }, [languageId, sessionId]);
 
   const handleStartSession = useCallback(
     async (mode: string, scenario?: string) => {
@@ -66,6 +91,32 @@ export default function TutorPage() {
     [languageId, addGreeting]
   );
 
+  const handleStartGuidedSession = useCallback(
+    async (sceneId: string) => {
+      setIsStarting(true);
+      setActiveMode('guided_conversation');
+      try {
+        const res = await fetch('/api/tutor/guided-session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sceneId }),
+        });
+        const json = await res.json();
+        if (!res.ok || json.error) {
+          setActiveMode(null);
+          throw new Error(json.error ?? 'Failed to start guided session');
+        }
+        setSessionId(json.data.sessionId);
+        addGreeting(json.data.greeting);
+      } catch (err) {
+        console.error('Start guided session error:', err);
+      } finally {
+        setIsStarting(false);
+      }
+    },
+    [addGreeting]
+  );
+
   const handleEndSession = useCallback(async () => {
     if (!sessionId) return;
     setIsEnding(true);
@@ -90,6 +141,7 @@ export default function TutorPage() {
     setSessionId(null);
     setSummaryData(null);
     setActiveMode(null);
+    setRecommendation(null);
   }, []);
 
   if (isLoadingLanguage) {
@@ -129,6 +181,9 @@ export default function TutorPage() {
         isEnding={isEnding}
         summaryData={summaryData}
         activeMode={activeMode}
+        recommendation={recommendation}
+        isLoadingRecommendation={isLoadingRecommendation}
+        onStartGuidedSession={handleStartGuidedSession}
       />
     </div>
   );
