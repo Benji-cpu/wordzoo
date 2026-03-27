@@ -51,10 +51,18 @@ function initialStateFromProgress(p: UserSceneProgress, totalDialogues: number, 
       }
       return { phase: 'dialogue', lineIndex: Math.min(p.phase_index, totalDialogues - 1) };
     case 'phrases':
+      if (totalPhrases === 0) {
+        return totalWords > 0
+          ? { phase: 'vocabulary', wordIndex: 0, step: 'word' }
+          : { phase: 'conversation' };
+      }
       return { phase: 'phrases', phraseIndex: Math.min(p.phase_index, totalPhrases - 1), step: 'show' };
     case 'vocabulary':
       return { phase: 'vocabulary', wordIndex: Math.min(p.phase_index, totalWords - 1), step: 'word' };
     case 'patterns':
+      if (totalPatterns === 0) {
+        return { phase: 'conversation' };
+      }
       return { phase: 'patterns', exerciseIndex: Math.min(p.phase_index, totalPatterns - 1) };
     case 'conversation':
       return { phase: 'conversation' };
@@ -216,9 +224,20 @@ export function SceneFlowClient({
 
   // --- Dialogue Phase ---
   const handleDialogueComplete = useCallback(() => {
-    saveProgress('phrases', 0, 'dialogue');
-    setState({ phase: 'phrases', phraseIndex: 0, step: 'show' });
-  }, [saveProgress]);
+    if (phrases.length === 0) {
+      // Skip phrases phase (empty for studio paths)
+      if (words.length > 0) {
+        saveProgress('vocabulary', 0, 'dialogue');
+        setState({ phase: 'vocabulary', wordIndex: 0, step: 'word' });
+      } else {
+        saveProgress('conversation', 0, 'dialogue');
+        setState({ phase: 'conversation' });
+      }
+    } else {
+      saveProgress('phrases', 0, 'dialogue');
+      setState({ phase: 'phrases', phraseIndex: 0, step: 'show' });
+    }
+  }, [saveProgress, phrases.length, words.length]);
 
   const handleDialogueLineAdvance = useCallback((lineIndex: number) => {
     saveProgress('dialogue', lineIndex);
@@ -300,12 +319,16 @@ export function SceneFlowClient({
     if (next < words.length) {
       saveProgress('vocabulary', next);
       setState({ phase: 'vocabulary', wordIndex: next, step: 'word' });
-    } else {
+    } else if (patternExercises.length > 0) {
       // Move to patterns
       saveProgress('patterns', 0, 'vocabulary');
       setState({ phase: 'patterns', exerciseIndex: 0 });
+    } else {
+      // Skip patterns phase (empty for studio paths)
+      saveProgress('conversation', 0, 'vocabulary');
+      setState({ phase: 'conversation' });
     }
-  }, [state, words.length, saveProgress]);
+  }, [state, words.length, patternExercises.length, saveProgress]);
 
   // --- Patterns Phase ---
   const handlePatternCorrect = useCallback(() => {
