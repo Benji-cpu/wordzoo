@@ -84,7 +84,7 @@ export interface Path {
   id: string;
   language_id: string;
   user_id: string | null;
-  type: 'premade' | 'custom' | 'travel';
+  type: 'premade' | 'custom' | 'travel' | 'studio';
   title: string;
   description: string | null;
   created_at: Date;
@@ -423,4 +423,84 @@ export interface PathBuilderDraft {
   draft_content: PathBuilderDraftContent;
   created_at: Date;
   updated_at: Date;
+}
+
+// --- Studio types ---
+
+export interface StudioSession {
+  id: string;
+  user_id: string;
+  language_id: string;
+  intake_data: StudioIntakeData;
+  messages: StudioMessage[];
+  path_preview: StudioPathPreview | null;
+  status: 'active' | 'completed' | 'abandoned';
+  path_id: string | null;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface StudioMessage {
+  role: 'user' | 'model';
+  content: string;
+  visual_elements?: StudioVisualElement[];
+  intake_progress?: StudioIntakeProgress;
+  path_preview?: StudioPathPreview;
+  timestamp: string;
+}
+
+export interface StudioIntakeData {
+  category?: string;
+  scenario?: string;
+  sub_scenarios?: string[];
+  difficulty?: 'beginner' | 'intermediate' | 'advanced';
+  focus_areas?: string[];
+  confirmed?: boolean;
+}
+
+export interface StudioPathPreview {
+  title?: string;
+  description?: string;
+  difficulty?: string;
+  estimated_words?: number;
+  scenes?: StudioPreviewScene[];
+}
+
+export interface StudioPreviewScene {
+  title: string;
+  description?: string;
+  word_count?: number;
+  status: 'confirmed' | 'building' | 'pending';
+}
+
+export interface StudioVisualElement {
+  type: 'chips' | 'cards' | 'confirmation';
+  data: StudioChip[] | StudioCard[] | StudioConfirmation;
+  multi_select?: boolean;
+}
+
+export interface StudioChip {
+  id: string;
+  label: string;
+  emoji?: string;
+  selected?: boolean;
+}
+
+export interface StudioCard {
+  id: string;
+  title: string;
+  description: string;
+  selected?: boolean;
+}
+
+export interface StudioConfirmation {
+  title: string;
+  summary: Record<string, string>;
+}
+
+export interface StudioIntakeProgress {
+  current_step: number;
+  total_steps: number;
+  step_label: string;
+  can_generate: boolean;
 }

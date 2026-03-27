@@ -102,6 +102,34 @@ export async function createTravelPackCheckout(
   return session.url!;
 }
 
+export async function createStudioPathCheckout(
+  userId: string,
+  sessionId: string
+): Promise<string> {
+  const customerId = await getOrCreateStripeCustomer(userId);
+
+  const session = await stripe.checkout.sessions.create({
+    customer: customerId,
+    mode: 'payment',
+    line_items: [{
+      price_data: {
+        currency: 'usd',
+        product_data: {
+          name: 'Path Studio: Custom Learning Path',
+          description: 'AI-generated dialogue path with vocabulary and conversations',
+        },
+        unit_amount: 299, // $2.99
+      },
+      quantity: 1,
+    }],
+    success_url: `${APP_URL}/api/studio/generate-callback?session_id={CHECKOUT_SESSION_ID}&studio_session=${sessionId}`,
+    cancel_url: `${APP_URL}/paths/studio?canceled=true`,
+    metadata: { userId, sessionId, type: 'studio_path' },
+  });
+
+  return session.url!;
+}
+
 export async function createPortalSession(userId: string): Promise<string> {
   const subscription = await getSubscriptionByUserId(userId);
   if (!subscription?.stripe_customer_id) {
@@ -134,6 +162,17 @@ export async function handleWebhookEvent(event: Stripe.Event): Promise<void> {
               ? session.payment_intent
               : session.payment_intent.id,
           });
+        }
+        break;
+      }
+
+      if (session.metadata?.type === 'studio_path') {
+        // Studio path purchases are handled by the generate-callback route
+        // Just record the purchase for tracking
+        const studioSessionId = session.metadata.sessionId;
+        if (studioSessionId && session.payment_intent) {
+          // Note: We don't have a pack_id yet — it will be created by generate-callback
+          // For now, just break — the callback route handles generation
         }
         break;
       }

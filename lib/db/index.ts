@@ -50,6 +50,11 @@ export {
   insertNudge,
   updateNudge,
   updateTutorSessionLearnerContext,
+  insertStudioSession,
+  getStudioSessionById,
+  updateStudioSession,
+  getActiveStudioSession,
+  insertSceneDialogue,
 } from './queries';
 export type {
   WordWithLanguage,

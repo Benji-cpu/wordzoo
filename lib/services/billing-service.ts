@@ -34,6 +34,7 @@ const UPGRADE_MESSAGES: Record<string, string> = {
   custom_path: 'Custom paths are a Premium feature. Upgrade to create personalized learning paths!',
   offline_download: 'Offline downloads are a Premium feature. Upgrade to learn anywhere!',
   community_submit: 'Community submissions are a Premium feature. Upgrade to share your mnemonics!',
+  studio_path: 'Create rich dialogue paths with Path Studio! $2.99 per path, or upgrade to Premium for unlimited.',
 };
 
 function getTodayDate(): string {
@@ -73,6 +74,17 @@ export async function checkAccess(
       // No subscription record but marked as premium — allow (could be manual upgrade)
       return { allowed: true, reason: null, currentUsage: null, limit: null, upgradeMessage: null };
     }
+  }
+
+  // Studio paths: free users can purchase per-path (not premium-gated)
+  if (feature === 'studio_path') {
+    return {
+      allowed: false,
+      reason: 'requires_purchase',
+      currentUsage: null,
+      limit: null,
+      upgradeMessage: 'Create rich dialogue paths with Path Studio! $2.99 per path, or upgrade to Premium for unlimited.',
+    };
   }
 
   // Premium-only features: hard gate

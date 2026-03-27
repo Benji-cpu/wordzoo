@@ -1,5 +1,5 @@
 import { sql } from './client';
-import type { Word, Mnemonic, Path, Scene, Language, UserPath, TutorSession, TutorMessage, Subscription, Purchase, DailyUsage, MnemonicFeedback, LearnerProfile, TutorWordReview, TutorNudge } from '@/types/database';
+import type { Word, Mnemonic, Path, Scene, SceneDialogue, Language, UserPath, TutorSession, TutorMessage, Subscription, Purchase, DailyUsage, MnemonicFeedback, LearnerProfile, TutorWordReview, TutorNudge, StudioSession, StudioIntakeData, StudioMessage, StudioPathPreview } from '@/types/database';
 
 export interface WordWithLanguage extends Word {
   language_code: string;
@@ -372,7 +372,7 @@ export async function getPathWordStats(
 export async function insertPath(data: {
   languageId: string;
   userId: string | null;
-  type: 'premade' | 'custom' | 'travel';
+  type: 'premade' | 'custom' | 'travel' | 'studio';
   title: string;
   description: string | null;
 }): Promise<Path> {
@@ -389,10 +389,12 @@ export async function insertScene(data: {
   title: string;
   description: string | null;
   sortOrder: number;
+  sceneType?: 'legacy' | 'dialogue';
+  sceneContext?: string | null;
 }): Promise<Scene> {
   const rows = await sql`
-    INSERT INTO scenes (path_id, title, description, sort_order)
-    VALUES (${data.pathId}, ${data.title}, ${data.description}, ${data.sortOrder})
+    INSERT INTO scenes (path_id, title, description, sort_order, scene_type, scene_context)
+    VALUES (${data.pathId}, ${data.title}, ${data.description}, ${data.sortOrder}, ${data.sceneType ?? 'legacy'}, ${data.sceneContext ?? null})
     RETURNING *
   `;
   return rows[0] as Scene;
@@ -755,6 +757,73 @@ export async function incrementDailyUsageRegenerations(userId: string, date: str
     ON CONFLICT (user_id, date)
     DO UPDATE SET regenerations = daily_usage.regenerations + ${amount}
   `;
+}
+
+export async function insertStudioSession(data: {
+  userId: string;
+  languageId: string;
+}): Promise<StudioSession> {
+  const rows = await sql`
+    INSERT INTO studio_sessions (user_id, language_id)
+    VALUES (${data.userId}, ${data.languageId})
+    RETURNING *
+  `;
+  return rows[0] as StudioSession;
+}
+
+export async function getStudioSessionById(id: string): Promise<StudioSession | null> {
+  const rows = await sql`
+    SELECT * FROM studio_sessions WHERE id = ${id}
+  `;
+  return (rows[0] as StudioSession) ?? null;
+}
+
+export async function updateStudioSession(
+  id: string,
+  data: {
+    intakeData?: StudioIntakeData;
+    messages?: StudioMessage[];
+    pathPreview?: StudioPathPreview | null;
+    status?: 'active' | 'completed' | 'abandoned';
+    pathId?: string | null;
+  }
+): Promise<StudioSession> {
+  const rows = await sql`
+    UPDATE studio_sessions SET
+      intake_data = COALESCE(${data.intakeData ? JSON.stringify(data.intakeData) : null}::jsonb, intake_data),
+      messages = COALESCE(${data.messages ? JSON.stringify(data.messages) : null}::jsonb, messages),
+      path_preview = COALESCE(${data.pathPreview !== undefined ? JSON.stringify(data.pathPreview) : null}::jsonb, path_preview),
+      status = COALESCE(${data.status ?? null}, status),
+      path_id = COALESCE(${data.pathId ?? null}, path_id),
+      updated_at = now()
+    WHERE id = ${id}
+    RETURNING *
+  `;
+  return rows[0] as StudioSession;
+}
+
+export async function getActiveStudioSession(userId: string, languageId: string): Promise<StudioSession | null> {
+  const rows = await sql`
+    SELECT * FROM studio_sessions
+    WHERE user_id = ${userId} AND language_id = ${languageId} AND status = 'active'
+    ORDER BY created_at DESC LIMIT 1
+  `;
+  return (rows[0] as StudioSession) ?? null;
+}
+
+export async function insertSceneDialogue(data: {
+  sceneId: string;
+  speaker: string;
+  textTarget: string;
+  textEn: string;
+  sortOrder: number;
+}): Promise<SceneDialogue> {
+  const rows = await sql`
+    INSERT INTO scene_dialogues (scene_id, speaker, text_target, text_en, sort_order)
+    VALUES (${data.sceneId}, ${data.speaker}, ${data.textTarget}, ${data.textEn}, ${data.sortOrder})
+    RETURNING *
+  `;
+  return rows[0] as SceneDialogue;
 }
 
 export async function resetAllDailyUsage(): Promise<void> {

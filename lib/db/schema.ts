@@ -539,4 +539,31 @@ END $$;
 -- Track custom path creation for free tier limits
 ALTER TABLE daily_usage
   ADD COLUMN IF NOT EXISTS custom_paths_created INTEGER NOT NULL DEFAULT 0;
+
+-- Studio Sessions (Path Studio co-creation sessions)
+CREATE TABLE IF NOT EXISTS studio_sessions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  language_id UUID NOT NULL REFERENCES languages(id) ON DELETE CASCADE,
+  intake_data JSONB DEFAULT '{}',
+  messages JSONB DEFAULT '[]',
+  path_preview JSONB,
+  status TEXT DEFAULT 'active' CHECK (status IN ('active', 'completed', 'abandoned')),
+  path_id UUID REFERENCES paths(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_studio_sessions_user ON studio_sessions(user_id, created_at DESC);
+
+DO $$
+DECLARE
+  _conname TEXT;
+BEGIN
+  SELECT conname INTO _conname FROM pg_constraint
+  WHERE conrelid = 'paths'::regclass AND contype = 'c' AND pg_get_constraintdef(oid) LIKE '%type%';
+  IF _conname IS NOT NULL THEN
+    EXECUTE format('ALTER TABLE paths DROP CONSTRAINT %I', _conname);
+  END IF;
+  ALTER TABLE paths ADD CONSTRAINT paths_type_check CHECK (type IN ('premade', 'custom', 'travel', 'studio'));
+END $$;
 `;
