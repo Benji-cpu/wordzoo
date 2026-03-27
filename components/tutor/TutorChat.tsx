@@ -81,6 +81,7 @@ export function TutorChat({
 }: TutorChatProps) {
   const [popover, setPopover] = useState<{ data: PopoverData; rect: DOMRect } | null>(null);
   const [vocabMap, setVocabMap] = useState(() => new Map<string, PopoverData>());
+  const [vocabStatuses, setVocabStatuses] = useState(() => new Map<string, 'pending' | 'kept' | 'removed'>());
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const speechLangCode = mapLanguageCode(langCode);
   const { isListening, transcript, startListening, stopListening } = useSpeechInput(speechLangCode);
@@ -128,6 +129,13 @@ export function TutorChat({
     }
   }, [initialMode, view, isStarting, onStartSession]);
 
+  // Reset vocab statuses when session ends
+  useEffect(() => {
+    if (!sessionId) {
+      setVocabStatuses(new Map());
+    }
+  }, [sessionId]);
+
   const handleWordTap = useCallback((data: PopoverData, rect: DOMRect) => {
     setPopover({ data, rect });
   }, []);
@@ -139,6 +147,50 @@ export function TutorChat({
       startListening();
     }
   }, [isListening, startListening, stopListening]);
+
+  const handlePathVocabAction = useCallback(
+    async (word: string, action: 'keep' | 'remove' | 'different') => {
+      if (!sessionId) return;
+
+      setVocabStatuses((prev) => {
+        const next = new Map(prev);
+        next.set(word, action === 'keep' ? 'kept' : 'removed');
+        return next;
+      });
+
+      try {
+        const res = await fetch('/api/tutor/path-builder/action', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId,
+            action,
+            itemType: 'vocabulary',
+            tempId: word,
+          }),
+        });
+
+        if (!res.ok) {
+          setVocabStatuses((prev) => {
+            const next = new Map(prev);
+            next.set(word, 'pending');
+            return next;
+          });
+        }
+
+        if (action === 'different') {
+          onSendMessage(`Can you suggest a different word instead of "${word}"?`);
+        }
+      } catch {
+        setVocabStatuses((prev) => {
+          const next = new Map(prev);
+          next.set(word, 'pending');
+          return next;
+        });
+      }
+    },
+    [sessionId, onSendMessage]
+  );
 
   // Extract suggestion chips from last model message (only when not streaming)
   const suggestionOptions = useMemo(() => {
@@ -187,6 +239,8 @@ export function TutorChat({
                 content={msg.content}
                 vocabMap={vocabMap}
                 onWordTap={handleWordTap}
+                onPathVocabAction={activeMode === 'path_builder' ? handlePathVocabAction : undefined}
+                vocabStatuses={activeMode === 'path_builder' ? vocabStatuses : undefined}
               />
             ))}
             {error && (

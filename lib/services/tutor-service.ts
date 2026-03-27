@@ -15,6 +15,9 @@ import {
 import { generateChat, generateChatStream } from '@/lib/ai/gemini';
 import { buildTutorSystemPrompt, buildGuidedConversationPrompt } from '@/lib/ai/tutor-prompts';
 import { buildAdaptiveContext } from '@/lib/services/learner-profile-service';
+import { createDraft, getDraftBySessionId } from '@/lib/services/path-builder-service';
+import { buildPathBuilderDiscoveryPrompt, buildPathBuilderVocabPrompt } from '@/lib/ai/tutor-prompts';
+import type { PathBuilderScenarioContext } from '@/types/database';
 import type { GeminiChatMessage } from '@/types/ai';
 
 export async function startSession(
@@ -34,14 +37,25 @@ export async function startSession(
     buildAdaptiveContext(userId, languageId),
   ]);
 
-  const systemPrompt = buildTutorSystemPrompt({
-    languageName: language.name,
-    mode,
-    scenario,
-    knownWords,
-    dueWords,
-    adaptiveContext: adaptiveCtx,
-  });
+  let systemPrompt: string;
+
+  if (mode === 'path_builder') {
+    systemPrompt = buildPathBuilderDiscoveryPrompt({
+      languageName: language.name,
+      scenarioContext: { scenario: '', proficiency: '', subtopics: [], preferences: [] },
+      knownWords,
+      adaptiveContext: adaptiveCtx,
+    });
+  } else {
+    systemPrompt = buildTutorSystemPrompt({
+      languageName: language.name,
+      mode,
+      scenario,
+      knownWords,
+      dueWords,
+      adaptiveContext: adaptiveCtx,
+    });
+  }
 
   // Save adaptive context snapshot to session
   if (adaptiveCtx) {
@@ -55,6 +69,10 @@ export async function startSession(
   const response = await generateChat(greetingMessages, systemPrompt);
   await insertTutorMessage(session.id, 'model', response.text);
   await updateTutorSession(session.id, { tokensUsed: response.tokensUsed });
+
+  if (mode === 'path_builder') {
+    await createDraft(userId, session.id, languageId);
+  }
 
   return { sessionId: session.id, greeting: response.text };
 }
@@ -153,6 +171,41 @@ export async function sendMessage(
       knownWords,
       adaptiveContext: adaptiveCtx,
     });
+  } else if (session.mode === 'path_builder') {
+    const draft = await getDraftBySessionId(sessionId);
+    const knownWords = await getUserKnownWords(userId, session.language_id);
+
+    if (draft && draft.current_phase === 'vocabulary') {
+      const scenarioCtx = (draft.scenario_context ?? {}) as PathBuilderScenarioContext;
+      const confirmedVocab = draft.draft_content.vocabulary
+        .filter((v) => v.status === 'kept')
+        .map((v) => ({ word: v.word, meaning: v.meaning }));
+
+      systemPrompt = buildPathBuilderVocabPrompt({
+        languageName: language.name,
+        scenarioContext: {
+          scenario: scenarioCtx.scenario ?? '',
+          proficiency: scenarioCtx.proficiency ?? 'beginner',
+          subtopics: scenarioCtx.subtopics ?? [],
+          preferences: scenarioCtx.preferences ?? [],
+        },
+        knownWords,
+        adaptiveContext: adaptiveCtx,
+        confirmedVocab,
+      });
+    } else {
+      systemPrompt = buildPathBuilderDiscoveryPrompt({
+        languageName: language.name,
+        scenarioContext: {
+          scenario: (draft?.scenario_context as PathBuilderScenarioContext)?.scenario ?? '',
+          proficiency: (draft?.scenario_context as PathBuilderScenarioContext)?.proficiency ?? '',
+          subtopics: (draft?.scenario_context as PathBuilderScenarioContext)?.subtopics ?? [],
+          preferences: (draft?.scenario_context as PathBuilderScenarioContext)?.preferences ?? [],
+        },
+        knownWords,
+        adaptiveContext: adaptiveCtx,
+      });
+    }
   } else {
     const [knownWords, dueWords] = await Promise.all([
       getUserKnownWords(userId, session.language_id),
