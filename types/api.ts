@@ -259,3 +259,30 @@ export const ProfileQuerySchema = z.object({
 });
 
 export type ProfileQueryInput = z.infer<typeof ProfileQuerySchema>;
+
+// --- Studio ---
+
+export const StudioStartSchema = z.object({
+  languageId: z.string().uuid(),
+  prefillScenario: z.string().max(500).optional(),
+});
+
+export const StudioChatSchema = z.object({
+  sessionId: z.string().uuid(),
+  message: z.string().min(1).max(2000),
+  selections: z.array(z.string()).optional(),
+});
+
+export const StudioGenerateSchema = z.object({
+  sessionId: z.string().uuid(),
+});
+
+export const StudioSuggestionsSchema = z.object({
+  sessionId: z.string().uuid(),
+  scenario: z.string().min(1).max(500),
+});
+
+export type StudioStartInput = z.infer<typeof StudioStartSchema>;
+export type StudioChatInput = z.infer<typeof StudioChatSchema>;
+export type StudioGenerateInput = z.infer<typeof StudioGenerateSchema>;
+export type StudioSuggestionsInput = z.infer<typeof StudioSuggestionsSchema>;
