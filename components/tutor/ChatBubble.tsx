@@ -3,15 +3,19 @@
 import { useCallback, useMemo } from 'react';
 import { parseMessageContent, type MessageSegment } from '@/lib/tutor/message-parser';
 import type { PopoverData } from './WordPopover';
+import { PhaseIndicator } from '@/components/tutor/path-builder/PhaseIndicator';
+import { PathVocabCard } from '@/components/tutor/path-builder/PathVocabCard';
 
 interface ChatBubbleProps {
   role: 'user' | 'model';
   content: string;
   vocabMap: Map<string, PopoverData>;
   onWordTap: (data: PopoverData, rect: DOMRect) => void;
+  onPathVocabAction?: (word: string, action: 'keep' | 'remove' | 'different') => void;
+  vocabStatuses?: Map<string, 'pending' | 'kept' | 'removed'>;
 }
 
-export function ChatBubble({ role, content, vocabMap, onWordTap }: ChatBubbleProps) {
+export function ChatBubble({ role, content, vocabMap, onWordTap, onPathVocabAction, vocabStatuses }: ChatBubbleProps) {
   const isUser = role === 'user';
 
   const handleWordClick = useCallback(
@@ -41,7 +45,13 @@ export function ChatBubble({ role, content, vocabMap, onWordTap }: ChatBubblePro
         }`}
       >
         {segments.map((seg, i) => (
-          <SegmentRenderer key={i} segment={seg} onWordClick={handleWordClick} />
+          <SegmentRenderer
+            key={i}
+            segment={seg}
+            onWordClick={handleWordClick}
+            onPathVocabAction={onPathVocabAction}
+            vocabStatuses={vocabStatuses}
+          />
         ))}
       </div>
     </div>
@@ -51,9 +61,13 @@ export function ChatBubble({ role, content, vocabMap, onWordTap }: ChatBubblePro
 function SegmentRenderer({
   segment,
   onWordClick,
+  onPathVocabAction,
+  vocabStatuses,
 }: {
   segment: MessageSegment;
   onWordClick: (word: string, meaning: string, e: React.MouseEvent<HTMLSpanElement>) => void;
+  onPathVocabAction?: (word: string, action: 'keep' | 'remove' | 'different') => void;
+  vocabStatuses?: Map<string, 'pending' | 'kept' | 'removed'>;
 }) {
   switch (segment.type) {
     case 'text':
@@ -110,6 +124,25 @@ function SegmentRenderer({
           <div className="text-xs text-text-secondary uppercase tracking-wider">{segment.label}</div>
           <div className="text-sm text-foreground mt-0.5">{segment.content}</div>
         </div>
+      );
+
+    case 'path_vocab':
+      return (
+        <PathVocabCard
+          word={segment.word}
+          romanization={segment.romanization}
+          meaning={segment.meaning}
+          mnemonicHint={segment.mnemonicHint}
+          status={vocabStatuses?.get(segment.word) ?? 'pending'}
+          onKeep={() => onPathVocabAction?.(segment.word, 'keep')}
+          onRemove={() => onPathVocabAction?.(segment.word, 'remove')}
+          onDifferent={() => onPathVocabAction?.(segment.word, 'different')}
+        />
+      );
+
+    case 'phase_transition':
+      return (
+        <PhaseIndicator phase={segment.phase} description={segment.description} />
       );
 
     default:
