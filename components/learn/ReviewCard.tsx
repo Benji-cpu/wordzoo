@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Card } from '@/components/ui/Card';
 import { FeedbackButtons } from '@/components/learn/FeedbackButtons';
-import { PronunciationButton } from '@/components/audio/PronunciationButton';
+import { PronunciationButton } from '@/components/audio/SpeakerButton';
 import type { Word, Mnemonic } from '@/types/database';
 
 function renderBridgeSentence(sentence: string) {

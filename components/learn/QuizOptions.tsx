@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { PronunciationButton } from '@/components/audio/PronunciationButton';
+import { PronunciationButton } from '@/components/audio/SpeakerButton';
 
 interface QuizOptionsProps {
   wordText: string;

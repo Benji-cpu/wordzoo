@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 import { Card } from '@/components/ui/Card';
 import { ShareButton } from '@/components/community/ShareButton';
 import { FeedbackButtons } from '@/components/learn/FeedbackButtons';
-import { PronunciationButton } from '@/components/audio/PronunciationButton';
+import { PronunciationButton } from '@/components/audio/SpeakerButton';
 import { playWordPronunciation } from '@/lib/audio/pronunciation';
 
 function renderBridgeSentence(sentence: string) {

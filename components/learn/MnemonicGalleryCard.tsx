@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Card } from '@/components/ui/Card';
-import { PronunciationButton } from '@/components/audio/PronunciationButton';
+import { PronunciationButton } from '@/components/audio/SpeakerButton';
 import type { GalleryWord } from '@/lib/db/queries';
 
 export function MnemonicGalleryCard({ word }: { word: GalleryWord }) {
