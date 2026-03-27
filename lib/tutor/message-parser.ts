@@ -4,11 +4,13 @@ export type MessageSegment =
   | { type: 'suggestion'; options: string[] }
   | { type: 'correction'; original: string; corrected: string; explanation?: string }
   | { type: 'grammar_note'; title: string; body: string }
-  | { type: 'context_card'; label: string; content: string };
+  | { type: 'context_card'; label: string; content: string }
+  | { type: 'path_vocab'; word: string; romanization: string; meaning: string; mnemonicHint: string }
+  | { type: 'phase_transition'; phase: string; description: string };
 
 // Matches [MARKER: content] patterns and **word** (meaning) patterns
 const MARKER_REGEX =
-  /\[SUGGEST:\s*([^\]]+)\]|\[CORRECT:\s*([^\]]+)\]|\[GRAMMAR:\s*([^\]]+)\]|\[CONTEXT:\s*([^\]]+)\]|\*\*([^*]+)\*\*\s*\(([^)]+)\)/g;
+  /\[SUGGEST:\s*([^\]]+)\]|\[CORRECT:\s*([^\]]+)\]|\[GRAMMAR:\s*([^\]]+)\]|\[CONTEXT:\s*([^\]]+)\]|\[PATH_VOCAB:\s*([^\]]+)\]|\[PHASE_TRANSITION:\s*([^\]]+)\]|\*\*([^*]+)\*\*\s*\(([^)]+)\)/g;
 
 function parseSuggest(inner: string): MessageSegment {
   const options = inner.split('|').map((s) => s.trim()).filter(Boolean);
@@ -52,6 +54,32 @@ function parseContext(inner: string): MessageSegment {
   return { type: 'context_card', label, content };
 }
 
+function parsePathVocab(inner: string): MessageSegment {
+  const parts = inner.split('|').map((s) => s.trim());
+  if (parts.length < 3) {
+    return { type: 'text', content: `[PATH_VOCAB: ${inner}]` };
+  }
+  return {
+    type: 'path_vocab',
+    word: parts[0],
+    romanization: parts[1],
+    meaning: parts[2],
+    mnemonicHint: parts[3] ?? '',
+  };
+}
+
+function parsePhaseTransition(inner: string): MessageSegment {
+  const pipeIdx = inner.indexOf('|');
+  if (pipeIdx < 0) {
+    return { type: 'phase_transition', phase: inner.trim(), description: '' };
+  }
+  return {
+    type: 'phase_transition',
+    phase: inner.slice(0, pipeIdx).trim(),
+    description: inner.slice(pipeIdx + 1).trim(),
+  };
+}
+
 function addText(segments: MessageSegment[], text: string) {
   if (text) {
     segments.push({ type: 'text', content: text });
@@ -81,9 +109,15 @@ export function parseMessageContent(raw: string): MessageSegment[] {
     } else if (match[4] != null) {
       // [CONTEXT: ...]
       segments.push(parseContext(match[4]));
-    } else if (match[5] != null && match[6] != null) {
+    } else if (match[5] != null) {
+      // [PATH_VOCAB: ...]
+      segments.push(parsePathVocab(match[5]));
+    } else if (match[6] != null) {
+      // [PHASE_TRANSITION: ...]
+      segments.push(parsePhaseTransition(match[6]));
+    } else if (match[7] != null && match[8] != null) {
       // **word** (meaning)
-      segments.push({ type: 'vocab_word', word: match[5], meaning: match[6] });
+      segments.push({ type: 'vocab_word', word: match[7], meaning: match[8] });
     }
 
     lastIndex = match.index + match[0].length;
