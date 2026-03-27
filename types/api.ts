@@ -110,6 +110,7 @@ export const BillingFeatureEnum = z.enum([
   'custom_path',
   'offline_download',
   'community_submit',
+  'studio_path',
 ]);
 
 export const CheckAccessSchema = z.object({
