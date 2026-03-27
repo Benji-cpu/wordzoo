@@ -24,6 +24,11 @@ export default auth((req) => {
     return NextResponse.next();
   }
 
+  // Allow studio generate-callback (Stripe redirect after payment)
+  if (pathname === '/api/studio/generate-callback') {
+    return NextResponse.next();
+  }
+
   // For unauthenticated requests:
   if (!req.auth) {
     // API routes → return 401 JSON

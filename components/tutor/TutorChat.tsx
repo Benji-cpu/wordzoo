@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import Link from 'next/link';
 import { ModeSelector } from '@/components/tutor/ModeSelector';
 import { ChatBubble } from '@/components/tutor/ChatBubble';
 import { ChatInput } from '@/components/tutor/ChatInput';
@@ -152,6 +153,12 @@ export function TutorChat({
     return [];
   }, [messages, isStreaming]);
 
+  function extractStudioCTA(content: string): { description: string } | null {
+    const match = content.match(/\[PATH_STUDIO_CTA:\s*(.+?)\]/);
+    if (!match) return null;
+    return { description: match[1] };
+  }
+
   return (
     <div className={`flex flex-col ${compact ? 'h-full' : 'h-[calc(100dvh-8rem)]'} ${className ?? ''}`}>
       {view === 'mode_select' && (
@@ -181,13 +188,31 @@ export function TutorChat({
           {/* Messages */}
           <div className={`flex-1 overflow-y-auto ${compact ? 'px-3 py-2' : 'px-4 py-3'}`}>
             {messages.map((msg, i) => (
-              <ChatBubble
-                key={i}
-                role={msg.role}
-                content={msg.content}
-                vocabMap={vocabMap}
-                onWordTap={handleWordTap}
-              />
+              <div key={i}>
+                <ChatBubble
+                  role={msg.role}
+                  content={msg.content}
+                  vocabMap={vocabMap}
+                  onWordTap={handleWordTap}
+                />
+                {msg.role === 'model' && extractStudioCTA(msg.content) && (
+                  <Link
+                    href={`/paths/studio?prefillScenario=${encodeURIComponent(extractStudioCTA(msg.content)!.description)}&languageId=${languageId}`}
+                    className="block mx-2 mb-3 p-3 rounded-xl bg-accent-default/10 border border-accent-default/30 hover:bg-accent-default/20 transition-all"
+                  >
+                    <div className="flex items-center gap-2">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-accent-default shrink-0">
+                        <path d="M12 20h9" />
+                        <path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
+                      </svg>
+                      <div>
+                        <p className="text-sm font-medium text-accent-default">Open in Path Studio</p>
+                        <p className="text-xs text-text-secondary">Create a custom path with dialogues</p>
+                      </div>
+                    </div>
+                  </Link>
+                )}
+              </div>
             ))}
             {error && (
               <div className="text-center text-sm text-red-400 py-2">{error}</div>

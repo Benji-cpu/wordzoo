@@ -77,7 +77,9 @@ export function buildTutorSystemPrompt(opts: TutorPromptOptions): string {
     `- After your response, suggest 2-3 things the student could say next:\n` +
     `  [SUGGEST: suggestion1 | suggestion2 | suggestion3]\n` +
     `  Make suggestions natural and at the student's level. Mix target-language and bilingual options.\n` +
-    `  Only include suggestions when the student might benefit from guidance.`
+    `  Only include suggestions when the student might benefit from guidance.\n` +
+    `- When the user expresses a desire to build, create, or design a custom learning path (e.g., "I want to learn restaurant vocabulary", "build me a path for ordering food", "create a lesson about shopping"), include this marker at the end of your response:\n` +
+    `  [PATH_STUDIO_CTA: brief description of what they want to learn]`
   );
 
   return blocks.join('\n\n');

@@ -1,5 +1,6 @@
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 import {
   getPathWordStats,
   getPathsByLanguage,
@@ -78,6 +79,7 @@ export default async function PathsPage() {
   const premade = pathsWithStats.filter(p => p.path.type === 'premade');
   const travel = pathsWithStats.filter(p => p.path.type === 'travel');
   const custom = pathsWithStats.filter(p => p.path.type === 'custom');
+  const studio = pathsWithStats.filter(p => p.path.type === 'studio');
 
   return (
     <div className="max-w-lg mx-auto space-y-6 pb-24">
@@ -124,6 +126,28 @@ export default async function PathsPage() {
         </section>
       )}
 
+      {/* Studio Paths */}
+      {studio.length > 0 && (
+        <section>
+          <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wider mb-3">
+            Studio Paths
+          </h2>
+          <div className="space-y-3">
+            {studio.map(p => (
+              <PathCard
+                key={p.path.id}
+                path={p.path}
+                wordCount={p.wordCount}
+                wordsCompleted={p.wordsCompleted}
+                progress={p.progress}
+                scenesCompleted={p.scenesCompleted}
+                totalScenes={p.totalScenes}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Custom Paths */}
       <section>
         <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wider mb-3">
@@ -144,6 +168,21 @@ export default async function PathsPage() {
             ))}
           </div>
         )}
+        <Link
+          href={`/paths/studio${activeLanguageId ? `?languageId=${activeLanguageId}` : ''}`}
+          className="block w-full p-4 rounded-xl border-2 border-dashed border-accent-default/30 hover:border-accent-default/60 bg-accent-default/5 hover:bg-accent-default/10 transition-all text-center group"
+        >
+          <div className="flex items-center justify-center gap-2 text-accent-default">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 20h9" />
+              <path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
+            </svg>
+            <span className="font-medium">Path Studio</span>
+          </div>
+          <p className="text-xs text-text-secondary mt-1">
+            Co-create rich dialogue paths with AI
+          </p>
+        </Link>
         <PathsClientSection languageId={activeLanguageId} />
       </section>
     </div>
