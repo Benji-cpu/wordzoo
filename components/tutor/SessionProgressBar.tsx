@@ -11,6 +11,7 @@ const MODE_LABELS: Record<string, string> = {
   grammar_glimpse: 'Grammar',
   pronunciation_coach: 'Pronunciation',
   guided_conversation: 'Guided',
+  path_builder: 'Build a Path',
 };
 
 interface SessionProgressBarProps {

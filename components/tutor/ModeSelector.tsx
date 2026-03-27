@@ -41,6 +41,12 @@ const MODES = [
     description: 'Improve your pronunciation',
     icon: '🗣️',
   },
+  {
+    id: 'path_builder',
+    label: 'Build a Path',
+    description: 'Create a custom learning path from a scenario',
+    icon: '🛠️',
+  },
 ];
 
 export function ModeSelector({ onSelect, disabled }: ModeSelectorProps) {
