@@ -18,6 +18,7 @@ function tierLabel(type: Path['type']): string {
     case 'premade': return 'Premade';
     case 'custom': return 'Custom';
     case 'travel': return 'Travel';
+    case 'studio': return 'Studio';
   }
 }
 
