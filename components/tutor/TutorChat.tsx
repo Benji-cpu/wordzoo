@@ -11,6 +11,7 @@ import { SessionSummary } from '@/components/tutor/SessionSummary';
 import { SuggestionChips } from '@/components/tutor/SuggestionChips';
 import { SessionProgressBar } from '@/components/tutor/SessionProgressBar';
 import { parseMessageContent, extractSuggestions } from '@/lib/tutor/message-parser';
+import { TutorOnboarding, TUTOR_ONBOARDED_KEY } from '@/components/tutor/TutorOnboarding';
 import { useSpeechInput } from '@/lib/hooks/useSpeechInput';
 import type { TutorRecommendation } from '@/app/api/tutor/recommendation/route';
 
@@ -90,6 +91,14 @@ export function TutorChat({
   const [popover, setPopover] = useState<{ data: PopoverData; rect: DOMRect } | null>(null);
   const [vocabMap, setVocabMap] = useState(() => new Map<string, PopoverData>());
   const [vocabStatuses, setVocabStatuses] = useState(() => new Map<string, 'pending' | 'kept' | 'removed'>());
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      return !localStorage.getItem(TUTOR_ONBOARDED_KEY);
+    } catch {
+      return false;
+    }
+  });
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const speechLangCode = mapLanguageCode(langCode);
   const { isListening, transcript, startListening, stopListening } = useSpeechInput(speechLangCode);
@@ -219,24 +228,28 @@ export function TutorChat({
   }
 
   return (
-    <div className={`flex flex-col ${compact ? 'h-full' : 'h-[calc(100dvh-8rem)]'} ${className ?? ''}`}>
+    <div className={`flex flex-col h-full ${compact ? '' : 'pb-16'} ${className ?? ''}`}>
       {view === 'mode_select' && (
-        <div className={compact ? 'px-3 pt-3' : 'px-4 pt-4'}>
-          {!compact && <h1 className="text-2xl font-bold text-foreground mb-4">AI Tutor</h1>}
-          <TutorHero
-            recommendation={recommendation ?? null}
-            onSelect={onStartSession}
-            onStartGuided={onStartGuidedSession}
-            disabled={isStarting}
-            isLoading={isLoadingRecommendation}
-          />
-        </div>
+        showOnboarding ? (
+          <TutorOnboarding onComplete={() => setShowOnboarding(false)} />
+        ) : (
+          <div className={compact ? 'px-3 pt-3' : 'px-4 pt-4'}>
+            {!compact && <h1 className="text-2xl font-bold text-foreground mb-4">AI Tutor</h1>}
+            <TutorHero
+              recommendation={recommendation ?? null}
+              onSelect={onStartSession}
+              onStartGuided={onStartGuidedSession}
+              disabled={isStarting}
+              isLoading={isLoadingRecommendation}
+            />
+          </div>
+        )
       )}
 
       {view === 'chatting' && (
         <>
           {/* Header */}
-          <div className={`flex items-center justify-between ${compact ? 'px-3 py-2' : 'px-4 py-3'} border-b border-card-border`}>
+          <div className={`shrink-0 flex items-center justify-between ${compact ? 'px-3 py-2' : 'px-4 py-3'} border-b border-card-border`}>
             <div className="flex items-center gap-2 min-w-0">
               <h2 className={`font-semibold text-foreground ${compact ? 'text-sm' : ''} shrink-0`}>AI Tutor</h2>
               <SessionProgressBar activeMode={activeMode ?? null} messages={messages} />
@@ -287,19 +300,19 @@ export function TutorChat({
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Suggestion chips */}
-          {suggestionOptions.length > 0 && (
-            <SuggestionChips options={suggestionOptions} onSelect={onSendMessage} />
-          )}
-
-          {/* Input */}
-          <ChatInput
-            onSend={onSendMessage}
-            disabled={isStreaming}
-            isListening={isListening}
-            transcript={transcript}
-            onMicToggle={handleMicToggle}
-          />
+          {/* Bottom pinned section: chips + input */}
+          <div className="shrink-0 overflow-hidden">
+            {suggestionOptions.length > 0 && (
+              <SuggestionChips options={suggestionOptions} onSelect={onSendMessage} />
+            )}
+            <ChatInput
+              onSend={onSendMessage}
+              disabled={isStreaming}
+              isListening={isListening}
+              transcript={transcript}
+              onMicToggle={handleMicToggle}
+            />
+          </div>
 
           {/* Word popover */}
           {popover && (

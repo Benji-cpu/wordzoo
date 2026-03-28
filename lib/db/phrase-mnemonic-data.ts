@@ -50,7 +50,7 @@ export const PHRASE_MNEMONIC_DATA: Record<string, PhraseMnemonicEntry> = {
     compositeImagePrompt: 'A golden sun-gong radiating waves while bears in cow costumes juggle colorful balls that form heart shapes in the air, celebratory atmosphere, confetti and golden light, bold text overlay reading NICE TO MEET YOU TOO, digital illustration, vibrant colors, slightly surreal, centered composition, single focal point',
   },
   'Baik sekali': {
-    phraseBridgeSentence: 'That golden BIKE ride was SO JOLLY — VERY GOOD indeed!',
+    phraseBridgeSentence: 'SAY to the COLLIE on the BIKE — VERY GOOD boy!',
     compositeSceneDescription: '',
     compositeImagePrompt: '',
   },
@@ -91,7 +91,7 @@ export const PHRASE_MNEMONIC_DATA: Record<string, PhraseMnemonicEntry> = {
     compositeImagePrompt: '',
   },
   'Bisa kurang?': {
-    phraseBridgeSentence: 'CAN you give me this PIZZA for less? CAN YOU LOWER IT?',
+    phraseBridgeSentence: 'Flash your VISA — CAN YOU LOWER the price?',
     compositeSceneDescription: '',
     compositeImagePrompt: '',
   },
@@ -104,9 +104,9 @@ export const PHRASE_MNEMONIC_DATA: Record<string, PhraseMnemonicEntry> = {
   // ── Scene 5: Enak Sekali! (So Delicious!) ──────────────────────────
 
   'Enak sekali!': {
-    phraseBridgeSentence: 'ANY KNOCK on the door reveals SO JOLLY food — SO DELICIOUS!',
-    compositeSceneDescription: 'Knocking on a magical door produces delicious dishes while a jolly Santa-like figure catches each one and declares everything absolutely delicious. Joy and food everywhere.',
-    compositeImagePrompt: 'A magical door with food flying out with each knock while a jolly rotund figure catches dishes with glee, Indonesian food floating in the air, steam and sparkles, warm golden atmosphere, bold text overlay reading SO DELICIOUS, digital illustration, vibrant colors, slightly surreal, centered composition, single focal point',
+    phraseBridgeSentence: 'ANY KNOCK on the door and SAY to the COLLIE — SO DELICIOUS!',
+    compositeSceneDescription: 'A person knocks on a magical door and a border collie delivers steaming dishes. They say to the collie "Very delicious!" — the collie beams with pride at every compliment.',
+    compositeImagePrompt: 'A person knocking on a magical door while a border collie in a chef hat delivers steaming plates of food, the person praising the collie, delicious food floating in the air with steam and sparkles, bold text overlay reading SO DELICIOUS, digital illustration, vibrant colors, slightly surreal, centered composition, single focal point',
   },
   'Saya suka ...': {
     phraseBridgeSentence: 'SAWYER gives a thumbs up — I LIKE this!',
@@ -142,7 +142,7 @@ export const PHRASE_MNEMONIC_DATA: Record<string, PhraseMnemonicEntry> = {
     compositeImagePrompt: 'A crossroads with a giant key-ring swinging to the left side and a brass cannon firing colorful confetti to the right side, a confused traveler in the center looking both ways, dramatic directional lighting, bold text overlay reading TURN LEFT / TURN RIGHT, digital illustration, vibrant colors, slightly surreal, centered composition, single focal point',
   },
   'Dekat sekali': {
-    phraseBridgeSentence: 'SO JOLLY because it\'s VERY CLOSE — almost there!',
+    phraseBridgeSentence: 'SAY to the COLLIE — VERY CLOSE, almost there!',
     compositeSceneDescription: '',
     compositeImagePrompt: '',
   },

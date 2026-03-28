@@ -8,14 +8,15 @@ const PHASE_KEYS = ['scene-intro', 'dialogue', 'phrases', 'vocabulary', 'pattern
 interface SceneFlowHeaderProps {
   title: string;
   currentPhase: string;
+  phaseProgress?: number;
   onBack: () => void;
 }
 
-export function SceneFlowHeader({ title, currentPhase, onBack }: SceneFlowHeaderProps) {
+export function SceneFlowHeader({ title, currentPhase, phaseProgress = 0, onBack }: SceneFlowHeaderProps) {
   const currentIdx = PHASE_KEYS.indexOf(currentPhase as typeof PHASE_KEYS[number]);
 
   return (
-    <div className="mb-6">
+    <div className="mb-3 md:mb-6">
       <div className="flex items-center gap-3 mb-3">
         <IconButton label="Go back" onClick={onBack} size="sm">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -28,18 +29,25 @@ export function SceneFlowHeader({ title, currentPhase, onBack }: SceneFlowHeader
         </div>
       </div>
       <div className="flex gap-1.5">
-        {PHASE_KEYS.map((key, i) => (
-          <div
-            key={key}
-            className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
-              i < currentIdx
-                ? 'bg-accent-id'
-                : i === currentIdx
-                ? 'bg-accent-id/70'
-                : 'bg-white/15'
-            }`}
-          />
-        ))}
+        {PHASE_KEYS.map((key, i) => {
+          if (i < currentIdx) {
+            // Past phase — fully filled
+            return <div key={key} className="h-1.5 flex-1 rounded-full bg-accent-id transition-all duration-300" />;
+          }
+          if (i === currentIdx) {
+            // Current phase — partially filled
+            return (
+              <div key={key} className="h-1.5 flex-1 rounded-full bg-white/15 overflow-hidden">
+                <div
+                  className="h-full bg-accent-id rounded-full transition-all duration-300"
+                  style={{ width: `${Math.max(phaseProgress * 100, 5)}%` }}
+                />
+              </div>
+            );
+          }
+          // Future phase — empty
+          return <div key={key} className="h-1.5 flex-1 rounded-full bg-white/15 transition-all duration-300" />;
+        })}
       </div>
     </div>
   );

@@ -405,8 +405,9 @@ const scene4: DialogueSceneData = {
     { id: 'b1000000-0001-4000-8000-000000000032', text: 'mahal', meaning_en: 'expensive', part_of_speech: 'adjective' },
     { id: 'b1000000-0001-4000-8000-000000000033', text: 'harga', meaning_en: 'price', part_of_speech: 'noun' },
     { id: 'b1000000-0001-4000-8000-000000000034', text: 'bisa', meaning_en: 'can / able', part_of_speech: 'verb' },
+    { id: 'b1000000-0001-4000-8000-000000000042', text: 'besar', meaning_en: 'big', part_of_speech: 'adjective' },
   ],
-  existingWordTexts: ['berapa', 'itu', 'ini', 'saya', 'mau', 'baik', 'terima kasih', 'besar'],
+  existingWordTexts: ['berapa', 'itu', 'ini', 'saya', 'mau', 'baik', 'terima kasih'],
 };
 
 // ── Scene 5: Enak Sekali! (So Delicious!) ──────────────────────────

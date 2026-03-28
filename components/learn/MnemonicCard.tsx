@@ -79,7 +79,7 @@ export function MnemonicCard({
         <img
           src={imageUrl}
           alt={keyword}
-          className="w-full max-h-[50vh] rounded-xl mx-auto block mb-2 object-cover"
+          className="w-full max-h-[35dvh] rounded-xl mx-auto block mb-2 object-cover"
         />
       )}
 

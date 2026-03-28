@@ -381,9 +381,32 @@ export function SceneFlowClient({
       .slice(0, 3);
   }, [phrases]);
 
+  const phaseProgress = (() => {
+    const substepFraction = (step: string, steps: string[]) => steps.indexOf(step) / steps.length;
+
+    switch (state.phase) {
+      case 'scene-intro':
+        return 0;
+      case 'dialogue':
+        return dialogues.length > 1 ? state.lineIndex / (dialogues.length - 1) : 0;
+      case 'phrases':
+        if (phrases.length === 0) return 0;
+        return (state.phraseIndex + substepFraction(state.step, ['show', 'breakdown', 'quiz'])) / phrases.length;
+      case 'vocabulary':
+        if (words.length === 0) return 0;
+        return (state.wordIndex + substepFraction(state.step, ['word', 'mnemonic', 'quiz'])) / words.length;
+      case 'patterns':
+        return patternExercises.length > 1 ? state.exerciseIndex / (patternExercises.length - 1) : 0;
+      case 'conversation':
+        return 0;
+      case 'summary':
+        return 1;
+    }
+  })();
+
   return (
     <div className="max-w-lg mx-auto">
-      <SceneFlowHeader title={sceneTitle} currentPhase={state.phase} onBack={handleBack} />
+      <SceneFlowHeader title={sceneTitle} currentPhase={state.phase} phaseProgress={phaseProgress} onBack={handleBack} />
 
       {/* Scene Intro Phase */}
       {state.phase === 'scene-intro' && (

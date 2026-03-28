@@ -75,7 +75,7 @@ export function HandsFreeControls({ wordIds, onSessionComplete, className = '' }
             />
           </div>
           {/* Step indicators */}
-          <div className="flex gap-1 mt-2 justify-center">
+          <div className="flex flex-wrap gap-1 mt-2 justify-center">
             {Array.from({ length: session.totalWords }, (_, i) => (
               <div
                 key={i}

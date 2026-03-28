@@ -165,7 +165,7 @@ export default function TutorPage() {
   }
 
   return (
-    <div className="max-w-lg mx-auto">
+    <div className="max-w-lg mx-auto -mt-4 -mb-20 h-[calc(100dvh-3.5rem)]">
       <TutorChat
         languageId={languageId}
         langCode={langCode}

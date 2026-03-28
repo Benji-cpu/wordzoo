@@ -48,10 +48,10 @@ export const MNEMONIC_DATA: Record<string, MnemonicEntry> = {
     imagePrompt: 'A colossal stone dam stretching between two cliff faces, a bright sun on one side and a glowing moon on the other, the dam connecting two different worlds, dramatic scale, bold text overlay reading AND, digital illustration, vibrant colors, slightly surreal, centered composition, single focal point',
   },
   'Indonesian:di': {
-    keyword: 'deed',
-    bridgeSentence: 'Crawl IN the DEED like a tunnel!',
-    sceneDescription: 'A rolled-up deed (legal document) is so enormous that a person climbs inside it like a tunnel. They are literally "in" the deed.',
-    imagePrompt: 'A giant rolled-up parchment document forming a tunnel, a tiny person walking inside it, light glowing at the other end, enormous wax seal visible, bold text overlay reading IN/AT, digital illustration, vibrant colors, slightly surreal, centered composition, single focal point',
+    keyword: 'Dee',
+    bridgeSentence: 'DEE is standing right IN the spotlight!',
+    sceneDescription: 'A woman named DEE stands IN a spotlight on a giant stage. She is AT the center of everything — all eyes on Dee, right there IN the moment.',
+    imagePrompt: 'A confident woman standing in a bright spotlight on a giant stage, the spotlight beam creating a visible column of light around her, audience silhouettes watching, bold text overlay reading IN/AT, digital illustration, vibrant colors, slightly surreal, centered composition, single focal point',
   },
   'Indonesian:mau': {
     keyword: 'meow',
@@ -189,10 +189,10 @@ export const MNEMONIC_DATA: Record<string, MnemonicEntry> = {
     imagePrompt: 'Two identical jugglers side by side juggling the exact same colorful balls in perfect sync, one pointing at the other saying me too, circus stage setting, bold text overlay reading ALSO, digital illustration, vibrant colors, slightly surreal, centered composition, single focal point',
   },
   'Indonesian:sekali': {
-    keyword: 'so-jolly',
-    bridgeSentence: 'SO JOLLY — VERY happy indeed!',
-    sceneDescription: 'Santa Claus is so jolly his laughter echoes through the town. He is VERY happy — sekali levels of jolly. His belly shakes like a bowl full of jelly.',
-    imagePrompt: 'An extremely jolly Santa Claus with belly shaking from laughter, visible laughter echoes radiating outward, snow-covered village background, exaggerated joyful expression, bold text overlay reading VERY, digital illustration, vibrant colors, slightly surreal, centered composition, single focal point',
+    keyword: 'say-collie',
+    bridgeSentence: 'SAY to the COLLIE — VERY good dog!',
+    sceneDescription: 'A person kneels down to SAY "very good!" to a border COLLIE who just won the agility competition. The collie beams with pride — it was VERY fast, VERY skilled, VERY good!',
+    imagePrompt: 'A person kneeling down praising a proud border collie wearing a first-place medal after an agility course, the word VERY floating in the air in bold letters, dog show arena background, bold text overlay reading VERY, digital illustration, vibrant colors, slightly surreal, centered composition, single focal point',
   },
   'Indonesian:nasi goreng': {
     keyword: 'nasty go-ring',
@@ -225,10 +225,10 @@ export const MNEMONIC_DATA: Record<string, MnemonicEntry> = {
     imagePrompt: 'A busy harbor with boats of all sizes, each with a giant price tag hanging from its mast, a harbor master with a clipboard checking prices, sunny waterfront scene, bold text overlay reading PRICE, digital illustration, vibrant colors, slightly surreal, centered composition, single focal point',
   },
   'Indonesian:bisa': {
-    keyword: 'pizza',
-    bridgeSentence: 'CAN you eat this entire PIZZA?',
-    sceneDescription: 'A person stares at an impossibly large pizza and asks "Can I eat this?" The pizza is the size of a swimming pool. "Bisa!" — yes, they can!',
-    imagePrompt: 'A person staring in awe at an impossibly large pizza the size of a swimming pool, flexing muscles confidently, other people watching in amazement, bold text overlay reading CAN, digital illustration, vibrant colors, slightly surreal, centered composition, single focal point',
+    keyword: 'visa',
+    bridgeSentence: 'With this VISA you CAN go anywhere!',
+    sceneDescription: 'A golden VISA card glows with power — stamp it and you CAN enter any country, open any door, do anything. The visa is the ultimate "can" pass.',
+    imagePrompt: 'A giant glowing golden visa stamp card opening magical doors to different countries, a person holding it up triumphantly as doors swing open in every direction, passport stamps flying, bold text overlay reading CAN, digital illustration, vibrant colors, slightly surreal, centered composition, single focal point',
   },
   'Indonesian:enak': {
     keyword: 'any-knock',
@@ -247,6 +247,18 @@ export const MNEMONIC_DATA: Record<string, MnemonicEntry> = {
     bridgeSentence: 'The COBRA wants to TRY the apple!',
     sceneDescription: 'A curious cobra rises up to try biting a golden apple dangling from a tree. "Let me try! Let me try!" — the cobra stretches toward the fruit.',
     imagePrompt: 'A curious cobra rising up toward a golden apple dangling from a tree branch, tongue flickering with anticipation, the apple just out of reach, garden setting, bold text overlay reading TRY, digital illustration, vibrant colors, slightly surreal, centered composition, single focal point',
+  },
+  'Indonesian:belok': {
+    keyword: 'bell-lock',
+    bridgeSentence: 'The BELL-LOCK on the gate TURNS with a clang!',
+    sceneDescription: 'A giant padlock shaped like a bell hangs on a garden gate. When you turn the bell-lock, it clangs loudly and the gate swings open, revealing a winding path that turns left and right.',
+    imagePrompt: 'A giant padlock shaped like a golden bell hanging on an ornate garden gate, a hand turning it with a dramatic clang, the gate swinging open to reveal a winding turning path, bold text overlay reading TURN, digital illustration, vibrant colors, slightly surreal, centered composition, single focal point',
+  },
+  'Indonesian:dekat': {
+    keyword: 'the cat',
+    bridgeSentence: 'THE CAT is always CLOSE BY, right next to you!',
+    sceneDescription: 'A cat sits impossibly close to its owner no matter where they go — at the desk, on the bus, in the shower. The cat is always NEARBY, pressed right against them.',
+    imagePrompt: 'A cat pressed impossibly close against its owner in multiple scenes at once, at a desk and on a bus and in a doorway, the cat always right there touching them, comically close, bold text overlay reading CLOSE, digital illustration, vibrant colors, slightly surreal, centered composition, single focal point',
   },
 
   // ── Spanish (23 words) ──────────────────────────────────────────────
@@ -300,10 +312,10 @@ export const MNEMONIC_DATA: Record<string, MnemonicEntry> = {
     imagePrompt: 'A confused donkey standing at a five-way crossroads with identical paths in every direction, ears perked up, turning in circles, foggy mysterious landscape, bold text overlay reading WHERE, digital illustration, vibrant colors, slightly surreal, centered composition, single focal point',
   },
   'Spanish:izquierda': {
-    keyword: 'squid',
-    bridgeSentence: 'The SQUID stretches all arms to the LEFT!',
-    sceneDescription: 'A giant squid extends all its tentacles to the LEFT, pointing every single arm leftward. The squid itself faces left too.',
-    imagePrompt: 'A giant orange squid with all tentacles extending dramatically to the left side, every arm pointing left in the same direction, underwater scene with bubbles, bold text overlay reading LEFT, digital illustration, vibrant colors, slightly surreal, centered composition, single focal point',
+    keyword: 'ski airdrop',
+    bridgeSentence: 'The SKI AIRDROP veers LEFT down the mountain!',
+    sceneDescription: 'A helicopter airdrops a skier who lands and immediately carves hard LEFT down a snowy mountain. The ski trail spells out LEFT in the snow behind them.',
+    imagePrompt: 'A skier being airdropped from a helicopter onto a snowy mountain slope, carving dramatically to the left leaving a trail of powder, the ski tracks forming the word LEFT in the snow, alpine mountain scene, bold text overlay reading LEFT, digital illustration, vibrant colors, slightly surreal, centered composition, single focal point',
   },
   'Spanish:derecha': {
     keyword: 'dare-cha-cha',
@@ -411,10 +423,10 @@ export const MNEMONIC_DATA: Record<string, MnemonicEntry> = {
     imagePrompt: 'An alligator in a formal bow on a tatami mat floor, tail wagging and knocking over a small table with tea cups, fish dinner plate nearby, grateful expression, Japanese room setting, bold text overlay reading THANK YOU, digital illustration, vibrant colors, slightly surreal, centered composition, single focal point',
   },
   'Japanese:sumimasen': {
-    keyword: 'sumo',
-    bridgeSentence: 'The SUMO squeezes through — EXCUSE ME!',
-    sceneDescription: 'A massive sumo wrestler squeezes through a tiny doorway, bowing apologetically as he bumps everything aside. "Excuse me! Sorry!" — he fills the entire room.',
-    imagePrompt: 'A massive sumo wrestler squeezing through a tiny Japanese doorway and bowing deeply, furniture knocked aside, the wrestler taking up the entire room, traditional Japanese interior, bold text overlay reading EXCUSE ME, digital illustration, vibrant colors, slightly surreal, centered composition, single focal point',
+    keyword: 'sumo mason',
+    bridgeSentence: 'The SUMO MASON bumps into the wall — EXCUSE ME, sorry!',
+    sceneDescription: 'A massive sumo wrestler who is also a mason accidentally knocks over the brick wall he was building. He bows deeply — "Excuse me! Sorry!" — bricks tumbling everywhere as he tries to apologize.',
+    imagePrompt: 'A massive sumo wrestler wearing a mason apron accidentally knocking over a brick wall he was building, bowing apologetically with bricks tumbling around him, trowel in hand, construction site meets sumo ring, bold text overlay reading EXCUSE ME, digital illustration, vibrant colors, slightly surreal, centered composition, single focal point',
   },
   'Japanese:ohayou': {
     keyword: 'Ohio',
@@ -477,10 +489,10 @@ export const MNEMONIC_DATA: Record<string, MnemonicEntry> = {
     imagePrompt: 'A confused doctor in a white coat spinning around in a hospital corridor with infinite identical doors stretching in every direction, lost and bewildered, harsh fluorescent lighting, bold text overlay reading WHERE, digital illustration, vibrant colors, slightly surreal, centered composition, single focal point',
   },
   'Japanese:oishii': {
-    keyword: 'oyster',
-    bridgeSentence: 'This golden OYSTER is absolutely DELICIOUS!',
-    sceneDescription: 'An enormous golden oyster sits on a silver platter, radiating warmth and sparkles — it\'s the most DELICIOUS thing ever created. Its pearl gleams inside like a tiny sun.',
-    imagePrompt: 'An enormous golden oyster on an ornate silver platter radiating warmth and sparkles, a glowing pearl inside like a tiny sun, steam rising, surrounded by an aura of deliciousness, bold text overlay reading DELICIOUS, digital illustration, vibrant colors, slightly surreal, centered composition, single focal point',
+    keyword: 'oy she',
+    bridgeSentence: 'OY, SHE made the most DELICIOUS meal ever!',
+    sceneDescription: 'A grandmother emerges from the kitchen and everyone gasps — "OY, SHE did it again!" The food is so DELICIOUS that golden sparkles rise from every dish she carries.',
+    imagePrompt: 'A proud grandmother emerging from a kitchen carrying steaming dishes that radiate golden sparkles, family members gasping in delight around a dinner table, magical steam and sparkles rising from the food, warm kitchen setting, bold text overlay reading DELICIOUS, digital illustration, vibrant colors, slightly surreal, centered composition, single focal point',
   },
   'Japanese:onegaishimasu': {
     keyword: 'on a guy she must',
@@ -501,10 +513,10 @@ export const MNEMONIC_DATA: Record<string, MnemonicEntry> = {
     imagePrompt: 'A family of penguins marching in formation each playing a colorful kazoo, the smallest baby penguin leading at the front, Antarctic ice setting with musical notes floating in the air, bold text overlay reading FAMILY, digital illustration, vibrant colors, slightly surreal, centered composition, single focal point',
   },
   'Japanese:okane': {
-    keyword: 'cane',
-    bridgeSentence: 'The golden CANE erupts MONEY everywhere!',
-    sceneDescription: 'A golden walking cane taps the ground and gold coins ERUPT like a geyser with each strike. The cane drips with jewels — it turns everything into MONEY.',
-    imagePrompt: 'A jewel-encrusted golden walking cane striking the ground with gold coins erupting upward like a geyser, coins raining down everywhere, dramatic golden lighting, bold text overlay reading MONEY, digital illustration, vibrant colors, slightly surreal, centered composition, single focal point',
+    keyword: 'O\'Kane',
+    bridgeSentence: 'O\'KANE the leprechaun guards his pot of MONEY!',
+    sceneDescription: 'An Irish leprechaun named O\'KANE sits on a pot overflowing with gold coins. He clutches his MONEY jealously — "O\'Kane\'s gold! My money!" Rainbows arc overhead.',
+    imagePrompt: 'An Irish leprechaun sitting on an overflowing pot of gold coins, clutching coins jealously with a mischievous grin, rainbow arching overhead, shamrocks and golden light, bold text overlay reading MONEY, digital illustration, vibrant colors, slightly surreal, centered composition, single focal point',
   },
   'Japanese:eki': {
     keyword: 'icky',

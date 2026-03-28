@@ -47,7 +47,7 @@ function parseGrammar(inner: string): MessageSegment {
 function parseContext(inner: string): MessageSegment {
   const pipeIdx = inner.indexOf('|');
   if (pipeIdx < 0) {
-    return { type: 'text', content: `[CONTEXT: ${inner}]` };
+    return { type: 'context_card', label: 'Scene', content: inner };
   }
   const label = inner.slice(0, pipeIdx).trim();
   const content = inner.slice(pipeIdx + 1).trim();

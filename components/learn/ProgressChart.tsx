@@ -27,7 +27,7 @@ export function ProgressChart({ distribution, streak }: { distribution: MasteryD
               );
             })}
           </div>
-          <div className="flex justify-between mt-2">
+          <div className="flex flex-wrap justify-between gap-y-1 mt-2">
             {TIERS.map(tier => (
               <div key={tier.key} className="flex items-center gap-1.5">
                 <div className={`w-2 h-2 rounded-full ${tier.color}`} />

@@ -15,7 +15,7 @@ export default async function ReviewPage() {
   ]);
 
   return (
-    <div className="max-w-lg mx-auto pb-24">
+    <div className="max-w-lg mx-auto">
       <ReviewClient dueWords={dueWords} duePhrases={duePhrases} practiceWords={practiceWords} />
     </div>
   );

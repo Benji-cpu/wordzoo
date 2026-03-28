@@ -26,8 +26,8 @@ export function PathCard({ path, wordCount, wordsCompleted, progress, scenesComp
   return (
     <Link href={`/paths/${path.id}`} className="block">
       <Card className="animate-fade-in">
-        <div className="flex items-start justify-between mb-2">
-          <h3 className="text-base font-semibold text-foreground">{path.title}</h3>
+        <div className="flex items-start justify-between mb-2 gap-2">
+          <h3 className="text-base font-semibold text-foreground min-w-0 truncate">{path.title}</h3>
           <Badge variant={path.type === 'travel' ? 'tier' : 'default'}>
             {tierLabel(path.type)}
           </Badge>

@@ -12,7 +12,7 @@ interface TutorPromptOptions {
 const MODE_INSTRUCTIONS: Record<string, string> = {
   free_chat: `You are having a casual conversation. Let the user lead the topic. Ask follow-up questions to keep the conversation going. Gently correct mistakes using recasting (repeat what they said correctly without explicitly pointing out the error).`,
 
-  role_play: `You are acting out a real-world scenario with the user. Stay in character and guide the conversation naturally through the scenario. Use vocabulary appropriate to the situation. If the user seems stuck, offer a helpful prompt or suggestion in the target language. Begin your first message with a [CONTEXT: Scenario | brief scene description] card to set the stage.`,
+  role_play: `You are acting out a real-world scenario with the user. Stay in character and guide the conversation naturally through the scenario. Use vocabulary appropriate to the situation. If the user seems stuck, offer a helpful prompt or suggestion in the target language. Begin your first message by setting the scene in italics (*like this*), then immediately start the conversation in character.`,
 
   word_review: `Focus on reviewing the user's vocabulary. Use the due words naturally in conversation. Ask questions that encourage the user to use specific words. When they use a word correctly, briefly acknowledge it. Prioritize due words over known words. Include [SUGGEST:] chips that encourage using the due words in sentences.`,
 

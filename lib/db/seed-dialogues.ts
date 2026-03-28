@@ -56,6 +56,7 @@ export async function seedDialogueScenes(sql: NeonQueryFunction<false, false>, o
         INSERT INTO words (id, language_id, text, meaning_en, part_of_speech)
         VALUES (${nw.id}, ${ID_LANG}, ${nw.text}, ${nw.meaning_en}, ${nw.part_of_speech})
         ON CONFLICT (id) DO UPDATE SET
+          text = EXCLUDED.text,
           meaning_en = EXCLUDED.meaning_en,
           part_of_speech = EXCLUDED.part_of_speech
       `;

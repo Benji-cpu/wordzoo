@@ -12,8 +12,8 @@ const JA_LANG = 'a1b2c3d4-0001-4000-8000-000000000003';
 // Extra words to add that aren't in the base seed
 const NEW_WORDS = [
   // Indonesian
-  { id: 'b1000000-0001-4000-8000-000000000021', languageId: ID_LANG, text: 'kucing', meaning: 'cat', pos: 'noun', rank: 21 },
-  { id: 'b1000000-0001-4000-8000-000000000022', languageId: ID_LANG, text: 'besar', meaning: 'big', pos: 'adjective', rank: 22 },
+  { id: 'b1000000-0001-4000-8000-000000000041', languageId: ID_LANG, text: 'kucing', meaning: 'cat', pos: 'noun', rank: 21 },
+  { id: 'b1000000-0001-4000-8000-000000000042', languageId: ID_LANG, text: 'besar', meaning: 'big', pos: 'adjective', rank: 22 },
   // Spanish
   { id: 'b2000000-0001-4000-8000-000000000021', languageId: ES_LANG, text: 'mariposa', meaning: 'butterfly', pos: 'noun', rank: 21 },
   { id: 'b2000000-0001-4000-8000-000000000022', languageId: ES_LANG, text: 'cerveza', meaning: 'beer', pos: 'noun', rank: 22 },
