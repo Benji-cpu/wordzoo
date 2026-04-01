@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const { mode, languageId, scenario } = parsed.data;
-    const result = await startSession(session.user.id, mode, languageId, scenario);
+    const result = await startSession(session.user.id, mode, languageId, scenario, session.user.name);
     return NextResponse.json<ApiResponse<typeof result>>(
       { data: result, error: null }
     );

@@ -38,7 +38,8 @@ export async function POST(request: NextRequest) {
       session.user.id,
       scene.language_id,
       sceneId,
-      scene.scene_context ?? scene.scene_title
+      scene.scene_context ?? scene.scene_title,
+      session.user.name
     );
 
     return NextResponse.json<ApiResponse<typeof result>>(

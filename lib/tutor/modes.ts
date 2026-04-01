@@ -46,6 +46,9 @@ export const TUTOR_MODES: TutorMode[] = [
   },
 ];
 
+export type ChallengeMode = 'easy' | 'medium' | 'hard';
+export const CHALLENGE_MODE_KEY = 'wordzoo-tutor-challenge-mode';
+
 export const MODE_LABELS: Record<string, string> = {
   free_chat: 'Free Chat',
   role_play: 'Role Play',

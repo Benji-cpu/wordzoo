@@ -1,6 +1,6 @@
 # WordZoo
 
-Language learning SaaS with AI-generated keyword mnemonics, spaced repetition, an AI tutor, Stripe billing, community features, and offline support. Built with Next.js 16, React 19, Neon Postgres, and Tailwind CSS v4.
+Language learning SaaS with AI-generated keyword mnemonics, spaced repetition, a tutor, Stripe billing, community features, and offline support. Built with Next.js 16, React 19, Neon Postgres, and Tailwind CSS v4.
 
 ## Tech Stack
 

@@ -150,7 +150,16 @@ export async function getSceneWordsWithDetails(
     FROM scene_words sw
     JOIN words w ON w.id = sw.word_id
     LEFT JOIN user_words uw ON uw.word_id = w.id AND uw.user_id = ${userId}
-    LEFT JOIN mnemonics m ON m.id = uw.current_mnemonic_id
+    LEFT JOIN LATERAL (
+      SELECT id, keyword_text, scene_description, bridge_sentence, image_url
+      FROM mnemonics
+      WHERE word_id = w.id
+        AND (user_id IS NULL OR user_id = ${userId})
+      ORDER BY
+        CASE WHEN id = uw.current_mnemonic_id THEN 0 WHEN user_id = ${userId} THEN 1 ELSE 2 END,
+        upvote_count DESC
+      LIMIT 1
+    ) m ON true
     WHERE sw.scene_id = ${sceneId}
     ORDER BY sw.sort_order
   `;
@@ -215,14 +224,14 @@ export async function getSceneWithLanguage(sceneId: string): Promise<{
 export async function getNextSceneInPath(
   pathId: string,
   currentSortOrder: number
-): Promise<{ id: string; title: string } | null> {
+): Promise<{ id: string; title: string; description: string | null } | null> {
   const rows = await sql`
-    SELECT id, title FROM scenes
+    SELECT id, title, description FROM scenes
     WHERE path_id = ${pathId} AND sort_order > ${currentSortOrder}
     ORDER BY sort_order
     LIMIT 1
   `;
-  return (rows[0] as { id: string; title: string }) ?? null;
+  return (rows[0] as { id: string; title: string; description: string | null }) ?? null;
 }
 
 export async function getDistractorsForWord(
@@ -338,7 +347,16 @@ export async function getOverdueWordsForPreviousScenes(
     JOIN words w ON w.id = uw.word_id
     JOIN scene_words sw ON sw.word_id = uw.word_id
     JOIN scenes s ON s.id = sw.scene_id
-    LEFT JOIN mnemonics m ON m.id = uw.current_mnemonic_id
+    LEFT JOIN LATERAL (
+      SELECT id, keyword_text, scene_description, bridge_sentence, image_url
+      FROM mnemonics
+      WHERE word_id = w.id
+        AND (user_id IS NULL OR user_id = ${userId})
+      ORDER BY
+        CASE WHEN id = uw.current_mnemonic_id THEN 0 WHEN user_id = ${userId} THEN 1 ELSE 2 END,
+        upvote_count DESC
+      LIMIT 1
+    ) m ON true
     WHERE uw.user_id = ${userId} AND s.path_id = ${pathId}
       AND s.sort_order < ${currentSortOrder} AND uw.next_review_at <= NOW()
     ORDER BY uw.word_id, s.sort_order ASC, uw.next_review_at ASC
@@ -534,6 +552,21 @@ export interface LastTutorSessionRow {
   ended_at: Date;
 }
 
+export async function getActiveTutorSession(
+  userId: string,
+  languageId: string
+): Promise<TutorSession | null> {
+  const rows = await sql`
+    SELECT * FROM tutor_sessions
+    WHERE user_id = ${userId}
+      AND language_id = ${languageId}
+      AND ended_at IS NULL
+    ORDER BY started_at DESC
+    LIMIT 1
+  `;
+  return (rows[0] as TutorSession) ?? null;
+}
+
 export async function getLastTutorSession(
   userId: string,
   languageId: string
@@ -652,7 +685,16 @@ export async function getUserVocabWithMnemonics(
       w.pronunciation_audio_url, m.keyword_text, m.scene_description, m.bridge_sentence
     FROM user_words uw
     JOIN words w ON w.id = uw.word_id
-    LEFT JOIN mnemonics m ON m.id = uw.current_mnemonic_id
+    LEFT JOIN LATERAL (
+      SELECT keyword_text, scene_description, bridge_sentence
+      FROM mnemonics
+      WHERE word_id = w.id
+        AND (user_id IS NULL OR user_id = ${userId})
+      ORDER BY
+        CASE WHEN id = uw.current_mnemonic_id THEN 0 WHEN user_id = ${userId} THEN 1 ELSE 2 END,
+        upvote_count DESC
+      LIMIT 1
+    ) m ON true
     WHERE uw.user_id = ${userId} AND w.language_id = ${languageId}
       AND uw.status IN ('learning', 'reviewing', 'mastered')
     ORDER BY uw.times_reviewed DESC
@@ -970,7 +1012,16 @@ export async function getDueWordsForReview(
       uw.times_reviewed, uw.times_correct, uw.direction
     FROM user_words uw
     JOIN words w ON w.id = uw.word_id
-    LEFT JOIN mnemonics m ON m.id = uw.current_mnemonic_id
+    LEFT JOIN LATERAL (
+      SELECT id, keyword_text, scene_description, bridge_sentence, image_url
+      FROM mnemonics
+      WHERE word_id = w.id
+        AND (user_id IS NULL OR user_id = ${userId})
+      ORDER BY
+        CASE WHEN id = uw.current_mnemonic_id THEN 0 WHEN user_id = ${userId} THEN 1 ELSE 2 END,
+        upvote_count DESC
+      LIMIT 1
+    ) m ON true
     WHERE uw.user_id = ${userId}
       AND uw.next_review_at <= NOW()
       AND uw.status != 'new'
@@ -993,7 +1044,16 @@ export async function getAllLearnedWordsForPractice(
       uw.times_reviewed, uw.times_correct, uw.direction
     FROM user_words uw
     JOIN words w ON w.id = uw.word_id
-    LEFT JOIN mnemonics m ON m.id = uw.current_mnemonic_id
+    LEFT JOIN LATERAL (
+      SELECT id, keyword_text, scene_description, bridge_sentence, image_url
+      FROM mnemonics
+      WHERE word_id = w.id
+        AND (user_id IS NULL OR user_id = ${userId})
+      ORDER BY
+        CASE WHEN id = uw.current_mnemonic_id THEN 0 WHEN user_id = ${userId} THEN 1 ELSE 2 END,
+        upvote_count DESC
+      LIMIT 1
+    ) m ON true
     WHERE uw.user_id = ${userId}
       AND uw.status != 'new'
     ORDER BY uw.last_reviewed_at ASC NULLS FIRST
@@ -1037,9 +1097,13 @@ export async function getOrCreateUserWord(
 ): Promise<{ id: string; ease_factor: number; interval_days: number; times_reviewed: number; times_correct: number; status: string; direction: string }> {
   const rows = await sql`
     INSERT INTO user_words (user_id, word_id, current_mnemonic_id, status)
-    VALUES (${userId}, ${wordId}, ${mnemonicId}, 'learning')
+    VALUES (
+      ${userId}, ${wordId},
+      COALESCE(${mnemonicId}, (SELECT id FROM mnemonics WHERE word_id = ${wordId} AND user_id IS NULL ORDER BY upvote_count DESC LIMIT 1)),
+      'learning'
+    )
     ON CONFLICT (user_id, word_id)
-    DO UPDATE SET current_mnemonic_id = COALESCE(user_words.current_mnemonic_id, ${mnemonicId})
+    DO UPDATE SET current_mnemonic_id = COALESCE(user_words.current_mnemonic_id, EXCLUDED.current_mnemonic_id)
     RETURNING id, ease_factor, interval_days, times_reviewed, times_correct, status, direction
   `;
   return rows[0] as { id: string; ease_factor: number; interval_days: number; times_reviewed: number; times_correct: number; status: string; direction: string };
@@ -1150,7 +1214,16 @@ export async function getLearnedWordsWithMnemonics(
     LEFT JOIN scene_words sw ON sw.word_id = w.id
     LEFT JOIN scenes s ON s.id = sw.scene_id
     LEFT JOIN paths p ON p.id = s.path_id
-    LEFT JOIN mnemonics m ON m.id = uw.current_mnemonic_id
+    LEFT JOIN LATERAL (
+      SELECT id, keyword_text, scene_description, bridge_sentence, image_url
+      FROM mnemonics
+      WHERE word_id = w.id
+        AND (user_id IS NULL OR user_id = ${userId})
+      ORDER BY
+        CASE WHEN id = uw.current_mnemonic_id THEN 0 WHEN user_id = ${userId} THEN 1 ELSE 2 END,
+        upvote_count DESC
+      LIMIT 1
+    ) m ON true
     WHERE uw.user_id = ${userId}
       AND uw.status != 'new'
       AND m.id IS NOT NULL

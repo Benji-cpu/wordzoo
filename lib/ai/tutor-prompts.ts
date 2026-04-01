@@ -7,6 +7,7 @@ interface TutorPromptOptions {
   knownWords: KnownWordRow[];
   dueWords: KnownWordRow[];
   adaptiveContext?: string;
+  userName?: string | null;
 }
 
 const MODE_INSTRUCTIONS: Record<string, string> = {
@@ -32,6 +33,11 @@ export function buildTutorSystemPrompt(opts: TutorPromptOptions): string {
     `You speak mostly in ${opts.languageName} with occasional English explanations when needed. ` +
     `Adapt your level to the student's ability. Be warm, patient, and supportive.`
   );
+
+  // Student name
+  if (opts.userName) {
+    blocks.push(`The student's name is ${opts.userName}. Use their name occasionally in conversation.`);
+  }
 
   // Mode instructions
   const modeInstructions = MODE_INSTRUCTIONS[opts.mode] ?? MODE_INSTRUCTIONS.free_chat;
@@ -76,9 +82,14 @@ export function buildTutorSystemPrompt(opts: TutorPromptOptions): string {
     `- When correcting the student, format it as:\n` +
     `  [CORRECT: what they said -> corrected version | brief encouraging explanation]\n` +
     `  Then continue the conversation naturally. Keep explanations under 15 words.\n` +
+    `- After your main response, add a full English translation on its own line:\n` +
+    `  [EN: Full English translation of your response]\n` +
+    `  Only translate the conversational content — not corrections, grammar notes, or suggestions.\n` +
     `- After your response, suggest 2-3 things the student could say next:\n` +
-    `  [SUGGEST: suggestion1 | suggestion2 | suggestion3]\n` +
-    `  Make suggestions natural and at the student's level. Mix target-language and bilingual options.\n` +
+    `  [SUGGEST: target text :: english meaning | target text :: english meaning | target text :: english meaning]\n` +
+    `  Each suggestion has the target-language text, then :: followed by the English meaning.\n` +
+    `  Do NOT use square brackets inside suggestion text (e.g. avoid [your name] — just write the actual text).\n` +
+    `  Make suggestions natural and at the student's level.\n` +
     `  Only include suggestions when the student might benefit from guidance.\n` +
     `- When the user expresses a desire to build, create, or design a custom learning path (e.g., "I want to learn restaurant vocabulary", "build me a path for ordering food", "create a lesson about shopping"), include this marker at the end of your response:\n` +
     `  [PATH_STUDIO_CTA: brief description of what they want to learn]`
@@ -96,6 +107,7 @@ interface GuidedConversationOptions {
   phrases: { text_target: string; text_en: string }[];
   knownWords: KnownWordRow[];
   adaptiveContext?: string;
+  userName?: string | null;
 }
 
 export function buildGuidedConversationPrompt(opts: GuidedConversationOptions): string {
@@ -106,6 +118,11 @@ export function buildGuidedConversationPrompt(opts: GuidedConversationOptions): 
     `You are guiding the student through a practice conversation based on a scene they just studied. ` +
     `Be warm, patient, and supportive. Speak mostly in ${opts.languageName} with English hints when needed.`
   );
+
+  // Student name
+  if (opts.userName) {
+    blocks.push(`The student's name is ${opts.userName}. Use their name occasionally in conversation.`);
+  }
 
   // Learner profile (adaptive context)
   if (opts.adaptiveContext) {
@@ -135,7 +152,8 @@ export function buildGuidedConversationPrompt(opts: GuidedConversationOptions): 
   blocks.push(
     `Instructions:\n` +
     `- Role-play a similar conversation to the model dialogue, but don't repeat it exactly\n` +
-    `- Start with a greeting and set the scene\n` +
+    `- Start with a brief greeting (1 short sentence, no scene-setting paragraph)\n` +
+    `- Do NOT describe the setting or scenario — the student already experienced it. Just greet them and start the conversation.\n` +
     `- Keep your responses to 1-2 sentences\n` +
     `- Encourage the student to use the phrases they just learned\n` +
     `- If the student makes a mistake, format the correction as:\n` +
@@ -143,8 +161,13 @@ export function buildGuidedConversationPrompt(opts: GuidedConversationOptions): 
     `- After 3-5 exchanges, wrap up the conversation naturally\n` +
     `- Bold target-language words: **word** (meaning)\n` +
     `- Keep it encouraging and fun\n` +
+    `- After your main response, add a full English translation on its own line:\n` +
+    `  [EN: Full English translation of your response]\n` +
+    `  Only translate the conversational content — not corrections, grammar notes, or suggestions.\n` +
     `- Include [SUGGEST:] chips using phrases the student just learned:\n` +
-    `  [SUGGEST: suggestion1 | suggestion2 | suggestion3]`
+    `  [SUGGEST: target text :: english meaning | target text :: english meaning | target text :: english meaning]\n` +
+    `  Each suggestion has the target-language text, then :: followed by the English meaning.\n` +
+    `  Do NOT use square brackets inside suggestion text (e.g. avoid [your name] — just write the actual text).`
   );
 
   return blocks.join('\n\n');

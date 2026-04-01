@@ -14,6 +14,7 @@ const PHASE_LABELS: Record<string, string> = {
 interface ContinueLearningCardProps {
   pathTitle: string;
   sceneTitle: string;
+  sceneDescription?: string | null;
   sceneId: string;
   progress: number;
   currentPhase?: string | null;
@@ -22,6 +23,7 @@ interface ContinueLearningCardProps {
 export function ContinueLearningCard({
   pathTitle,
   sceneTitle,
+  sceneDescription,
   sceneId,
   progress,
   currentPhase,
@@ -32,9 +34,13 @@ export function ContinueLearningCard({
         <p className="text-xs text-text-secondary uppercase tracking-wider mb-1">
           {pathTitle}
         </p>
-        <h3 className="text-base font-semibold text-foreground mb-2">
+        <h3 className="text-base font-semibold text-foreground">
           {sceneTitle}
         </h3>
+        {sceneDescription && (
+          <p className="text-sm text-text-secondary mb-2">{sceneDescription}</p>
+        )}
+        {!sceneDescription && <div className="mb-2" />}
         <ProgressBar value={progress} accentColor="bg-accent-id" height="md" />
         <div className="flex items-center justify-between mt-2">
           <span className="text-sm text-text-secondary">

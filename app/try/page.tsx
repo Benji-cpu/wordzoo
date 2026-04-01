@@ -11,6 +11,7 @@ import {
   loadOnboardingProgress,
 } from '@/lib/onboarding/state';
 import ProgressDots from '@/components/onboarding/ProgressDots';
+import NameInput from '@/components/onboarding/NameInput';
 import LanguagePicker from '@/components/onboarding/LanguagePicker';
 import WordReveal from '@/components/onboarding/WordReveal';
 import QuizCard from '@/components/onboarding/QuizCard';
@@ -54,13 +55,22 @@ export default function OnboardingPage() {
     screen.type === 'word_reveal' ? `word_reveal_${screen.wordIndex}` :
     screen.type === 'quiz' ? `quiz_${screen.wordIndex}` :
     screen.type === 'double_quiz' ? `double_quiz_${screen.phase}` :
+    screen.type === 'name_input' ? 'name_input' :
     screen.type;
 
   const renderScreen = () => {
     switch (screen.type) {
+      case 'name_input':
+        return (
+          <NameInput
+            onSubmit={(name) => dispatch({ type: 'SET_NAME', name })}
+          />
+        );
+
       case 'language_pick':
         return (
           <LanguagePicker
+            userName={state.userName}
             onSelect={(lang) => dispatch({ type: 'SELECT_LANGUAGE', language: lang })}
           />
         );
@@ -113,6 +123,7 @@ export default function OnboardingPage() {
         if (!state.selectedLanguage) return null;
         return (
           <OnboardingComplete
+            userName={state.userName}
             languageName={state.selectedLanguage.name}
             words={state.words}
             elapsedSeconds={
@@ -131,7 +142,7 @@ export default function OnboardingPage() {
 
   return (
     <div className="flex flex-col min-h-screen max-w-lg mx-auto">
-      {screen.type !== 'language_pick' && (
+      {screen.type !== 'name_input' && screen.type !== 'language_pick' && (
         <ProgressDots totalSteps={7} currentStep={currentStep} />
       )}
 

@@ -24,7 +24,8 @@ export async function startSession(
   userId: string,
   mode: string,
   languageId: string,
-  scenario?: string
+  scenario?: string,
+  userName?: string | null
 ): Promise<{ sessionId: string; greeting: string }> {
   const session = await insertTutorSession(userId, languageId, mode, scenario);
 
@@ -54,6 +55,7 @@ export async function startSession(
       knownWords,
       dueWords,
       adaptiveContext: adaptiveCtx,
+      userName,
     });
   }
 
@@ -81,7 +83,8 @@ export async function startGuidedSession(
   userId: string,
   languageId: string,
   sceneId: string,
-  sceneContext: string
+  sceneContext: string,
+  userName?: string | null
 ): Promise<{ sessionId: string; greeting: string }> {
   const session = await insertGuidedConversationSession(userId, languageId, sceneId, sceneContext);
 
@@ -109,6 +112,7 @@ export async function startGuidedSession(
     })),
     knownWords,
     adaptiveContext: adaptiveCtx,
+    userName,
   });
 
   if (adaptiveCtx) {
@@ -116,7 +120,7 @@ export async function startGuidedSession(
   }
 
   const greetingMessages: GeminiChatMessage[] = [
-    { role: 'user', content: 'Start the practice conversation with a greeting.' },
+    { role: 'user', content: 'Start the practice conversation. Keep your opening to 1-2 short sentences — no scene-setting.' },
   ];
 
   const response = await generateChat(greetingMessages, systemPrompt);
@@ -129,7 +133,8 @@ export async function startGuidedSession(
 export async function sendMessage(
   sessionId: string,
   userId: string,
-  userMessage: string
+  userMessage: string,
+  userName?: string | null
 ): Promise<{ stream: ReadableStream<string>; completePromise: Promise<void> }> {
   const session = await getTutorSessionById(sessionId);
   if (!session) throw new Error('Session not found');
@@ -170,6 +175,7 @@ export async function sendMessage(
       })),
       knownWords,
       adaptiveContext: adaptiveCtx,
+      userName,
     });
   } else if (session.mode === 'path_builder') {
     const draft = await getDraftBySessionId(sessionId);
@@ -218,6 +224,7 @@ export async function sendMessage(
       knownWords,
       dueWords,
       adaptiveContext: adaptiveCtx,
+      userName,
     });
   }
 
@@ -267,6 +274,16 @@ export async function endSession(
   const startedAt = new Date(session.started_at);
   const durationMinutes = Math.round((Date.now() - startedAt.getTime()) / 60000);
 
+  // Generate AI evaluation synchronously (adds ~1-2s, acceptable after a chat)
+  let evaluation = null;
+  try {
+    const { generateSessionEvaluation } = await import('@/lib/services/tutor-srs-bridge');
+    const adaptiveCtx = await buildAdaptiveContext(userId, session.language_id);
+    evaluation = await generateSessionEvaluation(messages, adaptiveCtx, session.mode);
+  } catch (error) {
+    console.error(`[tutor-service] Session evaluation failed for ${sessionId}:`, error);
+  }
+
   const summary: Record<string, unknown> = {
     messageCount: messages.length,
     userMessageCount: userMessages.length,
@@ -275,6 +292,7 @@ export async function endSession(
     wordCount: mentionedWords.size,
     durationMinutes,
     mode: session.mode,
+    ...(evaluation && { evaluation }),
   };
 
   await updateTutorSession(sessionId, {

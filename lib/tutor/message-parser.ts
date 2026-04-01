@@ -1,19 +1,46 @@
+export interface SuggestionOption {
+  text: string;
+  english?: string;
+}
+
 export type MessageSegment =
   | { type: 'text'; content: string }
   | { type: 'vocab_word'; word: string; meaning: string }
-  | { type: 'suggestion'; options: string[] }
+  | { type: 'suggestion'; options: SuggestionOption[] }
+  | { type: 'english_translation'; content: string }
   | { type: 'correction'; original: string; corrected: string; explanation?: string }
   | { type: 'grammar_note'; title: string; body: string }
   | { type: 'context_card'; label: string; content: string }
   | { type: 'path_vocab'; word: string; romanization: string; meaning: string; mnemonicHint: string }
   | { type: 'phase_transition'; phase: string; description: string };
 
-// Matches [MARKER: content] patterns and **word** (meaning) patterns
-const MARKER_REGEX =
-  /\[SUGGEST:\s*([^\]]+)\]|\[CORRECT:\s*([^\]]+)\]|\[GRAMMAR:\s*([^\]]+)\]|\[CONTEXT:\s*([^\]]+)\]|\[PATH_VOCAB:\s*([^\]]+)\]|\[PHASE_TRANSITION:\s*([^\]]+)\]|\*\*([^*]+)\*\*\s*\(([^)]+)\)/g;
+// Matches [MARKER: content] patterns (allowing one level of nested brackets) and **word** (meaning) patterns
+// The capture group (?:[^\[\]]|\[[^\]]*\])+ matches non-bracket chars OR a [...] pair, handling nested brackets like [your name]
+const NESTED = '(?:[^\\[\\]]|\\[[^\\]]*\\])+';
+const MARKER_REGEX = new RegExp(
+  `\\[SUGGEST:\\s*(${NESTED})\\]` +
+  `|\\[CORRECT:\\s*(${NESTED})\\]` +
+  `|\\[GRAMMAR:\\s*(${NESTED})\\]` +
+  `|\\[CONTEXT:\\s*(${NESTED})\\]` +
+  `|\\[PATH_VOCAB:\\s*(${NESTED})\\]` +
+  `|\\[PHASE_TRANSITION:\\s*(${NESTED})\\]` +
+  `|\\[EN:\\s*(${NESTED})\\]` +
+  `|\\*\\*([^*]+)\\*\\*\\s*\\(([^)]+)\\)`,
+  'g'
+);
 
 function parseSuggest(inner: string): MessageSegment {
-  const options = inner.split('|').map((s) => s.trim()).filter(Boolean);
+  const options: SuggestionOption[] = inner.split('|').map((s) => {
+    const trimmed = s.trim();
+    const separatorIdx = trimmed.indexOf('::');
+    if (separatorIdx >= 0) {
+      return {
+        text: trimmed.slice(0, separatorIdx).trim(),
+        english: trimmed.slice(separatorIdx + 2).trim() || undefined,
+      };
+    }
+    return { text: trimmed };
+  }).filter((o) => o.text && o.text.length > 1);
   return { type: 'suggestion', options };
 }
 
@@ -115,9 +142,12 @@ export function parseMessageContent(raw: string): MessageSegment[] {
     } else if (match[6] != null) {
       // [PHASE_TRANSITION: ...]
       segments.push(parsePhaseTransition(match[6]));
-    } else if (match[7] != null && match[8] != null) {
+    } else if (match[7] != null) {
+      // [EN: ...]
+      segments.push({ type: 'english_translation', content: match[7].trim() });
+    } else if (match[8] != null && match[9] != null) {
       // **word** (meaning)
-      segments.push({ type: 'vocab_word', word: match[7], meaning: match[8] });
+      segments.push({ type: 'vocab_word', word: match[8], meaning: match[9] });
     }
 
     lastIndex = match.index + match[0].length;
@@ -130,7 +160,7 @@ export function parseMessageContent(raw: string): MessageSegment[] {
 }
 
 /** Extract suggestion options from parsed segments */
-export function extractSuggestions(segments: MessageSegment[]): string[] {
+export function extractSuggestions(segments: MessageSegment[]): SuggestionOption[] {
   for (const seg of segments) {
     if (seg.type === 'suggestion') return seg.options;
   }

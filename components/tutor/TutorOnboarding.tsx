@@ -11,7 +11,7 @@ interface TutorOnboardingProps {
 
 const steps = [
   {
-    title: 'Meet Your AI Tutor',
+    title: 'Meet Your Tutor',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-10 h-10 sm:w-12 sm:h-12 text-accent-default">
         <path d="M12 2a3 3 0 0 0-3 3v1a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />

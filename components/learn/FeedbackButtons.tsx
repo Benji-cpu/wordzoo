@@ -112,6 +112,7 @@ export function FeedbackButtons({ mnemonicId, context, compact = false }: Feedba
             type="text"
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter' && commentText.trim()) handleSendComment(); }}
             placeholder={placeholderText}
             className="w-full px-3 py-2 rounded-lg bg-white/5 border border-card-border text-sm text-foreground placeholder:text-text-secondary focus:outline-none focus:border-accent-default/50 transition-colors"
             maxLength={500}

@@ -1,56 +1,51 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { Card } from '@/components/ui/Card';
 import type { ScenePatternExercise } from '@/types/database';
 
 interface PatternExerciseProps {
   exercise: ScenePatternExercise;
   onCorrect: () => void;
+  userName?: string | null;
 }
 
-export function PatternExercise({ exercise, onCorrect }: PatternExerciseProps) {
+export function PatternExercise({ exercise, onCorrect, userName }: PatternExerciseProps) {
   const [selected, setSelected] = useState<string | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
-  const [showExplanation, setShowExplanation] = useState(true);
+  const [showPattern, setShowPattern] = useState(false);
+
+  // Replace {name} placeholder with user's first name (fallback to "Adi")
+  const firstName = userName?.split(' ')[0] || 'Adi';
+  const prompt = useMemo(() => exercise.prompt.replace(/\{name\}/g, firstName), [exercise.prompt, firstName]);
+  const hintEn = useMemo(() => exercise.hint_en?.replace(/\{name\}/g, firstName) ?? null, [exercise.hint_en, firstName]);
 
   const options = useShuffled(exercise.correct_answer, exercise.distractors, exercise.prompt);
 
   const handleSelect = useCallback((option: string) => {
     if (selected) return;
     setSelected(option);
-    setShowExplanation(false);
     const correct = option === exercise.correct_answer;
     setIsCorrect(correct);
 
     if (correct) {
-      setTimeout(onCorrect, 800);
+      setTimeout(() => setShowPattern(true), 400);
+      setTimeout(onCorrect, 1600);
     } else {
       setTimeout(() => {
         setSelected(exercise.correct_answer);
         setIsCorrect(true);
-        setTimeout(onCorrect, 800);
+        setTimeout(() => setShowPattern(true), 400);
+        setTimeout(onCorrect, 1600);
       }, 1000);
     }
   }, [selected, exercise.correct_answer, onCorrect]);
 
   // Highlight the blank in the prompt
-  const promptParts = exercise.prompt.split('___');
+  const promptParts = prompt.split('___');
 
   return (
     <div className="animate-slide-up">
-      {/* Pattern template */}
-      <Card className="mb-4 text-center">
-        <p className="text-xs text-text-secondary uppercase tracking-wider mb-2">Pattern</p>
-        <p className="text-xl font-bold text-accent-id">{exercise.pattern_template}</p>
-        <p className="text-sm text-text-secondary mt-1">{exercise.pattern_en}</p>
-        {showExplanation && exercise.explanation && (
-          <p className="text-sm text-text-secondary mt-3 bg-white/5 rounded-lg px-3 py-2">
-            {exercise.explanation}
-          </p>
-        )}
-      </Card>
-
       {/* Fill-in prompt */}
       <p className="text-center text-sm text-text-secondary mb-2">Fill in the blank:</p>
       <p className="text-center text-lg font-medium text-foreground mb-1">
@@ -64,8 +59,8 @@ export function PatternExercise({ exercise, onCorrect }: PatternExerciseProps) {
         </span>
         {promptParts[1]}
       </p>
-      {exercise.hint_en && (
-        <p className="text-center text-sm text-text-secondary mb-4">{exercise.hint_en}</p>
+      {hintEn && (
+        <p className="text-center text-sm text-text-secondary mb-4">{hintEn}</p>
       )}
 
       {/* Options */}
@@ -96,6 +91,20 @@ export function PatternExercise({ exercise, onCorrect }: PatternExerciseProps) {
           );
         })}
       </div>
+
+      {/* Pattern reveal after answer */}
+      {showPattern && (
+        <Card className="mt-4 text-center animate-fade-in-up">
+          <p className="text-xs text-text-secondary uppercase tracking-wider mb-2">Pattern</p>
+          <p className="text-xl font-bold text-accent-id">{exercise.pattern_template}</p>
+          <p className="text-sm text-text-secondary mt-1">{exercise.pattern_en}</p>
+          {exercise.explanation && (
+            <p className="text-sm text-text-secondary mt-3 bg-white/5 rounded-lg px-3 py-2">
+              {exercise.explanation}
+            </p>
+          )}
+        </Card>
+      )}
     </div>
   );
 }

@@ -5,10 +5,11 @@ import { motion } from 'framer-motion';
 import { ONBOARDING_LANGUAGES, type OnboardingLanguage } from '@/lib/onboarding/data';
 
 interface LanguagePickerProps {
+  userName?: string | null;
   onSelect: (language: OnboardingLanguage) => void;
 }
 
-export default function LanguagePicker({ onSelect }: LanguagePickerProps) {
+export default function LanguagePicker({ userName, onSelect }: LanguagePickerProps) {
   const [selected, setSelected] = useState<string | null>(null);
 
   // Preload all 9 mnemonic images on mount
@@ -34,7 +35,7 @@ export default function LanguagePicker({ onSelect }: LanguagePickerProps) {
         animate={{ opacity: 1, y: 0 }}
         className="text-3xl font-bold text-center mb-2"
       >
-        Pick a language to try
+        {userName ? `Hi ${userName}! Pick a language to try` : 'Pick a language to try'}
       </motion.h1>
       <motion.p
         initial={{ opacity: 0 }}

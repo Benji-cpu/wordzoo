@@ -100,6 +100,7 @@ export default async function LearnPage({ params }: PageProps) {
       <LearnClient
         sceneId={sceneId}
         sceneTitle={scene.scene_title}
+        sceneDescription={scene.scene_description}
         languageName={scene.language_name}
         languageCode={scene.language_code as SupportedLanguageCode}
         words={words}
@@ -136,6 +137,7 @@ export default async function LearnPage({ params }: PageProps) {
     <SceneFlowClient
       sceneId={sceneId}
       sceneTitle={scene.scene_title}
+      sceneDescription={scene.scene_description}
       languageName={scene.language_name}
       languageCode={scene.language_code as SupportedLanguageCode}
       dialogues={flowData.dialogues}
@@ -147,6 +149,7 @@ export default async function LearnPage({ params }: PageProps) {
       anchorImageUrl={scene.anchor_image_url}
       nextScene={nextScene}
       pathId={scene.path_id}
+      userName={session?.user?.name ?? null}
     />
   );
 }

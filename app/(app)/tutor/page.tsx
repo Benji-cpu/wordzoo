@@ -7,6 +7,7 @@ import { useTutorChat } from '@/lib/hooks/useTutorChat';
 import type { TutorRecommendation } from '@/app/api/tutor/recommendation/route';
 
 export default function TutorPage() {
+  const [initialMode, setInitialMode] = useState<string | undefined>(undefined);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [languageId, setLanguageId] = useState<string | null>(null);
   const [langCode, setLangCode] = useState('en');
@@ -18,7 +19,21 @@ export default function TutorPage() {
   const [recommendation, setRecommendation] = useState<TutorRecommendation | null>(null);
   const [isLoadingRecommendation, setIsLoadingRecommendation] = useState(false);
 
-  const { messages, isStreaming, error, sendMessage, addGreeting } = useTutorChat(sessionId);
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
+  const [sceneIdParam, setSceneIdParam] = useState<string | null>(null);
+  const [returnTo, setReturnTo] = useState<string | null>(null);
+
+  const { messages, isStreaming, error, sendMessage, addGreeting, loadMessages } = useTutorChat(sessionId);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const mode = params.get('mode');
+    const scene = params.get('sceneId');
+    const ret = params.get('returnTo');
+    if (mode && !scene) setInitialMode(mode);
+    if (scene) setSceneIdParam(scene);
+    if (ret && ret.startsWith('/')) setReturnTo(ret);
+  }, []);
 
   useEffect(() => {
     async function fetchLanguage() {
@@ -42,9 +57,39 @@ export default function TutorPage() {
     fetchLanguage();
   }, []);
 
-  // Fetch recommendation when languageId is available and no active session
+  // Check for active (resumable) session when languageId is available
+  // Skip if coming from scene handoff (sceneIdParam) — we'll start a fresh guided session
   useEffect(() => {
-    if (!languageId || sessionId) return;
+    if (!languageId || sessionId || sceneIdParam) {
+      setIsCheckingSession(false);
+      return;
+    }
+    async function checkActiveSession() {
+      try {
+        const res = await fetch(`/api/tutor/session/active?languageId=${languageId}`);
+        if (!res.ok) return;
+        const json = await res.json();
+        if (json.data) {
+          setSessionId(json.data.session.id);
+          setActiveMode(json.data.session.mode);
+          loadMessages(json.data.messages.map((m: { role: 'user' | 'model'; content: string }) => ({
+            role: m.role,
+            content: m.content,
+          })));
+        }
+      } catch {
+        // Non-critical — fall through to mode selection
+      } finally {
+        setIsCheckingSession(false);
+      }
+    }
+    checkActiveSession();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [languageId]);
+
+  // Fetch recommendation when languageId is available, no active session, and session check is done
+  useEffect(() => {
+    if (!languageId || sessionId || isCheckingSession) return;
     async function fetchRecommendation() {
       setIsLoadingRecommendation(true);
       try {
@@ -62,7 +107,7 @@ export default function TutorPage() {
       }
     }
     fetchRecommendation();
-  }, [languageId, sessionId]);
+  }, [languageId, sessionId, isCheckingSession]);
 
   const handleStartSession = useCallback(
     async (mode: string, scenario?: string) => {
@@ -117,6 +162,14 @@ export default function TutorPage() {
     [addGreeting]
   );
 
+  // Auto-start guided session when coming from scene summary
+  useEffect(() => {
+    if (sceneIdParam && languageId && !sessionId && !isStarting && !isCheckingSession) {
+      handleStartGuidedSession(sceneIdParam);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sceneIdParam, languageId, isCheckingSession]);
+
   const handleEndSession = useCallback(async () => {
     if (!sessionId) return;
     setIsEnding(true);
@@ -144,10 +197,10 @@ export default function TutorPage() {
     setRecommendation(null);
   }, []);
 
-  if (isLoadingLanguage) {
+  if (isLoadingLanguage || (isCheckingSession && languageId)) {
     return (
       <div className="max-w-lg mx-auto px-4 pt-8 text-center">
-        <h1 className="text-2xl font-bold text-foreground">AI Tutor</h1>
+        <h1 className="text-2xl font-bold text-foreground">Tutor</h1>
         <p className="mt-2 text-text-secondary">Loading...</p>
       </div>
     );
@@ -156,7 +209,7 @@ export default function TutorPage() {
   if (!languageId) {
     return (
       <div className="max-w-lg mx-auto px-4 pt-8 text-center">
-        <h1 className="text-2xl font-bold text-foreground">AI Tutor</h1>
+        <h1 className="text-2xl font-bold text-foreground">Tutor</h1>
         <p className="mt-2 text-text-secondary">
           Start a learning path first to use the tutor.
         </p>
@@ -169,6 +222,7 @@ export default function TutorPage() {
       <TutorChat
         languageId={languageId}
         langCode={langCode}
+        initialMode={initialMode}
         messages={messages}
         isStreaming={isStreaming}
         error={error}
@@ -184,6 +238,7 @@ export default function TutorPage() {
         recommendation={recommendation}
         isLoadingRecommendation={isLoadingRecommendation}
         onStartGuidedSession={handleStartGuidedSession}
+        returnTo={returnTo}
       />
     </div>
   );

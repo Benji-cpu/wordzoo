@@ -5,6 +5,7 @@ import type { OnboardingWord } from '@/lib/onboarding/data';
 import type { QuizAnswer } from '@/lib/onboarding/state';
 
 interface OnboardingCompleteProps {
+  userName?: string | null;
   languageName: string;
   words: OnboardingWord[];
   elapsedSeconds: number;
@@ -14,6 +15,7 @@ interface OnboardingCompleteProps {
 }
 
 export default function OnboardingComplete({
+  userName,
   languageName,
   words,
   elapsedSeconds,
@@ -41,7 +43,7 @@ export default function OnboardingComplete({
         transition={{ delay: 0.2 }}
         className="text-2xl font-bold text-center"
       >
-        You just learned {words.length} {languageName} words
+        {userName ? `${userName}, you` : 'You'} just learned {words.length} {languageName} words
         {elapsedSeconds < 60 ? ' in under a minute' : ` in ${Math.round(elapsedSeconds / 60)} minutes`}.
       </motion.h2>
 

@@ -133,7 +133,7 @@ export async function updateSceneProgress(
   updates: {
     currentPhase?: SceneFlowPhase;
     phaseIndex?: number;
-    phaseCompleted?: 'dialogue' | 'phrases' | 'vocabulary' | 'patterns' | 'conversation';
+    phaseCompleted?: 'dialogue' | 'phrases' | 'vocabulary' | 'patterns';
     completedAt?: Date;
   }
 ): Promise<void> {
@@ -201,6 +201,9 @@ export interface DuePhraseForReview {
   text_en: string;
   literal_translation: string | null;
   audio_url: string | null;
+  phrase_bridge_sentence: string | null;
+  composite_image_url: string | null;
+  composite_scene_description: string | null;
   user_phrase_id: string;
   status: string;
   ease_factor: number;
@@ -217,6 +220,7 @@ export async function getDuePhrasesForReview(
     SELECT
       sp.id AS phrase_id, sp.text_target, sp.text_en,
       sp.literal_translation, sp.audio_url,
+      sp.phrase_bridge_sentence, sp.composite_image_url, sp.composite_scene_description,
       up.id AS user_phrase_id, up.status, up.ease_factor,
       up.interval_days, up.times_reviewed, up.times_correct
     FROM user_phrases up

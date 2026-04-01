@@ -38,7 +38,7 @@ export function WordPopover({ data, anchorRect, onClose }: WordPopoverProps) {
   return (
     <div
       ref={ref}
-      className="fixed z-50 w-64 rounded-xl bg-card-surface border border-card-border p-4 shadow-xl"
+      className="fixed z-50 w-64 rounded-xl bg-background border border-card-border p-4 shadow-xl"
       style={{ top, left }}
     >
       <div className="text-lg font-bold text-foreground">{data.text}</div>

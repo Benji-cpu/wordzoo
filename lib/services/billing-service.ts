@@ -13,6 +13,12 @@ import {
   updateUserSubscriptionTier,
 } from '@/lib/db/queries';
 
+function isAdminUser(email: string | null | undefined): boolean {
+  if (!email) return false;
+  const adminEmails = process.env.ADMIN_EMAILS?.split(',').map(e => e.trim().toLowerCase()) ?? [];
+  return adminEmails.includes(email.toLowerCase());
+}
+
 const FREE_LIMITS: Record<string, { field: string; limit: number }> = {
   new_word: { field: 'words_learned', limit: 5 },
   tutor_message: { field: 'tutor_messages', limit: 3 },
@@ -56,6 +62,11 @@ export async function checkAccess(
   const user = await getUserById(userId);
   if (!user) {
     return { allowed: false, reason: 'User not found', currentUsage: null, limit: null, upgradeMessage: null };
+  }
+
+  // Admin users bypass all billing limits
+  if (isAdminUser(user.email)) {
+    return { allowed: true, reason: null, currentUsage: null, limit: null, upgradeMessage: null };
   }
 
   // Premium users: check for subscription expiry defensively
@@ -140,9 +151,10 @@ export async function incrementUsage(
   feature: BillingFeature,
   amount: number = 1
 ): Promise<void> {
-  // Skip usage tracking for premium users
+  // Skip usage tracking for premium and admin users
   const user = await getUserById(userId);
   if (user?.subscription_tier === 'premium') return;
+  if (isAdminUser(user?.email)) return;
 
   const incrementFn = INCREMENT_FNS[feature];
   if (!incrementFn) return;

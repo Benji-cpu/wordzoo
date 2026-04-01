@@ -32,9 +32,11 @@ export function MnemonicGalleryCard({ word }: { word: GalleryWord }) {
       <div className="text-center">
         <p className="text-lg font-bold text-accent-id">{word.text}</p>
         <p className="text-sm text-text-secondary">{word.meaning_en}</p>
-        <p className="text-xs text-text-secondary mt-1 italic">
-          &ldquo;{word.keyword_text}&rdquo;
-        </p>
+        {word.keyword_text && (
+          <p className="text-xs text-text-secondary mt-1 italic">
+            &ldquo;{word.keyword_text}&rdquo;
+          </p>
+        )}
       </div>
 
       {/* Expanded Details */}

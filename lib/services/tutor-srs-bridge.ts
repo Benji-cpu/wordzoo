@@ -1,4 +1,4 @@
-import { generateChat } from '@/lib/ai/gemini';
+import { generateChatJSON } from '@/lib/ai/gemini';
 import { recordReview } from '@/lib/srs/engine';
 import {
   getOrCreateUserWord,
@@ -6,7 +6,7 @@ import {
   insertTutorWordReviews,
 } from '@/lib/db';
 import type { KnownWordRow } from '@/lib/db/queries';
-import type { TutorMessage } from '@/types/database';
+import type { TutorMessage, SessionEvaluation } from '@/types/database';
 
 interface WordUsageEntry {
   wordId: string;
@@ -71,18 +71,15 @@ Return ONLY a JSON object:
 }`;
 
   try {
-    const response = await generateChat(
-      [{ role: 'user', content: prompt }],
-      'You are a language learning analyst. Return only valid JSON.'
-    );
-
-    const cleaned = response.text.replace(/```json?\n?/g, '').replace(/```/g, '').trim();
-    const result = JSON.parse(cleaned) as {
+    const { data: result } = await generateChatJSON<{
       correct?: string[];
       corrected?: string[];
       missed?: string[];
       introduced?: string[];
-    };
+    }>(
+      [{ role: 'user', content: prompt }],
+      'You are a language learning analyst. Return only valid JSON.'
+    );
 
     const usage: SessionWordUsage = {
       correct: [],
@@ -183,4 +180,66 @@ export async function recordConversationReviews(
     : 0;
 
   return { reviewsRecorded, wordsIntroduced, accuracyRate };
+}
+
+export async function generateSessionEvaluation(
+  messages: TutorMessage[],
+  adaptiveContext: string,
+  mode: string
+): Promise<SessionEvaluation | null> {
+  const userMessages = messages.filter((m) => m.role === 'user');
+  if (userMessages.length === 0) return null;
+
+  const isShortSession = userMessages.length < 4;
+
+  const transcript = messages
+    .map((m) => `${m.role === 'user' ? 'Student' : 'Tutor'}: ${m.content}`)
+    .join('\n');
+
+  const prompt = `You are evaluating a language tutoring session. Analyze the conversation and provide feedback for the student.
+
+Session mode: ${mode}
+${adaptiveContext ? `Learner context:\n${adaptiveContext}\n` : ''}
+Transcript:
+${transcript}
+
+Provide a JSON evaluation with:
+- "strengths": ${isShortSession ? '1 thing' : '1-3 things'} the student did well. Be specific — cite examples from the conversation.
+- "improvements": ${isShortSession ? '1 thing' : '1-3 things'} the student can improve. Be specific — cite examples.
+- "tip": One specific, actionable tip for their next session.
+
+Keep each point to 1-2 sentences. Be encouraging but honest.${mode === 'role_play' ? ' Comment on how well the student stayed in character.' : ''}${mode === 'pronunciation_coach' ? ' Comment on pronunciation attempts.' : ''}${mode === 'guided_conversation' ? ' Comment on how well the student followed the dialogue flow.' : ''}
+
+Return ONLY a JSON object:
+{
+  "strengths": ["..."],
+  "improvements": ["..."],
+  "tip": "..."
+}`;
+
+  try {
+    const { data: result } = await generateChatJSON<SessionEvaluation>(
+      [{ role: 'user', content: prompt }],
+      'You are a supportive language learning evaluator. Return only valid JSON.'
+    );
+
+    // Validate shape
+    if (
+      !Array.isArray(result.strengths) || result.strengths.length === 0 ||
+      !Array.isArray(result.improvements) || result.improvements.length === 0 ||
+      typeof result.tip !== 'string' || !result.tip
+    ) {
+      console.error('[tutor-srs-bridge] Invalid evaluation shape:', result);
+      return null;
+    }
+
+    // Enforce limits
+    result.strengths = result.strengths.slice(0, 3);
+    result.improvements = result.improvements.slice(0, 3);
+
+    return result;
+  } catch (error) {
+    console.error('[tutor-srs-bridge] Failed to generate session evaluation:', error);
+    return null;
+  }
 }

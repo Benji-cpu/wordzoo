@@ -1,5 +1,5 @@
 // Dialogue scene content for Indonesian language learning.
-// Each scene follows the 6-phase model: dialogue → phrases → vocabulary → patterns → conversation → summary.
+// Each scene follows the 5-phase model: dialogue → phrases → vocabulary → patterns → summary.
 
 export interface DialogueLineData {
   id: string;
@@ -51,20 +51,17 @@ export interface DialogueSceneData {
   existingWordTexts: string[];
 }
 
-// ── Scene 1: Selamat! (Hello!) ──────────────────────────────────────
+// ── Scene 1a: Selamat Pagi! (Good Morning!) ─────────────────────────
 
-const scene1: DialogueSceneData = {
+const scene1a: DialogueSceneData = {
   id: 'd1000000-0001-4000-8000-000000000004',
-  title: 'Selamat! (Hello!)',
-  description: 'Meeting someone at a cafe — greetings and introductions',
-  scene_context: 'You are at a small cafe in Bali. A friendly local sits at the next table and starts a conversation. Practice greetings, introducing yourself, and basic polite exchanges.',
+  title: 'Selamat Pagi! (Good Morning!)',
+  description: 'Meeting someone at a cafe — greetings',
+  scene_context: 'You are at a small cafe in Bali. A friendly local sits at the next table and greets you. Practice basic greetings and polite responses.',
   sort_order: 1,
   dialogues: [
     { id: 'e1000000-0004-4000-8000-000000000001', speaker: 'Adi', text_target: 'Selamat pagi! Apa kabar?', text_en: 'Good morning! How are you?' },
     { id: 'e1000000-0004-4000-8000-000000000002', speaker: 'You', text_target: 'Selamat pagi! Baik, terima kasih.', text_en: 'Good morning! Good, thank you.' },
-    { id: 'e1000000-0004-4000-8000-000000000003', speaker: 'Adi', text_target: 'Nama saya Adi. Siapa nama Anda?', text_en: 'My name is Adi. What is your name?' },
-    { id: 'e1000000-0004-4000-8000-000000000004', speaker: 'You', text_target: 'Nama saya ... Senang bertemu!', text_en: 'My name is ... Nice to meet you!' },
-    { id: 'e1000000-0004-4000-8000-000000000005', speaker: 'Adi', text_target: 'Senang bertemu juga! Anda dari mana?', text_en: 'Nice to meet you too! Where are you from?' },
   ],
   phrases: [
     {
@@ -75,6 +72,57 @@ const scene1: DialogueSceneData = {
       usage_note: 'The standard greeting — used like "How are you?" in English.',
       wordTexts: ['apa'],
     },
+    {
+      id: 'f1000000-0004-4000-8000-000000000005',
+      text_target: 'Baik, terima kasih',
+      text_en: 'Good, thank you',
+      literal_translation: 'Good, thank you',
+      usage_note: 'The standard reply to "Apa kabar?" — polite and warm.',
+      wordTexts: ['baik', 'terima kasih'],
+    },
+  ],
+  patterns: [
+    {
+      id: '0a000000-0004-4000-8000-000000000002',
+      pattern_template: '___ kabar?',
+      pattern_en: 'How are you?',
+      explanation: '"Apa" means "what" and is used to form questions.',
+      prompt: '___ kabar?',
+      hint_en: 'How are you? (What news?)',
+      correct_answer: 'Apa',
+      distractors: ['Ini', 'Itu', 'Di'],
+    },
+    {
+      id: '0a000000-0004-4000-8000-000000000003',
+      pattern_template: 'Baik, terima kasih',
+      pattern_en: 'Good, thank you',
+      explanation: '"Baik" means "good/fine" — the standard reply to "Apa kabar?"',
+      prompt: '___, terima kasih.',
+      hint_en: 'Good, thank you.',
+      correct_answer: 'Baik',
+      distractors: ['Apa', 'Nama', 'Mau'],
+    },
+  ],
+  newWords: [
+    { id: 'b1000000-0001-4000-8000-000000000021', text: 'kabar', meaning_en: 'news / condition', part_of_speech: 'noun' },
+  ],
+  existingWordTexts: ['selamat pagi', 'apa', 'baik', 'terima kasih'],
+};
+
+// ── Scene 1b: Nama Saya... (My Name Is...) ──────────────────────────
+
+const scene1b: DialogueSceneData = {
+  id: 'd1000000-0001-4000-8000-000000000010',
+  title: 'Nama Saya... (My Name Is...)',
+  description: 'Introducing yourself at a cafe',
+  scene_context: 'The friendly local at the cafe introduces himself. Practice introducing yourself by name and saying where you are from.',
+  sort_order: 2,
+  dialogues: [
+    { id: 'e1000000-0004-4000-8000-000000000003', speaker: 'Adi', text_target: 'Nama saya Adi. Siapa nama Anda?', text_en: 'My name is Adi. What is your name?' },
+    { id: 'e1000000-0004-4000-8000-000000000004', speaker: 'You', text_target: 'Nama saya ... Senang bertemu!', text_en: 'My name is ... Nice to meet you!' },
+    { id: 'e1000000-0004-4000-8000-000000000005', speaker: 'Adi', text_target: 'Senang bertemu juga! Anda dari mana?', text_en: 'Nice to meet you too! Where are you from?' },
+  ],
+  phrases: [
     {
       id: 'f1000000-0004-4000-8000-000000000002',
       text_target: 'Nama saya ...',
@@ -106,39 +154,18 @@ const scene1: DialogueSceneData = {
       pattern_template: 'Nama saya ___',
       pattern_en: 'My name is ___',
       explanation: 'Use "Nama saya" followed by your name to introduce yourself.',
-      prompt: 'Nama ___ Adi.',
-      hint_en: 'My name is Adi.',
+      prompt: 'Nama ___ {name}.',
+      hint_en: 'My name is {name}.',
       correct_answer: 'saya',
       distractors: ['apa', 'ini', 'itu'],
     },
-    {
-      id: '0a000000-0004-4000-8000-000000000002',
-      pattern_template: '___ kabar?',
-      pattern_en: 'How are you?',
-      explanation: '"Apa" means "what" and is used to form questions.',
-      prompt: '___ kabar?',
-      hint_en: 'How are you? (What news?)',
-      correct_answer: 'Apa',
-      distractors: ['Ini', 'Itu', 'Di'],
-    },
-    {
-      id: '0a000000-0004-4000-8000-000000000003',
-      pattern_template: 'Baik, terima kasih',
-      pattern_en: 'Good, thank you',
-      explanation: '"Baik" means "good/fine" — the standard reply to "Apa kabar?"',
-      prompt: '___, terima kasih.',
-      hint_en: 'Good, thank you.',
-      correct_answer: 'Baik',
-      distractors: ['Apa', 'Nama', 'Mau'],
-    },
   ],
   newWords: [
-    { id: 'b1000000-0001-4000-8000-000000000021', text: 'kabar', meaning_en: 'news / condition', part_of_speech: 'noun' },
     { id: 'b1000000-0001-4000-8000-000000000022', text: 'senang', meaning_en: 'happy / glad', part_of_speech: 'adjective' },
     { id: 'b1000000-0001-4000-8000-000000000023', text: 'bertemu', meaning_en: 'to meet', part_of_speech: 'verb' },
     { id: 'b1000000-0001-4000-8000-000000000024', text: 'dari', meaning_en: 'from', part_of_speech: 'preposition' },
   ],
-  existingWordTexts: ['saya', 'apa', 'nama', 'baik', 'terima kasih', 'selamat pagi'],
+  existingWordTexts: ['nama', 'saya'],
 };
 
 // ── Scene 2: Siapa Itu? (Who's That?) ──────────────────────────────
@@ -148,7 +175,7 @@ const scene2: DialogueSceneData = {
   title: 'Siapa Itu? (Who\'s That?)',
   description: 'Introducing friends and talking about people',
   scene_context: 'You are at a gathering with your new friend Adi. He introduces you to his friend Sari. Practice introductions and talking about where people are from.',
-  sort_order: 2,
+  sort_order: 3,
   dialogues: [
     { id: 'e1000000-0005-4000-8000-000000000001', speaker: 'Adi', text_target: 'Ini teman saya, Sari.', text_en: 'This is my friend, Sari.' },
     { id: 'e1000000-0005-4000-8000-000000000002', speaker: 'Sari', text_target: 'Halo! Senang bertemu!', text_en: 'Hello! Nice to meet you!' },
@@ -238,7 +265,7 @@ const scene3: DialogueSceneData = {
   title: 'Saya Mau... (I Want...)',
   description: 'Ordering food and drinks at a warung',
   scene_context: 'You are at a small warung (food stall) with Adi. The server asks what you want to order. Practice ordering food and drinks.',
-  sort_order: 3,
+  sort_order: 4,
   dialogues: [
     { id: 'e1000000-0006-4000-8000-000000000001', speaker: 'Server', text_target: 'Selamat pagi! Mau pesan apa?', text_en: 'Good morning! What would you like to order?' },
     { id: 'e1000000-0006-4000-8000-000000000002', speaker: 'Adi', text_target: 'Saya mau nasi goreng dan es teh.', text_en: 'I want fried rice and iced tea.' },
@@ -327,7 +354,7 @@ const scene4: DialogueSceneData = {
   title: 'Berapa Harganya? (How Much?)',
   description: 'Shopping at a market — asking prices and bargaining',
   scene_context: 'You are at a traditional market in Ubud. You see some souvenirs and want to buy something. Practice asking prices and basic bargaining.',
-  sort_order: 4,
+  sort_order: 5,
   dialogues: [
     { id: 'e1000000-0007-4000-8000-000000000001', speaker: 'You', text_target: 'Permisi, berapa harganya?', text_en: 'Excuse me, how much is it?' },
     { id: 'e1000000-0007-4000-8000-000000000002', speaker: 'Seller', text_target: 'Itu seratus ribu rupiah.', text_en: 'That is one hundred thousand rupiah.' },
@@ -417,7 +444,7 @@ const scene5: DialogueSceneData = {
   title: 'Enak Sekali! (So Delicious!)',
   description: 'Talking about food preferences and flavors',
   scene_context: 'You are eating at the warung with Adi. The food arrives and you talk about what you like. Practice expressing food preferences and complimenting food.',
-  sort_order: 5,
+  sort_order: 6,
   dialogues: [
     { id: 'e1000000-0008-4000-8000-000000000001', speaker: 'Adi', text_target: 'Ini nasi goreng saya. Enak sekali!', text_en: 'This is my fried rice. So delicious!' },
     { id: 'e1000000-0008-4000-8000-000000000002', speaker: 'You', text_target: 'Saya suka mie goreng ini!', text_en: 'I like this fried noodle!' },
@@ -506,7 +533,7 @@ const scene6: DialogueSceneData = {
   title: 'Di Mana...? (Where Is...?)',
   description: 'Asking for and understanding directions',
   scene_context: 'You are walking around Ubud and need to find a pharmacy. You stop a friendly local to ask for directions. Practice asking where things are and understanding basic directions.',
-  sort_order: 6,
+  sort_order: 7,
   dialogues: [
     { id: 'e1000000-0009-4000-8000-000000000001', speaker: 'You', text_target: 'Permisi, di mana apotek?', text_en: 'Excuse me, where is the pharmacy?' },
     { id: 'e1000000-0009-4000-8000-000000000002', speaker: 'Local', text_target: 'Apotek? Jalan lurus, lalu belok kiri.', text_en: 'The pharmacy? Go straight, then turn left.' },
@@ -587,4 +614,4 @@ const scene6: DialogueSceneData = {
   existingWordTexts: ['di', 'kiri', 'kanan', 'lurus', 'di mana', 'baik', 'terima kasih', 'sekali'],
 };
 
-export const DIALOGUE_SCENES: DialogueSceneData[] = [scene1, scene2, scene3, scene4, scene5, scene6];
+export const DIALOGUE_SCENES: DialogueSceneData[] = [scene1a, scene1b, scene2, scene3, scene4, scene5, scene6];

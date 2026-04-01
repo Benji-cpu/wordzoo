@@ -30,6 +30,7 @@ export {
   verifySceneAccess,
   insertTutorSession,
   getTutorSessionById,
+  getActiveTutorSession,
   getLastTutorSession,
   updateTutorSession,
   insertTutorMessage,

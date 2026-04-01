@@ -3,6 +3,7 @@ import type { OnboardingLanguage, OnboardingWord } from './data';
 // --- Screen types (discriminated union) ---
 
 export type OnboardingScreen =
+  | { type: 'name_input' }
   | { type: 'language_pick' }
   | { type: 'word_reveal'; wordIndex: number }
   | { type: 'quiz'; wordIndex: number }
@@ -19,6 +20,7 @@ export interface QuizAnswer {
 
 export interface OnboardingState {
   screen: OnboardingScreen;
+  userName: string | null;
   selectedLanguage: OnboardingLanguage | null;
   words: OnboardingWord[];
   quizAnswers: QuizAnswer[];
@@ -27,7 +29,8 @@ export interface OnboardingState {
 }
 
 export const INITIAL_STATE: OnboardingState = {
-  screen: { type: 'language_pick' },
+  screen: { type: 'name_input' },
+  userName: null,
   selectedLanguage: null,
   words: [],
   quizAnswers: [],
@@ -38,6 +41,7 @@ export const INITIAL_STATE: OnboardingState = {
 // --- Actions ---
 
 export type OnboardingAction =
+  | { type: 'SET_NAME'; name: string }
   | { type: 'SELECT_LANGUAGE'; language: OnboardingLanguage }
   | { type: 'ADVANCE_FROM_WORD'; wordIndex: number }
   | { type: 'ANSWER_QUIZ'; wordIndex: number; attempts: number }
@@ -48,10 +52,17 @@ export type OnboardingAction =
   | { type: 'RESET' };
 
 // --- Flow ---
-// language_pick → word_reveal(0) → quiz(0) → word_reveal(1) → double_quiz(current=word2) → double_quiz(surprise=word1) → word_reveal(2) → complete
+// name_input → language_pick → word_reveal(0) → quiz(0) → word_reveal(1) → double_quiz(current=word2) → double_quiz(surprise=word1) → word_reveal(2) → complete
 
 export function onboardingReducer(state: OnboardingState, action: OnboardingAction): OnboardingState {
   switch (action.type) {
+    case 'SET_NAME':
+      return {
+        ...state,
+        userName: action.name || null,
+        screen: { type: 'language_pick' },
+      };
+
     case 'SELECT_LANGUAGE':
       return {
         ...state,
@@ -131,6 +142,7 @@ export function onboardingReducer(state: OnboardingState, action: OnboardingActi
 
 export function getProgressStep(screen: OnboardingScreen): number {
   switch (screen.type) {
+    case 'name_input': return 0;
     case 'language_pick': return 0;
     case 'word_reveal':
       if (screen.wordIndex === 0) return 1;

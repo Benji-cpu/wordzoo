@@ -346,7 +346,13 @@ export interface UserPhrase {
   updated_at: Date;
 }
 
-export type SceneFlowPhase = 'dialogue' | 'phrases' | 'vocabulary' | 'patterns' | 'conversation' | 'summary';
+export interface SessionEvaluation {
+  strengths: string[];
+  improvements: string[];
+  tip: string;
+}
+
+export type SceneFlowPhase = 'dialogue' | 'phrases' | 'vocabulary' | 'patterns' | 'summary';
 
 export interface UserSceneProgress {
   id: string;

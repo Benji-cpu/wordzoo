@@ -5,6 +5,7 @@ import { sql } from '@/lib/db/client';
 
 interface OnboardingImportData {
   languageCode: string;
+  userName?: string | null;
   words: Array<{
     text: string;
     romanization?: string;
@@ -23,6 +24,13 @@ export async function importOnboardingProgress(data: OnboardingImportData) {
 
   const userId = session.user.id;
   const langCode = data.languageCode;
+
+  // Update user name if provided and user has no name set
+  if (data.userName) {
+    await sql`
+      UPDATE users SET name = ${data.userName} WHERE id = ${userId} AND name IS NULL
+    `;
+  }
 
   // Find the language
   const languages = await sql`
@@ -56,15 +64,20 @@ export async function importOnboardingProgress(data: OnboardingImportData) {
     }
 
     // Insert mnemonic (idempotent via unique check)
+    let mnemonicId: string;
     const existingMnemonics = await sql`
       SELECT id FROM mnemonics WHERE word_id = ${wordId} AND user_id = ${userId} AND keyword_text = ${word.keyword}
     `;
 
-    if (existingMnemonics.length === 0) {
-      await sql`
+    if (existingMnemonics.length > 0) {
+      mnemonicId = existingMnemonics[0].id as string;
+    } else {
+      const inserted = await sql`
         INSERT INTO mnemonics (word_id, user_id, keyword_text, scene_description, is_custom)
         VALUES (${wordId}, ${userId}, ${word.keyword}, ${word.sceneDescription}, ${false})
+        RETURNING id
       `;
+      mnemonicId = inserted[0].id as string;
     }
 
     // Insert user_word tracking (idempotent via unique constraint)
@@ -74,8 +87,8 @@ export async function importOnboardingProgress(data: OnboardingImportData) {
 
     if (existingUserWords.length === 0) {
       await sql`
-        INSERT INTO user_words (user_id, word_id, status, ease_factor, interval_days, next_review_at)
-        VALUES (${userId}, ${wordId}, ${'learning'}, ${2.5}, ${1}, NOW() + INTERVAL '1 day')
+        INSERT INTO user_words (user_id, word_id, current_mnemonic_id, status, ease_factor, interval_days, next_review_at)
+        VALUES (${userId}, ${wordId}, ${mnemonicId}, ${'learning'}, ${2.5}, ${1}, NOW() + INTERVAL '1 day')
       `;
     }
   }

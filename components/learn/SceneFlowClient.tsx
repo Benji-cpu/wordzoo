@@ -11,7 +11,6 @@ import { WordCard } from '@/components/learn/WordCard';
 import { MnemonicCard } from '@/components/learn/MnemonicCard';
 import { QuizOptions } from '@/components/learn/QuizOptions';
 import { PatternExercise } from '@/components/learn/PatternExercise';
-import { GuidedConversation } from '@/components/learn/GuidedConversation';
 import { SceneSummary } from '@/components/learn/SceneSummary';
 import type { SceneDialogue, ScenePhraseWithMnemonics, ScenePatternExercise, UserSceneProgress } from '@/types/database';
 import type { LearnWord } from '@/components/learn/LearnClient';
@@ -20,6 +19,7 @@ import type { SupportedLanguageCode } from '@/types/audio';
 interface SceneFlowClientProps {
   sceneId: string;
   sceneTitle: string;
+  sceneDescription?: string | null;
   languageName: string;
   languageCode?: SupportedLanguageCode;
   dialogues: SceneDialogue[];
@@ -29,8 +29,9 @@ interface SceneFlowClientProps {
   initialProgress: UserSceneProgress;
   sceneContext: string | null;
   anchorImageUrl: string | null;
-  nextScene?: { id: string; title: string } | null;
+  nextScene?: { id: string; title: string; description?: string | null } | null;
   pathId?: string;
+  userName?: string | null;
 }
 
 type FlowState =
@@ -39,11 +40,12 @@ type FlowState =
   | { phase: 'phrases'; phraseIndex: number; step: 'show' | 'breakdown' | 'quiz' }
   | { phase: 'vocabulary'; wordIndex: number; step: 'word' | 'mnemonic' | 'quiz' }
   | { phase: 'patterns'; exerciseIndex: number }
-  | { phase: 'conversation' }
   | { phase: 'summary' };
 
 function initialStateFromProgress(p: UserSceneProgress, totalDialogues: number, totalPhrases: number, totalWords: number, totalPatterns: number, hasAnchorImage: boolean): FlowState {
-  switch (p.current_phase) {
+  // Cast to string to handle legacy 'conversation' phase from existing DB rows
+  const phase = p.current_phase as string;
+  switch (phase) {
     case 'dialogue':
       // Show scene intro before dialogue if user hasn't started yet and there's an anchor image
       if (p.phase_index === 0 && !p.dialogue_completed && hasAnchorImage) {
@@ -54,18 +56,19 @@ function initialStateFromProgress(p: UserSceneProgress, totalDialogues: number, 
       if (totalPhrases === 0) {
         return totalWords > 0
           ? { phase: 'vocabulary', wordIndex: 0, step: 'word' }
-          : { phase: 'conversation' };
+          : { phase: 'summary' };
       }
       return { phase: 'phrases', phraseIndex: Math.min(p.phase_index, totalPhrases - 1), step: 'show' };
     case 'vocabulary':
       return { phase: 'vocabulary', wordIndex: Math.min(p.phase_index, totalWords - 1), step: 'word' };
     case 'patterns':
       if (totalPatterns === 0) {
-        return { phase: 'conversation' };
+        return { phase: 'summary' };
       }
       return { phase: 'patterns', exerciseIndex: Math.min(p.phase_index, totalPatterns - 1) };
     case 'conversation':
-      return { phase: 'conversation' };
+      // Legacy fallback for existing users with conversation progress
+      return { phase: 'summary' };
     case 'summary':
       return { phase: 'summary' };
     default:
@@ -153,7 +156,7 @@ function computePreviousState(current: FlowState, ctx: FlowContext & { hasAnchor
       return null;
     }
 
-    case 'conversation': {
+    case 'summary': {
       if (ctx.patternExercises.length > 0) {
         return { phase: 'patterns', exerciseIndex: ctx.patternExercises.length - 1 };
       }
@@ -168,15 +171,13 @@ function computePreviousState(current: FlowState, ctx: FlowContext & { hasAnchor
       }
       return null;
     }
-
-    case 'summary':
-      return { phase: 'conversation' };
   }
 }
 
 export function SceneFlowClient({
   sceneId,
   sceneTitle,
+  sceneDescription,
   languageName,
   languageCode,
   dialogues,
@@ -188,6 +189,7 @@ export function SceneFlowClient({
   anchorImageUrl,
   nextScene,
   pathId,
+  userName,
 }: SceneFlowClientProps) {
   const hasAnchorImage = !!anchorImageUrl;
   const [state, setState] = useState<FlowState>(() =>
@@ -230,8 +232,8 @@ export function SceneFlowClient({
         saveProgress('vocabulary', 0, 'dialogue');
         setState({ phase: 'vocabulary', wordIndex: 0, step: 'word' });
       } else {
-        saveProgress('conversation', 0, 'dialogue');
-        setState({ phase: 'conversation' });
+        saveProgress('summary', 0, 'dialogue');
+        setState({ phase: 'summary' });
       }
     } else {
       saveProgress('phrases', 0, 'dialogue');
@@ -325,8 +327,8 @@ export function SceneFlowClient({
       setState({ phase: 'patterns', exerciseIndex: 0 });
     } else {
       // Skip patterns phase (empty for studio paths)
-      saveProgress('conversation', 0, 'vocabulary');
-      setState({ phase: 'conversation' });
+      saveProgress('summary', 0, 'vocabulary');
+      setState({ phase: 'summary' });
     }
   }, [state, words.length, patternExercises.length, saveProgress]);
 
@@ -338,17 +340,11 @@ export function SceneFlowClient({
       saveProgress('patterns', next);
       setState({ phase: 'patterns', exerciseIndex: next });
     } else {
-      // Move to guided conversation
-      saveProgress('conversation', 0, 'patterns');
-      setState({ phase: 'conversation' });
+      // Move to summary
+      saveProgress('summary', 0, 'patterns');
+      setState({ phase: 'summary' });
     }
   }, [state, patternExercises.length, saveProgress]);
-
-  // --- Conversation Phase ---
-  const handleConversationComplete = useCallback(() => {
-    saveProgress('summary', 0, 'conversation');
-    setState({ phase: 'summary' });
-  }, [saveProgress]);
 
   // Swipe to advance for card-based phases
   useEffect(() => {
@@ -397,8 +393,6 @@ export function SceneFlowClient({
         return (state.wordIndex + substepFraction(state.step, ['word', 'mnemonic', 'quiz'])) / words.length;
       case 'patterns':
         return patternExercises.length > 1 ? state.exerciseIndex / (patternExercises.length - 1) : 0;
-      case 'conversation':
-        return 0;
       case 'summary':
         return 1;
     }
@@ -406,7 +400,7 @@ export function SceneFlowClient({
 
   return (
     <div className="max-w-lg mx-auto">
-      <SceneFlowHeader title={sceneTitle} currentPhase={state.phase} phaseProgress={phaseProgress} onBack={handleBack} />
+      <SceneFlowHeader title={sceneTitle} description={sceneDescription} currentPhase={state.phase} phaseProgress={phaseProgress} onBack={handleBack} />
 
       {/* Scene Intro Phase */}
       {state.phase === 'scene-intro' && (
@@ -519,21 +513,13 @@ export function SceneFlowClient({
           key={patternExercises[state.exerciseIndex].id}
           exercise={patternExercises[state.exerciseIndex]}
           onCorrect={handlePatternCorrect}
-        />
-      )}
-
-      {/* Conversation Phase */}
-      {state.phase === 'conversation' && (
-        <GuidedConversation
-          sceneId={sceneId}
-          onComplete={handleConversationComplete}
-          onSkip={handleConversationComplete}
+          userName={userName}
         />
       )}
 
       {/* Summary Phase */}
       {state.phase === 'summary' && (
-        <SceneSummary sceneTitle={sceneTitle} words={words} nextScene={nextScene} pathId={pathId} />
+        <SceneSummary sceneTitle={sceneTitle} sceneDescription={sceneDescription} words={words} nextScene={nextScene} pathId={pathId} sceneId={sceneId} />
       )}
     </div>
   );

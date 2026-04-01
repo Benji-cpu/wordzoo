@@ -3,6 +3,8 @@
 import { useCallback, useMemo } from 'react';
 import { parseMessageContent, type MessageSegment } from '@/lib/tutor/message-parser';
 import type { PopoverData } from './WordPopover';
+import type { ChallengeMode } from '@/lib/tutor/modes';
+import { InlineMarkdown } from '@/components/ui/InlineMarkdown';
 import { PhaseIndicator } from '@/components/tutor/path-builder/PhaseIndicator';
 import { PathVocabCard } from '@/components/tutor/path-builder/PathVocabCard';
 
@@ -13,9 +15,10 @@ interface ChatBubbleProps {
   onWordTap: (data: PopoverData, rect: DOMRect) => void;
   onPathVocabAction?: (word: string, action: 'keep' | 'remove' | 'different') => void;
   vocabStatuses?: Map<string, 'pending' | 'kept' | 'removed'>;
+  challengeMode?: ChallengeMode;
 }
 
-export function ChatBubble({ role, content, vocabMap, onWordTap, onPathVocabAction, vocabStatuses }: ChatBubbleProps) {
+export function ChatBubble({ role, content, vocabMap, onWordTap, onPathVocabAction, vocabStatuses, challengeMode = 'easy' }: ChatBubbleProps) {
   const isUser = role === 'user';
 
   const handleWordClick = useCallback(
@@ -41,7 +44,7 @@ export function ChatBubble({ role, content, vocabMap, onWordTap, onPathVocabActi
         className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
           isUser
             ? 'bg-accent-default text-white rounded-br-md'
-            : 'bg-card-surface border border-card-border text-foreground rounded-bl-md'
+            : 'bg-black/[0.05] dark:bg-white/10 border border-card-border text-foreground rounded-bl-md'
         }`}
       >
         {segments.map((seg, i) => (
@@ -51,6 +54,7 @@ export function ChatBubble({ role, content, vocabMap, onWordTap, onPathVocabActi
             onWordClick={handleWordClick}
             onPathVocabAction={onPathVocabAction}
             vocabStatuses={vocabStatuses}
+            challengeMode={challengeMode}
           />
         ))}
       </div>
@@ -63,32 +67,40 @@ function SegmentRenderer({
   onWordClick,
   onPathVocabAction,
   vocabStatuses,
+  challengeMode,
 }: {
   segment: MessageSegment;
   onWordClick: (word: string, meaning: string, e: React.MouseEvent<HTMLSpanElement>) => void;
   onPathVocabAction?: (word: string, action: 'keep' | 'remove' | 'different') => void;
   vocabStatuses?: Map<string, 'pending' | 'kept' | 'removed'>;
+  challengeMode: ChallengeMode;
 }) {
   switch (segment.type) {
     case 'text':
-      return <>{segment.content}</>;
+      return <><InlineMarkdown text={segment.content} /></>;
 
     case 'vocab_word':
       return (
-        <>
-          <span
-            className="font-bold underline decoration-dotted cursor-pointer hover:opacity-80"
-            onClick={(e) => onWordClick(segment.word, segment.meaning, e)}
-          >
-            {segment.word}
-          </span>
-          <span className="opacity-70"> ({segment.meaning})</span>
-        </>
+        <span
+          className="font-bold underline decoration-dotted cursor-pointer hover:opacity-80"
+          onClick={(e) => onWordClick(segment.word, segment.meaning, e)}
+        >
+          {segment.word}
+        </span>
       );
 
     case 'suggestion':
       // Suggestions are extracted and rendered outside the bubble by TutorChat
       return null;
+
+    case 'english_translation':
+      // Only show in Easy mode
+      if (challengeMode !== 'easy') return null;
+      return (
+        <div className="mt-1.5 pt-1.5 border-t border-white/10 text-xs italic text-text-secondary">
+          <InlineMarkdown text={segment.content} />
+        </div>
+      );
 
     case 'correction':
       return (
@@ -102,7 +114,7 @@ function SegmentRenderer({
             <span className="text-green-400">{segment.corrected}</span>
           </div>
           {segment.explanation && (
-            <div className="px-3 py-1.5 bg-white/5">
+            <div className="px-3 py-1.5 bg-white/10">
               <span className="text-text-secondary text-xs">{segment.explanation}</span>
             </div>
           )}
@@ -111,18 +123,18 @@ function SegmentRenderer({
 
     case 'grammar_note':
       return (
-        <div className="my-2 bg-white/5 border-l-2 border-accent-default rounded-lg px-3 py-2 animate-fade-in">
+        <div className="my-2 bg-white/10 border-l-2 border-accent-default rounded-lg px-3 py-2 animate-fade-in">
           <div className="text-xs text-text-secondary uppercase tracking-wider mb-1">Grammar Note</div>
           <div className="font-semibold text-foreground text-sm">{segment.title}</div>
-          <div className="text-sm text-text-secondary mt-1">{segment.body}</div>
+          <div className="text-sm text-text-secondary mt-1"><InlineMarkdown text={segment.body} /></div>
         </div>
       );
 
     case 'context_card':
       return (
-        <div className="my-2 bg-white/5 rounded-lg px-3 py-2 animate-fade-in">
+        <div className="my-2 bg-white/10 rounded-lg px-3 py-2 animate-fade-in">
           <div className="text-xs text-text-secondary uppercase tracking-wider">{segment.label}</div>
-          <div className="text-sm text-foreground mt-0.5">{segment.content}</div>
+          <div className="text-sm text-foreground mt-0.5"><InlineMarkdown text={segment.content} /></div>
         </div>
       );
 

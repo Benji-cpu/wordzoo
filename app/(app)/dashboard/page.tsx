@@ -144,7 +144,7 @@ export default async function DashboardPage() {
 
             {/* Tutor Nudge */}
             <section>
-              <TutorNudgeCard />
+              <TutorNudgeCard languageId={languageId} />
             </section>
 
             {hasNextScene && (
@@ -155,6 +155,7 @@ export default async function DashboardPage() {
                 <ContinueLearningCard
                   pathTitle={activePath.path_title}
                   sceneTitle={nextScene!.title}
+                  sceneDescription={nextScene!.description}
                   sceneId={nextScene!.id}
                   progress={sceneProgress}
                   currentPhase={nextScene!.scene_type === 'dialogue' ? nextScene!.current_phase : undefined}
@@ -176,7 +177,7 @@ export default async function DashboardPage() {
       {/* Tutor Insights */}
       <section>
         <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wider mb-1">
-          AI Tutor
+          Tutor
         </h2>
         <TutorInsights languageId={languageId} />
       </section>

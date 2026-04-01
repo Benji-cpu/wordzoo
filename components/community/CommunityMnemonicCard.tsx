@@ -53,9 +53,11 @@ export function CommunityMnemonicCard({ card, isOwnMnemonic }: CommunityMnemonic
       </div>
 
       {/* Keyword */}
-      <p className="text-sm font-medium text-foreground mb-2">
-        Sounds like &ldquo;{card.keyword_text}&rdquo;
-      </p>
+      {card.keyword_text && (
+        <p className="text-sm font-medium text-foreground mb-2">
+          Sounds like &ldquo;{card.keyword_text}&rdquo;
+        </p>
+      )}
 
       {/* Image */}
       {card.image_url && (

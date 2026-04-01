@@ -9,9 +9,13 @@ import { WordPopover } from '@/components/tutor/WordPopover';
 import type { PopoverData } from '@/components/tutor/WordPopover';
 import { SessionSummary } from '@/components/tutor/SessionSummary';
 import { SuggestionChips } from '@/components/tutor/SuggestionChips';
+import { ChallengeModeToggle } from '@/components/tutor/ChallengeModeToggle';
 import { SessionProgressBar } from '@/components/tutor/SessionProgressBar';
 import { parseMessageContent, extractSuggestions } from '@/lib/tutor/message-parser';
+import type { SuggestionOption } from '@/lib/tutor/message-parser';
 import { TutorOnboarding, TUTOR_ONBOARDED_KEY } from '@/components/tutor/TutorOnboarding';
+import type { ChallengeMode } from '@/lib/tutor/modes';
+import { CHALLENGE_MODE_KEY } from '@/lib/tutor/modes';
 import { useSpeechInput } from '@/lib/hooks/useSpeechInput';
 import type { TutorRecommendation } from '@/app/api/tutor/recommendation/route';
 
@@ -30,6 +34,11 @@ export interface SessionSummaryData {
   srsReviewsRecorded?: number;
   wordsIntroduced?: number;
   accuracyRate?: number;
+  evaluation?: {
+    strengths: string[];
+    improvements: string[];
+    tip: string;
+  };
 }
 
 interface TutorChatProps {
@@ -53,6 +62,7 @@ interface TutorChatProps {
   recommendation?: TutorRecommendation | null;
   isLoadingRecommendation?: boolean;
   onStartGuidedSession?: (sceneId: string) => void;
+  returnTo?: string | null;
 }
 
 function mapLanguageCode(code: string): string {
@@ -87,6 +97,7 @@ export function TutorChat({
   recommendation,
   isLoadingRecommendation,
   onStartGuidedSession,
+  returnTo,
 }: TutorChatProps) {
   const [popover, setPopover] = useState<{ data: PopoverData; rect: DOMRect } | null>(null);
   const [vocabMap, setVocabMap] = useState(() => new Map<string, PopoverData>());
@@ -98,6 +109,14 @@ export function TutorChat({
     } catch {
       return false;
     }
+  });
+  const [challengeMode, setChallengeMode] = useState<ChallengeMode>(() => {
+    if (typeof window === 'undefined') return 'easy';
+    try {
+      const stored = localStorage.getItem(CHALLENGE_MODE_KEY);
+      if (stored === 'easy' || stored === 'medium' || stored === 'hard') return stored;
+    } catch { /* ignore */ }
+    return 'easy';
   });
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const speechLangCode = mapLanguageCode(langCode);
@@ -164,6 +183,11 @@ export function TutorChat({
       startListening();
     }
   }, [isListening, startListening, stopListening]);
+
+  const handleChallengeModeChange = useCallback((mode: ChallengeMode) => {
+    setChallengeMode(mode);
+    try { localStorage.setItem(CHALLENGE_MODE_KEY, mode); } catch { /* ignore */ }
+  }, []);
 
   const handlePathVocabAction = useCallback(
     async (word: string, action: 'keep' | 'remove' | 'different') => {
@@ -234,7 +258,7 @@ export function TutorChat({
           <TutorOnboarding onComplete={() => setShowOnboarding(false)} />
         ) : (
           <div className={compact ? 'px-3 pt-3' : 'px-4 pt-4'}>
-            {!compact && <h1 className="text-2xl font-bold text-foreground mb-4">AI Tutor</h1>}
+            {!compact && <h1 className="text-2xl font-bold text-foreground mb-4">Tutor</h1>}
             <TutorHero
               recommendation={recommendation ?? null}
               onSelect={onStartSession}
@@ -251,7 +275,7 @@ export function TutorChat({
           {/* Header */}
           <div className={`shrink-0 flex items-center justify-between ${compact ? 'px-3 py-2' : 'px-4 py-3'} border-b border-card-border`}>
             <div className="flex items-center gap-2 min-w-0">
-              <h2 className={`font-semibold text-foreground ${compact ? 'text-sm' : ''} shrink-0`}>AI Tutor</h2>
+              <h2 className={`font-semibold text-foreground ${compact ? 'text-sm' : ''} shrink-0`}>Tutor</h2>
               <SessionProgressBar activeMode={activeMode ?? null} messages={messages} />
             </div>
             <button
@@ -262,6 +286,9 @@ export function TutorChat({
               {isEnding ? 'Ending...' : 'End Session'}
             </button>
           </div>
+          {activeMode !== 'path_builder' && (
+            <ChallengeModeToggle mode={challengeMode} onChange={handleChallengeModeChange} />
+          )}
 
           {/* Messages */}
           <div className={`flex-1 overflow-y-auto ${compact ? 'px-3 py-2' : 'px-4 py-3'}`}>
@@ -274,6 +301,7 @@ export function TutorChat({
                   onWordTap={handleWordTap}
                   onPathVocabAction={activeMode === 'path_builder' ? handlePathVocabAction : undefined}
                   vocabStatuses={activeMode === 'path_builder' ? vocabStatuses : undefined}
+                  challengeMode={challengeMode}
                 />
                 {msg.role === 'model' && extractStudioCTA(msg.content) && (
                   <Link
@@ -303,7 +331,7 @@ export function TutorChat({
           {/* Bottom pinned section: chips + input */}
           <div className="shrink-0 overflow-hidden">
             {suggestionOptions.length > 0 && (
-              <SuggestionChips options={suggestionOptions} onSelect={onSendMessage} />
+              <SuggestionChips options={suggestionOptions} onSelect={onSendMessage} challengeMode={challengeMode} />
             )}
             <ChatInput
               onSend={onSendMessage}
@@ -333,6 +361,7 @@ export function TutorChat({
             onStartSession={onStartSession}
             mode={activeMode ?? undefined}
             messages={messages}
+            returnTo={returnTo}
           />
         </div>
       )}

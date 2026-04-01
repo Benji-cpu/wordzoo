@@ -130,6 +130,9 @@ export function PathDetailClient({ path, languageName, sceneMastery, wordStats }
                     {/* Scene info */}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-foreground truncate">{s.title}</p>
+                      {s.description && (
+                        <p className="text-xs text-text-secondary truncate">{s.description}</p>
+                      )}
                       <div className="flex items-center gap-2 mt-1">
                         <p className={`text-xs ${complete ? 'text-green-400' : 'text-text-secondary'}`}>
                           {status}

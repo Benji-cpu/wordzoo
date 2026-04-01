@@ -2,30 +2,35 @@
 
 import { IconButton } from '@/components/ui/IconButton';
 
-const PHASE_LABELS = ['Intro', 'Dialogue', 'Phrases', 'Vocab', 'Patterns', 'Chat', 'Summary'] as const;
-const PHASE_KEYS = ['scene-intro', 'dialogue', 'phrases', 'vocabulary', 'patterns', 'conversation', 'summary'] as const;
+const PHASE_LABELS = ['Intro', 'Dialogue', 'Phrases', 'Vocab', 'Patterns', 'Summary'] as const;
+const PHASE_KEYS = ['scene-intro', 'dialogue', 'phrases', 'vocabulary', 'patterns', 'summary'] as const;
 
 interface SceneFlowHeaderProps {
   title: string;
+  description?: string | null;
   currentPhase: string;
   phaseProgress?: number;
   onBack: () => void;
 }
 
-export function SceneFlowHeader({ title, currentPhase, phaseProgress = 0, onBack }: SceneFlowHeaderProps) {
+export function SceneFlowHeader({ title, description, currentPhase, phaseProgress = 0, onBack }: SceneFlowHeaderProps) {
   const currentIdx = PHASE_KEYS.indexOf(currentPhase as typeof PHASE_KEYS[number]);
 
   return (
-    <div className="mb-3 md:mb-6">
-      <div className="flex items-center gap-3 mb-3">
+    <div className="mb-2 md:mb-6">
+      <div className="flex items-center gap-3 mb-2">
         <IconButton label="Go back" onClick={onBack} size="sm">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
         </IconButton>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-foreground truncate">{title}</p>
-          <p className="text-xs text-text-secondary">{PHASE_LABELS[currentIdx >= 0 ? currentIdx : 0]}</p>
+          <p className="text-sm font-medium text-foreground truncate">
+            {title} <span className="text-text-secondary font-normal">&middot; {PHASE_LABELS[currentIdx >= 0 ? currentIdx : 0]}</span>
+          </p>
+          {description && (
+            <p className="text-xs text-text-secondary truncate">{description}</p>
+          )}
         </div>
       </div>
       <div className="flex gap-1.5">

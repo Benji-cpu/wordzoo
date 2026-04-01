@@ -25,7 +25,7 @@ const FEATURE_MESSAGES: Record<string, { title: string; description: string }> =
   },
   tutor_message: {
     title: 'Tutor Messages Used Up',
-    description: 'Upgrade for unlimited AI tutor conversations.',
+    description: 'Upgrade for unlimited tutor conversations.',
   },
   custom_path: {
     title: 'Premium Feature',

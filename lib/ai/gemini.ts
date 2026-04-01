@@ -60,6 +60,33 @@ export async function generateChat(
   };
 }
 
+export async function generateChatJSON<T = unknown>(
+  messages: GeminiChatMessage[],
+  systemPrompt: string,
+  options?: { maxOutputTokens?: number }
+): Promise<{ data: T; tokensUsed: number }> {
+  const ai = getClient();
+
+  const contents = messages.map((m) => ({
+    role: m.role === 'model' ? ('model' as const) : ('user' as const),
+    parts: [{ text: m.content }],
+  }));
+
+  const response = await ai.models.generateContent({
+    model: DEFAULT_MODEL,
+    contents,
+    config: {
+      systemInstruction: systemPrompt,
+      temperature: 0.7,
+      maxOutputTokens: options?.maxOutputTokens ?? 2048,
+      responseMimeType: 'application/json',
+    },
+  });
+
+  const data = JSON.parse(response.text ?? '{}') as T;
+  return { data, tokensUsed: response.usageMetadata?.totalTokenCount ?? 0 };
+}
+
 export async function generateChatStream(
   messages: GeminiChatMessage[],
   systemPrompt: string,

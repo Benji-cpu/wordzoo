@@ -40,6 +40,7 @@ export function ImportOnboardingAfterAuth() {
         try {
           await importOnboardingProgress({
             languageCode: saved.selectedLanguage.code,
+            userName: saved.userName,
             words: saved.words.map((w) => ({
               text: w.text,
               romanization: w.romanization,

@@ -3,10 +3,23 @@
 import { useState, useEffect, useRef } from 'react';
 import { Card } from '@/components/ui/Card';
 
+function renderBridgeSentence(sentence: string) {
+  const parts = sentence.split(/\b([A-Z]{2,}(?:\s+[A-Z]{2,})*)\b/);
+  return parts.map((part, i) =>
+    /^[A-Z]{2,}(?:\s+[A-Z]{2,})*$/.test(part) ? (
+      <span key={i} className="font-bold text-accent-id not-italic">{part}</span>
+    ) : (
+      <span key={i}>{part}</span>
+    )
+  );
+}
+
 interface PhraseReviewCardProps {
   textTarget: string;
   textEn: string;
   literalTranslation: string | null;
+  phraseBridgeSentence: string | null;
+  compositeImageUrl: string | null;
   mode: 'recognition' | 'production';
   onReveal: () => void;
   revealed: boolean;
@@ -16,6 +29,8 @@ export function PhraseReviewCard({
   textTarget,
   textEn,
   literalTranslation,
+  phraseBridgeSentence,
+  compositeImageUrl,
   mode,
   onReveal,
   revealed,
@@ -69,9 +84,20 @@ export function PhraseReviewCard({
               <div className="mt-6 pt-6 border-t border-card-border animate-slide-up">
                 <p className="text-xl text-foreground font-medium mb-2">{textEn}</p>
                 {literalTranslation && (
-                  <p className="text-sm text-text-secondary italic">
+                  <p className="text-sm text-text-secondary italic mb-3">
                     Literally: &ldquo;{literalTranslation}&rdquo;
                   </p>
+                )}
+                {phraseBridgeSentence && (
+                  <p className="text-base text-foreground italic mb-3">
+                    {renderBridgeSentence(phraseBridgeSentence)}
+                  </p>
+                )}
+                {compositeImageUrl && (
+                  <div className="relative w-full rounded-xl overflow-hidden mb-3 bg-white/5">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={compositeImageUrl} alt="" className="w-full max-h-[45dvh] object-cover rounded-xl" />
+                  </div>
                 )}
               </div>
             )}
@@ -87,20 +113,31 @@ export function PhraseReviewCard({
               How do you say...
             </p>
             <h2 className="text-2xl font-bold text-foreground mb-2">{textEn}</h2>
+            {compositeImageUrl && (
+              <div className="relative w-full rounded-xl overflow-hidden mb-3 bg-white/5">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={compositeImageUrl} alt="" className="w-full max-h-[45dvh] object-cover rounded-xl" />
+              </div>
+            )}
 
             {revealed && (
-              <div className="mt-6 pt-6 border-t border-card-border animate-slide-up">
+              <div className="mt-4 pt-4 border-t border-card-border animate-slide-up">
                 <p className="text-2xl font-bold text-accent-id mb-2">{textTarget}</p>
                 {literalTranslation && (
-                  <p className="text-sm text-text-secondary italic">
+                  <p className="text-sm text-text-secondary italic mb-3">
                     Literally: &ldquo;{literalTranslation}&rdquo;
+                  </p>
+                )}
+                {phraseBridgeSentence && (
+                  <p className="text-base text-foreground italic mb-3">
+                    {renderBridgeSentence(phraseBridgeSentence)}
                   </p>
                 )}
               </div>
             )}
 
             {!revealed && (
-              <p className="text-sm text-text-secondary mt-8">Tap to reveal</p>
+              <p className="text-sm text-text-secondary mt-6">Tap to reveal</p>
             )}
           </>
         )}

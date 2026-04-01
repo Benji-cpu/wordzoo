@@ -17,6 +17,10 @@ export function useTutorChat(sessionId: string | null) {
     setMessages([{ role: 'model', content: greeting }]);
   }, []);
 
+  const loadMessages = useCallback((msgs: ChatMessage[]) => {
+    setMessages(msgs);
+  }, []);
+
   const sendMessage = useCallback(
     async (text: string) => {
       if (!sessionId || isStreaming) return;
@@ -79,5 +83,5 @@ export function useTutorChat(sessionId: string | null) {
     [sessionId, isStreaming]
   );
 
-  return { messages, isStreaming, error, sendMessage, addGreeting };
+  return { messages, isStreaming, error, sendMessage, addGreeting, loadMessages };
 }
