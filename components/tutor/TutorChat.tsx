@@ -120,7 +120,7 @@ export function TutorChat({
   });
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const speechLangCode = mapLanguageCode(langCode);
-  const { isListening, transcript, startListening, stopListening } = useSpeechInput(speechLangCode);
+  const { isListening, transcript, audioLevel, startListening, stopListening } = useSpeechInput(speechLangCode);
 
   // Derive view state from props
   const view: ViewState = summaryData ? 'summary' : sessionId ? 'chatting' : 'mode_select';
@@ -302,6 +302,7 @@ export function TutorChat({
                   onPathVocabAction={activeMode === 'path_builder' ? handlePathVocabAction : undefined}
                   vocabStatuses={activeMode === 'path_builder' ? vocabStatuses : undefined}
                   challengeMode={challengeMode}
+                  isLoading={isStreaming && i === messages.length - 1 && msg.role === 'model' && msg.content === ''}
                 />
                 {msg.role === 'model' && extractStudioCTA(msg.content) && (
                   <Link
@@ -338,6 +339,7 @@ export function TutorChat({
               disabled={isStreaming}
               isListening={isListening}
               transcript={transcript}
+              audioLevel={audioLevel}
               onMicToggle={handleMicToggle}
             />
           </div>
