@@ -7,11 +7,12 @@ interface ChatMessage {
   content: string;
 }
 
-export function useTutorChat(sessionId: string | null) {
+export function useTutorChat(sessionId: string | null, onAutoEnd?: () => void) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const autoEndRef = useRef(false);
 
   const addGreeting = useCallback((greeting: string) => {
     setMessages([{ role: 'model', content: greeting }]);
@@ -46,6 +47,8 @@ export function useTutorChat(sessionId: string | null) {
           throw new Error(errorData?.error ?? `Request failed (${response.status})`);
         }
 
+        autoEndRef.current = response.headers.get('X-Session-Auto-End') === 'true';
+
         const reader = response.body?.getReader();
         if (!reader) throw new Error('No response stream');
 
@@ -78,9 +81,13 @@ export function useTutorChat(sessionId: string | null) {
       } finally {
         setIsStreaming(false);
         abortRef.current = null;
+        if (autoEndRef.current && onAutoEnd) {
+          autoEndRef.current = false;
+          onAutoEnd();
+        }
       }
     },
-    [sessionId, isStreaming]
+    [sessionId, isStreaming, onAutoEnd]
   );
 
   return { messages, isStreaming, error, sendMessage, addGreeting, loadMessages };

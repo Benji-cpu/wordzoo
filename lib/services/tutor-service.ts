@@ -12,13 +12,37 @@ import {
   getScenePhrases,
   updateTutorSessionLearnerContext,
 } from '@/lib/db';
+
+const MAX_GUIDED_TURNS = 6;
+const MAX_FREE_TURNS = 10;
 import { generateChat, generateChatStream } from '@/lib/ai/gemini';
-import { buildTutorSystemPrompt, buildGuidedConversationPrompt } from '@/lib/ai/tutor-prompts';
+import { buildTutorSystemPrompt, buildGuidedConversationPrompt, getGuidedPhase, getFreeChatPhase } from '@/lib/ai/tutor-prompts';
 import { buildAdaptiveContext } from '@/lib/services/learner-profile-service';
 import { createDraft, getDraftBySessionId } from '@/lib/services/path-builder-service';
 import { buildPathBuilderDiscoveryPrompt, buildPathBuilderVocabPrompt } from '@/lib/ai/tutor-prompts';
 import type { PathBuilderScenarioContext } from '@/types/database';
 import type { GeminiChatMessage } from '@/types/ai';
+import type { TutorMessage } from '@/types/database';
+
+function countNewWordsIntroduced(
+  modelMessages: TutorMessage[],
+  knownWordTexts: Set<string>
+): { count: number; words: string[] } {
+  const wordPattern = /\*\*([^*]+)\*\*/g;
+  const newWords: string[] = [];
+  const seen = new Set<string>();
+  for (const msg of modelMessages) {
+    let match;
+    while ((match = wordPattern.exec(msg.content)) !== null) {
+      const word = match[1].toLowerCase();
+      if (!knownWordTexts.has(word) && !seen.has(word)) {
+        seen.add(word);
+        newWords.push(match[1]);
+      }
+    }
+  }
+  return { count: newWords.length, words: newWords };
+}
 
 export async function startSession(
   userId: string,
@@ -32,7 +56,7 @@ export async function startSession(
   const language = await getLanguageById(languageId);
   if (!language) throw new Error('Language not found');
 
-  const [knownWords, dueWords, adaptiveCtx] = await Promise.all([
+  const [knownWords, dueWords, { contextString: adaptiveCtx, proficiencyTier }] = await Promise.all([
     getUserKnownWords(userId, languageId),
     getUserDueWords(userId, languageId),
     buildAdaptiveContext(userId, languageId),
@@ -56,6 +80,7 @@ export async function startSession(
       dueWords,
       adaptiveContext: adaptiveCtx,
       userName,
+      proficiencyTier,
     });
   }
 
@@ -91,10 +116,9 @@ export async function startGuidedSession(
   const language = await getLanguageById(languageId);
   if (!language) throw new Error('Language not found');
 
-  const [dialogues, phrases, knownWords, adaptiveCtx] = await Promise.all([
+  const [dialogues, phrases, { contextString: adaptiveCtx, proficiencyTier }] = await Promise.all([
     getSceneDialogues(sceneId),
     getScenePhrases(sceneId),
-    getUserKnownWords(userId, languageId),
     buildAdaptiveContext(userId, languageId),
   ]);
 
@@ -110,9 +134,11 @@ export async function startGuidedSession(
       text_target: p.text_target,
       text_en: p.text_en,
     })),
-    knownWords,
     adaptiveContext: adaptiveCtx,
     userName,
+    currentUserTurn: 0,
+    isLastTurn: false,
+    proficiencyTier,
   });
 
   if (adaptiveCtx) {
@@ -135,7 +161,7 @@ export async function sendMessage(
   userId: string,
   userMessage: string,
   userName?: string | null
-): Promise<{ stream: ReadableStream<string>; completePromise: Promise<void> }> {
+): Promise<{ stream: ReadableStream<string>; completePromise: Promise<void>; isLastTurn: boolean }> {
   const session = await getTutorSessionById(sessionId);
   if (!session) throw new Error('Session not found');
   if (session.user_id !== userId) throw new Error('Unauthorized');
@@ -153,14 +179,17 @@ export async function sendMessage(
   if (!language) throw new Error('Language not found');
 
   let systemPrompt: string;
-  const adaptiveCtx = await buildAdaptiveContext(userId, session.language_id);
+  const { contextString: adaptiveCtx, proficiencyTier } = await buildAdaptiveContext(userId, session.language_id);
 
+  let isLastTurn = false;
   if (session.mode === 'guided_conversation' && session.scene_id) {
-    const [dialogues, phrases, knownWords] = await Promise.all([
+    const userTurnCount = dbMessages.filter(m => m.role === 'user').length;
+    isLastTurn = userTurnCount >= MAX_GUIDED_TURNS;
+    const [dialogues, phrases] = await Promise.all([
       getSceneDialogues(session.scene_id),
       getScenePhrases(session.scene_id),
-      getUserKnownWords(userId, session.language_id),
     ]);
+    const phase = getGuidedPhase(userTurnCount, MAX_GUIDED_TURNS);
     systemPrompt = buildGuidedConversationPrompt({
       languageName: language.name,
       sceneContext: session.scenario ?? '',
@@ -173,9 +202,12 @@ export async function sendMessage(
         text_target: p.text_target,
         text_en: p.text_en,
       })),
-      knownWords,
       adaptiveContext: adaptiveCtx,
       userName,
+      currentUserTurn: userTurnCount,
+      isLastTurn,
+      proficiencyTier,
+      phase,
     });
   } else if (session.mode === 'path_builder') {
     const draft = await getDraftBySessionId(sessionId);
@@ -217,6 +249,24 @@ export async function sendMessage(
       getUserKnownWords(userId, session.language_id),
       getUserDueWords(userId, session.language_id),
     ]);
+
+    // Vocabulary budget tracking
+    const knownSet = new Set([
+      ...knownWords.map(w => w.text.toLowerCase()),
+      ...dueWords.map(w => w.text.toLowerCase()),
+    ]);
+    const modelMessages = dbMessages.filter(m => m.role === 'model');
+    const { count: newWordsUsed } = countNewWordsIntroduced(modelMessages, knownSet);
+    const maxNewWords = 3;
+
+    // Free chat phase + auto-end
+    const userTurnCount = dbMessages.filter(m => m.role === 'user').length;
+    const budgetRemaining = Math.max(0, maxNewWords - newWordsUsed);
+    const phase = getFreeChatPhase(userTurnCount, MAX_FREE_TURNS, budgetRemaining);
+    if (userTurnCount >= MAX_FREE_TURNS) {
+      isLastTurn = true;
+    }
+
     systemPrompt = buildTutorSystemPrompt({
       languageName: language.name,
       mode: session.mode,
@@ -225,6 +275,11 @@ export async function sendMessage(
       dueWords,
       adaptiveContext: adaptiveCtx,
       userName,
+      proficiencyTier,
+      newWordsIntroduced: newWordsUsed,
+      maxNewWords,
+      phase,
+      currentUserTurn: userTurnCount,
     });
   }
 
@@ -243,9 +298,12 @@ export async function sendMessage(
     const tokens = await tokensPromise;
     await insertTutorMessage(sessionId, 'model', fullResponse);
     await updateTutorSession(sessionId, { tokensUsed: tokens });
+    if (isLastTurn) {
+      endSession(sessionId, userId).catch(() => {});
+    }
   })();
 
-  return { stream: clientStream, completePromise };
+  return { stream: clientStream, completePromise, isLastTurn };
 }
 
 export async function endSession(
@@ -278,7 +336,7 @@ export async function endSession(
   let evaluation = null;
   try {
     const { generateSessionEvaluation } = await import('@/lib/services/tutor-srs-bridge');
-    const adaptiveCtx = await buildAdaptiveContext(userId, session.language_id);
+    const { contextString: adaptiveCtx } = await buildAdaptiveContext(userId, session.language_id);
     evaluation = await generateSessionEvaluation(messages, adaptiveCtx, session.mode);
   } catch (error) {
     console.error(`[tutor-service] Session evaluation failed for ${sessionId}:`, error);

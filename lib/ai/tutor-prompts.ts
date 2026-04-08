@@ -1,4 +1,52 @@
 import type { KnownWordRow } from '@/lib/db/queries';
+import type { ProficiencyTier } from '@/lib/services/learner-profile-service';
+
+// --- Phase Types ---
+
+export type GuidedPhase = 'open' | 'practice' | 'stretch' | 'close';
+export type FreeChatPhase = 'open' | 'flow' | 'close';
+
+export function getGuidedPhase(userTurn: number, maxTurns: number): GuidedPhase {
+  if (userTurn <= 1) return 'open';
+  if (userTurn >= maxTurns) return 'close';
+  if (userTurn === maxTurns - 1) return 'stretch';
+  return 'practice';
+}
+
+export function getFreeChatPhase(userTurn: number, maxTurns: number, budgetRemaining: number): FreeChatPhase {
+  if (userTurn <= 1) return 'open';
+  if (userTurn >= maxTurns - 1 || budgetRemaining === 0) return 'close';
+  return 'flow';
+}
+
+const GUIDED_PHASE_INSTRUCTIONS: Record<GuidedPhase, string> = {
+  open: `## Current Phase: Opening\nGreet briefly (1 sentence). Ask a simple question related to the scene topic.`,
+  practice: `## Current Phase: Practice\nCore practice. Encourage using learned phrases. Ask questions that elicit scene vocabulary.`,
+  stretch: `## Current Phase: Stretch\nIntroduce ONE new concept that extends the scene. Ask the student to try using it.`,
+  close: `## Current Phase: Closing\nWarm closing in 2 sentences max. Mention one thing they did well. Do NOT ask follow-up questions.`,
+};
+
+const FREE_CHAT_PHASE_INSTRUCTIONS: Record<FreeChatPhase, string> = {
+  open: `## Current Phase: Opening\nGreet and ask what they'd like to talk about, or suggest a topic related to recent learning.`,
+  flow: `## Current Phase: Flow\nMaintain conversation. Incorporate due-for-review words organically. Ask follow-up questions.`,
+  close: `## Current Phase: Closing\nWrap up warmly. Summarize 1-2 things done well. Suggest next step (review flashcards, try next scene). Do NOT ask questions.`,
+};
+
+const LANGUAGE_POLICY: Record<ProficiencyTier, (lang: string) => string> = {
+  beginner: (lang) =>
+    `## Language Policy\n` +
+    `Speak primarily in English. Embed individual ${lang} words and short phrases (2-3 words max) within English sentences.\n` +
+    `NEVER write full sentences in ${lang}. The student cannot parse ${lang} grammar yet.\n` +
+    `Example: "Great job! The word **terima kasih** (thank you) is perfect here. Can you try using **selamat pagi** (good morning) in a sentence?"`,
+  intermediate: (lang) =>
+    `## Language Policy\n` +
+    `Use a mix of ${lang} and English. Write simple ${lang} sentences (4-6 words) with immediate English support.\n` +
+    `Use English for corrections and explanations. The student can handle simple ${lang} sentences but not complex ones.`,
+  advanced: (lang) =>
+    `## Language Policy\n` +
+    `Speak mostly in ${lang}. Use English only for nuanced corrections or complex explanations.\n` +
+    `The student is comfortable with ${lang} grammar and vocabulary.`,
+};
 
 interface TutorPromptOptions {
   languageName: string;
@@ -8,6 +56,11 @@ interface TutorPromptOptions {
   dueWords: KnownWordRow[];
   adaptiveContext?: string;
   userName?: string | null;
+  proficiencyTier?: ProficiencyTier;
+  newWordsIntroduced?: number;
+  maxNewWords?: number;
+  phase?: FreeChatPhase;
+  currentUserTurn?: number;
 }
 
 const MODE_INSTRUCTIONS: Record<string, string> = {
@@ -30,9 +83,12 @@ export function buildTutorSystemPrompt(opts: TutorPromptOptions): string {
   // Identity
   blocks.push(
     `You are a friendly, encouraging language tutor for ${opts.languageName}. ` +
-    `You speak mostly in ${opts.languageName} with occasional English explanations when needed. ` +
     `Adapt your level to the student's ability. Be warm, patient, and supportive.`
   );
+
+  // Language policy based on proficiency
+  const tier = opts.proficiencyTier ?? 'beginner';
+  blocks.push(LANGUAGE_POLICY[tier](opts.languageName));
 
   // Student name
   if (opts.userName) {
@@ -53,25 +109,61 @@ export function buildTutorSystemPrompt(opts: TutorPromptOptions): string {
     blocks.push(`Scenario: ${opts.scenario}. Begin by setting the scene and taking your role in this scenario.`);
   }
 
-  // Vocabulary context
+  // Vocabulary context with budget
   if (opts.knownWords.length > 0) {
     const knownList = opts.knownWords
       .map((w) => `${w.text}${w.romanization ? ` (${w.romanization})` : ''} = ${w.meaning_en}`)
       .join(', ');
+    const maxNew = opts.maxNewWords ?? 3;
+    const used = opts.newWordsIntroduced ?? 0;
+    const remaining = Math.max(0, maxNew - used);
+
+    let budgetLine: string;
+    if (remaining === 0) {
+      budgetLine = `**Vocabulary budget: EXHAUSTED** (${used} of ${maxNew} used). You have used your entire vocabulary budget. Do NOT introduce any new ${opts.languageName} words.`;
+    } else {
+      budgetLine = `**Vocabulary budget: ${remaining} new word(s) remaining this session** (${used} of ${maxNew} used). You may introduce up to ${remaining} more new word(s). Bold them: **word** (meaning).`;
+    }
+
     blocks.push(
-      `The student knows these words: ${knownList}. ` +
-      `Use mostly these known words in your responses. Introduce at most 2 new words per message.`
+      `## Vocabulary Rules\n` +
+      `The student knows these words: ${knownList}.\n` +
+      `Use ONLY these known words in your ${opts.languageName} text.\n` +
+      budgetLine
     );
   }
 
+  // Due words — priority review anchoring (Step 5)
   if (opts.dueWords.length > 0) {
     const dueList = opts.dueWords
       .map((w) => `${w.text}${w.romanization ? ` (${w.romanization})` : ''} = ${w.meaning_en}`)
       .join(', ');
     blocks.push(
-      `These words are due for review — prioritize using them: ${dueList}`
+      `## Priority Review Words\n` +
+      `These words are due for SRS review. Your PRIMARY goal is creating conversation that naturally uses these words: ${dueList}.\n` +
+      `Steer the conversation topic toward contexts where these words fit.\n` +
+      `When the student uses one correctly, briefly acknowledge it.\n` +
+      `Try to get the student to use each word at least once.`
     );
   }
+
+  // Phase instructions
+  const phase = opts.phase;
+  if (phase) {
+    blocks.push(FREE_CHAT_PHASE_INSTRUCTIONS[phase]);
+  }
+
+  // Question rule (Step 4)
+  if (!phase || phase !== 'close') {
+    blocks.push(`CRITICAL: Every response MUST end with a question for the student (before [EN:] and [SUGGEST:] markers). Never leave the student without something to respond to.`);
+  }
+
+  // Correction format (Step 4) — tier-aware
+  const correctionFormat = tier === 'beginner'
+    ? `Corrections MUST be in English. Place them AFTER your conversational response, not mid-sentence.\n` +
+      `Example: [CORRECT: saya makan di restoran -> saya makan di rumah makan | 'rumah makan' is the more natural term for restaurant]`
+    : `Place corrections AFTER your conversational response, not mid-sentence. Brief ${opts.languageName} explanation is OK.\n` +
+      `Example: [CORRECT: saya makan di restoran -> saya makan di rumah makan | 'rumah makan' lebih umum dipakai]`;
 
   // Formatting instructions
   blocks.push(
@@ -79,9 +171,7 @@ export function buildTutorSystemPrompt(opts: TutorPromptOptions): string {
     `- Bold target-language words on first use in each message as **word** (meaning). Example: **rumah** (house)\n` +
     `- Keep responses 2-4 sentences long\n` +
     `- When introducing a new word, always include the meaning in parentheses\n` +
-    `- When correcting the student, format it as:\n` +
-    `  [CORRECT: what they said -> corrected version | brief encouraging explanation]\n` +
-    `  Then continue the conversation naturally. Keep explanations under 15 words.\n` +
+    `- ${correctionFormat}\n` +
     `- After your main response, add a full English translation on its own line:\n` +
     `  [EN: Full English translation of your response]\n` +
     `  Only translate the conversational content — not corrections, grammar notes, or suggestions.\n` +
@@ -105,19 +195,27 @@ interface GuidedConversationOptions {
   sceneContext: string;
   dialogueLines: { speaker: string; text_target: string; text_en: string }[];
   phrases: { text_target: string; text_en: string }[];
-  knownWords: KnownWordRow[];
   adaptiveContext?: string;
   userName?: string | null;
+  currentUserTurn: number;
+  isLastTurn: boolean;
+  proficiencyTier?: ProficiencyTier;
+  phase?: GuidedPhase;
 }
 
 export function buildGuidedConversationPrompt(opts: GuidedConversationOptions): string {
   const blocks: string[] = [];
 
+  const guidedTier = opts.proficiencyTier ?? 'beginner';
+
   blocks.push(
     `You are a friendly, encouraging language tutor for ${opts.languageName}. ` +
     `You are guiding the student through a practice conversation based on a scene they just studied. ` +
-    `Be warm, patient, and supportive. Speak mostly in ${opts.languageName} with English hints when needed.`
+    `Be warm, patient, and supportive.`
   );
+
+  // Language policy based on proficiency
+  blocks.push(LANGUAGE_POLICY[guidedTier](opts.languageName));
 
   // Student name
   if (opts.userName) {
@@ -142,12 +240,34 @@ export function buildGuidedConversationPrompt(opts: GuidedConversationOptions): 
     );
   }
 
-  if (opts.knownWords.length > 0) {
-    const wordList = opts.knownWords
-      .map((w) => `${w.text}${w.romanization ? ` (${w.romanization})` : ''} = ${w.meaning_en}`)
-      .join(', ');
-    blocks.push(`The student knows these words: ${wordList}`);
+  blocks.push(
+    `VOCABULARY RESTRICTION: ONLY use vocabulary from the scene dialogues and phrases listed above. ` +
+    `Do not introduce any words not already present in those dialogues and phrases. ` +
+    `NEVER use a ${opts.languageName} word that is not in the lists above. ` +
+    `If you need to refer to a concept outside the scene, keep it in English.`
+  );
+
+  const MAX_TURNS = 6;
+
+  // Phase instructions
+  const guidedPhase = opts.phase ?? (opts.isLastTurn ? 'close' : 'practice');
+  blocks.push(GUIDED_PHASE_INSTRUCTIONS[guidedPhase]);
+
+  // Question rule (all phases except close)
+  if (guidedPhase !== 'close') {
+    blocks.push(`CRITICAL: Every response MUST end with a question for the student (before [EN:] and [SUGGEST:] markers). Never leave the student without something to respond to.`);
   }
+
+  // Correction format — tier-aware
+  const guidedCorrectionFormat = guidedTier === 'beginner'
+    ? `Corrections MUST be in English. Place them AFTER your conversational response, not mid-sentence.\n` +
+      `  Example: [CORRECT: saya makan di restoran -> saya makan di rumah makan | 'rumah makan' is the more natural term for restaurant]`
+    : `Place corrections AFTER your conversational response, not mid-sentence. Brief ${opts.languageName} explanation is OK.\n` +
+      `  Example: [CORRECT: saya makan di restoran -> saya makan di rumah makan | 'rumah makan' lebih umum dipakai]`;
+
+  const turnInstruction = opts.isLastTurn
+    ? `This is the student's FINAL exchange (turn ${opts.currentUserTurn} of ${MAX_TURNS}). Give a warm, encouraging closing in 2 sentences maximum. Acknowledge one thing they did well. Do NOT ask any follow-up questions.`
+    : `This is exchange ${opts.currentUserTurn} of ${MAX_TURNS}. Keep the conversation going — encourage the student to use the phrases they learned.`;
 
   blocks.push(
     `Instructions:\n` +
@@ -156,18 +276,18 @@ export function buildGuidedConversationPrompt(opts: GuidedConversationOptions): 
     `- Do NOT describe the setting or scenario — the student already experienced it. Just greet them and start the conversation.\n` +
     `- Keep your responses to 1-2 sentences\n` +
     `- Encourage the student to use the phrases they just learned\n` +
-    `- If the student makes a mistake, format the correction as:\n` +
-    `  [CORRECT: what they said -> corrected version | brief encouraging explanation]\n` +
-    `- After 3-5 exchanges, wrap up the conversation naturally\n` +
+    `- ${guidedCorrectionFormat}\n` +
+    `- ${turnInstruction}\n` +
     `- Bold target-language words: **word** (meaning)\n` +
     `- Keep it encouraging and fun\n` +
     `- After your main response, add a full English translation on its own line:\n` +
     `  [EN: Full English translation of your response]\n` +
     `  Only translate the conversational content — not corrections, grammar notes, or suggestions.\n` +
+    (opts.isLastTurn ? `` :
     `- Include [SUGGEST:] chips using phrases the student just learned:\n` +
     `  [SUGGEST: target text :: english meaning | target text :: english meaning | target text :: english meaning]\n` +
     `  Each suggestion has the target-language text, then :: followed by the English meaning.\n` +
-    `  Do NOT use square brackets inside suggestion text (e.g. avoid [your name] — just write the actual text).`
+    `  Do NOT use square brackets inside suggestion text (e.g. avoid [your name] — just write the actual text).`)
   );
 
   return blocks.join('\n\n');

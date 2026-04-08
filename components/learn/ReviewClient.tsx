@@ -305,7 +305,7 @@ export function ReviewClient({ dueWords, duePhrases, practiceWords = [] }: Revie
             key={`revision-${revisionItem.word_id}`}
             word={toWord(revisionItem)}
             mnemonic={toMnemonic(revisionItem)}
-            mode="recognition"
+            mode={revisionItem.times_reviewed >= 3 ? 'production' : 'recognition'}
             onReveal={handleReveal}
             revealed={revealed}
             onRate={handleRevisionRate}
@@ -360,9 +360,6 @@ export function ReviewClient({ dueWords, duePhrases, practiceWords = [] }: Revie
           {revealed && (
             <div className="mt-4">
               <RatingButtons onRate={handleRate} />
-              <p className="text-center text-xs text-text-secondary mt-3">
-                Or swipe: right = got it, left = forgot
-              </p>
             </div>
           )}
         </>

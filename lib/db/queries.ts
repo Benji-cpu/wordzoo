@@ -583,6 +583,21 @@ export async function getLastTutorSession(
   return (rows[0] as LastTutorSessionRow) ?? null;
 }
 
+export async function getLastGuidedSessionForScene(
+  userId: string,
+  sceneId: string
+): Promise<TutorSession | null> {
+  const rows = await sql`
+    SELECT * FROM tutor_sessions
+    WHERE user_id = ${userId}
+      AND scene_id = ${sceneId}
+      AND mode = 'guided_conversation'
+    ORDER BY started_at DESC
+    LIMIT 1
+  `;
+  return (rows[0] as TutorSession) ?? null;
+}
+
 export async function updateTutorSession(
   sessionId: string,
   updates: { endedAt?: string; summary?: Record<string, unknown>; tokensUsed?: number }

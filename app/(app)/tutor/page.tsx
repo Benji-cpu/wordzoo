@@ -1,12 +1,18 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { TutorChat } from '@/components/tutor/TutorChat';
 import type { SessionSummaryData } from '@/components/tutor/TutorChat';
 import { useTutorChat } from '@/lib/hooks/useTutorChat';
 import type { TutorRecommendation } from '@/app/api/tutor/recommendation/route';
 
 export default function TutorPage() {
+  const searchParams = useSearchParams();
+  const sceneIdParam = searchParams.get('sceneId');
+  const returnToParam = searchParams.get('returnTo');
+  const returnTo = returnToParam && returnToParam.startsWith('/') ? returnToParam : null;
+
   const [initialMode, setInitialMode] = useState<string | undefined>(undefined);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [languageId, setLanguageId] = useState<string | null>(null);
@@ -20,19 +26,35 @@ export default function TutorPage() {
   const [isLoadingRecommendation, setIsLoadingRecommendation] = useState(false);
 
   const [isCheckingSession, setIsCheckingSession] = useState(true);
-  const [sceneIdParam, setSceneIdParam] = useState<string | null>(null);
-  const [returnTo, setReturnTo] = useState<string | null>(null);
 
-  const { messages, isStreaming, error, sendMessage, addGreeting, loadMessages } = useTutorChat(sessionId);
+  // Defined before useTutorChat so it can be passed as onAutoEnd callback
+  const handleEndSession = useCallback(async () => {
+    if (!sessionId) return;
+    setIsEnding(true);
+    try {
+      const res = await fetch('/api/tutor/session/end', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId }),
+      });
+      const json = await res.json();
+      if (res.ok && json.data) {
+        setSummaryData(json.data as SessionSummaryData);
+      }
+    } catch (err) {
+      console.error('End session error:', err);
+    } finally {
+      setIsEnding(false);
+    }
+  }, [sessionId]);
+
+  const { messages, isStreaming, error, sendMessage, addGreeting, loadMessages } = useTutorChat(sessionId, handleEndSession);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const mode = params.get('mode');
     const scene = params.get('sceneId');
-    const ret = params.get('returnTo');
     if (mode && !scene) setInitialMode(mode);
-    if (scene) setSceneIdParam(scene);
-    if (ret && ret.startsWith('/')) setReturnTo(ret);
   }, []);
 
   useEffect(() => {
@@ -169,26 +191,6 @@ export default function TutorPage() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sceneIdParam, languageId, isCheckingSession]);
-
-  const handleEndSession = useCallback(async () => {
-    if (!sessionId) return;
-    setIsEnding(true);
-    try {
-      const res = await fetch('/api/tutor/session/end', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId }),
-      });
-      const json = await res.json();
-      if (res.ok && json.data) {
-        setSummaryData(json.data as SessionSummaryData);
-      }
-    } catch (err) {
-      console.error('End session error:', err);
-    } finally {
-      setIsEnding(false);
-    }
-  }, [sessionId]);
 
   const handleNewSession = useCallback(() => {
     setSessionId(null);

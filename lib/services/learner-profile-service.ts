@@ -9,6 +9,23 @@ import { generateChat } from '@/lib/ai/gemini';
 import type { LearnerProfile } from '@/types/database';
 import type { KnownWordRow } from '@/lib/db/queries';
 
+export type ProficiencyTier = 'beginner' | 'intermediate' | 'advanced';
+
+export function getProficiencyTier(estimate: string): ProficiencyTier {
+  switch (estimate) {
+    case 'beginner':
+    case 'elementary':
+      return 'beginner';
+    case 'intermediate':
+      return 'intermediate';
+    case 'upper_intermediate':
+    case 'advanced':
+      return 'advanced';
+    default:
+      return 'beginner';
+  }
+}
+
 export async function getOrCreateProfile(
   userId: string,
   languageId: string
@@ -19,9 +36,10 @@ export async function getOrCreateProfile(
 export async function buildAdaptiveContext(
   userId: string,
   languageId: string
-): Promise<string> {
+): Promise<{ contextString: string; proficiencyTier: ProficiencyTier }> {
   const profile = await getOrCreateLearnerProfile(userId, languageId);
   const weakWords = await getWeakWords(userId, languageId, 2.0);
+  const proficiencyTier = getProficiencyTier(profile.proficiency_estimate);
 
   const blocks: string[] = [];
 
@@ -45,9 +63,10 @@ export async function buildAdaptiveContext(
     blocks.push(`Weak SRS words (low ease factor, need extra practice): ${weakList}`);
   }
 
-  if (blocks.length === 0) return '';
-
-  return blocks.join('\n');
+  return {
+    contextString: blocks.length === 0 ? '' : blocks.join('\n'),
+    proficiencyTier,
+  };
 }
 
 export async function getWeaknessReport(

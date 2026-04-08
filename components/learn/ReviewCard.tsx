@@ -6,6 +6,7 @@ import { FeedbackButtons } from '@/components/learn/FeedbackButtons';
 import { RatingButtons } from '@/components/learn/RatingButtons';
 import { PronunciationButton } from '@/components/audio/SpeakerButton';
 import { playWordPronunciation } from '@/lib/audio/pronunciation';
+import { SwipeIndicators, getSwipeBorderStyle } from '@/components/learn/SwipeIndicators';
 import type { Word, Mnemonic } from '@/types/database';
 
 type Rating = 'instant' | 'got_it' | 'hard' | 'forgot';
@@ -111,16 +112,15 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate }:
   const ratingSection = onRate && (
     <div className="mt-3" onClick={(e) => e.stopPropagation()}>
       <RatingButtons onRate={onRate} />
-      <p className="text-center text-xs text-text-secondary mt-2">
-        Or swipe: right = got it, left = forgot
-      </p>
     </div>
   );
 
   return (
-    <div style={swipeStyle}>
+    <div style={swipeStyle} className="relative">
+      {revealed && <SwipeIndicators swipeX={swipeX} />}
       <Card
         className={`text-center py-4 sm:py-10 transition-all duration-300 ${revealed ? 'animate-fade-in' : ''}`}
+        style={revealed ? getSwipeBorderStyle(swipeX) : {}}
         onClick={!revealed ? onReveal : undefined}
       >
         {mode === 'recognition' ? (
@@ -184,7 +184,7 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate }:
             )}
           </>
         ) : (
-          // Production: show meaning + image → reveal foreign word
+          // Production: show meaning → reveal foreign word + mnemonic image
           <>
             {/* Question label — collapses on reveal */}
             <div
@@ -209,12 +209,10 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate }:
               </p>
             </div>
 
-            {/* Image — always visible in production mode */}
-            {mnemonicImage}
-
             {/* Answer content — fades in on reveal */}
             {revealed && (
               <div className="pt-3 border-t border-card-border animate-slide-up">
+                {mnemonicImage}
                 <div className="flex items-center justify-center gap-2 mb-1">
                   <p className="text-2xl font-bold text-accent-id">{word.text}</p>
                   <div onClick={(e) => e.stopPropagation()} className="flex items-center">

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Card } from '@/components/ui/Card';
+import { SwipeIndicators, getSwipeBorderStyle } from '@/components/learn/SwipeIndicators';
 
 function renderBridgeSentence(sentence: string) {
   const parts = sentence.split(/\b([A-Z]{2,}(?:\s+[A-Z]{2,})*)\b/);
@@ -67,9 +68,11 @@ export function PhraseReviewCard({
   } : {};
 
   return (
-    <div style={swipeStyle}>
+    <div style={swipeStyle} className="relative">
+      {revealed && <SwipeIndicators swipeX={swipeX} />}
       <Card
         className={`text-center py-10 transition-all duration-300 ${revealed ? 'animate-fade-in' : ''}`}
+        style={revealed ? getSwipeBorderStyle(swipeX) : {}}
         onClick={!revealed ? onReveal : undefined}
       >
         {mode === 'recognition' ? (

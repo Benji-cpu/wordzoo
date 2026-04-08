@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { sessionId, message } = parsed.data;
-    const { stream, completePromise } = await sendMessage(sessionId, session.user.id, message, session.user.name);
+    const { stream, completePromise, isLastTurn } = await sendMessage(sessionId, session.user.id, message, session.user.name);
 
     // Increment usage after sending
     await incrementUsage(session.user.id, 'tutor_message');
@@ -58,6 +58,7 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'text/plain; charset=utf-8',
         'Cache-Control': 'no-cache',
         'Transfer-Encoding': 'chunked',
+        'X-Session-Auto-End': isLastTurn ? 'true' : 'false',
       },
     });
   } catch (error) {

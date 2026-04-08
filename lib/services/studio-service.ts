@@ -113,7 +113,8 @@ export async function startStudioSession(
   // Build adaptive learner context
   let adaptiveContext: string | undefined;
   try {
-    adaptiveContext = await buildAdaptiveContext(userId, languageId);
+    const result = await buildAdaptiveContext(userId, languageId);
+    adaptiveContext = result.contextString;
   } catch {
     // Non-fatal — proceed without learner context
   }

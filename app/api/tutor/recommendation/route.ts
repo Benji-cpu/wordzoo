@@ -4,12 +4,13 @@ import { auth } from '@/lib/auth';
 import {
   getUserDueWords,
   getLastTutorSession,
+  getLastGuidedSessionForScene,
   getUserActivePath,
   getSceneMasteryForPath,
 } from '@/lib/db';
 
 export interface TutorRecommendation {
-  type: 'due_words' | 'continue_session' | 'next_scene' | 'fallback';
+  type: 'due_words' | 'continue_session' | 'practice_scene' | 'next_scene' | 'fallback';
   dueWordCount?: number;
   lastMode?: string;
   lastScenario?: string | null;
@@ -70,9 +71,27 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Priority 3: Next incomplete scene on active path
+    // Priority 3: Practice recently completed scene that hasn't had guided tutor session
     if (activePath) {
       const scenes = await getSceneMasteryForPath(userId, activePath.path_id);
+      const recentlyCompleted = scenes
+        .filter((s) => s.scene_completed)
+        .slice(-1)[0]; // most recently completed
+      if (recentlyCompleted) {
+        const guidedSession = await getLastGuidedSessionForScene(userId, recentlyCompleted.id);
+        if (!guidedSession) {
+          return NextResponse.json<ApiResponse<TutorRecommendation>>({
+            data: {
+              type: 'practice_scene',
+              sceneTitle: recentlyCompleted.title,
+              sceneId: recentlyCompleted.id,
+            },
+            error: null,
+          });
+        }
+      }
+
+      // Priority 4: Next incomplete scene on active path
       const nextScene = scenes.find((s) => !s.scene_completed);
       if (nextScene) {
         return NextResponse.json<ApiResponse<TutorRecommendation>>({

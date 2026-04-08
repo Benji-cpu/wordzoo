@@ -81,6 +81,20 @@ export function TutorHero({
             </>
           )}
 
+          {rec.type === 'practice_scene' && (
+            <>
+              <p className="text-text-secondary text-sm">Practice your recently completed scene</p>
+              <p className="text-foreground font-medium">{rec.sceneTitle}</p>
+              <Button
+                onClick={() => onStartGuided?.(rec.sceneId!)}
+                disabled={disabled}
+                className="w-full"
+              >
+                {disabled ? 'Starting...' : 'Practice with Tutor'}
+              </Button>
+            </>
+          )}
+
           {rec.type === 'next_scene' && (
             <>
               <p className="text-text-secondary text-sm">Next up on your path</p>

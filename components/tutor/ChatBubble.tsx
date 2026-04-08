@@ -16,9 +16,10 @@ interface ChatBubbleProps {
   onPathVocabAction?: (word: string, action: 'keep' | 'remove' | 'different') => void;
   vocabStatuses?: Map<string, 'pending' | 'kept' | 'removed'>;
   challengeMode?: ChallengeMode;
+  isLoading?: boolean;
 }
 
-export function ChatBubble({ role, content, vocabMap, onWordTap, onPathVocabAction, vocabStatuses, challengeMode = 'easy' }: ChatBubbleProps) {
+export function ChatBubble({ role, content, vocabMap, onWordTap, onPathVocabAction, vocabStatuses, challengeMode = 'easy', isLoading = false }: ChatBubbleProps) {
   const isUser = role === 'user';
 
   const handleWordClick = useCallback(
@@ -47,16 +48,24 @@ export function ChatBubble({ role, content, vocabMap, onWordTap, onPathVocabActi
             : 'bg-black/[0.05] dark:bg-white/10 border border-card-border text-foreground rounded-bl-md'
         }`}
       >
-        {segments.map((seg, i) => (
-          <SegmentRenderer
-            key={i}
-            segment={seg}
-            onWordClick={handleWordClick}
-            onPathVocabAction={onPathVocabAction}
-            vocabStatuses={vocabStatuses}
-            challengeMode={challengeMode}
-          />
-        ))}
+        {isLoading ? (
+          <div className="flex items-center gap-1.5 py-1 px-1">
+            <span className="w-2 h-2 rounded-full bg-current animate-typing-dot [animation-delay:0ms]" />
+            <span className="w-2 h-2 rounded-full bg-current animate-typing-dot [animation-delay:200ms]" />
+            <span className="w-2 h-2 rounded-full bg-current animate-typing-dot [animation-delay:400ms]" />
+          </div>
+        ) : (
+          segments.map((seg, i) => (
+            <SegmentRenderer
+              key={i}
+              segment={seg}
+              onWordClick={handleWordClick}
+              onPathVocabAction={onPathVocabAction}
+              vocabStatuses={vocabStatuses}
+              challengeMode={challengeMode}
+            />
+          ))
+        )}
       </div>
     </div>
   );
@@ -122,6 +131,7 @@ function SegmentRenderer({
       );
 
     case 'grammar_note':
+      if (challengeMode !== 'easy') return null;
       return (
         <div className="my-2 bg-white/10 border-l-2 border-accent-default rounded-lg px-3 py-2 animate-fade-in">
           <div className="text-xs text-text-secondary uppercase tracking-wider mb-1">Grammar Note</div>
@@ -131,6 +141,7 @@ function SegmentRenderer({
       );
 
     case 'context_card':
+      if (challengeMode !== 'easy') return null;
       return (
         <div className="my-2 bg-white/10 rounded-lg px-3 py-2 animate-fade-in">
           <div className="text-xs text-text-secondary uppercase tracking-wider">{segment.label}</div>

@@ -1,6 +1,7 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -38,7 +39,12 @@ const MODE_LABELS: Record<string, string> = {
   guided_conversation: 'Guided',
 };
 
+const COUNTDOWN_SECONDS = 8;
+
 export function SessionSummary({ summary, onNewSession, onStartSession, mode, messages, returnTo }: SessionSummaryProps) {
+  const router = useRouter();
+  const isGuidedWithReturn = mode === 'guided_conversation' && !!returnTo;
+
   // Count corrections from model messages
   const correctionCount = useMemo(() => {
     if (!messages) return 0;
@@ -52,6 +58,50 @@ export function SessionSummary({ summary, onNewSession, onStartSession, mode, me
     }
     return count;
   }, [messages]);
+
+  // Auto-advance countdown
+  const [countdown, setCountdown] = useState<number | null>(null);
+  const [timerStarted, setTimerStarted] = useState(false);
+
+  const cancelCountdown = useCallback(() => {
+    setCountdown(null);
+    setTimerStarted(false);
+  }, []);
+
+  // Start countdown after animations settle
+  useEffect(() => {
+    if (!isGuidedWithReturn) return;
+    // Count rendered sections to calculate animation delay
+    // Base sections: header, stats grid = 2, then conditionally SRS, evaluation, words, CTAs
+    let sections = 2; // header + stats
+    if (summary.srsReviewsRecorded != null && summary.srsReviewsRecorded > 0) sections++;
+    if (summary.evaluation) sections++;
+    if (summary.wordsUsed.length > 0) sections++;
+    sections++; // CTA section
+    const delayMs = sections * 100 + 500;
+
+    const timeout = setTimeout(() => {
+      setCountdown(COUNTDOWN_SECONDS);
+      setTimerStarted(true);
+    }, delayMs);
+    return () => clearTimeout(timeout);
+  }, [isGuidedWithReturn, summary.srsReviewsRecorded, summary.evaluation, summary.wordsUsed.length]);
+
+  // Tick the countdown
+  useEffect(() => {
+    if (countdown === null || countdown <= 0) return;
+    const interval = setInterval(() => {
+      setCountdown(prev => (prev !== null ? prev - 1 : null));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [countdown]);
+
+  // Navigate when countdown reaches 0
+  useEffect(() => {
+    if (countdown === 0 && returnTo) {
+      router.push(returnTo);
+    }
+  }, [countdown, returnTo, router]);
 
   let sectionIndex = 0;
 
@@ -210,25 +260,78 @@ export function SessionSummary({ summary, onNewSession, onStartSession, mode, me
         className="space-y-2 animate-slide-up"
         style={{ animationDelay: `${sectionIndex++ * 100}ms`, animationFillMode: 'backwards' }}
       >
-        {returnTo && (
-          <Link href={returnTo} className="block">
-            <Button className="w-full">
-              {returnTo.startsWith('/learn/') ? 'Continue to Next Scene' : returnTo.startsWith('/paths/') ? 'Back to Path' : 'Dashboard'} →
+        {isGuidedWithReturn ? (
+          <>
+            {/* Auto-advance progress bar */}
+            <button
+              onClick={() => returnTo && router.push(returnTo)}
+              className="w-full text-left"
+            >
+              <div className="rounded-xl bg-surface-secondary p-3">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-sm text-text-secondary">
+                    {timerStarted && countdown !== null
+                      ? `Continuing to next scene...`
+                      : returnTo!.startsWith('/learn/') ? 'Continue to Next Scene →' : returnTo!.startsWith('/paths/') ? 'Back to Path →' : 'Dashboard →'}
+                  </span>
+                  {timerStarted && countdown !== null && (
+                    <span className="text-xs text-text-secondary tabular-nums">{countdown}s</span>
+                  )}
+                </div>
+                <div className="h-1.5 rounded-full bg-surface-secondary overflow-hidden border border-white/5">
+                  <div
+                    className="h-full rounded-full bg-accent-default"
+                    style={{
+                      width: timerStarted && countdown !== null
+                        ? `${((COUNTDOWN_SECONDS - countdown) / COUNTDOWN_SECONDS) * 100}%`
+                        : '0%',
+                      transition: 'width 1s linear',
+                    }}
+                  />
+                </div>
+              </div>
+            </button>
+
+            <div className="flex justify-center gap-4 pt-1">
+              {onStartSession && (
+                <button
+                  onClick={() => { cancelCountdown(); onStartSession(mode!); }}
+                  className="text-sm text-text-secondary underline-offset-2 hover:underline"
+                >
+                  Practice Again
+                </button>
+              )}
+              <button
+                onClick={() => { cancelCountdown(); onNewSession(); }}
+                className="text-sm text-text-secondary underline-offset-2 hover:underline"
+              >
+                New Session
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            {returnTo && (
+              <Link href={returnTo} className="block">
+                <Button className="w-full">
+                  {returnTo.startsWith('/learn/') ? 'Continue to Next Scene' : returnTo.startsWith('/paths/') ? 'Back to Path' : 'Dashboard'} →
+                </Button>
+              </Link>
+            )}
+            {mode && onStartSession && (
+              <Button
+                onClick={() => onStartSession(mode)}
+                variant="secondary"
+                className="w-full"
+              >
+                Practice Again ({MODE_LABELS[mode] ?? mode})
+              </Button>
+            )}
+            <Button onClick={onNewSession} variant={returnTo ? 'secondary' : undefined} className="w-full">
+              New Session
             </Button>
-          </Link>
+          </>
         )}
-        {mode && onStartSession && (
-          <Button
-            onClick={() => onStartSession(mode)}
-            variant="secondary"
-            className="w-full"
-          >
-            Practice Again ({MODE_LABELS[mode] ?? mode})
-          </Button>
-        )}
-        <Button onClick={onNewSession} variant={returnTo ? 'secondary' : undefined} className="w-full">
-          New Session
-        </Button>
       </div>
     </div>
   );

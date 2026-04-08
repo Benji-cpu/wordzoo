@@ -32,6 +32,7 @@ export {
   getTutorSessionById,
   getActiveTutorSession,
   getLastTutorSession,
+  getLastGuidedSessionForScene,
   updateTutorSession,
   insertTutorMessage,
   getTutorMessages,
