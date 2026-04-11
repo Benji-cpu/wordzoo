@@ -215,7 +215,7 @@ export type AdminRegenerateMnemonicInput = z.infer<typeof AdminRegenerateMnemoni
 export type AdminFeedbackQuery = z.infer<typeof AdminFeedbackQuerySchema>;
 
 // Scene Flow Progress
-export const SceneFlowPhaseEnum = z.enum(['dialogue', 'phrases', 'vocabulary', 'patterns', 'conversation', 'summary']);
+export const SceneFlowPhaseEnum = z.enum(['dialogue', 'phrases', 'vocabulary', 'patterns', 'affixes', 'conversation', 'summary']);
 
 export const UpdateSceneProgressSchema = z.object({
   currentPhase: SceneFlowPhaseEnum,

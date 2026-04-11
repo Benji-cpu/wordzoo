@@ -331,6 +331,30 @@ export interface ScenePatternExercise {
   created_at: Date;
 }
 
+export interface AffixExercise {
+  id: string;
+  scene_id: string;
+  exercise_type: 'decompose' | 'construct' | 'match' | 'predict';
+  root_word: string;
+  root_meaning: string;
+  target_affix: string;
+  derived_word: string;
+  derived_meaning: string;
+  explanation: string;
+  distractors: string[];
+  sort_order: number;
+  created_at: Date;
+}
+
+export interface WordFamily {
+  id: string;
+  root_word_id: string;
+  derived_word_id: string;
+  affix_type: string;
+  affix_rule: string | null;
+  meaning_shift: string | null;
+}
+
 export interface UserPhrase {
   id: string;
   user_id: string;
@@ -352,7 +376,7 @@ export interface SessionEvaluation {
   tip: string;
 }
 
-export type SceneFlowPhase = 'dialogue' | 'phrases' | 'vocabulary' | 'patterns' | 'summary';
+export type SceneFlowPhase = 'dialogue' | 'phrases' | 'vocabulary' | 'patterns' | 'affixes' | 'summary';
 
 export interface UserSceneProgress {
   id: string;
@@ -364,6 +388,7 @@ export interface UserSceneProgress {
   phrases_completed: boolean;
   vocabulary_completed: boolean;
   patterns_completed: boolean;
+  affixes_completed: boolean;
   conversation_completed: boolean;
   completed_at: Date | null;
   created_at: Date;

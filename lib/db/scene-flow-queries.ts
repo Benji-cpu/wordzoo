@@ -6,6 +6,7 @@ import type {
   PhraseWordMnemonic,
   ScenePhraseWithMnemonics,
   ScenePatternExercise,
+  AffixExercise,
   UserSceneProgress,
   SceneFlowPhase,
 } from '@/types/database';
@@ -16,6 +17,7 @@ export interface SceneFlowData {
   dialogues: SceneDialogue[];
   phrases: ScenePhraseWithMnemonics[];
   patternExercises: ScenePatternExercise[];
+  affixExercises: AffixExercise[];
 }
 
 export async function getPhraseWordsWithMnemonics(
@@ -43,10 +45,11 @@ export async function getPhraseWordsWithMnemonics(
 }
 
 export async function getSceneFlowData(sceneId: string, userId: string | null = null): Promise<SceneFlowData> {
-  const [dialogues, phrases, patternExercises] = await Promise.all([
+  const [dialogues, phrases, patternExercises, affixExercises] = await Promise.all([
     getSceneDialogues(sceneId),
     getScenePhrases(sceneId),
     getScenePatternExercises(sceneId),
+    getAffixExercisesForScene(sceneId),
   ]);
 
   const phraseIds = phrases.map((p) => p.id);
@@ -72,7 +75,7 @@ export async function getSceneFlowData(sceneId: string, userId: string | null = 
     words: phraseWordMap.get(p.id) ?? [],
   }));
 
-  return { dialogues, phrases: phrasesWithMnemonics, patternExercises };
+  return { dialogues, phrases: phrasesWithMnemonics, patternExercises, affixExercises };
 }
 
 export async function getSceneDialogues(sceneId: string): Promise<SceneDialogue[]> {
@@ -100,6 +103,15 @@ export async function getScenePatternExercises(sceneId: string): Promise<ScenePa
     ORDER BY sort_order
   `;
   return rows as ScenePatternExercise[];
+}
+
+export async function getAffixExercisesForScene(sceneId: string): Promise<AffixExercise[]> {
+  const rows = await sql`
+    SELECT * FROM affix_exercises
+    WHERE scene_id = ${sceneId}
+    ORDER BY sort_order
+  `;
+  return rows as AffixExercise[];
 }
 
 export async function getPhraseWords(phraseIds: string[]): Promise<PhraseWord[]> {
@@ -133,7 +145,7 @@ export async function updateSceneProgress(
   updates: {
     currentPhase?: SceneFlowPhase;
     phaseIndex?: number;
-    phaseCompleted?: 'dialogue' | 'phrases' | 'vocabulary' | 'patterns';
+    phaseCompleted?: 'dialogue' | 'phrases' | 'vocabulary' | 'patterns' | 'affixes';
     completedAt?: Date;
   }
 ): Promise<void> {
@@ -146,6 +158,7 @@ export async function updateSceneProgress(
       phrases_completed = CASE WHEN ${updates.phaseCompleted ?? ''} = 'phrases' THEN true ELSE phrases_completed END,
       vocabulary_completed = CASE WHEN ${updates.phaseCompleted ?? ''} = 'vocabulary' THEN true ELSE vocabulary_completed END,
       patterns_completed = CASE WHEN ${updates.phaseCompleted ?? ''} = 'patterns' THEN true ELSE patterns_completed END,
+      affixes_completed = CASE WHEN ${updates.phaseCompleted ?? ''} = 'affixes' THEN true ELSE affixes_completed END,
       conversation_completed = CASE WHEN ${updates.phaseCompleted ?? ''} = 'conversation' THEN true ELSE conversation_completed END,
       completed_at = COALESCE(${updates.completedAt?.toISOString() ?? null}, completed_at),
       updated_at = NOW()

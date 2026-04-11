@@ -61,9 +61,9 @@ export async function POST(
   const { currentPhase, phaseIndex, phaseCompleted } = parsed.data;
 
   await updateSceneProgress(session.user.id, sceneId, {
-    currentPhase: currentPhase as 'dialogue' | 'phrases' | 'vocabulary' | 'patterns' | 'summary',
+    currentPhase: currentPhase as 'dialogue' | 'phrases' | 'vocabulary' | 'patterns' | 'affixes' | 'summary',
     phaseIndex,
-    phaseCompleted: phaseCompleted as 'dialogue' | 'phrases' | 'vocabulary' | 'patterns' | undefined,
+    phaseCompleted: phaseCompleted as 'dialogue' | 'phrases' | 'vocabulary' | 'patterns' | 'affixes' | undefined,
   });
 
   return NextResponse.json<ApiResponse<{ success: boolean }>>({

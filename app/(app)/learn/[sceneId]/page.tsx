@@ -127,6 +127,7 @@ export default async function LearnPage({ params }: PageProps) {
     phrases_completed: false,
     vocabulary_completed: false,
     patterns_completed: false,
+    affixes_completed: false,
     conversation_completed: false,
     completed_at: null,
     created_at: new Date(),
@@ -144,6 +145,7 @@ export default async function LearnPage({ params }: PageProps) {
       phrases={flowData.phrases}
       words={words}
       patternExercises={flowData.patternExercises}
+      affixExercises={flowData.affixExercises}
       initialProgress={progress ?? defaultProgress}
       sceneContext={scene.scene_context}
       anchorImageUrl={scene.anchor_image_url}

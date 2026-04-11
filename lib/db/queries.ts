@@ -1,5 +1,5 @@
 import { sql } from './client';
-import type { Word, Mnemonic, Path, Scene, SceneDialogue, Language, UserPath, TutorSession, TutorMessage, Subscription, Purchase, DailyUsage, MnemonicFeedback, LearnerProfile, TutorWordReview, TutorNudge, StudioSession, StudioIntakeData, StudioMessage, StudioPathPreview } from '@/types/database';
+import type { Word, Mnemonic, Path, Scene, SceneDialogue, Language, UserPath, TutorSession, TutorMessage, Subscription, Purchase, DailyUsage, MnemonicFeedback, LearnerProfile, TutorWordReview, TutorNudge, StudioSession, StudioIntakeData, StudioMessage, StudioPathPreview, AffixExercise, WordFamily } from '@/types/database';
 
 export interface WordWithLanguage extends Word {
   language_code: string;
@@ -1432,4 +1432,40 @@ export async function updateTutorSessionLearnerContext(
   learnerContext: Record<string, unknown>
 ): Promise<void> {
   await sql`UPDATE tutor_sessions SET learner_context = ${JSON.stringify(learnerContext)} WHERE id = ${sessionId}`;
+}
+
+// --- Affix Exercises ---
+
+export async function getAffixExercisesForScene(sceneId: string): Promise<AffixExercise[]> {
+  const rows = await sql`
+    SELECT * FROM affix_exercises
+    WHERE scene_id = ${sceneId}
+    ORDER BY sort_order
+  `;
+  return rows as AffixExercise[];
+}
+
+export interface WordFamilyWithDerived extends WordFamily {
+  derived_text: string;
+  derived_meaning_en: string;
+}
+
+export async function getWordFamilies(wordId: string): Promise<WordFamilyWithDerived[]> {
+  const rows = await sql`
+    SELECT wf.*, w.text AS derived_text, w.meaning_en AS derived_meaning_en
+    FROM word_families wf
+    JOIN words w ON w.id = wf.derived_word_id
+    WHERE wf.root_word_id = ${wordId}
+  `;
+  return rows as WordFamilyWithDerived[];
+}
+
+export async function getUserEncounteredAffixes(userId: string): Promise<string[]> {
+  const rows = await sql`
+    SELECT DISTINCT ae.target_affix
+    FROM affix_exercises ae
+    JOIN user_scene_progress usp ON usp.scene_id = ae.scene_id
+    WHERE usp.user_id = ${userId} AND usp.affixes_completed = true
+  `;
+  return (rows as { target_affix: string }[]).map((r) => r.target_affix);
 }

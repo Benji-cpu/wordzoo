@@ -11,8 +11,10 @@ import { WordCard } from '@/components/learn/WordCard';
 import { MnemonicCard } from '@/components/learn/MnemonicCard';
 import { QuizOptions } from '@/components/learn/QuizOptions';
 import { PatternExercise } from '@/components/learn/PatternExercise';
+import { AffixExercise } from '@/components/learn/AffixExercise';
+import { AffixReferenceCard } from '@/components/learn/AffixReferenceCard';
 import { SceneSummary } from '@/components/learn/SceneSummary';
-import type { SceneDialogue, ScenePhraseWithMnemonics, ScenePatternExercise, UserSceneProgress } from '@/types/database';
+import type { SceneDialogue, ScenePhraseWithMnemonics, ScenePatternExercise, AffixExercise as AffixExerciseData, UserSceneProgress } from '@/types/database';
 import type { LearnWord } from '@/components/learn/LearnClient';
 import type { SupportedLanguageCode } from '@/types/audio';
 
@@ -26,6 +28,7 @@ interface SceneFlowClientProps {
   phrases: ScenePhraseWithMnemonics[];
   words: LearnWord[];
   patternExercises: ScenePatternExercise[];
+  affixExercises?: AffixExerciseData[];
   initialProgress: UserSceneProgress;
   sceneContext: string | null;
   anchorImageUrl: string | null;
@@ -40,9 +43,10 @@ type FlowState =
   | { phase: 'phrases'; phraseIndex: number; step: 'show' | 'breakdown' | 'quiz' }
   | { phase: 'vocabulary'; wordIndex: number; step: 'word' | 'mnemonic' | 'quiz' }
   | { phase: 'patterns'; exerciseIndex: number }
+  | { phase: 'affixes'; exerciseIndex: number }
   | { phase: 'summary' };
 
-function initialStateFromProgress(p: UserSceneProgress, totalDialogues: number, totalPhrases: number, totalWords: number, totalPatterns: number, hasAnchorImage: boolean): FlowState {
+function initialStateFromProgress(p: UserSceneProgress, totalDialogues: number, totalPhrases: number, totalWords: number, totalPatterns: number, totalAffixes: number, hasAnchorImage: boolean): FlowState {
   // Cast to string to handle legacy 'conversation' phase from existing DB rows
   const phase = p.current_phase as string;
   switch (phase) {
@@ -66,6 +70,11 @@ function initialStateFromProgress(p: UserSceneProgress, totalDialogues: number, 
         return { phase: 'summary' };
       }
       return { phase: 'patterns', exerciseIndex: Math.min(p.phase_index, totalPatterns - 1) };
+    case 'affixes':
+      if (totalAffixes === 0) {
+        return { phase: 'summary' };
+      }
+      return { phase: 'affixes', exerciseIndex: Math.min(p.phase_index, totalAffixes - 1) };
     case 'conversation':
       // Legacy fallback for existing users with conversation progress
       return { phase: 'summary' };
@@ -81,6 +90,7 @@ interface FlowContext {
   phrases: ScenePhraseWithMnemonics[];
   words: LearnWord[];
   patternExercises: ScenePatternExercise[];
+  affixExercises: AffixExerciseData[];
 }
 
 /** Returns the previous FlowState, or null to exit the scene. */
@@ -156,7 +166,30 @@ function computePreviousState(current: FlowState, ctx: FlowContext & { hasAnchor
       return null;
     }
 
+    case 'affixes': {
+      if (current.exerciseIndex > 0) {
+        return { phase: 'affixes', exerciseIndex: current.exerciseIndex - 1 };
+      }
+      // First affix → back to last pattern, or last vocab, or last phrase, or dialogue, or exit
+      if (ctx.patternExercises.length > 0) {
+        return { phase: 'patterns', exerciseIndex: ctx.patternExercises.length - 1 };
+      }
+      if (ctx.words.length > 0) {
+        return { phase: 'vocabulary', wordIndex: ctx.words.length - 1, step: 'word' };
+      }
+      if (ctx.phrases.length > 0) {
+        return { phase: 'phrases', phraseIndex: ctx.phrases.length - 1, step: 'show' };
+      }
+      if (ctx.dialogues.length > 0) {
+        return { phase: 'dialogue', lineIndex: ctx.dialogues.length - 1 };
+      }
+      return null;
+    }
+
     case 'summary': {
+      if (ctx.affixExercises.length > 0) {
+        return { phase: 'affixes', exerciseIndex: ctx.affixExercises.length - 1 };
+      }
       if (ctx.patternExercises.length > 0) {
         return { phase: 'patterns', exerciseIndex: ctx.patternExercises.length - 1 };
       }
@@ -184,6 +217,7 @@ export function SceneFlowClient({
   phrases,
   words,
   patternExercises,
+  affixExercises = [],
   initialProgress,
   sceneContext,
   anchorImageUrl,
@@ -193,7 +227,7 @@ export function SceneFlowClient({
 }: SceneFlowClientProps) {
   const hasAnchorImage = !!anchorImageUrl;
   const [state, setState] = useState<FlowState>(() =>
-    initialStateFromProgress(initialProgress, dialogues.length, phrases.length, words.length, patternExercises.length, hasAnchorImage)
+    initialStateFromProgress(initialProgress, dialogues.length, phrases.length, words.length, patternExercises.length, affixExercises.length, hasAnchorImage)
   );
 
   const router = useRouter();
@@ -215,14 +249,14 @@ export function SceneFlowClient({
 
   // --- Back Navigation ---
   const handleBack = useCallback(() => {
-    const ctx: FlowContext & { hasAnchorImage: boolean } = { dialogues, phrases, words, patternExercises, hasAnchorImage };
+    const ctx: FlowContext & { hasAnchorImage: boolean } = { dialogues, phrases, words, patternExercises, affixExercises, hasAnchorImage };
     const prev = computePreviousState(state, ctx);
     if (prev) {
       setState(prev);
     } else {
       router.push(pathId ? `/paths/${pathId}` : '/dashboard');
     }
-  }, [state, dialogues, phrases, words, patternExercises, hasAnchorImage, pathId, router]);
+  }, [state, dialogues, phrases, words, patternExercises, affixExercises, hasAnchorImage, pathId, router]);
 
   // --- Dialogue Phase ---
   const handleDialogueComplete = useCallback(() => {
@@ -325,12 +359,16 @@ export function SceneFlowClient({
       // Move to patterns
       saveProgress('patterns', 0, 'vocabulary');
       setState({ phase: 'patterns', exerciseIndex: 0 });
+    } else if (affixExercises.length > 0) {
+      // Skip patterns, move to affixes
+      saveProgress('affixes', 0, 'vocabulary');
+      setState({ phase: 'affixes', exerciseIndex: 0 });
     } else {
-      // Skip patterns phase (empty for studio paths)
+      // Skip patterns and affixes phases (empty for studio paths)
       saveProgress('summary', 0, 'vocabulary');
       setState({ phase: 'summary' });
     }
-  }, [state, words.length, patternExercises.length, saveProgress]);
+  }, [state, words.length, patternExercises.length, affixExercises.length, saveProgress]);
 
   // --- Patterns Phase ---
   const handlePatternCorrect = useCallback(() => {
@@ -339,12 +377,30 @@ export function SceneFlowClient({
     if (next < patternExercises.length) {
       saveProgress('patterns', next);
       setState({ phase: 'patterns', exerciseIndex: next });
+    } else if (affixExercises.length > 0) {
+      // Move to affixes
+      saveProgress('affixes', 0, 'patterns');
+      setState({ phase: 'affixes', exerciseIndex: 0 });
     } else {
       // Move to summary
       saveProgress('summary', 0, 'patterns');
       setState({ phase: 'summary' });
     }
-  }, [state, patternExercises.length, saveProgress]);
+  }, [state, patternExercises.length, affixExercises.length, saveProgress]);
+
+  // --- Affixes Phase ---
+  const handleAffixComplete = useCallback((_correct: boolean) => {
+    if (state.phase !== 'affixes') return;
+    const next = state.exerciseIndex + 1;
+    if (next < affixExercises.length) {
+      saveProgress('affixes', next);
+      setState({ phase: 'affixes', exerciseIndex: next });
+    } else {
+      // Move to summary
+      saveProgress('summary', 0, 'affixes');
+      setState({ phase: 'summary' });
+    }
+  }, [state, affixExercises.length, saveProgress]);
 
   // Swipe to advance for card-based phases
   useEffect(() => {
@@ -393,6 +449,8 @@ export function SceneFlowClient({
         return (state.wordIndex + substepFraction(state.step, ['word', 'mnemonic', 'quiz'])) / words.length;
       case 'patterns':
         return patternExercises.length > 1 ? state.exerciseIndex / (patternExercises.length - 1) : 0;
+      case 'affixes':
+        return affixExercises.length > 1 ? state.exerciseIndex / (affixExercises.length - 1) : 0;
       case 'summary':
         return 1;
     }
@@ -515,6 +573,18 @@ export function SceneFlowClient({
           onCorrect={handlePatternCorrect}
           userName={userName}
         />
+      )}
+
+      {/* Affixes Phase */}
+      {state.phase === 'affixes' && affixExercises[state.exerciseIndex] && (
+        <>
+          <AffixExercise
+            key={affixExercises[state.exerciseIndex].id}
+            exercise={affixExercises[state.exerciseIndex]}
+            onComplete={handleAffixComplete}
+          />
+          <AffixReferenceCard />
+        </>
       )}
 
       {/* Summary Phase */}
