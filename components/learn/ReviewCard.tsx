@@ -175,6 +175,13 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate }:
                     {renderBridgeSentence(mnemonic.bridge_sentence)}
                   </p>
                 )}
+                {word.informal_text && (
+                  <p className="text-sm text-text-secondary mb-2">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent-id/10 text-accent-id text-xs font-medium">
+                      Casual: {word.informal_text}
+                    </span>
+                  </p>
+                )}
                 {mnemonicImage}
                 <div className="mt-1" onClick={(e) => e.stopPropagation()}>
                   <FeedbackButtons mnemonicId={mnemonic.id} context="review" />
@@ -230,6 +237,13 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate }:
                 {mnemonic.bridge_sentence && (
                   <p className="text-base text-foreground italic mt-1">
                     {renderBridgeSentence(mnemonic.bridge_sentence)}
+                  </p>
+                )}
+                {word.informal_text && (
+                  <p className="text-sm text-text-secondary mt-2">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent-id/10 text-accent-id text-xs font-medium">
+                      Casual: {word.informal_text}
+                    </span>
                   </p>
                 )}
                 <div className="mt-2" onClick={(e) => e.stopPropagation()}>

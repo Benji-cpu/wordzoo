@@ -16,6 +16,8 @@ export interface LearnWord {
     meaning_en: string;
     part_of_speech: string;
     pronunciation_audio_url: string | null;
+    informal_text: string | null;
+    register: 'formal' | 'informal' | 'neutral';
   };
   mnemonic: {
     id: string;
@@ -211,6 +213,7 @@ export function LearnClient({ sceneId, sceneTitle, sceneDescription, languageNam
               wordId={currentWord.word.id}
               audioUrl={currentWord.word.pronunciation_audio_url}
               languageCode={languageCode}
+              informalText={currentWord.word.informal_text}
               onContinue={advanceWord}
             />
           )}

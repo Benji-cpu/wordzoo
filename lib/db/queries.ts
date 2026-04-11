@@ -127,6 +127,8 @@ export interface SceneWordWithDetails {
   meaning_en: string;
   part_of_speech: string;
   frequency_rank: number;
+  informal_text: string | null;
+  register: 'formal' | 'informal' | 'neutral';
   sort_order: number;
   mnemonic_id: string | null;
   keyword_text: string | null;
@@ -144,6 +146,7 @@ export async function getSceneWordsWithDetails(
     SELECT
       w.id AS word_id, w.text, w.romanization, w.pronunciation_audio_url,
       w.meaning_en, w.part_of_speech, w.frequency_rank,
+      w.informal_text, w.register,
       sw.sort_order,
       m.id AS mnemonic_id, m.keyword_text, m.scene_description, m.bridge_sentence, m.image_url,
       uw.status AS user_word_status
@@ -174,6 +177,7 @@ export async function getSceneWordsForLearning(
     SELECT
       w.id AS word_id, w.text, w.romanization, w.pronunciation_audio_url,
       w.meaning_en, w.part_of_speech, w.frequency_rank,
+      w.informal_text, w.register,
       sw.sort_order,
       m.id AS mnemonic_id, m.keyword_text, m.scene_description, m.bridge_sentence, m.image_url,
       uw.status AS user_word_status
@@ -1000,6 +1004,8 @@ export interface DueWordForReview {
   part_of_speech: string;
   language_id: string;
   frequency_rank: number;
+  informal_text: string | null;
+  register: 'formal' | 'informal' | 'neutral';
   mnemonic_id: string | null;
   keyword_text: string | null;
   scene_description: string | null;
@@ -1022,6 +1028,7 @@ export async function getDueWordsForReview(
     SELECT
       w.id AS word_id, w.text, w.romanization, w.pronunciation_audio_url,
       w.meaning_en, w.part_of_speech, w.language_id, w.frequency_rank,
+      w.informal_text, w.register,
       m.id AS mnemonic_id, m.keyword_text, m.scene_description, m.bridge_sentence, m.image_url,
       uw.id AS user_word_id, uw.status, uw.ease_factor, uw.interval_days,
       uw.times_reviewed, uw.times_correct, uw.direction
@@ -1054,6 +1061,7 @@ export async function getAllLearnedWordsForPractice(
     SELECT
       w.id AS word_id, w.text, w.romanization, w.pronunciation_audio_url,
       w.meaning_en, w.part_of_speech, w.language_id, w.frequency_rank,
+      w.informal_text, w.register,
       m.id AS mnemonic_id, m.keyword_text, m.scene_description, m.bridge_sentence, m.image_url,
       uw.id AS user_word_id, uw.status, uw.ease_factor, uw.interval_days,
       uw.times_reviewed, uw.times_correct, uw.direction

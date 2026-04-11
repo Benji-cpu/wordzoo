@@ -29,6 +29,8 @@ function toWord(dw: DueWordForReview): Word {
     meaning_en: dw.meaning_en,
     part_of_speech: dw.part_of_speech,
     frequency_rank: dw.frequency_rank,
+    informal_text: dw.informal_text ?? null,
+    register: dw.register ?? 'neutral',
     created_at: new Date(),
   };
 }

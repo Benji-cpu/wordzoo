@@ -34,6 +34,8 @@ export interface Word {
   meaning_en: string;
   part_of_speech: string;
   frequency_rank: number;
+  informal_text: string | null;
+  register: 'formal' | 'informal' | 'neutral';
   created_at: Date;
 }
 
@@ -275,6 +277,7 @@ export interface SceneDialogue {
   scene_id: string;
   speaker: string;
   text_target: string;
+  text_target_informal: string | null;
   text_en: string;
   audio_url: string | null;
   sort_order: number;
@@ -285,6 +288,7 @@ export interface ScenePhrase {
   id: string;
   scene_id: string;
   text_target: string;
+  text_target_informal: string | null;
   text_en: string;
   literal_translation: string | null;
   audio_url: string | null;

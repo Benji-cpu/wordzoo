@@ -43,6 +43,8 @@ interface PathData {
       meaning_en: string;
       part_of_speech: string;
       frequency_rank: number;
+      informal_text?: string | null;
+      register?: 'formal' | 'informal' | 'neutral';
       created_at: string;
       mnemonic?: {
         id: string;
@@ -101,6 +103,8 @@ export async function* downloadPack(
     if (!existingWord) {
       const cachedWord: CachedWord = {
         ...word,
+        informal_text: word.informal_text ?? null,
+        register: word.register ?? 'neutral',
         created_at: new Date(word.created_at),
         cached_at: new Date(),
       };

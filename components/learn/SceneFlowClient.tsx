@@ -536,6 +536,7 @@ export function SceneFlowClient({
               wordId={words[state.wordIndex].word.id}
               audioUrl={words[state.wordIndex].word.pronunciation_audio_url}
               languageCode={languageCode}
+              informalText={words[state.wordIndex].word.informal_text}
               onContinue={handleWordContinue}
             />
           )}

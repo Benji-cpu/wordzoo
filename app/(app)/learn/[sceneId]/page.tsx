@@ -39,6 +39,8 @@ async function buildWordsArray(
           meaning_en: sw.meaning_en,
           part_of_speech: sw.part_of_speech,
           pronunciation_audio_url: sw.pronunciation_audio_url,
+          informal_text: sw.informal_text ?? null,
+          register: sw.register ?? 'neutral',
         },
         mnemonic: sw.mnemonic_id
           ? {

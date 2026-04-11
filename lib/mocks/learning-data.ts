@@ -9,18 +9,18 @@ const LANG_ID = uuid(100); // Indonesian
 
 // ── Words ───────────────────────────────────────────────────────────
 const MOCK_WORDS: Word[] = [
-  { id: uuid(1), language_id: LANG_ID, text: 'halo', romanization: null, pronunciation_audio_url: null, meaning_en: 'hello', part_of_speech: 'interjection', frequency_rank: 25, created_at: new Date() },
-  { id: uuid(2), language_id: LANG_ID, text: 'nama', romanization: null, pronunciation_audio_url: null, meaning_en: 'name', part_of_speech: 'noun', frequency_rank: 9, created_at: new Date() },
-  { id: uuid(3), language_id: LANG_ID, text: 'saya', romanization: null, pronunciation_audio_url: null, meaning_en: 'I / me', part_of_speech: 'pronoun', frequency_rank: 1, created_at: new Date() },
-  { id: uuid(4), language_id: LANG_ID, text: 'baik', romanization: null, pronunciation_audio_url: null, meaning_en: 'good / fine', part_of_speech: 'adjective', frequency_rank: 10, created_at: new Date() },
-  { id: uuid(5), language_id: LANG_ID, text: 'anda', romanization: null, pronunciation_audio_url: null, meaning_en: 'you (formal)', part_of_speech: 'pronoun', frequency_rank: 12, created_at: new Date() },
-  { id: uuid(6), language_id: LANG_ID, text: 'selamat pagi', romanization: null, pronunciation_audio_url: null, meaning_en: 'good morning', part_of_speech: 'phrase', frequency_rank: 20, created_at: new Date() },
-  { id: uuid(7), language_id: LANG_ID, text: 'makan', romanization: null, pronunciation_audio_url: null, meaning_en: 'eat', part_of_speech: 'verb', frequency_rank: 12, created_at: new Date() },
-  { id: uuid(8), language_id: LANG_ID, text: 'minum', romanization: null, pronunciation_audio_url: null, meaning_en: 'drink', part_of_speech: 'verb', frequency_rank: 13, created_at: new Date() },
-  { id: uuid(9), language_id: LANG_ID, text: 'air', romanization: null, pronunciation_audio_url: null, meaning_en: 'water', part_of_speech: 'noun', frequency_rank: 35, created_at: new Date() },
-  { id: uuid(10), language_id: LANG_ID, text: 'enak', romanization: null, pronunciation_audio_url: null, meaning_en: 'delicious', part_of_speech: 'adjective', frequency_rank: 85, created_at: new Date() },
-  { id: uuid(11), language_id: LANG_ID, text: 'berapa', romanization: null, pronunciation_audio_url: null, meaning_en: 'how much', part_of_speech: 'pronoun', frequency_rank: 14, created_at: new Date() },
-  { id: uuid(12), language_id: LANG_ID, text: 'tolong', romanization: null, pronunciation_audio_url: null, meaning_en: 'help / please', part_of_speech: 'verb', frequency_rank: 30, created_at: new Date() },
+  { id: uuid(1), language_id: LANG_ID, text: 'halo', romanization: null, pronunciation_audio_url: null, meaning_en: 'hello', part_of_speech: 'interjection', frequency_rank: 25, informal_text: null, register: 'neutral', created_at: new Date() },
+  { id: uuid(2), language_id: LANG_ID, text: 'nama', romanization: null, pronunciation_audio_url: null, meaning_en: 'name', part_of_speech: 'noun', frequency_rank: 9, informal_text: null, register: 'neutral', created_at: new Date() },
+  { id: uuid(3), language_id: LANG_ID, text: 'saya', romanization: null, pronunciation_audio_url: null, meaning_en: 'I / me', part_of_speech: 'pronoun', frequency_rank: 1, informal_text: 'aku / gue', register: 'formal', created_at: new Date() },
+  { id: uuid(4), language_id: LANG_ID, text: 'baik', romanization: null, pronunciation_audio_url: null, meaning_en: 'good / fine', part_of_speech: 'adjective', frequency_rank: 10, informal_text: null, register: 'neutral', created_at: new Date() },
+  { id: uuid(5), language_id: LANG_ID, text: 'anda', romanization: null, pronunciation_audio_url: null, meaning_en: 'you (formal)', part_of_speech: 'pronoun', frequency_rank: 12, informal_text: 'kamu / lo', register: 'formal', created_at: new Date() },
+  { id: uuid(6), language_id: LANG_ID, text: 'selamat pagi', romanization: null, pronunciation_audio_url: null, meaning_en: 'good morning', part_of_speech: 'phrase', frequency_rank: 20, informal_text: null, register: 'neutral', created_at: new Date() },
+  { id: uuid(7), language_id: LANG_ID, text: 'makan', romanization: null, pronunciation_audio_url: null, meaning_en: 'eat', part_of_speech: 'verb', frequency_rank: 12, informal_text: null, register: 'neutral', created_at: new Date() },
+  { id: uuid(8), language_id: LANG_ID, text: 'minum', romanization: null, pronunciation_audio_url: null, meaning_en: 'drink', part_of_speech: 'verb', frequency_rank: 13, informal_text: null, register: 'neutral', created_at: new Date() },
+  { id: uuid(9), language_id: LANG_ID, text: 'air', romanization: null, pronunciation_audio_url: null, meaning_en: 'water', part_of_speech: 'noun', frequency_rank: 35, informal_text: null, register: 'neutral', created_at: new Date() },
+  { id: uuid(10), language_id: LANG_ID, text: 'enak', romanization: null, pronunciation_audio_url: null, meaning_en: 'delicious', part_of_speech: 'adjective', frequency_rank: 85, informal_text: null, register: 'neutral', created_at: new Date() },
+  { id: uuid(11), language_id: LANG_ID, text: 'berapa', romanization: null, pronunciation_audio_url: null, meaning_en: 'how much', part_of_speech: 'pronoun', frequency_rank: 14, informal_text: null, register: 'neutral', created_at: new Date() },
+  { id: uuid(12), language_id: LANG_ID, text: 'tolong', romanization: null, pronunciation_audio_url: null, meaning_en: 'help / please', part_of_speech: 'verb', frequency_rank: 30, informal_text: null, register: 'neutral', created_at: new Date() },
 ];
 
 // ── Mnemonics ───────────────────────────────────────────────────────

@@ -13,10 +13,11 @@ interface WordCardProps {
   wordId: string;
   audioUrl?: string | null;
   languageCode?: string;
+  informalText?: string | null;
   onContinue: () => void;
 }
 
-export function WordCard({ text, romanization, meaningEn, partOfSpeech, wordId, audioUrl, languageCode, onContinue }: WordCardProps) {
+export function WordCard({ text, romanization, meaningEn, partOfSpeech, wordId, audioUrl, languageCode, informalText, onContinue }: WordCardProps) {
   // Auto-play pronunciation on mount / word change (ref guard prevents StrictMode double-play)
   const hasAutoPlayed = useRef(false);
   useEffect(() => {
@@ -40,6 +41,13 @@ export function WordCard({ text, romanization, meaningEn, partOfSpeech, wordId, 
       </div>
       <div className="w-12 h-px bg-card-border mx-auto my-4" />
       <p className="text-xl text-foreground">{meaningEn}</p>
+      {informalText && (
+        <p className="text-sm text-text-secondary mt-3">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent-id/10 text-accent-id text-xs font-medium">
+            Casual: {informalText}
+          </span>
+        </p>
+      )}
       <p className="text-sm text-text-secondary mt-8">Tap to continue</p>
     </Card>
   );
