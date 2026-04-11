@@ -11,6 +11,8 @@ import { WordCard } from '@/components/learn/WordCard';
 import { MnemonicCard } from '@/components/learn/MnemonicCard';
 import { QuizOptions } from '@/components/learn/QuizOptions';
 import { PatternExercise } from '@/components/learn/PatternExercise';
+import { SentenceBuilder } from '@/components/learn/SentenceBuilder';
+import { TypedTranslation } from '@/components/learn/TypedTranslation';
 import { AffixExercise } from '@/components/learn/AffixExercise';
 import { AffixReferenceCard } from '@/components/learn/AffixReferenceCard';
 import { SceneSummary } from '@/components/learn/SceneSummary';
@@ -371,7 +373,7 @@ export function SceneFlowClient({
   }, [state, words.length, patternExercises.length, affixExercises.length, saveProgress]);
 
   // --- Patterns Phase ---
-  const handlePatternCorrect = useCallback(() => {
+  const handlePatternCorrect = useCallback((_correct?: boolean) => {
     if (state.phase !== 'patterns') return;
     const next = state.exerciseIndex + 1;
     if (next < patternExercises.length) {
@@ -566,14 +568,44 @@ export function SceneFlowClient({
       )}
 
       {/* Patterns Phase */}
-      {state.phase === 'patterns' && patternExercises[state.exerciseIndex] && (
-        <PatternExercise
-          key={patternExercises[state.exerciseIndex].id}
-          exercise={patternExercises[state.exerciseIndex]}
-          onCorrect={handlePatternCorrect}
-          userName={userName}
-        />
-      )}
+      {state.phase === 'patterns' && patternExercises[state.exerciseIndex] && (() => {
+        const exercise = patternExercises[state.exerciseIndex];
+        const exerciseType = exercise.exercise_type || 'fill_blank';
+
+        if (exerciseType === 'sentence_build') {
+          return (
+            <SentenceBuilder
+              key={exercise.id}
+              prompt={exercise.hint_en || exercise.prompt}
+              correctAnswer={exercise.correct_answer}
+              distractors={exercise.distractors}
+              explanation={exercise.explanation ?? undefined}
+              onComplete={handlePatternCorrect}
+            />
+          );
+        }
+
+        if (exerciseType === 'typed_translation') {
+          return (
+            <TypedTranslation
+              key={exercise.id}
+              promptEn={exercise.hint_en || exercise.prompt}
+              correctAnswer={exercise.correct_answer}
+              onComplete={handlePatternCorrect}
+            />
+          );
+        }
+
+        // Default: fill_blank
+        return (
+          <PatternExercise
+            key={exercise.id}
+            exercise={exercise}
+            onCorrect={handlePatternCorrect}
+            userName={userName}
+          />
+        );
+      })()}
 
       {/* Affixes Phase */}
       {state.phase === 'affixes' && affixExercises[state.exerciseIndex] && (

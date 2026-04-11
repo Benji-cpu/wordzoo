@@ -327,6 +327,7 @@ export interface ScenePatternExercise {
   hint_en: string | null;
   correct_answer: string;
   distractors: string[];
+  exercise_type?: 'fill_blank' | 'sentence_build' | 'typed_translation';
   sort_order: number;
   created_at: Date;
 }
