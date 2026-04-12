@@ -4,9 +4,17 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { SceneHeader } from '@/components/learn/SceneHeader';
 import { WordCard } from '@/components/learn/WordCard';
 import { MnemonicCard } from '@/components/learn/MnemonicCard';
+import { CollapsibleWordFamily } from '@/components/learn/WordFamilyCard';
 import { QuizOptions } from '@/components/learn/QuizOptions';
 import { SceneSummary } from '@/components/learn/SceneSummary';
 import type { SupportedLanguageCode } from '@/types/audio';
+
+export interface LearnWordFamily {
+  affix_type: string;
+  derived_word: string;
+  derived_meaning: string;
+  meaning_shift: string;
+}
 
 export interface LearnWord {
   word: {
@@ -28,6 +36,7 @@ export interface LearnWord {
   } | null;
   distractors: string[];
   userWordStatus: string | null;
+  wordFamilies?: LearnWordFamily[];
 }
 
 interface LearnClientProps {
@@ -219,18 +228,29 @@ export function LearnClient({ sceneId, sceneTitle, sceneDescription, languageNam
           )}
 
           {state.step === 'mnemonic' && currentWord.mnemonic && (
-            <MnemonicCard
-              wordText={currentWord.word.text}
-              keyword={currentWord.mnemonic.keyword_text}
-              sceneDescription={currentWord.mnemonic.scene_description}
-              bridgeSentence={currentWord.mnemonic.bridge_sentence}
-              imageUrl={currentWord.mnemonic.image_url}
-              mnemonicId={currentWord.mnemonic.id}
-              wordId={currentWord.word.id}
-              meaningEn={currentWord.word.meaning_en}
-              languageName={languageName}
-              onContinue={advanceWord}
-            />
+            <>
+              <MnemonicCard
+                wordText={currentWord.word.text}
+                keyword={currentWord.mnemonic.keyword_text}
+                sceneDescription={currentWord.mnemonic.scene_description}
+                bridgeSentence={currentWord.mnemonic.bridge_sentence}
+                imageUrl={currentWord.mnemonic.image_url}
+                mnemonicId={currentWord.mnemonic.id}
+                wordId={currentWord.word.id}
+                meaningEn={currentWord.word.meaning_en}
+                languageName={languageName}
+                onContinue={advanceWord}
+              />
+              {currentWord.wordFamilies && currentWord.wordFamilies.length > 0 && (
+                <CollapsibleWordFamily
+                  rootWord={{
+                    text: currentWord.word.text,
+                    meaning: currentWord.word.meaning_en,
+                  }}
+                  derivedForms={currentWord.wordFamilies}
+                />
+              )}
+            </>
           )}
 
           {state.step === 'quiz' && (

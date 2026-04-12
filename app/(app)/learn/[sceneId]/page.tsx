@@ -6,6 +6,7 @@ import {
   getNextSceneInPath,
   getSceneMasteryForPath,
   upsertUserPath,
+  getWordFamilies,
 } from '@/lib/db/queries';
 import { getSceneFlowData, getOrCreateSceneProgress } from '@/lib/db/scene-flow-queries';
 import { auth } from '@/lib/auth';
@@ -25,12 +26,10 @@ async function buildWordsArray(
   const sceneWords = await getSceneWordsForLearning(sceneId, userId);
   return Promise.all(
     sceneWords.map(async (sw) => {
-      const distractors = await getDistractorsForWord(
-        sw.word_id,
-        languageId,
-        sw.meaning_en,
-        3
-      );
+      const [distractors, families] = await Promise.all([
+        getDistractorsForWord(sw.word_id, languageId, sw.meaning_en, 3),
+        getWordFamilies(sw.word_id),
+      ]);
       return {
         word: {
           id: sw.word_id,
@@ -53,6 +52,14 @@ async function buildWordsArray(
           : null,
         distractors,
         userWordStatus: sw.user_word_status ?? null,
+        wordFamilies: families.length > 0
+          ? families.map(f => ({
+              affix_type: f.affix_type,
+              derived_word: f.derived_text,
+              derived_meaning: f.derived_meaning_en,
+              meaning_shift: f.meaning_shift ?? '',
+            }))
+          : undefined,
       };
     })
   );

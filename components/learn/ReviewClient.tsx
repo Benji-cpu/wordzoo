@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
 import type { DueWordForReview } from '@/lib/db/queries';
 import type { DuePhraseForReview } from '@/lib/db/scene-flow-queries';
+import type { LearnWordFamily } from '@/components/learn/LearnClient';
 import type { Word, Mnemonic } from '@/types/database';
 
 type Rating = 'instant' | 'got_it' | 'hard' | 'forgot';
@@ -58,9 +59,10 @@ interface ReviewClientProps {
   dueWords: DueWordForReview[];
   duePhrases: DuePhraseForReview[];
   practiceWords?: DueWordForReview[];
+  wordFamiliesMap?: Record<string, LearnWordFamily[]>;
 }
 
-export function ReviewClient({ dueWords, duePhrases, practiceWords = [] }: ReviewClientProps) {
+export function ReviewClient({ dueWords, duePhrases, practiceWords = [], wordFamiliesMap = {} }: ReviewClientProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
@@ -311,6 +313,7 @@ export function ReviewClient({ dueWords, duePhrases, practiceWords = [] }: Revie
             onReveal={handleReveal}
             revealed={revealed}
             onRate={handleRevisionRate}
+            wordFamilies={wordFamiliesMap[revisionItem.word_id]}
           />
         )}
       </>
@@ -345,6 +348,7 @@ export function ReviewClient({ dueWords, duePhrases, practiceWords = [] }: Revie
           onReveal={handleReveal}
           revealed={revealed}
           onRate={handleRate}
+          wordFamilies={wordFamiliesMap[current.data.word_id]}
         />
       ) : (
         <>

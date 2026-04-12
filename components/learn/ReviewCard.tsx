@@ -7,6 +7,8 @@ import { RatingButtons } from '@/components/learn/RatingButtons';
 import { PronunciationButton } from '@/components/audio/SpeakerButton';
 import { playWordPronunciation } from '@/lib/audio/pronunciation';
 import { SwipeIndicators, getSwipeBorderStyle } from '@/components/learn/SwipeIndicators';
+import { CollapsibleWordFamily } from '@/components/learn/WordFamilyCard';
+import type { LearnWordFamily } from '@/components/learn/LearnClient';
 import type { Word, Mnemonic } from '@/types/database';
 
 type Rating = 'instant' | 'got_it' | 'hard' | 'forgot';
@@ -33,9 +35,10 @@ interface ReviewCardProps {
   onReveal: () => void;
   revealed: boolean;
   onRate?: (rating: Rating) => void;
+  wordFamilies?: LearnWordFamily[];
 }
 
-export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate }: ReviewCardProps) {
+export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, wordFamilies }: ReviewCardProps) {
   const [swipeX, setSwipeX] = useState(0);
   const [imageLoaded, setImageLoaded] = useState(false);
   const startXRef = useRef(0);
@@ -115,6 +118,15 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate }:
     </div>
   );
 
+  const wordFamilySection = revealed && wordFamilies && wordFamilies.length > 0 && (
+    <div className="mt-2" onClick={(e) => e.stopPropagation()}>
+      <CollapsibleWordFamily
+        rootWord={{ text: word.text, meaning: word.meaning_en }}
+        derivedForms={wordFamilies}
+      />
+    </div>
+  );
+
   return (
     <div style={swipeStyle} className="relative">
       {revealed && <SwipeIndicators swipeX={swipeX} />}
@@ -187,6 +199,7 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate }:
                   <FeedbackButtons mnemonicId={mnemonic.id} context="review" />
                 </div>
                 {ratingSection}
+                {wordFamilySection}
               </div>
             )}
           </>
@@ -250,6 +263,7 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate }:
                   <FeedbackButtons mnemonicId={mnemonic.id} context="review" />
                 </div>
                 {ratingSection}
+                {wordFamilySection}
               </div>
             )}
 

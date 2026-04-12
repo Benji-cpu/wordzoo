@@ -15,6 +15,7 @@ import { SentenceBuilder } from '@/components/learn/SentenceBuilder';
 import { TypedTranslation } from '@/components/learn/TypedTranslation';
 import { AffixExercise } from '@/components/learn/AffixExercise';
 import { AffixReferenceCard } from '@/components/learn/AffixReferenceCard';
+import { CollapsibleWordFamily } from '@/components/learn/WordFamilyCard';
 import { SceneSummary } from '@/components/learn/SceneSummary';
 import type { SceneDialogue, ScenePhraseWithMnemonics, ScenePatternExercise, AffixExercise as AffixExerciseData, UserSceneProgress } from '@/types/database';
 import type { LearnWord } from '@/components/learn/LearnClient';
@@ -541,18 +542,29 @@ export function SceneFlowClient({
             />
           )}
           {state.step === 'mnemonic' && words[state.wordIndex].mnemonic && (
-            <MnemonicCard
-              wordText={words[state.wordIndex].word.text}
-              keyword={words[state.wordIndex].mnemonic!.keyword_text}
-              sceneDescription={words[state.wordIndex].mnemonic!.scene_description}
-              bridgeSentence={words[state.wordIndex].mnemonic!.bridge_sentence}
-              imageUrl={words[state.wordIndex].mnemonic!.image_url}
-              mnemonicId={words[state.wordIndex].mnemonic!.id}
-              wordId={words[state.wordIndex].word.id}
-              meaningEn={words[state.wordIndex].word.meaning_en}
-              languageName={languageName}
-              onContinue={handleMnemonicContinue}
-            />
+            <>
+              <MnemonicCard
+                wordText={words[state.wordIndex].word.text}
+                keyword={words[state.wordIndex].mnemonic!.keyword_text}
+                sceneDescription={words[state.wordIndex].mnemonic!.scene_description}
+                bridgeSentence={words[state.wordIndex].mnemonic!.bridge_sentence}
+                imageUrl={words[state.wordIndex].mnemonic!.image_url}
+                mnemonicId={words[state.wordIndex].mnemonic!.id}
+                wordId={words[state.wordIndex].word.id}
+                meaningEn={words[state.wordIndex].word.meaning_en}
+                languageName={languageName}
+                onContinue={handleMnemonicContinue}
+              />
+              {words[state.wordIndex].wordFamilies && words[state.wordIndex].wordFamilies!.length > 0 && (
+                <CollapsibleWordFamily
+                  rootWord={{
+                    text: words[state.wordIndex].word.text,
+                    meaning: words[state.wordIndex].word.meaning_en,
+                  }}
+                  derivedForms={words[state.wordIndex].wordFamilies!}
+                />
+              )}
+            </>
           )}
           {state.step === 'quiz' && (
             <QuizOptions
