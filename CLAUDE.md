@@ -22,6 +22,7 @@ Language learning SaaS with AI-generated keyword mnemonics, spaced repetition, a
 - `npm run db:seed` — seed base data
 - `npm run db:seed-mnemonics` — seed AI-generated mnemonics
 - `npm run db:seed-audio` — generate TTS audio (`--mode=words|narrations|dialogues|phrases|all`, `--only=word1,word2`, `--force`)
+- `npm run db:seed-expanded` — seed expanded Indonesian content (Units 1-5, 19 scenes, ~231 words)
 - No automated test framework is configured. Do not create test files, test scripts, or test dependencies. Playwright MCP is for interactive browser testing during development via Claude Code, not for automated test suites.
 
 ## Deployment
