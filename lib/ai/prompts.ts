@@ -110,8 +110,13 @@ export function buildSceneGenerationPrompt(
   languageName: string,
   languageCode: string,
   existingWords: string[],
-  wordCount: number = 10
+  wordCount: number = 10,
+  grammarFocus?: string
 ): string {
+  const grammarLine = grammarFocus
+    ? `\n- Grammar focus for pattern exercises: ${grammarFocus}`
+    : '';
+
   return `Generate a language learning scene for ${languageName} (code: ${languageCode}) about "${topic}".
 
 Return a JSON object with this exact structure:
@@ -119,6 +124,7 @@ Return a JSON object with this exact structure:
   "title": "Scene title (in English, 3-5 words)",
   "description": "Brief description of the scenario (1 sentence)",
   "scene_context": "Context for AI tutor conversations about this topic (1-2 sentences)",
+  "anchor_image_prompt": "A warm, detailed image prompt describing this scene's setting (max 80 words). End with: digital illustration, warm colors, atmospheric lighting, wide composition, establishing shot. Do NOT include text overlays.",
   "words": [
     {
       "text": "word in ${languageName}",
@@ -149,17 +155,32 @@ Return a JSON object with this exact structure:
       "literal_translation": "word-by-word translation",
       "usage_note": "when/how to use this phrase"
     }
+  ],
+  "patterns": [
+    {
+      "pattern_template": "Grammar pattern template, e.g. 'Saya mau ___' (I want ___)",
+      "pattern_en": "English translation of the pattern",
+      "prompt": "The exercise prompt shown to the learner, e.g. 'Complete: Saya ___ nasi goreng (I want fried rice)'",
+      "hint_en": "English hint, e.g. 'want'",
+      "correct_answer": "The correct answer, e.g. 'mau'",
+      "distractors": ["wrong1", "wrong2", "wrong3"],
+      "explanation": "Brief explanation of why this is correct and the grammar rule",
+      "exercise_type": "fill_blank | sentence_build | typed_translation"
+    }
   ]
 }
 
 Requirements:
 - Generate exactly ${wordCount} words. Focus on practical, high-frequency vocabulary for the topic.
-- Do NOT include these words (already in the database): ${existingWords.join(', ')}
+- Do NOT include these words (already in the database): ${existingWords.length > 0 ? existingWords.join(', ') : '(none)'}
 - Each word must have a mnemonic with a vivid, memorable scene description.
 - Generate 4-6 dialogue lines showing natural conversation using the words.
 - Generate 3-5 useful phrases related to the topic.
+- Generate 2-4 pattern exercises. Use a mix of exercise_type values: fill_blank, sentence_build, and typed_translation. Each pattern should reinforce grammar or vocabulary from the scene.
+- The anchor_image_prompt should vividly describe the scene's physical setting in a warm illustration style.
 - All ${languageName} text must be accurate and natural-sounding.
 - Mnemonics should use English words that SOUND LIKE the ${languageName} word (keyword method).
+- Mnemonic keywords must NOT be identical to the target ${languageName} word.${grammarLine}
 
 Return ONLY the JSON object, no markdown or explanation.`;
 }

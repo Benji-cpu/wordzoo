@@ -424,6 +424,12 @@ CREATE TABLE IF NOT EXISTS user_scene_progress (
   UNIQUE(user_id, scene_id)
 );
 
+-- Add updated_at to words table for upsert tracking
+ALTER TABLE words ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
+
+-- Unique constraint on words (language_id, text) for upsert support
+CREATE UNIQUE INDEX IF NOT EXISTS idx_words_language_text ON words(language_id, text);
+
 -- Performance indexes for core queries
 CREATE INDEX IF NOT EXISTS idx_user_words_user_next_review ON user_words(user_id, next_review_at);
 CREATE INDEX IF NOT EXISTS idx_user_words_user_status ON user_words(user_id, status);
