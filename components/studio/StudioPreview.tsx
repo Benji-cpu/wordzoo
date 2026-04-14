@@ -55,8 +55,8 @@ export function StudioPreview({
   };
 
   const difficultyColor = pathPreview.difficulty
-    ? difficultyColorMap[pathPreview.difficulty.toLowerCase()] ?? 'bg-white/10 text-text-secondary'
-    : 'bg-white/10 text-text-secondary';
+    ? difficultyColorMap[pathPreview.difficulty.toLowerCase()] ?? 'bg-surface-inset text-text-secondary'
+    : 'bg-surface-inset text-text-secondary';
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
@@ -126,7 +126,7 @@ export function StudioPreview({
             <>
               Generate My Path
               {!isPremium && (
-                <span className="ml-1 px-2 py-0.5 rounded-full bg-white/20 text-white text-xs font-medium">
+                <span className="ml-1 px-2 py-0.5 rounded-full bg-card-border text-white text-xs font-medium">
                   $2.99
                 </span>
               )}
@@ -164,7 +164,7 @@ function SceneCard({ scene, index }: SceneCardProps) {
     },
     pending: {
       label: 'Pending',
-      className: 'bg-white/10 text-text-secondary',
+      className: 'bg-surface-inset text-text-secondary',
     },
   } as const;
 

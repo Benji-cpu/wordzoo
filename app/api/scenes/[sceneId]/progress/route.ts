@@ -4,9 +4,11 @@ import { UpdateSceneProgressSchema } from '@/types/api';
 import { auth } from '@/lib/auth';
 import { sql } from '@/lib/db/client';
 import { updateSceneProgress } from '@/lib/db/scene-flow-queries';
+import { incrementDailyUsageScenesCompleted, getDailyLearningStats } from '@/lib/db/queries';
 
 interface SceneProgress {
   learnedWordIds: string[];
+  dailyStats: { words_learned: number; scenes_completed: number };
 }
 
 export async function GET(
@@ -22,16 +24,23 @@ export async function GET(
   }
 
   const { sceneId } = await params;
+  const today = new Date().toISOString().split('T')[0];
 
-  const rows = await sql`
-    SELECT uw.word_id
-    FROM scene_words sw
-    JOIN user_words uw ON uw.word_id = sw.word_id AND uw.user_id = ${session.user.id}
-    WHERE sw.scene_id = ${sceneId}
-  `;
+  const [rows, dailyStats] = await Promise.all([
+    sql`
+      SELECT uw.word_id
+      FROM scene_words sw
+      JOIN user_words uw ON uw.word_id = sw.word_id AND uw.user_id = ${session.user.id}
+      WHERE sw.scene_id = ${sceneId}
+    `,
+    getDailyLearningStats(session.user.id, today),
+  ]);
 
   return NextResponse.json<ApiResponse<SceneProgress>>({
-    data: { learnedWordIds: rows.map((r) => (r as { word_id: string }).word_id) },
+    data: {
+      learnedWordIds: rows.map((r) => (r as { word_id: string }).word_id),
+      dailyStats,
+    },
     error: null,
   });
 }
@@ -64,7 +73,14 @@ export async function POST(
     currentPhase: currentPhase as 'dialogue' | 'phrases' | 'vocabulary' | 'patterns' | 'affixes' | 'summary',
     phaseIndex,
     phaseCompleted: phaseCompleted as 'dialogue' | 'phrases' | 'vocabulary' | 'patterns' | 'affixes' | undefined,
+    completedAt: currentPhase === 'summary' ? new Date() : undefined,
   });
+
+  // Track scene completion for pacing system
+  if (currentPhase === 'summary') {
+    const today = new Date().toISOString().split('T')[0];
+    incrementDailyUsageScenesCompleted(session.user.id, today, 1).catch(() => {});
+  }
 
   return NextResponse.json<ApiResponse<{ success: boolean }>>({
     data: { success: true },

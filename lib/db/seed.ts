@@ -115,7 +115,7 @@ async function seed() {
     console.log('Seeding paths...');
     await sql`
       INSERT INTO paths (id, language_id, type, title, description) VALUES
-        ('c1000000-0001-4000-8000-000000000001', ${ID_LANG}, 'premade', 'Survival Indonesian', 'Essential words and phrases for getting by in Indonesia'),
+        ('c1000000-0001-4000-8000-000000000001', ${ID_LANG}, 'premade', 'Belajar Bahasa Indonesia', 'Your journey to speaking Indonesian — from first words to real conversations'),
         ('c1000000-0001-4000-8000-000000000002', ${ES_LANG}, 'premade', 'Survival Spanish', 'Essential words and phrases for getting by in Spanish-speaking countries'),
         ('c1000000-0001-4000-8000-000000000003', ${JA_LANG}, 'premade', 'Survival Japanese', 'Essential words and phrases for getting by in Japan')
       ON CONFLICT DO NOTHING

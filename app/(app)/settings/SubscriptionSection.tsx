@@ -58,10 +58,10 @@ export function SubscriptionSection() {
       <div className="glass-card p-4 animate-pulse">
         <div className="flex items-center justify-between mb-4">
           <div className="space-y-2">
-            <div className="h-4 w-24 rounded bg-white/10" />
-            <div className="h-3 w-32 rounded bg-white/10" />
+            <div className="h-4 w-24 rounded bg-surface-inset" />
+            <div className="h-3 w-32 rounded bg-surface-inset" />
           </div>
-          <div className="h-8 w-20 rounded-lg bg-white/10" />
+          <div className="h-8 w-20 rounded-lg bg-surface-inset" />
         </div>
       </div>
     </section>
@@ -135,7 +135,7 @@ function UsageBar({ label, current, limit, unit }: { label: string; current: num
           {current}/{limit}{unit ? ` ${unit}` : ''}
         </span>
       </div>
-      <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
+      <div className="h-1.5 rounded-full bg-surface-inset overflow-hidden">
         <div
           className={`h-full rounded-full transition-all ${atLimit ? 'bg-red-400' : 'bg-accent-default'}`}
           style={{ width: `${pct}%` }}

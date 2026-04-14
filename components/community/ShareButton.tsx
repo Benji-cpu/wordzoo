@@ -43,7 +43,7 @@ export function ShareButton({ mnemonicId, wordId, wordText, meaningEn, languageN
   return (
     <button
       onClick={handleShare}
-      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm bg-white/5 text-text-secondary hover:bg-white/10 transition-colors"
+      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm bg-surface-inset text-text-secondary hover:bg-surface-inset transition-colors"
     >
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
         <circle cx="18" cy="5" r="3" />

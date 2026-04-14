@@ -87,7 +87,7 @@ function DecomposeExercise({ exercise, onComplete }: AffixExerciseProps) {
           className={`px-6 py-4 rounded-xl font-bold text-lg transition-all border-2 ${
             tappedAffix
               ? 'bg-accent-id/20 border-accent-id text-accent-id scale-105'
-              : 'bg-card-surface border-card-border text-foreground hover:bg-white/10 active:scale-95'
+              : 'bg-card-surface border-card-border text-foreground hover:bg-surface-inset active:scale-95'
           }`}
         >
           {affixPart}
@@ -101,7 +101,7 @@ function DecomposeExercise({ exercise, onComplete }: AffixExerciseProps) {
           className={`px-6 py-4 rounded-xl font-bold text-lg transition-all border-2 ${
             tappedRoot
               ? 'bg-green-500/20 border-green-500 text-green-400 scale-105'
-              : 'bg-card-surface border-card-border text-foreground hover:bg-white/10 active:scale-95'
+              : 'bg-card-surface border-card-border text-foreground hover:bg-surface-inset active:scale-95'
           }`}
         >
           {rootPart}
@@ -261,7 +261,7 @@ function MatchExercise({ exercise, onComplete }: AffixExerciseProps) {
                   ? 'bg-green-500/20 border-green-500 text-green-400'
                   : selectedWord === p.word
                     ? 'bg-accent-id/20 border-accent-id text-accent-id scale-[1.02]'
-                    : 'bg-card-surface border-card-border text-foreground hover:bg-white/10 active:scale-95'
+                    : 'bg-card-surface border-card-border text-foreground hover:bg-surface-inset active:scale-95'
               }`}
             >
               {p.word}
@@ -281,7 +281,7 @@ function MatchExercise({ exercise, onComplete }: AffixExerciseProps) {
                   ? 'bg-green-500/20 border-green-500 text-green-400'
                   : wrongPair === p.meaning
                     ? 'bg-red-500/20 border-red-500 text-red-400'
-                    : 'bg-card-surface border-card-border text-text-secondary hover:bg-white/10 active:scale-95'
+                    : 'bg-card-surface border-card-border text-text-secondary hover:bg-surface-inset active:scale-95'
               }`}
             >
               {p.meaning}
@@ -362,7 +362,7 @@ function PredictExercise({ exercise, onComplete }: AffixExerciseProps) {
           } else if (selected && option === exercise.derived_meaning) {
             className += 'bg-green-500/20 border-green-500 text-green-400';
           } else {
-            className += 'bg-card-surface border-card-border text-foreground hover:bg-white/10 active:scale-95';
+            className += 'bg-card-surface border-card-border text-foreground hover:bg-surface-inset active:scale-95';
           }
 
           return (

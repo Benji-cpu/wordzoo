@@ -56,7 +56,7 @@ function LineAudioButton({ audioUrl, size = 16 }: { audioUrl: string; size?: num
       <button
         type="button"
         onClick={(e) => handlePlay(e)}
-        className="inline-flex items-center justify-center rounded-full p-1 text-accent-id hover:bg-white/10 active:bg-white/15 transition-colors"
+        className="inline-flex items-center justify-center rounded-full p-1 text-accent-id hover:bg-surface-inset active:bg-surface-inset transition-colors"
         aria-label={isPlaying ? 'Playing' : 'Play audio'}
       >
         <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
@@ -67,7 +67,7 @@ function LineAudioButton({ audioUrl, size = 16 }: { audioUrl: string; size?: num
       <button
         type="button"
         onClick={handleSlow}
-        className="inline-flex items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-medium text-text-secondary hover:bg-white/10 active:bg-white/15 transition-colors"
+        className="inline-flex items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-medium text-text-secondary hover:bg-surface-inset active:bg-surface-inset transition-colors"
         aria-label="Play at slow speed"
       >
         0.7x

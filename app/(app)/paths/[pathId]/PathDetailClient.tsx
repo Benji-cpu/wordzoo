@@ -1,11 +1,13 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { IconButton } from '@/components/ui/IconButton';
+import { Button } from '@/components/ui/Button';
+import { PathJourneyMap } from '@/components/learn/PathJourneyMap';
+import { isSceneComplete } from '@/lib/utils/scene-progress';
 import type { Path } from '@/types/database';
 import type { SceneMasteryRow, PathWordStats } from '@/lib/db/queries';
 
@@ -14,36 +16,6 @@ interface PathDetailClientProps {
   languageName: string;
   sceneMastery: SceneMasteryRow[];
   wordStats: PathWordStats;
-}
-
-const PHASE_WEIGHTS: Record<string, number> = {
-  dialogue: 15, phrases: 30, vocabulary: 55, patterns: 70, conversation: 85, summary: 100,
-};
-
-function isSceneComplete(s: SceneMasteryRow): boolean {
-  return s.scene_type === 'dialogue' ? s.scene_completed : s.mastered_words >= s.total_words;
-}
-
-function sceneProgress(s: SceneMasteryRow): number {
-  if (isSceneComplete(s)) return 100;
-  if (s.scene_type === 'dialogue') {
-    return PHASE_WEIGHTS[s.current_phase ?? 'dialogue'] ?? 0;
-  }
-  return s.total_words > 0 ? Math.round((s.mastered_words / s.total_words) * 100) : 0;
-}
-
-function sceneStatusLabel(s: SceneMasteryRow): string {
-  if (isSceneComplete(s)) return 'Complete';
-  const progress = sceneProgress(s);
-  if (progress === 0) return 'Not started';
-  if (s.scene_type === 'dialogue' && s.current_phase) {
-    const labels: Record<string, string> = {
-      dialogue: 'Dialogue', phrases: 'Phrases', vocabulary: 'Vocab',
-      patterns: 'Patterns', conversation: 'Chat', summary: 'Summary',
-    };
-    return labels[s.current_phase] ?? 'In progress';
-  }
-  return `${s.mastered_words}/${s.total_words} words`;
 }
 
 function tierLabel(type: Path['type']): string {
@@ -95,67 +67,25 @@ export function PathDetailClient({ path, languageName, sceneMastery, wordStats }
         </p>
       </Card>
 
-      {/* Scene list */}
-      <section>
-        <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wider mb-3">
-          Scenes
-        </h2>
-        <div className="space-y-2">
-          {sceneMastery.map((s, i) => {
-            const complete = isSceneComplete(s);
-            const progress = sceneProgress(s);
-            const status = sceneStatusLabel(s);
+      {/* Path Complete Celebration */}
+      {overallProgress === 100 && (
+        <Card className="border-green-500/30 bg-green-500/5">
+          <div className="text-center py-2">
+            <div className="text-2xl mb-1">&#10003;</div>
+            <h3 className="text-lg font-semibold text-foreground">Path Complete!</h3>
+            <p className="text-sm text-text-secondary mt-1 mb-4">
+              You&apos;ve completed {path.title} &mdash; {wordStats.words_learned} words mastered across {totalScenes} scenes.
+            </p>
+            <div className="flex gap-2 justify-center">
+              <Button href="/tutor?mode=word_review" size="sm">Review Path Words</Button>
+              <Button href="/paths" variant="secondary" size="sm">Explore More Paths</Button>
+            </div>
+          </div>
+        </Card>
+      )}
 
-            return (
-              <Link key={s.id} href={`/learn/${s.id}`} className="block">
-                <Card className="!p-3">
-                  <div className="flex items-center gap-3">
-                    {/* Scene number / checkmark */}
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${
-                      complete
-                        ? 'bg-green-500/20 text-green-400'
-                        : progress > 0
-                        ? 'bg-accent-id/20 text-accent-id'
-                        : 'bg-white/10 text-text-secondary'
-                    }`}>
-                      {complete ? (
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                      ) : (
-                        i + 1
-                      )}
-                    </div>
-
-                    {/* Scene info */}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">{s.title}</p>
-                      {s.description && (
-                        <p className="text-xs text-text-secondary truncate">{s.description}</p>
-                      )}
-                      <div className="flex items-center gap-2 mt-1">
-                        <p className={`text-xs ${complete ? 'text-green-400' : 'text-text-secondary'}`}>
-                          {status}
-                        </p>
-                        {!complete && progress > 0 && (
-                          <div className="flex-1 max-w-[80px]">
-                            <ProgressBar value={progress} accentColor="bg-accent-id" height="sm" />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Chevron */}
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-text-secondary shrink-0">
-                      <polyline points="9 18 15 12 9 6" />
-                    </svg>
-                  </div>
-                </Card>
-              </Link>
-            );
-          })}
-        </div>
-      </section>
+      {/* Journey Map */}
+      <PathJourneyMap sceneMastery={sceneMastery} pathId={path.id} />
     </div>
   );
 }

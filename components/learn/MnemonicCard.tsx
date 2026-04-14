@@ -142,7 +142,7 @@ export function MnemonicCard({
       </div>
 
       {bridgeSentence && (
-        <p className="text-base text-foreground italic mb-2">
+        <p className="text-sm sm:text-base text-foreground italic mb-2 whitespace-nowrap overflow-hidden text-ellipsis">
           {renderBridgeSentence(bridgeSentence)}
         </p>
       )}
@@ -158,7 +158,7 @@ export function MnemonicCard({
           {/* Overlay: feedback + share buttons */}
           {mnemonicId && (
             <div
-              className="absolute bottom-2 right-2 flex items-center gap-1 bg-black/40 backdrop-blur-sm rounded-lg p-1"
+              className="absolute bottom-2 right-2 flex items-center gap-1 bg-black/60 rounded-lg p-1"
               onClick={(e) => e.stopPropagation()}
             >
               <button
@@ -223,7 +223,7 @@ export function MnemonicCard({
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
             placeholder="What made it memorable (or not)?"
-            className="w-full px-3 py-2 rounded-lg bg-white/5 border border-card-border text-sm text-foreground placeholder:text-text-secondary focus:outline-none focus:border-accent-default/50 transition-colors"
+            className="w-full px-3 py-2 rounded-lg bg-surface-inset border border-card-border text-sm text-foreground placeholder:text-text-secondary focus:outline-none focus:border-accent-default/50 transition-colors"
             maxLength={500}
             autoFocus
           />

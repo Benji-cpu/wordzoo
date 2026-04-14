@@ -15,7 +15,7 @@ export function ProgressBar({
   const heightClass = height === 'sm' ? 'h-1.5' : 'h-2.5';
 
   return (
-    <div className={`w-full rounded-full bg-white/15 ${heightClass} ${className}`}>
+    <div className={`w-full rounded-full bg-surface-inset ${heightClass} ${className}`}>
       <div
         className={`${heightClass} rounded-full ${accentColor} transition-all duration-500 ease-out`}
         style={{ width: `${clamped}%` }}

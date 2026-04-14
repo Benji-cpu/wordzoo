@@ -11,6 +11,7 @@ export function useTutorChat(sessionId: string | null, onAutoEnd?: () => void) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [limitReached, setLimitReached] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const autoEndRef = useRef(false);
 
@@ -44,6 +45,14 @@ export function useTutorChat(sessionId: string | null, onAutoEnd?: () => void) {
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => null);
+          if (response.status === 403) {
+            // Limit reached — remove the optimistic user message + empty model placeholder
+            setMessages((prev) => prev.slice(0, -2));
+            setLimitReached(true);
+            setIsStreaming(false);
+            abortRef.current = null;
+            return;
+          }
           throw new Error(errorData?.error ?? `Request failed (${response.status})`);
         }
 
@@ -90,5 +99,5 @@ export function useTutorChat(sessionId: string | null, onAutoEnd?: () => void) {
     [sessionId, isStreaming, onAutoEnd]
   );
 
-  return { messages, isStreaming, error, sendMessage, addGreeting, loadMessages };
+  return { messages, isStreaming, error, limitReached, sendMessage, addGreeting, loadMessages };
 }

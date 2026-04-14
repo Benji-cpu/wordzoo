@@ -9,8 +9,12 @@ import {
   getLanguageById,
   getUserStreak,
   getWordMasteryDistribution,
+  getWordsByMasteryStatus,
+  getTodayInfoByte,
+  getDailyLearningStats,
 } from '@/lib/db/queries';
 import { getDuePhrasesForReview } from '@/lib/db/scene-flow-queries';
+import { isSceneComplete, sceneProgress as getSceneProgress, findCurrentSceneIndex } from '@/lib/utils/scene-progress';
 import { ContinueLearningCard } from '@/components/learn/ContinueLearningCard';
 import { QuickReviewCard } from '@/components/learn/QuickReviewCard';
 import { ProgressChart } from '@/components/learn/ProgressChart';
@@ -18,7 +22,10 @@ import { StreakCounter } from '@/components/learn/StreakCounter';
 import { TutorNudgeCard } from '@/components/tutor/TutorNudgeCard';
 import { TutorInsights } from '@/components/tutor/TutorInsights';
 import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
+import { InfoByteCard } from '@/components/info-bytes/InfoByteCard';
+import { DailyRecap } from '@/components/learn/DailyRecap';
 import { DashboardUpgradeBanner } from './DashboardUpgradeBanner';
 
 const DEFAULT_INDONESIAN_PATH_ID = 'c1000000-0001-4000-8000-000000000001';
@@ -40,13 +47,14 @@ export default async function DashboardPage() {
   // If still no path (e.g. path doesn't exist in DB), show empty state
   if (!activePath) {
     return (
-      <div className="max-w-lg mx-auto space-y-3">
+      <div className="max-w-lg mx-auto space-y-4">
         <DashboardUpgradeBanner />
         <div>
           <h1 className="text-xl font-bold text-foreground">Welcome back</h1>
-          <p className="text-sm text-text-secondary mt-0.5">
-            No learning path found. Visit Paths to get started.
+          <p className="text-sm text-text-secondary mt-1 mb-3">
+            No learning path found.
           </p>
+          <Button href="/paths" size="sm">Get Started</Button>
         </div>
       </div>
     );
@@ -55,8 +63,13 @@ export default async function DashboardPage() {
   const pathId = activePath.path_id;
   const languageId = activePath.path_language_id;
 
+  // Compute yesterday's date string
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = yesterday.toISOString().split('T')[0];
+
   // Fetch scene mastery, word stats, due words/phrases, language, and mastery distribution in parallel
-  const [sceneMastery, wordStats, dueWords, duePhrases, language, streakData, masteryDist] = await Promise.all([
+  const [sceneMastery, wordStats, dueWords, duePhrases, language, streakData, masteryDist, wordsByStatus, todayInfoByte, yesterdayStats] = await Promise.all([
     getSceneMasteryForPath(userId, pathId),
     getPathWordStats(userId, pathId),
     getUserDueWords(userId, languageId),
@@ -64,68 +77,74 @@ export default async function DashboardPage() {
     getLanguageById(languageId),
     getUserStreak(userId),
     getWordMasteryDistribution(userId),
+    getWordsByMasteryStatus(userId),
+    getTodayInfoByte(languageId),
+    getDailyLearningStats(userId, yesterdayStr),
   ]);
 
   // Find next incomplete scene
-  // For dialogue scenes: completed when scene_completed = true
-  // For legacy scenes: completed when mastered_words >= total_words
-  const isSceneComplete = (s: typeof sceneMastery[0]) =>
-    s.scene_type === 'dialogue' ? s.scene_completed : s.mastered_words >= s.total_words;
-
   const nextScene = sceneMastery.find(s => !isSceneComplete(s)) ?? sceneMastery[0];
-
-  // Calculate scene progress percentage
-  const PHASE_WEIGHTS: Record<string, number> = {
-    dialogue: 15, phrases: 30, vocabulary: 55, patterns: 70, conversation: 85, summary: 100,
-  };
-  let sceneProgress: number;
-  if (!nextScene) {
-    sceneProgress = 0;
-  } else if (nextScene.scene_type === 'dialogue') {
-    sceneProgress = nextScene.scene_completed
-      ? 100
-      : PHASE_WEIGHTS[nextScene.current_phase ?? 'dialogue'] ?? 0;
-  } else {
-    sceneProgress = nextScene.total_words > 0
-      ? Math.round((nextScene.mastered_words / nextScene.total_words) * 100)
-      : 0;
-  }
+  const currentSceneIndex = findCurrentSceneIndex(sceneMastery);
+  const currentSceneProgress = nextScene ? getSceneProgress(nextScene) : 0;
 
   const totalDueCount = dueWords.length + duePhrases.length;
 
   const streak = streakData.current_streak;
 
   return (
-    <div className="max-w-lg mx-auto space-y-3">
+    <div className="max-w-lg mx-auto space-y-4">
       {/* Upgrade banner for free tier near quota */}
       <DashboardUpgradeBanner />
+
+      {/* Daily Info Byte */}
+      {todayInfoByte && (
+        <InfoByteCard
+          category={todayInfoByte.category}
+          topicSummary={todayInfoByte.topic_summary}
+          easyTarget={todayInfoByte.easy_target}
+          easyEnglish={todayInfoByte.easy_english}
+          mediumTarget={todayInfoByte.medium_target}
+          mediumEnglish={todayInfoByte.medium_english}
+          hardTarget={todayInfoByte.hard_target}
+          hardEnglish={todayInfoByte.hard_english}
+        />
+      )}
 
       {/* Greeting + Streak */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-foreground">Welcome back</h1>
-          <p className="text-sm text-text-secondary mt-0.5">
+          <p className="text-sm text-text-secondary mt-1">
             Keep building your {language?.name ?? 'language'} vocabulary
           </p>
         </div>
         <StreakCounter streak={streak} />
       </div>
 
-      {/* Guided Step Flow */}
+      {/* Yesterday's recap */}
+      <DailyRecap
+        yesterdayWords={yesterdayStats.words_learned}
+        yesterdayScenes={yesterdayStats.scenes_completed}
+        dueReviewCount={totalDueCount}
+      />
+
+      {/* Main actions */}
       {(() => {
         const hasReviews = totalDueCount > 0;
         const hasNextScene = !!nextScene;
-        let stepNumber = 1;
 
         if (!hasReviews && !hasNextScene) {
-          // Path fully mastered, no reviews due
           return (
             <section>
               <Card className="animate-fade-in text-center py-6">
-                <h3 className="text-foreground font-medium text-lg">Path complete!</h3>
-                <p className="text-sm text-text-secondary mt-1">
-                  You&apos;ve mastered everything. Check back later for new content.
+                <h3 className="text-foreground font-semibold text-lg">All caught up!</h3>
+                <p className="text-sm text-text-secondary mt-1 mb-4">
+                  You&apos;ve mastered everything so far.
                 </p>
+                <div className="flex gap-2 justify-center">
+                  <Button href="/tutor" size="sm">Practice with Tutor</Button>
+                  <Button href="/paths" variant="secondary" size="sm">Explore More Paths</Button>
+                </div>
               </Card>
             </section>
           );
@@ -135,8 +154,8 @@ export default async function DashboardPage() {
           <>
             {hasReviews && (
               <section>
-                <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wider mb-1">
-                  Step {stepNumber++}: Review
+                <h2 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">
+                  Review
                 </h2>
                 <QuickReviewCard dueCount={totalDueCount} />
               </section>
@@ -149,16 +168,17 @@ export default async function DashboardPage() {
 
             {hasNextScene && (
               <section>
-                <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wider mb-1">
-                  Step {stepNumber}: Continue Learning
+                <h2 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">
+                  Continue Learning
                 </h2>
                 <ContinueLearningCard
-                  pathTitle={activePath.path_title}
                   sceneTitle={nextScene!.title}
-                  sceneDescription={nextScene!.description}
                   sceneId={nextScene!.id}
-                  progress={sceneProgress}
+                  progress={currentSceneProgress}
                   currentPhase={nextScene!.scene_type === 'dialogue' ? nextScene!.current_phase : undefined}
+                  sceneIndex={currentSceneIndex}
+                  totalScenes={sceneMastery.length}
+                  sceneDots={sceneMastery.map(s => ({ id: s.id, completed: isSceneComplete(s) }))}
                 />
               </section>
             )}
@@ -168,15 +188,15 @@ export default async function DashboardPage() {
 
       {/* Progress Stats */}
       <section>
-        <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wider mb-1">
+        <h2 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">
           Your Progress
         </h2>
-        <ProgressChart distribution={masteryDist} streak={streak} />
+        <ProgressChart distribution={masteryDist} streak={streak} wordsByStatus={wordsByStatus} />
       </section>
 
       {/* Tutor Insights */}
       <section>
-        <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wider mb-1">
+        <h2 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">
           Tutor
         </h2>
         <TutorInsights languageId={languageId} />
@@ -185,10 +205,10 @@ export default async function DashboardPage() {
       {/* Admin link — only visible to admin users */}
       {isAdmin && (
         <Link
-          href="/admin/feedback"
+          href="/admin"
           className="block text-center text-sm text-text-secondary hover:text-foreground transition-colors"
         >
-          Admin: Mnemonic Feedback
+          Admin Dashboard
         </Link>
       )}
     </div>

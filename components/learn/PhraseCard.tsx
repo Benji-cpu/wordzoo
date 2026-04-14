@@ -112,7 +112,7 @@ export function PhraseCard({ phrase, onContinue }: PhraseCardProps) {
         </p>
       )}
       {phrase.usage_note && (
-        <div className="bg-white/5 rounded-lg px-4 py-3 mx-auto max-w-sm mt-2">
+        <div className="bg-surface-inset rounded-lg px-4 py-3 mx-auto max-w-sm mt-2">
           <p className="text-sm text-text-secondary">{phrase.usage_note}</p>
         </div>
       )}

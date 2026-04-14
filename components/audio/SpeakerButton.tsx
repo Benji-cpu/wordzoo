@@ -85,7 +85,7 @@ export function PronunciationButton({
     <button
       type="button"
       onClick={handleClick}
-      className={`relative inline-flex items-center justify-center rounded-full p-2 text-accent-id hover:bg-white/10 active:bg-white/15 transition-colors ${className}`}
+      className={`relative inline-flex items-center justify-center rounded-full p-2 text-accent-id hover:bg-surface-inset active:bg-surface-inset transition-colors ${className}`}
       aria-label={isPlaying ? 'Playing pronunciation' : 'Play pronunciation'}
     >
       <svg

@@ -6,7 +6,7 @@ interface BadgeProps {
 }
 
 const variantStyles = {
-  default: 'bg-white/10 text-text-secondary',
+  default: 'bg-surface-inset text-text-secondary',
   tier: 'bg-accent-default/20 text-accent-default',
   status: 'bg-green-500/20 text-green-400',
 };

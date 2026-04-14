@@ -83,7 +83,7 @@ export default function PricingPage() {
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             billing === 'monthly'
               ? 'bg-accent-default text-white'
-              : 'bg-white/10 text-text-secondary'
+              : 'bg-surface-inset text-text-secondary'
           }`}
           onClick={() => setBilling('monthly')}
         >
@@ -93,7 +93,7 @@ export default function PricingPage() {
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
             billing === 'yearly'
               ? 'bg-accent-default text-white'
-              : 'bg-white/10 text-text-secondary'
+              : 'bg-surface-inset text-text-secondary'
           }`}
           onClick={() => setBilling('yearly')}
         >

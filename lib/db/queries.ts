@@ -1,5 +1,5 @@
 import { sql } from './client';
-import type { Word, Mnemonic, Path, Scene, SceneDialogue, Language, UserPath, TutorSession, TutorMessage, Subscription, Purchase, DailyUsage, MnemonicFeedback, LearnerProfile, TutorWordReview, TutorNudge, StudioSession, StudioIntakeData, StudioMessage, StudioPathPreview, AffixExercise, WordFamily } from '@/types/database';
+import type { Word, Mnemonic, Path, Scene, SceneDialogue, Language, UserPath, TutorSession, TutorMessage, Subscription, Purchase, DailyUsage, MnemonicFeedback, LearnerProfile, TutorWordReview, TutorNudge, StudioSession, StudioIntakeData, StudioMessage, StudioPathPreview, AffixExercise, WordFamily, InfoByte } from '@/types/database';
 
 export interface WordWithLanguage extends Word {
   language_code: string;
@@ -844,6 +844,25 @@ export async function incrementDailyUsageRegenerations(userId: string, date: str
   `;
 }
 
+export async function incrementDailyUsageScenesCompleted(userId: string, date: string, amount: number): Promise<void> {
+  await sql`
+    INSERT INTO daily_usage (user_id, date, scenes_completed)
+    VALUES (${userId}, ${date}, ${amount})
+    ON CONFLICT (user_id, date)
+    DO UPDATE SET scenes_completed = daily_usage.scenes_completed + ${amount}
+  `;
+}
+
+export async function getDailyLearningStats(userId: string, date: string): Promise<{ words_learned: number; scenes_completed: number }> {
+  const rows = await sql`
+    SELECT words_learned, scenes_completed FROM daily_usage
+    WHERE user_id = ${userId} AND date = ${date}
+  `;
+  if (rows.length === 0) return { words_learned: 0, scenes_completed: 0 };
+  const row = rows[0] as { words_learned: number; scenes_completed: number };
+  return { words_learned: row.words_learned, scenes_completed: row.scenes_completed };
+}
+
 export async function insertStudioSession(data: {
   userId: string;
   languageId: string;
@@ -1255,6 +1274,27 @@ export async function getLearnedWordsWithMnemonics(
   return rows as GalleryWord[];
 }
 
+// --- Words by Status ---
+
+export interface WordByStatus {
+  word_id: string;
+  text: string;
+  romanization: string | null;
+  meaning_en: string;
+  status: 'learning' | 'reviewing' | 'mastered';
+}
+
+export async function getWordsByMasteryStatus(userId: string): Promise<WordByStatus[]> {
+  const rows = await sql`
+    SELECT w.id AS word_id, w.text, w.romanization, w.meaning_en, uw.status
+    FROM user_words uw
+    JOIN words w ON w.id = uw.word_id
+    WHERE uw.user_id = ${userId} AND uw.status IN ('learning', 'reviewing', 'mastered')
+    ORDER BY CASE uw.status WHEN 'learning' THEN 1 WHEN 'reviewing' THEN 2 WHEN 'mastered' THEN 3 END, w.text
+  `;
+  return rows as WordByStatus[];
+}
+
 // --- Mastery Distribution ---
 
 export interface MasteryDistribution {
@@ -1476,4 +1516,61 @@ export async function getUserEncounteredAffixes(userId: string): Promise<string[
     WHERE usp.user_id = ${userId} AND usp.affixes_completed = true
   `;
   return (rows as { target_affix: string }[]).map((r) => r.target_affix);
+}
+
+// --- Info Byte Queries ---
+
+export async function getTodayInfoByte(languageId: string): Promise<InfoByte | null> {
+  const rows = await sql`
+    SELECT * FROM info_bytes
+    WHERE language_id = ${languageId} AND publish_date = CURRENT_DATE
+  `;
+  return (rows[0] as InfoByte) ?? null;
+}
+
+export interface RecentInfoByteRow {
+  category: string;
+  topic_summary: string;
+  publish_date: string;
+}
+
+export async function getRecentInfoBytes(languageId: string, days: number = 14): Promise<RecentInfoByteRow[]> {
+  const rows = await sql`
+    SELECT category, topic_summary, publish_date
+    FROM info_bytes
+    WHERE language_id = ${languageId}
+      AND publish_date >= CURRENT_DATE - ${days}::int
+    ORDER BY publish_date DESC
+  `;
+  return rows as RecentInfoByteRow[];
+}
+
+export async function insertInfoByte(data: {
+  languageId: string;
+  publishDate: string;
+  category: string;
+  topicSummary: string;
+  easyTarget: string;
+  easyEnglish: string;
+  mediumTarget: string;
+  mediumEnglish: string;
+  hardTarget: string;
+  hardEnglish: string;
+  sourceTopic: string | null;
+  tokensUsed: number;
+}): Promise<InfoByte | null> {
+  const rows = await sql`
+    INSERT INTO info_bytes (
+      language_id, publish_date, category, topic_summary,
+      easy_target, easy_english, medium_target, medium_english,
+      hard_target, hard_english, source_topic, tokens_used
+    ) VALUES (
+      ${data.languageId}, ${data.publishDate}, ${data.category}, ${data.topicSummary},
+      ${data.easyTarget}, ${data.easyEnglish}, ${data.mediumTarget}, ${data.mediumEnglish},
+      ${data.hardTarget}, ${data.hardEnglish}, ${data.sourceTopic}, ${data.tokensUsed}
+    )
+    ON CONFLICT (publish_date, language_id) DO NOTHING
+    RETURNING *
+  `;
+  return (rows[0] as InfoByte) ?? null;
 }

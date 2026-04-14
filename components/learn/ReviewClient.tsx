@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { ReviewCard } from '@/components/learn/ReviewCard';
 import { PhraseReviewCard } from '@/components/learn/PhraseReviewCard';
 import { RatingButtons } from '@/components/learn/RatingButtons';
@@ -11,7 +12,7 @@ import Link from 'next/link';
 import type { DueWordForReview } from '@/lib/db/queries';
 import type { DuePhraseForReview } from '@/lib/db/scene-flow-queries';
 import type { LearnWordFamily } from '@/components/learn/LearnClient';
-import type { Word, Mnemonic } from '@/types/database';
+import type { Word, Mnemonic, PhraseWordMnemonic } from '@/types/database';
 
 type Rating = 'instant' | 'got_it' | 'hard' | 'forgot';
 type ReviewPhase = 'main' | 'transition' | 'revision' | 'done';
@@ -55,14 +56,42 @@ function toMnemonic(dw: DueWordForReview): Mnemonic {
   };
 }
 
+function HeaderPortal({ children }: { children: ReactNode }) {
+  const [slot, setSlot] = useState<HTMLElement | null>(null);
+  useEffect(() => {
+    setSlot(document.getElementById('header-center-slot'));
+  }, []);
+  if (!slot) return null;
+  return createPortal(children, slot);
+}
+
+function ProgressBarPortal({ current, total }: { current: number; total: number }) {
+  const [slot, setSlot] = useState<HTMLElement | null>(null);
+  useEffect(() => {
+    setSlot(document.getElementById('header-progress-slot'));
+  }, []);
+  if (!slot) return null;
+  const pct = total > 0 ? (current / total) * 100 : 0;
+  return createPortal(
+    <div className="h-0.5 bg-card-border">
+      <div
+        className="h-full bg-accent-id transition-all duration-300"
+        style={{ width: `${pct}%` }}
+      />
+    </div>,
+    slot,
+  );
+}
+
 interface ReviewClientProps {
   dueWords: DueWordForReview[];
   duePhrases: DuePhraseForReview[];
   practiceWords?: DueWordForReview[];
   wordFamiliesMap?: Record<string, LearnWordFamily[]>;
+  phraseWordMap?: Record<string, PhraseWordMnemonic[]>;
 }
 
-export function ReviewClient({ dueWords, duePhrases, practiceWords = [], wordFamiliesMap = {} }: ReviewClientProps) {
+export function ReviewClient({ dueWords, duePhrases, practiceWords = [], wordFamiliesMap = {}, phraseWordMap = {} }: ReviewClientProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
@@ -91,11 +120,8 @@ export function ReviewClient({ dueWords, duePhrases, practiceWords = [], wordFam
 
   const current = items[currentIndex];
 
-  const wordMode: 'recognition' | 'production' =
-    current?.type === 'word' && current.data.times_reviewed >= 3 ? 'production' : 'recognition';
-
-  const phraseMode: 'recognition' | 'production' =
-    current?.type === 'phrase' && current.data.times_reviewed >= 3 ? 'production' : 'recognition';
+  const wordMode = 'production' as 'recognition' | 'production';
+  const phraseMode = 'production' as 'recognition' | 'production';
 
   const handleReveal = useCallback(() => {
     setRevealed(true);
@@ -208,24 +234,29 @@ export function ReviewClient({ dueWords, duePhrases, practiceWords = [], wordFam
   if (items.length === 0 && !practiceMode) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] animate-slide-up">
-        <p className="text-4xl mb-4">✅</p>
-        <h2 className="text-xl font-bold text-foreground mb-1">No items due for review</h2>
-        <p className="text-text-secondary mb-6 text-center">
+        <div className="w-16 h-16 rounded-full bg-surface-inset flex items-center justify-center mb-4">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-accent-id">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+            <polyline points="22 4 12 14.01 9 11.01" />
+          </svg>
+        </div>
+        <h2 className="text-xl font-bold text-foreground mb-1">All caught up!</h2>
+        <p className="text-text-secondary mb-6 text-center max-w-xs">
           {practiceWords.length > 0
-            ? `You have ${practiceWords.length} words you can practice now.`
-            : 'Keep learning to build your review queue!'}
+            ? `No reviews due right now. You can practice ${practiceWords.length} words if you'd like.`
+            : 'No reviews due. Come back tomorrow, or learn new words to grow your queue.'}
         </p>
         {practiceWords.length > 0 ? (
           <button
             onClick={() => setPracticeMode(true)}
-            className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-accent-id text-white font-medium hover:bg-accent-id/90 transition-colors"
+            className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-accent-default text-white font-semibold hover:brightness-110 active:scale-[0.97] transition-all"
           >
             Practice Now ({practiceWords.length} words)
           </button>
         ) : (
           <Link
             href="/paths"
-            className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-accent-id text-white font-medium hover:bg-accent-id/90 transition-colors"
+            className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-accent-default text-white font-semibold hover:brightness-110 active:scale-[0.97] transition-all"
           >
             Go to Learning Paths
           </Link>
@@ -285,12 +316,12 @@ export function ReviewClient({ dueWords, duePhrases, practiceWords = [], wordFam
 
     return (
       <>
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-foreground">Revision</h1>
-          <span className="text-sm text-text-secondary">
-            {revisionIndex + 1}/{missedItems.length} &middot; {stepLabel}
+        <HeaderPortal>
+          <span className="text-sm text-text-secondary truncate">
+            Revision &middot; {revisionIndex + 1}/{missedItems.length} &middot; {stepLabel}
           </span>
-        </div>
+        </HeaderPortal>
+        <ProgressBarPortal current={revisionIndex + 1} total={missedItems.length} />
 
         {revisionStep === 'mnemonic' ? (
           <MnemonicCard
@@ -309,7 +340,7 @@ export function ReviewClient({ dueWords, duePhrases, practiceWords = [], wordFam
             key={`revision-${revisionItem.word_id}`}
             word={toWord(revisionItem)}
             mnemonic={toMnemonic(revisionItem)}
-            mode={revisionItem.times_reviewed >= 3 ? 'production' : 'recognition'}
+            mode="production"
             onReveal={handleReveal}
             revealed={revealed}
             onRate={handleRevisionRate}
@@ -326,18 +357,17 @@ export function ReviewClient({ dueWords, duePhrases, practiceWords = [], wordFam
   }
 
   const typeLabel = current.type === 'phrase' ? 'Phrase' : 'Word';
-  const modeLabel = current.type === 'word'
-    ? (wordMode === 'recognition' ? 'Recognize' : 'Produce')
-    : (phraseMode === 'recognition' ? 'Recognize' : 'Produce');
+  const activeMode = current.type === 'word' ? wordMode : phraseMode;
+  const modeLabel = activeMode === 'recognition' ? 'Recognize' : 'Produce';
 
   return (
     <>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-foreground">Review</h1>
-        <span className="text-sm text-text-secondary">
-          {currentIndex + 1}/{items.length} &middot; {typeLabel} &middot; {modeLabel}
+      <HeaderPortal>
+        <span className="text-sm text-text-secondary truncate">
+          {practiceMode ? 'Practice' : 'Review'} &middot; {currentIndex + 1}/{items.length} &middot; {modeLabel}
         </span>
-      </div>
+      </HeaderPortal>
+      <ProgressBarPortal current={currentIndex + 1} total={items.length} />
 
       {current.type === 'word' ? (
         <ReviewCard
@@ -359,6 +389,7 @@ export function ReviewClient({ dueWords, duePhrases, practiceWords = [], wordFam
             literalTranslation={current.data.literal_translation}
             phraseBridgeSentence={current.data.phrase_bridge_sentence}
             compositeImageUrl={current.data.composite_image_url}
+            words={phraseWordMap[current.data.phrase_id] ?? []}
             mode={phraseMode}
             onReveal={handleReveal}
             revealed={revealed}

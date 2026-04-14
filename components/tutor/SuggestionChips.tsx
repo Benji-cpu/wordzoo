@@ -18,7 +18,7 @@ export function SuggestionChips({ options, onSelect, challengeMode = 'easy' }: S
         <button
           key={option.text}
           onClick={() => onSelect(option.text)}
-          className="px-3 py-2 rounded-xl border border-card-border bg-card-surface text-sm text-foreground hover:bg-white/10 active:scale-95 transition-all cursor-pointer animate-slide-up min-h-[44px] text-left"
+          className="px-3 py-2 rounded-xl border border-card-border bg-card-surface text-sm text-foreground hover:bg-surface-inset active:scale-95 transition-all cursor-pointer animate-slide-up min-h-[44px] text-left"
           style={{ animationDelay: `${i * 75}ms`, animationFillMode: 'backwards' }}
         >
           <span>{option.text}</span>

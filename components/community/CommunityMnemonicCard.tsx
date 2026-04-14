@@ -61,7 +61,7 @@ export function CommunityMnemonicCard({ card, isOwnMnemonic }: CommunityMnemonic
 
       {/* Image */}
       {card.image_url && (
-        <div className="w-full aspect-[4/3] rounded-xl overflow-hidden mb-3 bg-white/5">
+        <div className="w-full aspect-[4/3] rounded-xl overflow-hidden mb-3 bg-surface-inset">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={card.image_url}
@@ -92,7 +92,7 @@ export function CommunityMnemonicCard({ card, isOwnMnemonic }: CommunityMnemonic
             className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
               adopted
                 ? 'bg-green-500/20 text-green-400'
-                : 'bg-white/5 text-text-secondary hover:bg-white/10'
+                : 'bg-surface-inset text-text-secondary hover:bg-surface-inset'
             }`}
           >
             {adopted ? 'Using!' : adoptLoading ? '...' : 'Use This'}

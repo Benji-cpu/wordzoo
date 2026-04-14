@@ -76,7 +76,7 @@ export function PatternExercise({ exercise, onCorrect, userName }: PatternExerci
           } else if (selected && option === exercise.correct_answer) {
             className += 'bg-green-500/20 border-green-500 text-green-400';
           } else {
-            className += 'bg-card-surface border-card-border text-foreground hover:bg-white/10 active:scale-95';
+            className += 'bg-card-surface border-card-border text-foreground hover:bg-surface-inset active:scale-95';
           }
 
           return (
@@ -99,7 +99,7 @@ export function PatternExercise({ exercise, onCorrect, userName }: PatternExerci
           <p className="text-xl font-bold text-accent-id">{exercise.pattern_template}</p>
           <p className="text-sm text-text-secondary mt-1">{exercise.pattern_en}</p>
           {exercise.explanation && (
-            <p className="text-sm text-text-secondary mt-3 bg-white/5 rounded-lg px-3 py-2">
+            <p className="text-sm text-text-secondary mt-3 bg-surface-inset rounded-lg px-3 py-2">
               {exercise.explanation}
             </p>
           )}

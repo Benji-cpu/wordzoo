@@ -55,7 +55,7 @@ export function VoteButton({ mnemonicId, initialCount, initialVoted, disabled }:
       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
         voted
           ? 'bg-accent-default/20 text-accent-default'
-          : 'bg-white/5 text-text-secondary hover:bg-white/10'
+          : 'bg-surface-inset text-text-secondary hover:bg-surface-inset'
       } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
     >
       <svg

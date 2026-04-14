@@ -51,7 +51,7 @@ export function PhraseBreakdown({ phrase, onContinue }: PhraseBreakdownProps) {
         </div>
       )}
       {phrase.phrase_bridge_sentence && (
-        <p className="text-sm text-foreground italic px-4 mb-2" onClick={(e) => e.stopPropagation()}>
+        <p className="text-sm text-foreground italic px-4 mb-2 whitespace-nowrap overflow-hidden text-ellipsis" onClick={(e) => e.stopPropagation()}>
           {renderBridgeSentence(phrase.phrase_bridge_sentence)}
         </p>
       )}
@@ -68,7 +68,7 @@ export function PhraseBreakdown({ phrase, onContinue }: PhraseBreakdownProps) {
               className={`px-3 py-1.5 rounded-full border cursor-pointer transition-all text-sm ${
                 isExpanded
                   ? 'border-accent-id bg-accent-id/10 text-accent-id'
-                  : 'border-card-border bg-card-surface hover:bg-white/10'
+                  : 'border-card-border bg-card-surface hover:bg-surface-inset'
               }`}
             >
               {word.word_text}
@@ -78,7 +78,7 @@ export function PhraseBreakdown({ phrase, onContinue }: PhraseBreakdownProps) {
       </div>
 
       {expandedWord && (
-        <div className="animate-slide-up px-4 py-3 rounded-lg bg-white/5 mx-auto max-w-sm mb-4" onClick={(e) => e.stopPropagation()}>
+        <div className="animate-slide-up px-4 py-3 rounded-lg bg-surface-inset mx-auto max-w-sm mb-4" onClick={(e) => e.stopPropagation()}>
           {expandedWord.keyword_text ? (
             <>
               {expandedWord.image_url && (
@@ -89,12 +89,12 @@ export function PhraseBreakdown({ phrase, onContinue }: PhraseBreakdownProps) {
                   className="max-h-[150px] rounded-lg object-cover mx-auto mb-2"
                 />
               )}
-              <p className="text-sm text-foreground">
+              <p className="text-sm text-foreground whitespace-nowrap overflow-hidden text-ellipsis">
                 <span className="font-bold text-accent-id">{expandedWord.word_text}</span>
                 {' '}sounds like &ldquo;{expandedWord.keyword_text}&rdquo;
               </p>
               {expandedWord.bridge_sentence && (
-                <p className="text-sm text-foreground italic mt-1">
+                <p className="text-sm text-foreground italic mt-1 whitespace-nowrap overflow-hidden text-ellipsis">
                   {renderBridgeSentence(expandedWord.bridge_sentence)}
                 </p>
               )}

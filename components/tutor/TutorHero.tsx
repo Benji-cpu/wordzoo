@@ -27,9 +27,9 @@ export function TutorHero({
   if (isLoading) {
     return (
       <Card className="animate-pulse">
-        <div className="h-5 bg-white/10 rounded w-3/4 mb-3" />
-        <div className="h-4 bg-white/10 rounded w-1/2 mb-4" />
-        <div className="h-11 bg-white/10 rounded-xl" />
+        <div className="h-5 bg-surface-inset rounded w-3/4 mb-3" />
+        <div className="h-4 bg-surface-inset rounded w-1/2 mb-4" />
+        <div className="h-11 bg-surface-inset rounded-xl" />
       </Card>
     );
   }
@@ -147,7 +147,7 @@ export function TutorHero({
                   onSelect(mode.id);
                 }}
                 disabled={disabled}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-colors text-left disabled:opacity-50"
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-surface-inset transition-colors text-left disabled:opacity-50"
               >
                 <span className="text-lg shrink-0">{mode.icon}</span>
                 <span className="text-foreground text-sm font-medium">{mode.label}</span>

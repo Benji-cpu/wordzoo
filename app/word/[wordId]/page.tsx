@@ -80,7 +80,7 @@ export default async function PublicWordPage({ params, searchParams }: Props) {
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-card-border px-4 py-3">
+      <header className="sticky top-0 z-40 bg-background border-b border-card-border px-4 py-3">
         <nav className="flex items-center justify-between max-w-lg mx-auto">
           <span className="text-lg font-bold text-foreground">WordZoo</span>
           <Link
@@ -112,7 +112,7 @@ export default async function PublicWordPage({ params, searchParams }: Props) {
         {data.mnemonic_id && (
           <div className="glass-card p-4 mb-8">
             {data.image_url && (
-              <div className="w-full aspect-[4/3] rounded-xl overflow-hidden mb-4 bg-white/5">
+              <div className="w-full aspect-[4/3] rounded-xl overflow-hidden mb-4 bg-surface-inset">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={data.image_url}

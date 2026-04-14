@@ -1,6 +1,114 @@
 import { sql } from './client';
 import type { Mnemonic } from '@/types/database';
 
+// --- Content Overview ---
+
+export interface AdminContentOverview {
+  total_paths: number;
+  total_scenes: number;
+  total_words: number;
+  total_mnemonics: number;
+  total_users: number;
+}
+
+export async function getAdminContentOverview(): Promise<AdminContentOverview> {
+  const rows = await sql`
+    SELECT
+      (SELECT COUNT(*)::int FROM paths) AS total_paths,
+      (SELECT COUNT(*)::int FROM scenes) AS total_scenes,
+      (SELECT COUNT(*)::int FROM words) AS total_words,
+      (SELECT COUNT(*)::int FROM mnemonics WHERE user_id IS NULL) AS total_mnemonics,
+      (SELECT COUNT(*)::int FROM users) AS total_users
+  `;
+  return rows[0] as AdminContentOverview;
+}
+
+// --- Path Health ---
+
+export interface AdminPathHealth {
+  id: string;
+  title: string;
+  type: string;
+  language_name: string;
+  scene_count: number;
+  word_count: number;
+  scenes_without_dialogues: number;
+  words_without_mnemonics: number;
+}
+
+export async function getAdminPathHealth(): Promise<AdminPathHealth[]> {
+  const rows = await sql`
+    SELECT
+      p.id, p.title, p.type,
+      l.name AS language_name,
+      (SELECT COUNT(*)::int FROM scenes s WHERE s.path_id = p.id) AS scene_count,
+      (SELECT COUNT(DISTINCT sw.word_id)::int FROM scenes s JOIN scene_words sw ON sw.scene_id = s.id WHERE s.path_id = p.id) AS word_count,
+      (SELECT COUNT(*)::int FROM scenes s WHERE s.path_id = p.id AND s.scene_type = 'dialogue' AND NOT EXISTS (SELECT 1 FROM scene_dialogues sd WHERE sd.scene_id = s.id)) AS scenes_without_dialogues,
+      (SELECT COUNT(DISTINCT sw.word_id)::int FROM scenes s JOIN scene_words sw ON sw.scene_id = s.id WHERE s.path_id = p.id AND NOT EXISTS (SELECT 1 FROM mnemonics m WHERE m.word_id = sw.word_id AND m.user_id IS NULL)) AS words_without_mnemonics
+    FROM paths p
+    JOIN languages l ON l.id = p.language_id
+    ORDER BY p.title
+  `;
+  return rows as AdminPathHealth[];
+}
+
+// --- User Metrics ---
+
+export interface AdminUserMetrics {
+  total_users: number;
+  active_7d: number;
+  active_30d: number;
+  paths_started: number;
+  paths_completed: number;
+}
+
+export async function getAdminUserMetrics(): Promise<AdminUserMetrics> {
+  const rows = await sql`
+    SELECT
+      (SELECT COUNT(*)::int FROM users) AS total_users,
+      (SELECT COUNT(DISTINCT user_id)::int FROM user_words WHERE updated_at > NOW() - INTERVAL '7 days') AS active_7d,
+      (SELECT COUNT(DISTINCT user_id)::int FROM user_words WHERE updated_at > NOW() - INTERVAL '30 days') AS active_30d,
+      (SELECT COUNT(*)::int FROM user_paths) AS paths_started,
+      (SELECT COUNT(*)::int FROM user_paths WHERE status = 'completed') AS paths_completed
+  `;
+  return rows[0] as AdminUserMetrics;
+}
+
+// --- Path Engagement ---
+
+export interface AdminPathEngagement {
+  path_id: string;
+  path_title: string;
+  enrolled: number;
+  completed: number;
+  avg_progress: number;
+}
+
+export async function getAdminPathEngagement(): Promise<AdminPathEngagement[]> {
+  const rows = await sql`
+    SELECT
+      p.id AS path_id,
+      p.title AS path_title,
+      COUNT(DISTINCT up.user_id)::int AS enrolled,
+      COUNT(DISTINCT CASE WHEN up.status = 'completed' THEN up.user_id END)::int AS completed,
+      COALESCE(AVG(
+        CASE WHEN (SELECT COUNT(*) FROM scenes s WHERE s.path_id = p.id) > 0
+        THEN (
+          SELECT COUNT(*)::float * 100 / (SELECT COUNT(*) FROM scenes s2 WHERE s2.path_id = p.id)
+          FROM user_scene_progress usp
+          JOIN scenes s ON s.id = usp.scene_id
+          WHERE s.path_id = p.id AND usp.user_id = up.user_id AND usp.completed_at IS NOT NULL
+        )
+        ELSE 0 END
+      ), 0)::int AS avg_progress
+    FROM paths p
+    JOIN user_paths up ON up.path_id = p.id
+    GROUP BY p.id, p.title
+    ORDER BY enrolled DESC
+  `;
+  return rows as AdminPathEngagement[];
+}
+
 // --- Aggregate Feedback Stats ---
 
 export async function getFeedbackStats(): Promise<{

@@ -98,7 +98,7 @@ export default function QuizCard({ word, languageName, onAnswer, promptText }: Q
                   ? 'bg-green-600 text-white'
                   : showRed
                     ? 'bg-red-600 text-white'
-                    : 'bg-card-surface border border-card-border hover:border-white/20 active:bg-white/10'
+                    : 'bg-card-surface border border-card-border hover:border-card-border active:bg-surface-inset'
               }`}
             >
               {option}

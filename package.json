@@ -14,7 +14,8 @@
     "db:seed-audio": "npx tsx lib/db/seed-audio.ts",
     "db:seed-dialogues": "npx tsx lib/db/seed-dialogues.ts",
     "db:seed-phrase-mnemonics": "npx tsx lib/db/seed-phrase-mnemonics.ts",
-    "db:seed-expanded": "npx tsx lib/db/seed-expanded.ts"
+    "db:seed-expanded": "npx tsx lib/db/seed-expanded.ts",
+    "db:seed-phrase-images-auto": "npx tsx lib/db/seed-phrase-images-auto.ts"
   },
   "dependencies": {
     "@auth/neon-adapter": "^1.11.1",

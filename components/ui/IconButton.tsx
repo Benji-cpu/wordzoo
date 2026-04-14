@@ -22,7 +22,7 @@ export function IconButton({
       type="button"
       onClick={onClick}
       aria-label={label}
-      className={`${sizeClass} rounded-full flex items-center justify-center bg-white/5 border border-card-border text-text-secondary hover:text-foreground hover:bg-white/10 transition-colors active:scale-95 focus-visible:ring-2 focus-visible:ring-accent-default focus-visible:outline-none ${className}`}
+      className={`${sizeClass} rounded-full flex items-center justify-center bg-surface-inset border border-card-border text-text-secondary hover:text-foreground hover:bg-surface-inset transition-colors active:scale-95 focus-visible:ring-2 focus-visible:ring-accent-default focus-visible:outline-none ${className}`}
     >
       {children}
     </button>

@@ -34,7 +34,7 @@ export function CustomPathInput({ onSubmit, disabled }: CustomPathInputProps) {
         value={topic}
         onChange={e => setTopic(e.target.value)}
         placeholder="Enter a topic..."
-        className="w-full px-4 py-3 rounded-xl bg-white/5 border border-card-border text-foreground placeholder:text-text-secondary focus:outline-none focus:border-accent-id/50 transition-colors mb-3"
+        className="w-full px-4 py-3 rounded-xl bg-surface-inset border border-card-border text-foreground placeholder:text-text-secondary focus:outline-none focus:border-accent-id/50 transition-colors mb-3"
         maxLength={200}
         autoFocus
         disabled={disabled}

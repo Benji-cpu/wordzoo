@@ -48,13 +48,15 @@ interface LearnClientProps {
   words: LearnWord[];
   nextScene?: { id: string; title: string; description?: string | null } | null;
   pathId?: string;
+  sceneNumber?: number;
+  totalScenes?: number;
 }
 
 type SceneState =
   | { phase: 'word_learning'; wordIndex: number; step: 'word' | 'mnemonic' | 'quiz' }
   | { phase: 'scene_complete' };
 
-export function LearnClient({ sceneId, sceneTitle, sceneDescription, languageName, languageCode, words, nextScene, pathId }: LearnClientProps) {
+export function LearnClient({ sceneId, sceneTitle, sceneDescription, languageName, languageCode, words, nextScene, pathId, sceneNumber, totalScenes }: LearnClientProps) {
   const [state, setState] = useState<SceneState>(
     { phase: 'word_learning', wordIndex: 0, step: 'word' }
   );
@@ -268,7 +270,7 @@ export function LearnClient({ sceneId, sceneTitle, sceneDescription, languageNam
       )}
 
       {state.phase === 'scene_complete' && (
-        <SceneSummary sceneTitle={sceneTitle} sceneDescription={sceneDescription} words={words} nextScene={nextScene} pathId={pathId} />
+        <SceneSummary sceneTitle={sceneTitle} sceneDescription={sceneDescription} words={words} nextScene={nextScene} pathId={pathId} sceneNumber={sceneNumber} totalScenes={totalScenes} />
       )}
     </div>
   );

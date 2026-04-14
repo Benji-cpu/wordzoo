@@ -130,7 +130,7 @@ export function SentenceBuilder({
             key={tile.id}
             onClick={() => handlePoolTap(tile.id)}
             disabled={result !== null}
-            className="px-3 py-1.5 rounded-lg text-sm font-medium bg-card-surface border border-card-border text-foreground hover:bg-white/10 active:scale-95 transition-all disabled:opacity-50"
+            className="px-3 py-1.5 rounded-lg text-sm font-medium bg-card-surface border border-card-border text-foreground hover:bg-surface-inset active:scale-95 transition-all disabled:opacity-50"
           >
             {tile.word}
           </button>
@@ -143,7 +143,7 @@ export function SentenceBuilder({
           {selectedIds.length > 0 && (
             <button
               onClick={handleReset}
-              className="px-4 py-2 rounded-xl text-sm text-text-secondary border border-card-border hover:bg-white/5 transition-colors"
+              className="px-4 py-2 rounded-xl text-sm text-text-secondary border border-card-border hover:bg-surface-inset transition-colors"
             >
               Reset
             </button>
@@ -163,7 +163,7 @@ export function SentenceBuilder({
         <Card className="mt-4 text-center animate-fade-in-up">
           <p className="text-green-400 font-semibold text-lg">Correct!</p>
           {explanation && (
-            <p className="text-sm text-text-secondary mt-2 bg-white/5 rounded-lg px-3 py-2">
+            <p className="text-sm text-text-secondary mt-2 bg-surface-inset rounded-lg px-3 py-2">
               {explanation}
             </p>
           )}
@@ -176,7 +176,7 @@ export function SentenceBuilder({
           <p className="text-sm text-text-secondary mb-1">Correct answer:</p>
           <p className="text-green-400 font-medium text-lg">{correctAnswer}</p>
           {explanation && (
-            <p className="text-sm text-text-secondary mt-2 bg-white/5 rounded-lg px-3 py-2">
+            <p className="text-sm text-text-secondary mt-2 bg-surface-inset rounded-lg px-3 py-2">
               {explanation}
             </p>
           )}

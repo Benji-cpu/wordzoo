@@ -106,7 +106,7 @@ function SegmentRenderer({
       // Only show in Easy mode
       if (challengeMode !== 'easy') return null;
       return (
-        <div className="mt-1.5 pt-1.5 border-t border-white/10 text-xs italic text-text-secondary">
+        <div className="mt-1.5 pt-1.5 border-t border-card-border text-xs italic text-text-secondary">
           <InlineMarkdown text={segment.content} />
         </div>
       );
@@ -123,7 +123,7 @@ function SegmentRenderer({
             <span className="text-green-400">{segment.corrected}</span>
           </div>
           {segment.explanation && (
-            <div className="px-3 py-1.5 bg-white/10">
+            <div className="px-3 py-1.5 bg-surface-inset">
               <span className="text-text-secondary text-xs">{segment.explanation}</span>
             </div>
           )}
@@ -133,7 +133,7 @@ function SegmentRenderer({
     case 'grammar_note':
       if (challengeMode !== 'easy') return null;
       return (
-        <div className="my-2 bg-white/10 border-l-2 border-accent-default rounded-lg px-3 py-2 animate-fade-in">
+        <div className="my-2 bg-surface-inset border-l-2 border-accent-default rounded-lg px-3 py-2 animate-fade-in">
           <div className="text-xs text-text-secondary uppercase tracking-wider mb-1">Grammar Note</div>
           <div className="font-semibold text-foreground text-sm">{segment.title}</div>
           <div className="text-sm text-text-secondary mt-1"><InlineMarkdown text={segment.body} /></div>
@@ -143,7 +143,7 @@ function SegmentRenderer({
     case 'context_card':
       if (challengeMode !== 'easy') return null;
       return (
-        <div className="my-2 bg-white/10 rounded-lg px-3 py-2 animate-fade-in">
+        <div className="my-2 bg-surface-inset rounded-lg px-3 py-2 animate-fade-in">
           <div className="text-xs text-text-secondary uppercase tracking-wider">{segment.label}</div>
           <div className="text-sm text-foreground mt-0.5"><InlineMarkdown text={segment.content} /></div>
         </div>

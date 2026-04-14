@@ -14,9 +14,9 @@ interface ButtonProps {
 }
 
 const variantStyles = {
-  primary: 'bg-accent-default text-white hover:brightness-110 active:animate-bounce-sm',
-  secondary: 'bg-card-surface border border-card-border text-foreground hover:bg-white/10 active:animate-bounce-sm',
-  ghost: 'bg-transparent text-text-secondary hover:text-foreground hover:bg-white/5',
+  primary: 'bg-accent-default text-white hover:brightness-110 active:scale-[0.97]',
+  secondary: 'bg-card-surface border border-card-border text-foreground hover:bg-surface-inset active:scale-[0.97]',
+  ghost: 'bg-transparent text-text-secondary hover:text-foreground hover:bg-surface-inset',
   inverse: 'bg-foreground text-background hover:opacity-90',
   outline: 'border border-card-border text-foreground hover:bg-card-surface bg-transparent',
 };

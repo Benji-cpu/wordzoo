@@ -25,7 +25,7 @@ function renderBridgeSentence(sentence: string) {
 }
 
 function ImageSkeleton() {
-  return <div className="w-full h-[200px] bg-white/5 animate-pulse rounded-xl" />;
+  return <div className="w-full h-[200px] bg-surface-inset animate-pulse rounded-xl" />;
 }
 
 interface ReviewCardProps {
@@ -98,22 +98,27 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, w
   } : {};
 
   const mnemonicImage = mnemonic.image_url && (
-    <div className="relative w-full rounded-xl overflow-hidden mb-2 bg-white/5">
+    <div className="relative w-full rounded-xl overflow-hidden mb-1 bg-surface-inset">
       {!imageLoaded && <ImageSkeleton />}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={mnemonic.image_url}
         alt=""
-        className={`w-full max-h-[calc(100dvh-400px)] min-h-[120px] object-cover rounded-xl transition-opacity duration-300 ${
+        className={`w-full max-h-[calc(100dvh-340px)] min-h-[120px] object-cover rounded-xl transition-opacity duration-300 ${
           imageLoaded ? 'opacity-100' : 'opacity-0 h-0'
         }`}
         onLoad={() => setImageLoaded(true)}
       />
+      {imageLoaded && (
+        <div className="absolute bottom-2 right-2 bg-black/60 rounded-lg p-1" onClick={(e) => e.stopPropagation()}>
+          <FeedbackButtons mnemonicId={mnemonic.id} context="review" compact overlay />
+        </div>
+      )}
     </div>
   );
 
   const ratingSection = onRate && (
-    <div className="mt-3" onClick={(e) => e.stopPropagation()}>
+    <div className="mt-2" onClick={(e) => e.stopPropagation()}>
       <RatingButtons onRate={onRate} />
     </div>
   );
@@ -131,7 +136,7 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, w
     <div style={swipeStyle} className="relative">
       {revealed && <SwipeIndicators swipeX={swipeX} />}
       <Card
-        className={`text-center py-4 sm:py-10 transition-all duration-300 ${revealed ? 'animate-fade-in' : ''}`}
+        className={`text-center py-2 sm:py-4 transition-all duration-300 ${revealed ? 'animate-fade-in' : ''}`}
         style={revealed ? getSwipeBorderStyle(swipeX) : {}}
         onClick={!revealed ? onReveal : undefined}
       >
@@ -143,7 +148,7 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, w
                 revealed ? 'max-h-0 opacity-0' : 'max-h-[300px] opacity-100'
               }`}
             >
-              <p className="text-xs text-text-secondary uppercase tracking-wider mb-4">
+              <p className="text-xs text-text-secondary uppercase tracking-wider mb-2">
                 What does this mean?
               </p>
               <h2 className="text-3xl font-bold text-accent-id mb-2">{word.text}</h2>
@@ -153,7 +158,7 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, w
               <div onClick={(e) => e.stopPropagation()}>
                 <PronunciationButton wordId={word.id} audioUrl={word.pronunciation_audio_url} text={word.text} />
               </div>
-              <p className="text-sm text-text-secondary mt-8">Tap to reveal</p>
+              <p className="text-sm text-text-secondary mt-4">Tap to reveal</p>
             </div>
 
             {/* Compact header bar — appears on reveal */}
@@ -174,16 +179,16 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, w
 
             {/* Mnemonic content — fades in on reveal */}
             {revealed && (
-              <div className="pt-3 border-t border-card-border animate-slide-up">
+              <div className="pt-2 border-t border-card-border animate-slide-up">
                 {mnemonic.keyword_text && (
-                  <p className="text-base text-foreground text-center mb-1">
+                  <p className="text-sm sm:text-base text-foreground text-center mb-1 whitespace-nowrap overflow-hidden text-ellipsis px-1">
                     <span className="font-bold text-accent-id">{word.text}</span>
                     {' '}sounds like{' '}
                     <span className="font-bold">&ldquo;{mnemonic.keyword_text}&rdquo;</span>
                   </p>
                 )}
                 {mnemonic.bridge_sentence && (
-                  <p className="text-base text-foreground italic mb-2">
+                  <p className="text-sm sm:text-base text-foreground italic mb-2 whitespace-nowrap overflow-hidden text-ellipsis px-1">
                     {renderBridgeSentence(mnemonic.bridge_sentence)}
                   </p>
                 )}
@@ -195,9 +200,6 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, w
                   </p>
                 )}
                 {mnemonicImage}
-                <div className="mt-1" onClick={(e) => e.stopPropagation()}>
-                  <FeedbackButtons mnemonicId={mnemonic.id} context="review" />
-                </div>
                 {ratingSection}
                 {wordFamilySection}
               </div>
@@ -212,7 +214,7 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, w
                 revealed ? 'max-h-0 opacity-0' : 'max-h-[80px] opacity-100'
               }`}
             >
-              <p className="text-xs text-text-secondary uppercase tracking-wider mb-4">
+              <p className="text-xs text-text-secondary uppercase tracking-wider mb-2">
                 How do you say...
               </p>
               <h2 className="text-2xl font-bold text-foreground mb-3">{word.meaning_en}</h2>
@@ -231,7 +233,7 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, w
 
             {/* Answer content — fades in on reveal */}
             {revealed && (
-              <div className="pt-3 border-t border-card-border animate-slide-up">
+              <div className="pt-2 border-t border-card-border animate-slide-up">
                 {mnemonicImage}
                 <div className="flex items-center justify-center gap-2 mb-1">
                   <p className="text-2xl font-bold text-accent-id">{word.text}</p>
@@ -243,12 +245,12 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, w
                   <p className="text-base text-text-secondary mb-1">{word.romanization}</p>
                 )}
                 {mnemonic.keyword_text && (
-                  <p className="text-base text-foreground text-center mt-1">
+                  <p className="text-sm sm:text-base text-foreground text-center mt-1 whitespace-nowrap overflow-hidden text-ellipsis px-1">
                     sounds like <span className="font-bold">&ldquo;{mnemonic.keyword_text}&rdquo;</span>
                   </p>
                 )}
                 {mnemonic.bridge_sentence && (
-                  <p className="text-base text-foreground italic mt-1">
+                  <p className="text-sm sm:text-base text-foreground italic mt-1 whitespace-nowrap overflow-hidden text-ellipsis px-1">
                     {renderBridgeSentence(mnemonic.bridge_sentence)}
                   </p>
                 )}
@@ -259,9 +261,6 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, w
                     </span>
                   </p>
                 )}
-                <div className="mt-2" onClick={(e) => e.stopPropagation()}>
-                  <FeedbackButtons mnemonicId={mnemonic.id} context="review" />
-                </div>
                 {ratingSection}
                 {wordFamilySection}
               </div>

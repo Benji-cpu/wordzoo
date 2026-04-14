@@ -1,4 +1,4 @@
-import { getDueWordsForReview, getOrCreateUserWord, updateWordSRS, updateUserStreak } from '@/lib/db/queries';
+import { getDueWordsForReview, getOrCreateUserWord, updateWordSRS, updateUserStreak, incrementDailyUsageWordsLearned } from '@/lib/db/queries';
 import type { DueWordForReview } from '@/lib/db/queries';
 import { getOrCreateUserPhrase, updatePhraseSRS, getDuePhrasesForReview } from '@/lib/db/scene-flow-queries';
 import type { DuePhraseForReview } from '@/lib/db/scene-flow-queries';
@@ -35,6 +35,12 @@ export async function recordReview(
   rating: Rating
 ): Promise<{ nextReviewAt: Date; newInterval: number }> {
   const userWord = await getOrCreateUserWord(userId, wordId, null);
+
+  // First-ever review = word just "learned" — track for pacing + free-tier limits
+  if (userWord.times_reviewed === 0) {
+    const today = new Date().toISOString().split('T')[0];
+    incrementDailyUsageWordsLearned(userId, today, 1).catch(() => {});
+  }
 
   const q = ratingToQuality(rating);
   const oldEF = userWord.ease_factor;

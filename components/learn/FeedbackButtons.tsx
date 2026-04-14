@@ -6,19 +6,16 @@ interface FeedbackButtonsProps {
   mnemonicId: string;
   context: 'learn' | 'review';
   compact?: boolean;
+  overlay?: boolean;
 }
 
 type Rating = 'thumbs_up' | 'thumbs_down';
 
-export function FeedbackButtons({ mnemonicId, context, compact = false }: FeedbackButtonsProps) {
+export function FeedbackButtons({ mnemonicId, context, compact = false, overlay = false }: FeedbackButtonsProps) {
   const [selectedRating, setSelectedRating] = useState<Rating | null>(null);
   const [showComment, setShowComment] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [submitted, setSubmitted] = useState(false);
-
-  const headerText = context === 'learn'
-    ? 'Was this memorable?'
-    : 'Did this help you remember?';
 
   const placeholderText = context === 'learn'
     ? 'What made it memorable (or not)?'
@@ -65,40 +62,38 @@ export function FeedbackButtons({ mnemonicId, context, compact = false }: Feedba
         <button
           onClick={() => handleRate('thumbs_up')}
           disabled={selectedRating !== null}
-          className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all ${
+          className={`flex items-center justify-center rounded-lg transition-all ${overlay ? 'w-7 h-7' : 'w-8 h-8'} ${
             selectedRating === 'thumbs_up'
-              ? 'text-green-400 bg-green-400/10'
+              ? 'text-green-400'
               : selectedRating
-                ? 'text-text-secondary bg-white/5 opacity-40'
-                : 'text-text-secondary bg-white/5 hover:bg-white/10'
+                ? `${overlay ? 'text-white/30' : 'text-text-secondary bg-surface-inset'} opacity-40`
+                : overlay
+                  ? 'text-white/80 hover:text-white'
+                  : 'text-text-secondary bg-surface-inset hover:bg-surface-inset'
           }`}
           aria-label="Thumbs up"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width={overlay ? "14" : "16"} height={overlay ? "14" : "16"} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M7 10v12" />
             <path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z" />
           </svg>
         </button>
 
-        {!compact && (
-          <span className="text-xs text-text-secondary">
-            {headerText}
-          </span>
-        )}
-
         <button
           onClick={() => handleRate('thumbs_down')}
           disabled={selectedRating !== null}
-          className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all ${
+          className={`flex items-center justify-center rounded-lg transition-all ${overlay ? 'w-7 h-7' : 'w-8 h-8'} ${
             selectedRating === 'thumbs_down'
-              ? 'text-red-400 bg-red-400/10'
+              ? 'text-red-400'
               : selectedRating
-                ? 'text-text-secondary bg-white/5 opacity-40'
-                : 'text-text-secondary bg-white/5 hover:bg-white/10'
+                ? `${overlay ? 'text-white/30' : 'text-text-secondary bg-surface-inset'} opacity-40`
+                : overlay
+                  ? 'text-white/80 hover:text-white'
+                  : 'text-text-secondary bg-surface-inset hover:bg-surface-inset'
           }`}
           aria-label="Thumbs down"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width={overlay ? "14" : "16"} height={overlay ? "14" : "16"} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M17 14V2" />
             <path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z" />
           </svg>
@@ -114,7 +109,7 @@ export function FeedbackButtons({ mnemonicId, context, compact = false }: Feedba
             onChange={(e) => setCommentText(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter' && commentText.trim()) handleSendComment(); }}
             placeholder={placeholderText}
-            className="w-full px-3 py-2 rounded-lg bg-white/5 border border-card-border text-sm text-foreground placeholder:text-text-secondary focus:outline-none focus:border-accent-default/50 transition-colors"
+            className="w-full px-3 py-2 rounded-lg bg-surface-inset border border-card-border text-sm text-foreground placeholder:text-text-secondary focus:outline-none focus:border-accent-default/50 transition-colors"
             maxLength={500}
             autoFocus
           />

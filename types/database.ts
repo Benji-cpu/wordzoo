@@ -212,6 +212,7 @@ export interface DailyUsage {
   hands_free_seconds: number;
   regenerations: number;
   custom_paths_created: number;
+  scenes_completed: number;
 }
 
 export interface CommunityMnemonic {
@@ -539,4 +540,25 @@ export interface StudioIntakeProgress {
   total_steps: number;
   step_label: string;
   can_generate: boolean;
+}
+
+// --- Info Bytes types ---
+
+export type InfoByteDifficulty = 'easy' | 'medium' | 'hard';
+
+export interface InfoByte {
+  id: string;
+  language_id: string;
+  publish_date: string;
+  category: string;
+  topic_summary: string;
+  easy_target: string;
+  easy_english: string;
+  medium_target: string;
+  medium_english: string;
+  hard_target: string;
+  hard_english: string;
+  source_topic: string | null;
+  tokens_used: number;
+  created_at: Date;
 }

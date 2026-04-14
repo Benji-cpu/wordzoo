@@ -63,6 +63,7 @@ interface TutorChatProps {
   isLoadingRecommendation?: boolean;
   onStartGuidedSession?: (sceneId: string) => void;
   returnTo?: string | null;
+  limitReached?: boolean;
 }
 
 function mapLanguageCode(code: string): string {
@@ -98,6 +99,7 @@ export function TutorChat({
   isLoadingRecommendation,
   onStartGuidedSession,
   returnTo,
+  limitReached,
 }: TutorChatProps) {
   const [popover, setPopover] = useState<{ data: PopoverData; rect: DOMRect } | null>(null);
   const [vocabMap, setVocabMap] = useState(() => new Map<string, PopoverData>());
@@ -157,6 +159,20 @@ export function TutorChat({
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Auto-scroll when keyboard opens/closes
+  useEffect(() => {
+    if (view !== 'chatting') return;
+    const vv = window.visualViewport;
+    if (!vv) return;
+
+    function handleViewportResize() {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'instant' });
+    }
+
+    vv.addEventListener('resize', handleViewportResize);
+    return () => vv.removeEventListener('resize', handleViewportResize);
+  }, [view]);
 
   // Auto-start session if initialMode provided
   useEffect(() => {
@@ -364,6 +380,7 @@ export function TutorChat({
             mode={activeMode ?? undefined}
             messages={messages}
             returnTo={returnTo}
+            limitReached={limitReached}
           />
         </div>
       )}

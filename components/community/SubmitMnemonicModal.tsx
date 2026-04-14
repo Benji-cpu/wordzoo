@@ -89,7 +89,7 @@ export function SubmitMnemonicModal({
             <div className="flex gap-3">
               <button
                 onClick={onClose}
-                className="flex-1 px-4 py-2 rounded-xl text-sm text-text-secondary bg-white/5 hover:bg-white/10 transition-colors"
+                className="flex-1 px-4 py-2 rounded-xl text-sm text-text-secondary bg-surface-inset hover:bg-surface-inset transition-colors"
               >
                 Cancel
               </button>

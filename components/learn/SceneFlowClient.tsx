@@ -38,6 +38,8 @@ interface SceneFlowClientProps {
   nextScene?: { id: string; title: string; description?: string | null } | null;
   pathId?: string;
   userName?: string | null;
+  sceneNumber?: number;
+  totalScenes?: number;
 }
 
 type FlowState =
@@ -227,17 +229,19 @@ export function SceneFlowClient({
   nextScene,
   pathId,
   userName,
+  sceneNumber,
+  totalScenes,
 }: SceneFlowClientProps) {
   const hasAnchorImage = !!anchorImageUrl;
   const [state, setState] = useState<FlowState>(() =>
     initialStateFromProgress(initialProgress, dialogues.length, phrases.length, words.length, patternExercises.length, affixExercises.length, hasAnchorImage)
   );
+  const [dailyStats, setDailyStats] = useState<{ words_learned: number; scenes_completed: number }>({ words_learned: 0, scenes_completed: 0 });
+  const statsFetched = useRef(false);
 
   const router = useRouter();
-  const progressRef = useRef(false);
 
   const saveProgress = useCallback((phase: string, phaseIndex: number, phaseCompleted?: string) => {
-    if (progressRef.current) return;
     fetch(`/api/scenes/${sceneId}/progress`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -405,6 +409,21 @@ export function SceneFlowClient({
     }
   }, [state, affixExercises.length, saveProgress]);
 
+  // Fetch daily stats when entering summary phase
+  useEffect(() => {
+    if (state.phase === 'summary' && !statsFetched.current) {
+      statsFetched.current = true;
+      fetch(`/api/scenes/${sceneId}/progress`)
+        .then(res => res.json())
+        .then(json => {
+          if (json.data?.dailyStats) {
+            setDailyStats(json.data.dailyStats);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [state.phase, sceneId]);
+
   // Swipe to advance for card-based phases
   useEffect(() => {
     let startX = 0;
@@ -461,7 +480,7 @@ export function SceneFlowClient({
 
   return (
     <div className="max-w-lg mx-auto">
-      <SceneFlowHeader title={sceneTitle} description={sceneDescription} currentPhase={state.phase} phaseProgress={phaseProgress} onBack={handleBack} />
+      <SceneFlowHeader title={sceneTitle} description={sceneDescription} currentPhase={state.phase} phaseProgress={phaseProgress} onBack={handleBack} sceneNumber={sceneNumber} totalScenes={totalScenes} />
 
       {/* Scene Intro Phase */}
       {state.phase === 'scene-intro' && (
@@ -634,7 +653,7 @@ export function SceneFlowClient({
 
       {/* Summary Phase */}
       {state.phase === 'summary' && (
-        <SceneSummary sceneTitle={sceneTitle} sceneDescription={sceneDescription} words={words} nextScene={nextScene} pathId={pathId} sceneId={sceneId} />
+        <SceneSummary sceneTitle={sceneTitle} sceneDescription={sceneDescription} words={words} nextScene={nextScene} pathId={pathId} sceneId={sceneId} sceneNumber={sceneNumber} totalScenes={totalScenes} wordsLearnedToday={dailyStats.words_learned} scenesCompletedToday={dailyStats.scenes_completed} />
       )}
     </div>
   );

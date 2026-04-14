@@ -43,7 +43,7 @@ export function AffixReferenceCard() {
       {/* Floating reference button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-20 right-4 z-40 w-10 h-10 rounded-full bg-accent-id/80 text-white flex items-center justify-center shadow-lg backdrop-blur-sm transition-all hover:bg-accent-id active:scale-90"
+        className="fixed bottom-20 right-4 z-40 w-10 h-10 rounded-full bg-accent-id/80 text-white flex items-center justify-center shadow-lg transition-all hover:bg-accent-id active:scale-90"
         aria-label="Affix reference"
       >
         <span className="text-lg font-bold">?</span>
@@ -54,18 +54,18 @@ export function AffixReferenceCard() {
         <>
           {/* Backdrop */}
           <div
-            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
+            className="fixed inset-0 z-40 bg-black/60"
             onClick={() => setIsOpen(false)}
           />
 
           {/* Panel */}
           <div className="fixed bottom-0 left-0 right-0 z-50 max-h-[75vh] overflow-y-auto rounded-t-2xl bg-card-surface border-t border-card-border animate-slide-up">
-            <div className="sticky top-0 bg-card-surface/95 backdrop-blur-sm px-4 pt-4 pb-2 border-b border-card-border">
+            <div className="sticky top-0 bg-card-surface px-4 pt-4 pb-2 border-b border-card-border">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-bold text-foreground">Indonesian Affixes</h3>
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="p-1 rounded-full hover:bg-white/10 transition-colors"
+                  className="p-1 rounded-full hover:bg-surface-inset transition-colors"
                   aria-label="Close"
                 >
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -84,7 +84,7 @@ export function AffixReferenceCard() {
                     {cat.affixes.map((a) => (
                       <div
                         key={a.affix}
-                        className="flex items-start gap-3 rounded-lg bg-white/5 px-3 py-2"
+                        className="flex items-start gap-3 rounded-lg bg-surface-inset px-3 py-2"
                       >
                         <span className="shrink-0 font-mono font-bold text-foreground min-w-[5rem]">
                           {a.affix}

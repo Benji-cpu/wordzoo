@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { UpgradePrompt } from '@/components/billing/UpgradePrompt';
+import { PacingNudge, getPacingLevel } from '@/components/learn/PacingNudge';
 
 interface SummaryWord {
   word: { id: string; text: string; meaning_en: string };
@@ -19,9 +20,13 @@ interface SceneSummaryProps {
   nextScene?: { id: string; title: string; description?: string | null } | null;
   pathId?: string;
   sceneId?: string;
+  sceneNumber?: number;
+  totalScenes?: number;
+  wordsLearnedToday?: number;
+  scenesCompletedToday?: number;
 }
 
-export function SceneSummary({ sceneTitle, sceneDescription, words, showUpgrade = false, nextScene, pathId, sceneId }: SceneSummaryProps) {
+export function SceneSummary({ sceneTitle, sceneDescription, words, showUpgrade = false, nextScene, pathId, sceneId, sceneNumber, totalScenes, wordsLearnedToday = 0, scenesCompletedToday = 0 }: SceneSummaryProps) {
   const [expandedWordId, setExpandedWordId] = useState<string | null>(null);
 
   const returnTo = nextScene
@@ -33,25 +38,35 @@ export function SceneSummary({ sceneTitle, sceneDescription, words, showUpgrade 
     ? `/tutor?mode=guided_conversation&sceneId=${sceneId}&returnTo=${encodeURIComponent(returnTo)}`
     : '/tutor?mode=free_chat';
 
-  const primaryHref = nextScene
+  const nextSceneHref = nextScene
     ? `/learn/${nextScene.id}`
     : pathId
       ? `/paths/${pathId}`
       : '/';
-  const primaryLabel = nextScene
-    ? `Next: ${nextScene.title} →`
-    : pathId
-      ? 'Path Complete! View Path →'
-      : 'Back to Dashboard →';
+  const nextLabel = nextScene && sceneNumber && totalScenes
+    ? `Next up: Scene ${sceneNumber + 1} — ${nextScene.title} →`
+    : nextScene
+      ? `Next: ${nextScene.title} →`
+      : pathId
+        ? 'Path Complete! View Path →'
+        : 'Back to Dashboard →';
+
+  const pacingLevel = getPacingLevel(wordsLearnedToday);
 
   return (
     <div className="animate-slide-up">
       <div className="text-center mb-4">
-        <p className="text-2xl mb-1">🎉</p>
-        <h2 className="text-xl font-bold text-foreground">Scene Complete!</h2>
+        <div className="w-14 h-14 rounded-full bg-surface-inset flex items-center justify-center mx-auto mb-3">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-accent-id">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </div>
+        <h2 className="text-xl font-bold text-foreground">
+          {sceneNumber && totalScenes ? `Scene ${sceneNumber} of ${totalScenes} complete` : 'Scene complete'}
+        </h2>
         <p className="text-sm text-text-secondary mt-1">{sceneTitle}</p>
         {sceneDescription && (
-          <p className="text-xs text-text-secondary mt-0.5">{sceneDescription}</p>
+          <p className="text-xs text-text-secondary mt-1">{sceneDescription}</p>
         )}
       </div>
 
@@ -71,13 +86,37 @@ export function SceneSummary({ sceneTitle, sceneDescription, words, showUpgrade 
         </div>
       </Card>
 
+      {/* Pacing nudge */}
+      {wordsLearnedToday > 0 && (
+        <div className="mb-4">
+          <PacingNudge wordsLearnedToday={wordsLearnedToday} scenesCompletedToday={scenesCompletedToday} />
+        </div>
+      )}
+
+      {/* CTAs — reorder based on pacing level */}
       <div className="space-y-3">
-        <Link href={tutorHref} className="block">
-          <Button className="w-full">Practice with Tutor</Button>
-        </Link>
-        <Link href={primaryHref} className="block text-center text-sm text-text-secondary hover:text-foreground transition-colors">
-          Skip — {primaryLabel}
-        </Link>
+        {pacingLevel === 'green' ? (
+          <>
+            <Link href={tutorHref} className="block">
+              <Button className="w-full">Practice with Tutor</Button>
+            </Link>
+            <Link href={nextSceneHref} className="block text-center text-sm text-text-secondary hover:text-foreground transition-colors">
+              Skip — {nextLabel}
+            </Link>
+          </>
+        ) : (
+          <>
+            <Link href="/review" className="block">
+              <Button className="w-full">Review Now</Button>
+            </Link>
+            <Link href={tutorHref} className="block">
+              <Button variant="secondary" className="w-full">Practice with Tutor</Button>
+            </Link>
+            <Link href={nextSceneHref} className="block text-center text-sm text-text-secondary hover:text-foreground transition-colors">
+              {nextLabel}
+            </Link>
+          </>
+        )}
       </div>
 
       {showUpgrade && (

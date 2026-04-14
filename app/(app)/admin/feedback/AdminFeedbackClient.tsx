@@ -109,7 +109,7 @@ export function AdminFeedbackClient({
 
       {/* Stats Row */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-card-border p-4">
+        <div className="bg-surface-inset rounded-2xl border border-card-border p-4">
           <p className="text-xs text-text-secondary uppercase tracking-wider">
             Total Feedback
           </p>
@@ -118,7 +118,7 @@ export function AdminFeedbackClient({
           </p>
         </div>
 
-        <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-card-border p-4">
+        <div className="bg-surface-inset rounded-2xl border border-card-border p-4">
           <p className="text-xs text-text-secondary uppercase tracking-wider">
             Thumbs Up
           </p>
@@ -127,7 +127,7 @@ export function AdminFeedbackClient({
           </p>
         </div>
 
-        <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-card-border p-4">
+        <div className="bg-surface-inset rounded-2xl border border-card-border p-4">
           <p className="text-xs text-text-secondary uppercase tracking-wider">
             Thumbs Down
           </p>
@@ -136,7 +136,7 @@ export function AdminFeedbackClient({
           </p>
         </div>
 
-        <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-card-border p-4">
+        <div className="bg-surface-inset rounded-2xl border border-card-border p-4">
           <p className="text-xs text-text-secondary uppercase tracking-wider">
             Positive %
           </p>
@@ -175,7 +175,7 @@ export function AdminFeedbackClient({
             {comments.map((item) => (
               <div
                 key={item.id}
-                className="bg-white/5 backdrop-blur-sm rounded-2xl border border-card-border p-4 space-y-2"
+                className="bg-surface-inset rounded-2xl border border-card-border p-4 space-y-2"
               >
                 <div className="flex items-center justify-between">
                   <span
@@ -221,7 +221,7 @@ export function AdminFeedbackClient({
             return (
               <div
                 key={item.id}
-                className="bg-white/5 backdrop-blur-sm rounded-2xl border border-card-border p-4 space-y-3"
+                className="bg-surface-inset rounded-2xl border border-card-border p-4 space-y-3"
               >
                 <div className="flex gap-3">
                   {/* Thumbnail */}
@@ -233,7 +233,7 @@ export function AdminFeedbackClient({
                       className="w-[60px] h-[60px] rounded-lg object-cover flex-shrink-0"
                     />
                   ) : (
-                    <div className="w-[60px] h-[60px] rounded-lg bg-white/10 flex-shrink-0" />
+                    <div className="w-[60px] h-[60px] rounded-lg bg-surface-inset flex-shrink-0" />
                   )}
 
                   {/* Info */}
@@ -247,7 +247,7 @@ export function AdminFeedbackClient({
                     <p className="text-sm text-foreground truncate">
                       &ldquo;{item.keyword_text}&rdquo;
                     </p>
-                    <span className="inline-block text-xs bg-white/10 text-text-secondary px-2 py-0.5 rounded-full mt-1">
+                    <span className="inline-block text-xs bg-surface-inset text-text-secondary px-2 py-0.5 rounded-full mt-1">
                       {item.language_name}
                     </span>
                   </div>

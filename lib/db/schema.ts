@@ -546,6 +546,10 @@ END $$;
 ALTER TABLE daily_usage
   ADD COLUMN IF NOT EXISTS custom_paths_created INTEGER NOT NULL DEFAULT 0;
 
+-- Track scenes completed per day for pacing system
+ALTER TABLE daily_usage
+  ADD COLUMN IF NOT EXISTS scenes_completed INTEGER NOT NULL DEFAULT 0;
+
 -- Studio Sessions (Path Studio co-creation sessions)
 CREATE TABLE IF NOT EXISTS studio_sessions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -641,4 +645,25 @@ END $$;
 
 ALTER TABLE scene_phrases ADD COLUMN IF NOT EXISTS text_target_informal TEXT;
 ALTER TABLE scene_dialogues ADD COLUMN IF NOT EXISTS text_target_informal TEXT;
+
+-- Info Bytes (daily AI-generated topical content)
+CREATE TABLE IF NOT EXISTS info_bytes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  language_id UUID NOT NULL REFERENCES languages(id) ON DELETE CASCADE,
+  publish_date DATE NOT NULL,
+  category TEXT NOT NULL,
+  topic_summary TEXT NOT NULL,
+  easy_target TEXT NOT NULL,
+  easy_english TEXT NOT NULL,
+  medium_target TEXT NOT NULL,
+  medium_english TEXT NOT NULL,
+  hard_target TEXT NOT NULL,
+  hard_english TEXT NOT NULL,
+  source_topic TEXT,
+  tokens_used INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_info_bytes_date_lang
+  ON info_bytes(publish_date, language_id);
 `;

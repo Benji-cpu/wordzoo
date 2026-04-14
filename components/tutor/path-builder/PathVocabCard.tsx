@@ -65,7 +65,7 @@ export function PathVocabCard({
           </button>
         )}
         {showHint && mnemonicHint && (
-          <div className="mt-1 text-xs text-text-secondary bg-white/5 rounded-lg px-2 py-1.5 animate-fade-in">
+          <div className="mt-1 text-xs text-text-secondary bg-surface-inset rounded-lg px-2 py-1.5 animate-fade-in">
             {mnemonicHint}
           </div>
         )}
@@ -86,7 +86,7 @@ export function PathVocabCard({
             </button>
             <button
               onClick={onDifferent}
-              className="flex-1 px-3 py-1.5 rounded-lg bg-white/5 text-text-secondary text-xs font-medium hover:bg-white/10 active:scale-95 transition-all"
+              className="flex-1 px-3 py-1.5 rounded-lg bg-surface-inset text-text-secondary text-xs font-medium hover:bg-surface-inset active:scale-95 transition-all"
             >
               ↻ Different
             </button>

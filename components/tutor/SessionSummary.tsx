@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { UpgradePrompt } from '@/components/billing/UpgradePrompt';
 import { parseMessageContent } from '@/lib/tutor/message-parser';
 import type { ChatMessage } from '@/components/tutor/TutorChat';
 import { InlineMarkdown } from '@/components/ui/InlineMarkdown';
@@ -28,6 +29,7 @@ interface SessionSummaryProps {
   mode?: string;
   messages?: ChatMessage[];
   returnTo?: string | null;
+  limitReached?: boolean;
 }
 
 const MODE_LABELS: Record<string, string> = {
@@ -41,7 +43,7 @@ const MODE_LABELS: Record<string, string> = {
 
 const COUNTDOWN_SECONDS = 8;
 
-export function SessionSummary({ summary, onNewSession, onStartSession, mode, messages, returnTo }: SessionSummaryProps) {
+export function SessionSummary({ summary, onNewSession, onStartSession, mode, messages, returnTo, limitReached }: SessionSummaryProps) {
   const router = useRouter();
   const isGuidedWithReturn = mode === 'guided_conversation' && !!returnTo;
 
@@ -256,83 +258,107 @@ export function SessionSummary({ summary, onNewSession, onStartSession, mode, me
         </div>
       )}
 
-      <div
-        className="space-y-2 animate-slide-up"
-        style={{ animationDelay: `${sectionIndex++ * 100}ms`, animationFillMode: 'backwards' }}
-      >
-        {isGuidedWithReturn ? (
-          <>
-            {/* Auto-advance progress bar */}
-            <button
-              onClick={() => returnTo && router.push(returnTo)}
-              className="w-full text-left"
-            >
-              <div className="rounded-xl bg-surface-secondary p-3">
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-sm text-text-secondary">
-                    {timerStarted && countdown !== null
-                      ? `Continuing to next scene...`
-                      : returnTo!.startsWith('/learn/') ? 'Continue to Next Scene →' : returnTo!.startsWith('/paths/') ? 'Back to Path →' : 'Dashboard →'}
-                  </span>
-                  {timerStarted && countdown !== null && (
-                    <span className="text-xs text-text-secondary tabular-nums">{countdown}s</span>
-                  )}
-                </div>
-                <div className="h-1.5 rounded-full bg-surface-secondary overflow-hidden border border-white/5">
-                  <div
-                    className="h-full rounded-full bg-accent-default"
-                    style={{
-                      width: timerStarted && countdown !== null
-                        ? `${((COUNTDOWN_SECONDS - countdown) / COUNTDOWN_SECONDS) * 100}%`
-                        : '0%',
-                      transition: 'width 1s linear',
-                    }}
-                  />
-                </div>
-              </div>
-            </button>
+      {/* Limit reached: learning loop CTAs + upgrade prompt */}
+      {limitReached && (
+        <div
+          className="space-y-3 animate-slide-up"
+          style={{ animationDelay: `${sectionIndex++ * 100}ms`, animationFillMode: 'backwards' }}
+        >
+          <p className="text-sm text-text-secondary text-center">
+            You&apos;ve used your 3 free messages for today. Keep the momentum going!
+          </p>
+          <div className="space-y-2">
+            <Link href="/" className="block">
+              <Button className="w-full">Continue Learning</Button>
+            </Link>
+            <Link href="/review" className="block">
+              <Button variant="secondary" className="w-full">Review Your Words</Button>
+            </Link>
+          </div>
+          <UpgradePrompt feature="tutor_message" compact />
+        </div>
+      )}
 
-            <div className="flex justify-center gap-4 pt-1">
-              {onStartSession && (
+      {/* Normal CTAs (only when not limit-reached) */}
+      {!limitReached && (
+        <div
+          className="space-y-2 animate-slide-up"
+          style={{ animationDelay: `${sectionIndex++ * 100}ms`, animationFillMode: 'backwards' }}
+        >
+          {isGuidedWithReturn ? (
+            <>
+              {/* Auto-advance progress bar */}
+              <button
+                onClick={() => returnTo && router.push(returnTo)}
+                className="w-full text-left"
+              >
+                <div className="rounded-xl bg-surface-secondary p-3">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-sm text-text-secondary">
+                      {timerStarted && countdown !== null
+                        ? `Continuing to next scene...`
+                        : returnTo!.startsWith('/learn/') ? 'Continue to Next Scene →' : returnTo!.startsWith('/paths/') ? 'Back to Path →' : 'Dashboard →'}
+                    </span>
+                    {timerStarted && countdown !== null && (
+                      <span className="text-xs text-text-secondary tabular-nums">{countdown}s</span>
+                    )}
+                  </div>
+                  <div className="h-1.5 rounded-full bg-surface-secondary overflow-hidden border border-white/5">
+                    <div
+                      className="h-full rounded-full bg-accent-default"
+                      style={{
+                        width: timerStarted && countdown !== null
+                          ? `${((COUNTDOWN_SECONDS - countdown) / COUNTDOWN_SECONDS) * 100}%`
+                          : '0%',
+                        transition: 'width 1s linear',
+                      }}
+                    />
+                  </div>
+                </div>
+              </button>
+
+              <div className="flex justify-center gap-4 pt-1">
+                {onStartSession && (
+                  <button
+                    onClick={() => { cancelCountdown(); onStartSession(mode!); }}
+                    className="text-sm text-text-secondary underline-offset-2 hover:underline"
+                  >
+                    Practice Again
+                  </button>
+                )}
                 <button
-                  onClick={() => { cancelCountdown(); onStartSession(mode!); }}
+                  onClick={() => { cancelCountdown(); onNewSession(); }}
                   className="text-sm text-text-secondary underline-offset-2 hover:underline"
                 >
-                  Practice Again
+                  New Session
                 </button>
+              </div>
+            </>
+          ) : (
+            <>
+              {returnTo && (
+                <Link href={returnTo} className="block">
+                  <Button className="w-full">
+                    {returnTo.startsWith('/learn/') ? 'Continue to Next Scene' : returnTo.startsWith('/paths/') ? 'Back to Path' : 'Dashboard'} →
+                  </Button>
+                </Link>
               )}
-              <button
-                onClick={() => { cancelCountdown(); onNewSession(); }}
-                className="text-sm text-text-secondary underline-offset-2 hover:underline"
-              >
-                New Session
-              </button>
-            </div>
-          </>
-        ) : (
-          <>
-            {returnTo && (
-              <Link href={returnTo} className="block">
-                <Button className="w-full">
-                  {returnTo.startsWith('/learn/') ? 'Continue to Next Scene' : returnTo.startsWith('/paths/') ? 'Back to Path' : 'Dashboard'} →
+              {mode && onStartSession && (
+                <Button
+                  onClick={() => onStartSession(mode)}
+                  variant="secondary"
+                  className="w-full"
+                >
+                  Practice Again ({MODE_LABELS[mode] ?? mode})
                 </Button>
-              </Link>
-            )}
-            {mode && onStartSession && (
-              <Button
-                onClick={() => onStartSession(mode)}
-                variant="secondary"
-                className="w-full"
-              >
-                Practice Again ({MODE_LABELS[mode] ?? mode})
+              )}
+              <Button onClick={onNewSession} variant={returnTo ? 'secondary' : undefined} className="w-full">
+                New Session
               </Button>
-            )}
-            <Button onClick={onNewSession} variant={returnTo ? 'secondary' : undefined} className="w-full">
-              New Session
-            </Button>
-          </>
-        )}
-      </div>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }

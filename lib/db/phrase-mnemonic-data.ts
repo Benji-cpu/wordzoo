@@ -13,8 +13,8 @@ export const PHRASE_MNEMONIC_DATA: Record<string, PhraseMnemonicEntry> = {
 
   'Apa kabar?': {
     phraseBridgeSentence: 'PAPA checks the news — HOW ARE YOU doing today?',
-    compositeSceneDescription: '',
-    compositeImagePrompt: '',
+    compositeSceneDescription: 'A papa bear in reading glasses unfolds a giant newspaper whose headline reads "HOW ARE YOU?" in bold letters. He looks up from the paper with a warm, questioning expression.',
+    compositeImagePrompt: 'A papa bear in reading glasses unfolding a giant newspaper with HOW ARE YOU as the bold headline, looking up warmly over the paper with a questioning expression, cozy morning living room setting, golden light, bold text overlay reading HOW ARE YOU, digital illustration, vibrant colors, slightly surreal, centered composition, single focal point',
   },
   'Nama saya ...': {
     phraseBridgeSentence: 'The LLAMA points at SAWYER\'s name tag — MY NAME IS written right there!',
@@ -28,8 +28,8 @@ export const PHRASE_MNEMONIC_DATA: Record<string, PhraseMnemonicEntry> = {
   },
   'Dari mana?': {
     phraseBridgeSentence: 'The DIARY flips open — WHERE are you FROM?',
-    compositeSceneDescription: '',
-    compositeImagePrompt: '',
+    compositeSceneDescription: 'A magical diary flips open by itself and pages fly out forming a glowing world map. A golden trail traces back to a distant country with a glowing pin, asking "where from?"',
+    compositeImagePrompt: 'A magical diary flipping open with pages flying out forming a glowing world map, a golden dotted trail tracing from a distant location to a glowing pin, wonder atmosphere with swirling light, bold text overlay reading WHERE FROM, digital illustration, vibrant colors, slightly surreal, centered composition, single focal point',
   },
 
   // ── Scene 2: Siapa Itu? (Who's That?) ──────────────────────────────
@@ -51,8 +51,8 @@ export const PHRASE_MNEMONIC_DATA: Record<string, PhraseMnemonicEntry> = {
   },
   'Baik sekali': {
     phraseBridgeSentence: 'SAY to the COLLIE on the BIKE — VERY GOOD boy!',
-    compositeSceneDescription: '',
-    compositeImagePrompt: '',
+    compositeSceneDescription: 'A collie dog rides a bicycle confidently through a sunny park while a person gives it an enthusiastic double thumbs-up. Confetti and golden stars shower the collie in celebration.',
+    compositeImagePrompt: 'A collie dog riding a bicycle confidently through a sunny park, a person giving enthusiastic double thumbs-up in praise, confetti and golden stars exploding around the collie, proud beaming expression on the dog, bold text overlay reading VERY GOOD, digital illustration, vibrant colors, slightly surreal, centered composition, single focal point',
   },
 
   // ── Scene 3: Saya Mau... (I Want...) ───────────────────────────────
@@ -82,18 +82,18 @@ export const PHRASE_MNEMONIC_DATA: Record<string, PhraseMnemonicEntry> = {
 
   'Berapa harganya?': {
     phraseBridgeSentence: 'The BEAR RAPPER spits bars — HOW MUCH IS IT, yo?',
-    compositeSceneDescription: '',
-    compositeImagePrompt: '',
+    compositeSceneDescription: 'A bear dressed as a rapper with gold chains stands at a market stall, mic in hand, rapping at a vendor. Floating price tags with different amounts surround him as he demands to know how much.',
+    compositeImagePrompt: 'A bear wearing a gold chain and backwards cap holding a microphone at a colorful market stall, surrounded by floating price tags showing different amounts, dramatic spotlight, hip-hop aesthetic, vendor looking confused, bold text overlay reading HOW MUCH IS IT, digital illustration, vibrant colors, slightly surreal, centered composition, single focal point',
   },
   'Terlalu mahal': {
     phraseBridgeSentence: 'MA\'s HALL is full of TOO EXPENSIVE treasures!',
-    compositeSceneDescription: '',
-    compositeImagePrompt: '',
+    compositeSceneDescription: 'A grandmother clutches her purse tightly in a grand hall overflowing with antiques and artwork, each with enormous price tags showing astronomical sums. Her eyes are wide with shock.',
+    compositeImagePrompt: 'A grandmother clutching her purse tightly in an opulent hall filled with antiques and paintings each with enormous price tags showing millions, shocked wide-eyed expression, dramatic chandelier lighting, wallet visibly crying, bold text overlay reading TOO EXPENSIVE, digital illustration, vibrant colors, slightly surreal, centered composition, single focal point',
   },
   'Bisa kurang?': {
     phraseBridgeSentence: 'Flash your VISA — CAN YOU LOWER the price?',
-    compositeSceneDescription: '',
-    compositeImagePrompt: '',
+    compositeSceneDescription: 'A person confidently holds up a giant credit card labeled VISA at a market vendor, pointing downward at a price tag that visibly shrinks before their eyes. Both look hopeful.',
+    compositeImagePrompt: 'A person confidently holding up a giant VISA credit card at a market vendor while pointing downward at a price tag that is visibly shrinking and deflating, hopeful expression on both faces, colorful market stall, bold text overlay reading CAN YOU LOWER THE PRICE, digital illustration, vibrant colors, slightly surreal, centered composition, single focal point',
   },
   'Saya mau ini': {
     phraseBridgeSentence: 'SAWYER\'s cat MEOWs at the EENIE-chosen egg — I WANT THIS ONE!',
@@ -110,8 +110,8 @@ export const PHRASE_MNEMONIC_DATA: Record<string, PhraseMnemonicEntry> = {
   },
   'Saya suka ...': {
     phraseBridgeSentence: 'SAWYER gives a thumbs up — I LIKE this!',
-    compositeSceneDescription: '',
-    compositeImagePrompt: '',
+    compositeSceneDescription: 'Tom Sawyer gives an enthusiastic double thumbs-up with a giant glowing heart floating above him. His whole face lights up — he clearly likes something very much.',
+    compositeImagePrompt: 'Tom Sawyer giving enthusiastic double thumbs-up with a giant glowing heart floating above him, bright joyful expression, sparkling golden light effects and small hearts radiating outward, bold text overlay reading I LIKE, digital illustration, vibrant colors, slightly surreal, centered composition, single focal point',
   },
   'Saya tidak suka ...': {
     phraseBridgeSentence: 'SAWYER hides behind the TEA-DOCK — I DON\'T LIKE that at all!',
@@ -120,21 +120,21 @@ export const PHRASE_MNEMONIC_DATA: Record<string, PhraseMnemonicEntry> = {
   },
   'Mau coba?': {
     phraseBridgeSentence: 'The cat MEOWs curiously — WANT TO TRY a bite?',
-    compositeSceneDescription: '',
-    compositeImagePrompt: '',
+    compositeSceneDescription: 'A curious cat wearing a tiny chef hat holds out a small steaming plate of exotic food, tilting its head and meowing as if asking "want to try?" The food smells tantalizingly delicious.',
+    compositeImagePrompt: 'A curious cat wearing a tiny chef hat holding out a small steaming plate of exotic colorful food, tilting its head with big curious eyes and open mouth mid-meow as if offering a taste, golden steam spiraling upward, bold text overlay reading WANT TO TRY, digital illustration, vibrant colors, slightly surreal, centered composition, single focal point',
   },
 
   // ── Scene 6: Di Mana...? (Where Is...?) ────────────────────────────
 
   'Di mana ...?': {
     phraseBridgeSentence: 'Lost in the DIM MANOR — WHERE IS the exit?',
-    compositeSceneDescription: '',
-    compositeImagePrompt: '',
+    compositeSceneDescription: 'A person holds a flickering candle while wandering through a dimly lit manor hallway, surrounded by floating question marks. Shadowy corridors stretch in every direction as they search for where something is.',
+    compositeImagePrompt: 'A person holding a flickering candle wandering through a dim gothic manor hallway with large glowing question marks floating around them, shadowy branching corridors in the background, lost and searching expression, bold text overlay reading WHERE IS, digital illustration, vibrant colors, slightly surreal, centered composition, single focal point',
   },
   'Jalan lurus': {
     phraseBridgeSentence: 'LURE US down the road — GO STRAIGHT ahead!',
-    compositeSceneDescription: '',
-    compositeImagePrompt: '',
+    compositeSceneDescription: 'A giant colorful fishing lure bobs and leads a group of people straight down a perfectly straight road toward a glowing destination on the horizon. Arrow signs confirm: go straight.',
+    compositeImagePrompt: 'A giant colorful fishing lure bobbing and leading a group of people in a perfectly straight line down a long straight road toward a glowing destination on the horizon, large straight-arrow signs along the route, bold text overlay reading GO STRAIGHT, digital illustration, vibrant colors, slightly surreal, centered composition, single focal point',
   },
   'Belok kiri / belok kanan': {
     phraseBridgeSentence: 'The KEY-RING dangles left, the CANNON fires right — TURN LEFT or TURN RIGHT!',
@@ -143,7 +143,7 @@ export const PHRASE_MNEMONIC_DATA: Record<string, PhraseMnemonicEntry> = {
   },
   'Dekat sekali': {
     phraseBridgeSentence: 'SAY to the COLLIE — VERY CLOSE, almost there!',
-    compositeSceneDescription: '',
-    compositeImagePrompt: '',
+    compositeSceneDescription: 'A collie guide dog looks back encouragingly at a person who is just steps away from a glowing sparkly destination. The gap is nearly closed — almost there!',
+    compositeImagePrompt: 'A collie guide dog looking back encouragingly at a person who is just a few steps away from a glowing sparkly destination, a nearly-closed gap between them and the goal, anticipation and excitement, golden glow from the destination ahead, bold text overlay reading VERY CLOSE, digital illustration, vibrant colors, slightly surreal, centered composition, single focal point',
   },
 };

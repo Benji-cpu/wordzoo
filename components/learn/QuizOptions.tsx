@@ -61,7 +61,7 @@ export function QuizOptions({ wordText, wordId, correctAnswer, distractors, onCo
           } else if (selected && option === correctAnswer) {
             className += 'bg-green-500/20 border-green-500 text-green-400';
           } else {
-            className += 'bg-card-surface border-card-border text-foreground hover:bg-white/10 active:scale-95';
+            className += 'bg-card-surface border-card-border text-foreground hover:bg-surface-inset active:scale-95';
           }
 
           return (

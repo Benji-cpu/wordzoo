@@ -48,7 +48,7 @@ export function FlagButton({ mnemonicId }: FlagButtonProps) {
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="p-1.5 rounded-lg text-text-secondary hover:bg-white/10 transition-colors"
+        className="p-1.5 rounded-lg text-text-secondary hover:bg-surface-inset transition-colors"
         title="Report"
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -64,7 +64,7 @@ export function FlagButton({ mnemonicId }: FlagButtonProps) {
               key={r.value}
               onClick={() => handleFlag(r.value)}
               disabled={loading}
-              className="block w-full text-left px-3 py-1.5 text-sm text-text-secondary hover:text-foreground hover:bg-white/5 rounded transition-colors"
+              className="block w-full text-left px-3 py-1.5 text-sm text-text-secondary hover:text-foreground hover:bg-surface-inset rounded transition-colors"
             >
               {r.label}
             </button>

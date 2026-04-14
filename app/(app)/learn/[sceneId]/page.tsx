@@ -74,6 +74,10 @@ export default async function LearnPage({ params }: PageProps) {
   const session = await auth();
   const userId = session?.user?.id ?? null;
 
+  // Scene position in path (computed if logged in)
+  let sceneNumber: number | undefined;
+  let totalScenes: number | undefined;
+
   // Auto-advance: if user is logged in and scene is complete, redirect to next incomplete
   if (userId) {
     // Auto-enroll user in this path (fire-and-forget)
@@ -97,6 +101,11 @@ export default async function LearnPage({ params }: PageProps) {
         }
       }
     }
+
+    // Compute scene position in path
+    const sceneIndex = sceneMastery.findIndex(s => s.id === sceneId);
+    sceneNumber = sceneIndex >= 0 ? sceneIndex + 1 : undefined;
+    totalScenes = sceneMastery.length;
   }
 
   // Fetch next scene for navigation
@@ -115,6 +124,8 @@ export default async function LearnPage({ params }: PageProps) {
         words={words}
         nextScene={nextScene}
         pathId={scene.path_id}
+        sceneNumber={sceneNumber}
+        totalScenes={totalScenes}
       />
     );
   }
@@ -161,6 +172,8 @@ export default async function LearnPage({ params }: PageProps) {
       nextScene={nextScene}
       pathId={scene.path_id}
       userName={session?.user?.name ?? null}
+      sceneNumber={sceneNumber}
+      totalScenes={totalScenes}
     />
   );
 }

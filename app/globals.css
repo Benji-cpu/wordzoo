@@ -2,28 +2,76 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ============================================
+   Design Tokens — Phase 1-5 Impeccable Upgrade
+   ============================================ */
+
 :root {
-  --background: #FFFFFF;
-  --foreground: #0F172A;
-  --text-secondary: #64748B;
-  --card-surface: rgba(0, 0, 0, 0.03);
-  --card-border: rgba(0, 0, 0, 0.08);
-  --glass-bg: rgba(0, 0, 0, 0.03);
-  --glass-border: rgba(0, 0, 0, 0.08);
+  /* Colors — warm neutrals (Phase 2) */
+  --background: #FAFAF8;
+  --foreground: #1C1917;
+  --text-secondary: #78716C;
+  --card-surface: #FFFFFF;
+  --card-border: rgba(0, 0, 0, 0.06);
+  --surface-raised: #FFFFFF;
+  --surface-inset: #F5F5F0;
+  --border-subtle: rgba(0, 0, 0, 0.04);
+  --border-default: rgba(0, 0, 0, 0.08);
+
+  /* Accents */
   --accent-indonesian: #F97316;
   --accent-spanish: #EF4444;
   --accent-japanese: #F472B6;
   --accent-default: #3B82F6;
+
+  /* Semantic colors (Phase 2) */
+  --color-success: #22C55E;
+  --color-error: #EF4444;
+  --color-warning: #F59E0B;
+
+  /* Spacing scale — 4pt grid (Phase 3) */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 24px;
+  --space-2xl: 32px;
+  --space-3xl: 48px;
+
+  /* Typography scale — 1.25 ratio (Phase 1) */
+  --text-caption: 0.6875rem;
+  --text-body-sm: 0.875rem;
+  --text-body: 1rem;
+  --text-body-lg: 1.125rem;
+  --text-heading-sm: 1.25rem;
+  --text-heading: 1.5rem;
+  --text-heading-lg: 1.875rem;
+  --text-display: 2.25rem;
+
+  /* Animation — standardized (Phase 5) */
+  --ease-default: cubic-bezier(0.25, 0.1, 0.25, 1.0);
+  --duration-micro: 150ms;
+  --duration-transition: 250ms;
+  --duration-reveal: 400ms;
+
+  /* Card shadows (Phase 4) */
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.04);
+  --shadow-card-hover: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .dark {
-  --background: #0a1628;
-  --foreground: #F1F5F9;
-  --text-secondary: #94A3B8;
-  --card-surface: rgba(255, 255, 255, 0.05);
+  --background: #141210;
+  --foreground: #F5F5F0;
+  --text-secondary: #A8A29E;
+  --card-surface: #1C1A17;
   --card-border: rgba(255, 255, 255, 0.08);
-  --glass-bg: rgba(255, 255, 255, 0.07);
-  --glass-border: rgba(255, 255, 255, 0.12);
+  --surface-raised: #1C1A17;
+  --surface-inset: #0F0E0C;
+  --border-subtle: rgba(255, 255, 255, 0.04);
+  --border-default: rgba(255, 255, 255, 0.08);
+
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.2);
+  --shadow-card-hover: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 @theme inline {
@@ -32,19 +80,21 @@
   --color-text-secondary: var(--text-secondary);
   --color-card-surface: var(--card-surface);
   --color-card-border: var(--card-border);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-inset: var(--surface-inset);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-default: var(--border-default);
   --color-accent-id: var(--accent-indonesian);
   --color-accent-es: var(--accent-spanish);
   --color-accent-ja: var(--accent-japanese);
   --color-accent-default: var(--accent-default);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-nunito);
   --font-mono: var(--font-geist-mono);
 
-  --animate-fade-in: fade-in 0.3s ease-out;
-  --animate-slide-up: slide-up 0.3s ease-out;
-  --animate-slide-in-right: slide-in-right 0.3s ease-out;
-  --animate-card-flip: card-flip 0.5s ease-in-out;
-  --animate-bounce-sm: bounce-sm 0.3s ease-out;
-  --animate-pulse-glow: pulse-glow 2s ease-in-out infinite;
+  --animate-fade-in: fade-in 0.25s var(--ease-default);
+  --animate-slide-up: slide-up 0.25s var(--ease-default);
+  --animate-slide-in-right: slide-in-right 0.25s var(--ease-default);
+  --animate-card-flip: card-flip 0.4s var(--ease-default);
   --animate-typing-dot: typing-dot 1.4s infinite ease-in-out both;
 }
 
@@ -54,12 +104,12 @@
 }
 
 @keyframes slide-up {
-  from { opacity: 0; transform: translateY(16px); }
+  from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes slide-in-right {
-  from { opacity: 0; transform: translateX(24px); }
+  from { opacity: 0; transform: translateX(12px); }
   to { opacity: 1; transform: translateX(0); }
 }
 
@@ -69,34 +119,23 @@
   100% { transform: rotateY(0deg); }
 }
 
-@keyframes bounce-sm {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(0.95); }
-}
-
 @keyframes typing-dot {
   0%, 80%, 100% { transform: scale(0.4); opacity: 0.3; }
   40% { transform: scale(1); opacity: 0.8; }
 }
 
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.3); }
-  50% { box-shadow: 0 0 20px 4px rgba(249, 115, 22, 0.15); }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-nunito), system-ui, -apple-system, sans-serif;
 }
 
-/* Glassmorphism card utility */
+/* Solid card surface — replaces glassmorphism (Phase 4) */
 .glass-card {
-  background: var(--glass-bg);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid var(--glass-border);
+  background: var(--card-surface);
+  border: 1px solid var(--card-border);
   border-radius: 16px;
+  box-shadow: var(--shadow-card);
 }
 
 /* Hide scrollbar for clean UI */
@@ -119,11 +158,11 @@ body {
 }
 
 .animate-fade-in-up {
-  animation: fade-in-up 0.3s ease-out forwards;
+  animation: fade-in-up 0.25s var(--ease-default) forwards;
 }
 
 @keyframes stagger-in {
-  from { opacity: 0; transform: translateY(12px); }
+  from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
@@ -136,5 +175,14 @@ body {
 }
 
 .animate-shake {
-  animation: shake 0.4s ease-out;
+  animation: shake 0.4s var(--ease-default);
+}
+
+/* Respect reduced motion preference (Phase 5) */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

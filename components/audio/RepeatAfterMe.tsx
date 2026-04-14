@@ -69,7 +69,7 @@ export function RepeatAfterMe({ wordId, languageCode, onResult, className = '' }
         className={`relative inline-flex items-center justify-center rounded-full p-3 transition-colors ${
           state === 'listening'
             ? 'bg-red-500/20 text-red-400'
-            : 'bg-white/10 text-text-secondary hover:bg-white/15 active:bg-white/20'
+            : 'bg-surface-inset text-text-secondary hover:bg-surface-inset active:bg-surface-inset'
         } disabled:opacity-70`}
         aria-label={state === 'listening' ? 'Listening...' : 'Start pronunciation practice'}
       >

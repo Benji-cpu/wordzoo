@@ -2,8 +2,10 @@ import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { getDueWords, getDuePhrases } from '@/lib/srs/engine';
 import { getAllLearnedWordsForPractice, getWordFamilies } from '@/lib/db/queries';
+import { getPhraseWordsWithMnemonics } from '@/lib/db/scene-flow-queries';
 import { ReviewClient } from '@/components/learn/ReviewClient';
 import type { LearnWordFamily } from '@/components/learn/LearnClient';
+import type { PhraseWordMnemonic } from '@/types/database';
 
 export default async function ReviewPage() {
   const session = await auth();
@@ -35,9 +37,27 @@ export default async function ReviewPage() {
     })
   );
 
+  // Fetch word-level mnemonics for all due phrases
+  const phraseIds = duePhrases.map(p => p.phrase_id);
+  const phraseWordRows = await getPhraseWordsWithMnemonics(phraseIds, session.user.id);
+  const phraseWordMap: Record<string, PhraseWordMnemonic[]> = {};
+  for (const pw of phraseWordRows) {
+    if (!phraseWordMap[pw.phrase_id]) phraseWordMap[pw.phrase_id] = [];
+    phraseWordMap[pw.phrase_id].push({
+      word_id: pw.word_id,
+      word_text: pw.word_text,
+      word_en: pw.word_en,
+      part_of_speech: pw.part_of_speech,
+      position: pw.position,
+      keyword_text: pw.keyword_text,
+      bridge_sentence: pw.bridge_sentence,
+      image_url: pw.image_url,
+    });
+  }
+
   return (
-    <div className="max-w-lg mx-auto">
-      <ReviewClient dueWords={dueWords} duePhrases={duePhrases} practiceWords={practiceWords} wordFamiliesMap={wordFamiliesMap} />
+    <div className="max-w-lg mx-auto -mt-2">
+      <ReviewClient dueWords={dueWords} duePhrases={duePhrases} practiceWords={practiceWords} wordFamiliesMap={wordFamiliesMap} phraseWordMap={phraseWordMap} />
     </div>
   );
 }

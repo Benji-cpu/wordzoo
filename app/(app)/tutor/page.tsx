@@ -48,7 +48,14 @@ export default function TutorPage() {
     }
   }, [sessionId]);
 
-  const { messages, isStreaming, error, sendMessage, addGreeting, loadMessages } = useTutorChat(sessionId, handleEndSession);
+  const { messages, isStreaming, error, limitReached, sendMessage, addGreeting, loadMessages } = useTutorChat(sessionId, handleEndSession);
+
+  // When limit is reached, auto-end the session to show summary
+  useEffect(() => {
+    if (limitReached && sessionId && !summaryData && !isEnding) {
+      handleEndSession();
+    }
+  }, [limitReached, sessionId, summaryData, isEnding, handleEndSession]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -212,15 +219,21 @@ export default function TutorPage() {
     return (
       <div className="max-w-lg mx-auto px-4 pt-8 text-center">
         <h1 className="text-2xl font-bold text-foreground">Tutor</h1>
-        <p className="mt-2 text-text-secondary">
+        <p className="mt-2 text-text-secondary mb-4">
           Start a learning path first to use the tutor.
         </p>
+        <a
+          href="/paths"
+          className="inline-block px-5 py-3 rounded-xl font-medium bg-accent-default text-white hover:brightness-110 transition-all"
+        >
+          Choose a Learning Path
+        </a>
       </div>
     );
   }
 
   return (
-    <div className="max-w-lg mx-auto -mt-4 -mb-20 h-[calc(100dvh-3.5rem)]">
+    <div className="max-w-lg mx-auto -mt-4 -mb-20 h-[calc(100dvh-3.5rem)] overflow-hidden">
       <TutorChat
         languageId={languageId}
         langCode={langCode}
@@ -241,6 +254,7 @@ export default function TutorPage() {
         isLoadingRecommendation={isLoadingRecommendation}
         onStartGuidedSession={handleStartGuidedSession}
         returnTo={returnTo}
+        limitReached={limitReached}
       />
     </div>
   );

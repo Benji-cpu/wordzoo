@@ -62,7 +62,7 @@ export function CommunityClient({ wordId, initialItems, initialTotal, userId, us
             className={`px-4 py-1.5 rounded-full text-sm transition-colors ${
               sort === s
                 ? 'bg-accent-default text-white'
-                : 'bg-white/5 text-text-secondary hover:bg-white/10'
+                : 'bg-surface-inset text-text-secondary hover:bg-surface-inset'
             }`}
           >
             {s === 'top' ? 'Top' : 'Newest'}
@@ -94,7 +94,7 @@ export function CommunityClient({ wordId, initialItems, initialTotal, userId, us
           <button
             onClick={handleLoadMore}
             disabled={loading}
-            className="px-6 py-2 rounded-xl text-sm bg-white/5 text-text-secondary hover:bg-white/10 transition-colors disabled:opacity-50"
+            className="px-6 py-2 rounded-xl text-sm bg-surface-inset text-text-secondary hover:bg-surface-inset transition-colors disabled:opacity-50"
           >
             {loading ? 'Loading...' : 'Load More'}
           </button>

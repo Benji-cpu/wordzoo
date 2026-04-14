@@ -62,7 +62,7 @@ export default function LanguagePicker({ userName, onSelect }: LanguagePickerPro
               }}
               transition={{ delay: i * 0.1, type: 'spring', stiffness: 200, damping: 20 }}
               onClick={() => handleSelect(lang)}
-              className="flex items-center gap-4 rounded-2xl bg-card-surface border border-card-border p-5 text-left transition-colors hover:border-white/20 active:bg-white/10 focus-visible:ring-2 focus-visible:ring-accent-default focus-visible:outline-none"
+              className="flex items-center gap-4 rounded-2xl bg-card-surface border border-card-border p-5 text-left transition-colors hover:border-card-border active:bg-surface-inset focus-visible:ring-2 focus-visible:ring-accent-default focus-visible:outline-none"
             >
               <span className="text-4xl">{lang.flagEmoji}</span>
               <div>
