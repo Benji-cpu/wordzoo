@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Card } from '@/components/ui/Card';
 import { PronunciationButton } from '@/components/audio/SpeakerButton';
-import { playWordPronunciation } from '@/lib/audio/pronunciation';
+import { playWordPronunciation, isAudioUnlocked } from '@/lib/audio/pronunciation';
 
 function renderBridgeSentence(sentence: string) {
   // Split on ALL-CAPS words (2+ letters) and render them highlighted
@@ -53,7 +53,7 @@ export function MnemonicCard({
 
   // Auto-play pronunciation when card appears
   useEffect(() => {
-    if (wordId && !hasAutoPlayed.current) {
+    if (wordId && !hasAutoPlayed.current && isAudioUnlocked()) {
       hasAutoPlayed.current = true;
       playWordPronunciation(wordId).catch(() => {});
     }

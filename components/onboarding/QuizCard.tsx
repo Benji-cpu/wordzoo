@@ -3,12 +3,14 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import type { OnboardingWord } from '@/lib/onboarding/data';
+import { PronunciationButton } from '@/components/audio/SpeakerButton';
 
 interface QuizCardProps {
   word: OnboardingWord;
   languageName: string;
   onAnswer: (correct: boolean, attempts: number) => void;
   promptText?: string;
+  languageCode?: string;
 }
 
 function shuffle<T>(arr: T[]): T[] {
@@ -20,7 +22,7 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-export default function QuizCard({ word, languageName, onAnswer, promptText }: QuizCardProps) {
+export default function QuizCard({ word, languageName, onAnswer, promptText, languageCode }: QuizCardProps) {
   const [selected, setSelected] = useState<string | null>(null);
   const [attempts, setAttempts] = useState(0);
   const [showHint, setShowHint] = useState(false);
@@ -70,6 +72,13 @@ export default function QuizCard({ word, languageName, onAnswer, promptText }: Q
       {word.romanization && (
         <p className="text-lg text-text-secondary -mt-4">{word.romanization}</p>
       )}
+
+      <PronunciationButton
+        wordId={word.text}
+        text={word.romanization || word.text}
+        languageCode={languageCode}
+        className="-mt-4"
+      />
 
       <p className="text-text-secondary">What does this mean?</p>
 

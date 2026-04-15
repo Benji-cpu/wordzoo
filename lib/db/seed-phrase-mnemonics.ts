@@ -10,6 +10,7 @@ const onlyPhrases = process.argv.find(a => a.startsWith('--only='))
   ?.replace('--only=', '')
   .split(',')
   .map(w => w.trim());
+const forceRegenerate = process.argv.includes('--force');
 
 async function seedPhraseMnemonics() {
   const databaseUrl = process.env.DATABASE_URL;
@@ -96,8 +97,8 @@ async function seedPhraseMnemonics() {
       continue;
     }
 
-    // For non-selective mode, skip if already seeded
-    if (!onlyPhrases && phrase.phrase_bridge_sentence) {
+    // For non-selective mode, skip if already seeded (unless --force)
+    if (!onlyPhrases && !forceRegenerate && phrase.phrase_bridge_sentence) {
       console.log('  Skipping -- already has bridge sentence');
       skipCount++;
       continue;

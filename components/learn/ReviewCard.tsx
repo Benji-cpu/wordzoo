@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/Card';
 import { FeedbackButtons } from '@/components/learn/FeedbackButtons';
 import { RatingButtons } from '@/components/learn/RatingButtons';
 import { PronunciationButton } from '@/components/audio/SpeakerButton';
-import { playWordPronunciation } from '@/lib/audio/pronunciation';
+import { playWordPronunciation, isAudioUnlocked } from '@/lib/audio/pronunciation';
 import { SwipeIndicators, getSwipeBorderStyle } from '@/components/learn/SwipeIndicators';
 import { CollapsibleWordFamily } from '@/components/learn/WordFamilyCard';
 import type { LearnWordFamily } from '@/components/learn/LearnClient';
@@ -74,7 +74,7 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, w
 
   // Auto-play pronunciation when card appears in recognition mode
   useEffect(() => {
-    if (mode === 'recognition') {
+    if (mode === 'recognition' && isAudioUnlocked()) {
       playWordPronunciation(word.id, {
         audioUrl: word.pronunciation_audio_url,
         text: word.text,
@@ -84,7 +84,7 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, w
 
   // Auto-play pronunciation when answer is revealed
   useEffect(() => {
-    if (revealed) {
+    if (revealed && isAudioUnlocked()) {
       playWordPronunciation(word.id, {
         audioUrl: word.pronunciation_audio_url,
         text: word.text,

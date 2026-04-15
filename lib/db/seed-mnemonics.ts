@@ -29,6 +29,7 @@ const onlyWords = process.argv.find(a => a.startsWith('--only='))
   .split(',')
   .map(w => w.trim());
 const langFilter = process.argv.find(a => a.startsWith('--lang='))?.replace('--lang=', '');
+const forceRegenerate = process.argv.includes('--force');
 
 async function seedMnemonics() {
   const databaseUrl = process.env.DATABASE_URL;
@@ -106,8 +107,8 @@ async function seedMnemonics() {
     }
 
     try {
-      // For --only mode, delete existing mnemonic first (re-seeding)
-      if (onlyWords) {
+      // For --only or --force mode, delete existing mnemonic first (re-seeding)
+      if (onlyWords || forceRegenerate) {
         await sql`DELETE FROM mnemonics WHERE word_id = ${word.id} AND user_id IS NULL`;
         console.log('  Deleted existing shared mnemonic (re-seeding)');
       } else {

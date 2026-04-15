@@ -5,6 +5,69 @@ const STORAGE_KEY = 'wordzoo_playback_speed';
 const wordCache = new Map<string, WordWithMnemonic>();
 let currentAudio: HTMLAudioElement | null = null;
 
+// ---- Audio Unlock (browser autoplay policy) ----
+// Browsers block HTMLAudioElement.play() and speechSynthesis until a user gesture.
+// We listen for the first interaction, play a silent sound to "unlock" audio,
+// and then all subsequent play() calls (including from useEffect) succeed.
+
+let _audioUnlocked = false;
+let _listenerAttached = false;
+
+/** Whether the browser audio context has been unlocked by a user gesture. */
+export function isAudioUnlocked(): boolean {
+  return _audioUnlocked;
+}
+
+/** Play silent audio + empty utterance to satisfy browser autoplay policy. */
+export function unlockAudio(): void {
+  if (_audioUnlocked) return;
+  _audioUnlocked = true;
+
+  // 1. Silent WAV via HTMLAudioElement
+  try {
+    const silence = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=';
+    const audio = new Audio(silence);
+    audio.volume = 0;
+    audio.play().then(() => audio.pause()).catch(() => {});
+  } catch {
+    // ignore
+  }
+
+  // 2. Empty speechSynthesis utterance
+  try {
+    if (typeof speechSynthesis !== 'undefined') {
+      const utt = new SpeechSynthesisUtterance('');
+      utt.volume = 0;
+      speechSynthesis.speak(utt);
+      speechSynthesis.cancel();
+    }
+  } catch {
+    // ignore
+  }
+}
+
+/**
+ * Attach a one-time listener that unlocks audio on the first user interaction.
+ * Safe to call multiple times — only one listener is ever attached.
+ * Also pre-warms TTS voices after unlock.
+ */
+export function attachAudioUnlockListener(): void {
+  if (_listenerAttached || typeof window === 'undefined') return;
+  _listenerAttached = true;
+
+  const events = ['click', 'touchstart', 'keydown'] as const;
+  function onInteraction() {
+    unlockAudio();
+    events.forEach((e) => window.removeEventListener(e, onInteraction, true));
+
+    // Pre-warm TTS voices so they're ready for the first real playback
+    if (typeof speechSynthesis !== 'undefined') {
+      speechSynthesis.getVoices();
+    }
+  }
+  events.forEach((e) => window.addEventListener(e, onInteraction, { capture: true, once: false }));
+}
+
 export function getPlaybackSpeed(): PlaybackSpeed {
   if (typeof window === 'undefined') return 1.0;
   const stored = localStorage.getItem(STORAGE_KEY);

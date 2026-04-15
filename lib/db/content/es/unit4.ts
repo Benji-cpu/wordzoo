@@ -16,62 +16,62 @@ const scene4_1: DialogueSceneData = {
     {
       id: 'e2000000-0023-4000-8000-000000000001',
       speaker: 'Dependienta',
-      text_target: '!Buenas tardes! ?En que puedo ayudarle?',
+      text_target: '¡Buenas tardes! ¿En qué puedo ayudarle?',
       text_en: 'Good afternoon! How can I help you?',
     },
     {
       id: 'e2000000-0023-4000-8000-000000000002',
       speaker: 'You',
-      text_target: 'Hola, quiero una camisa. ?Tiene en color azul?',
+      text_target: 'Hola, quiero una camisa. ¿Tiene en color azul?',
       text_en: 'Hello, I want a shirt. Do you have it in blue?',
     },
     {
       id: 'e2000000-0023-4000-8000-000000000003',
       speaker: 'Dependienta',
-      text_target: '!Si, claro! Tenemos azul, rojo, negro y blanco. ?Que talla necesita?',
+      text_target: '¡Sí, claro! Tenemos azul, rojo, negro y blanco. ¿Qué talla necesita?',
       text_en: 'Yes, of course! We have blue, red, black, and white. What size do you need?',
     },
     {
       id: 'e2000000-0023-4000-8000-000000000004',
       speaker: 'You',
-      text_target: 'Talla mediana, por favor. ?Puedo probarmela?',
+      text_target: 'Talla mediana, por favor. ¿Puedo probármela?',
       text_en: 'Medium size, please. Can I try it on?',
     },
     {
       id: 'e2000000-0023-4000-8000-000000000005',
       speaker: 'Dependienta',
-      text_target: '!Claro! El probador esta a la derecha. Tambien tenemos pantalones muy bonitos.',
+      text_target: '¡Claro! El probador está a la derecha. También tenemos pantalones muy bonitos.',
       text_en: 'Of course! The fitting room is on the right. We also have very nice pants.',
     },
     {
       id: 'e2000000-0023-4000-8000-000000000006',
       speaker: 'You',
-      text_target: 'La camisa es perfecta. ?Cuanto cuesta?',
+      text_target: 'La camisa es perfecta. ¿Cuánto cuesta?',
       text_en: 'The shirt is perfect. How much does it cost?',
     },
   ],
   phrases: [
     {
       id: 'f2000000-0023-4000-8000-000000000001',
-      text_target: '?Tiene en color azul?',
+      text_target: '¿Tiene en color azul?',
       text_en: 'Do you have it in blue?',
       literal_translation: 'Have-you in color blue?',
       usage_note:
-        'Use "?Tiene en color ...?" + color name to ask if something comes in a specific color.',
+        'Use "¿Tiene en color ...?" + color name to ask if something comes in a specific color.',
       wordTexts: ['tiene', 'color', 'azul'],
     },
     {
       id: 'f2000000-0023-4000-8000-000000000002',
-      text_target: '?Que talla necesita?',
+      text_target: '¿Qué talla necesita?',
       text_en: 'What size do you need?',
       literal_translation: 'What size need-you?',
       usage_note:
-        '"Talla" is the word for clothing size. Common sizes: pequena, mediana, grande.',
+        '"Talla" is the word for clothing size. Common sizes: pequeña, mediana, grande.',
       wordTexts: ['talla', 'necesito'],
     },
     {
       id: 'f2000000-0023-4000-8000-000000000003',
-      text_target: '?Puedo probarmela?',
+      text_target: '¿Puedo probármela?',
       text_en: 'Can I try it on?',
       literal_translation: 'Can-I try-it-on?',
       usage_note:
@@ -100,11 +100,11 @@ const scene4_1: DialogueSceneData = {
   patterns: [
     {
       id: '0b200000-0023-4000-8000-000000000001',
-      pattern_template: '?Tiene en color ___?',
+      pattern_template: '¿Tiene en color ___?',
       pattern_en: 'Do you have it in blue?',
       explanation:
         '"Color" + the color name asks about available colors. "Azul" means blue.',
-      prompt: '?Tiene en color ___?',
+      prompt: '¿Tiene en color ___?',
       hint_en: 'Do you have it in blue?',
       correct_answer: 'azul',
       distractors: ['rojo', 'negro', 'blanco'],
@@ -122,20 +122,20 @@ const scene4_1: DialogueSceneData = {
     },
     {
       id: '0b200000-0023-4000-8000-000000000003',
-      pattern_template: '?Puedo ___?',
+      pattern_template: '¿Puedo ___?',
       pattern_en: 'Can I try it on?',
       explanation:
         '"Puedo" means "can I." Follow with an infinitive verb to ask permission.',
-      prompt: '?Puedo ___?',
+      prompt: '¿Puedo ___?',
       hint_en: 'Can I try it on?',
-      correct_answer: 'probarmela',
+      correct_answer: 'probármela',
       distractors: ['comprar', 'pagar', 'ver'],
     },
   ],
   newWords: [
     { id: 'b2000000-0001-4000-8000-000000000138', text: 'ropa', meaning_en: 'clothes / clothing', part_of_speech: 'noun' },
     { id: 'b2000000-0001-4000-8000-000000000139', text: 'camisa', meaning_en: 'shirt', part_of_speech: 'noun' },
-    { id: 'b2000000-0001-4000-8000-000000000140', text: 'pantalon', meaning_en: 'pants / trousers', part_of_speech: 'noun' },
+    { id: 'b2000000-0001-4000-8000-000000000140', text: 'pantalón', meaning_en: 'pants / trousers', part_of_speech: 'noun' },
     { id: 'b2000000-0001-4000-8000-000000000141', text: 'talla', meaning_en: 'size (clothing)', part_of_speech: 'noun' },
     { id: 'b2000000-0001-4000-8000-000000000142', text: 'color', meaning_en: 'color', part_of_speech: 'noun' },
     { id: 'b2000000-0001-4000-8000-000000000143', text: 'rojo', meaning_en: 'red', part_of_speech: 'adjective' },
@@ -147,17 +147,17 @@ const scene4_1: DialogueSceneData = {
   existingWordTexts: [
     'quiero', 'por favor', 'si', 'hola', 'bueno',
     // From Unit 1:
-    'tiene', 'necesito', 'grande', 'pequena', 'bonito', 'derecha',
+    'tiene', 'necesito', 'grande', 'pequeña', 'bonito', 'derecha',
     // From Unit 2:
-    'cuanto cuesta',
+    'cuánto cuesta',
   ],
 };
 
-// ── Scene 4.2: En el mercado de artesanias (Souvenir/Craft Market) ──
+// ── Scene 4.2: En el mercado de artesanías (Souvenir/Craft Market) ──
 
 const scene4_2: DialogueSceneData = {
   id: 'd2000000-0001-4000-8000-000000000024',
-  title: 'En el mercado de artesanias',
+  title: 'En el mercado de artesanías',
   description: 'Browsing and bargaining at a souvenir market',
   scene_context:
     'You visit a colorful craft market to find souvenirs for your friends and family. A vendor shows you handmade items and you negotiate a price. Practice bargaining and complimenting handmade goods.',
@@ -166,13 +166,13 @@ const scene4_2: DialogueSceneData = {
     {
       id: 'e2000000-0024-4000-8000-000000000001',
       speaker: 'Vendedor',
-      text_target: '!Bienvenido! Mire, todo hecho a mano. ?Busca un regalo?',
+      text_target: '¡Bienvenido! Mire, todo hecho a mano. ¿Busca un regalo?',
       text_en: 'Welcome! Look, everything handmade. Are you looking for a gift?',
     },
     {
       id: 'e2000000-0024-4000-8000-000000000002',
       speaker: 'You',
-      text_target: 'Si, quiero un recuerdo bonito. ?Cuanto cuesta este?',
+      text_target: 'Sí, quiero un recuerdo bonito. ¿Cuánto cuesta este?',
       text_en: 'Yes, I want a nice souvenir. How much does this one cost?',
     },
     {
@@ -184,26 +184,26 @@ const scene4_2: DialogueSceneData = {
     {
       id: 'e2000000-0024-4000-8000-000000000004',
       speaker: 'You',
-      text_target: 'Es demasiado caro. ?Puede hacer un descuento?',
+      text_target: 'Es demasiado caro. ¿Puede hacer un descuento?',
       text_en: 'It is too expensive. Can you give a discount?',
     },
     {
       id: 'e2000000-0024-4000-8000-000000000005',
       speaker: 'Vendedor',
-      text_target: 'Mi ultimo precio es veinte euros. Es hecho a mano, muy buena calidad.',
+      text_target: 'Mi último precio es veinte euros. Es hecho a mano, muy buena calidad.',
       text_en: 'My last price is twenty euros. It is handmade, very good quality.',
     },
     {
       id: 'e2000000-0024-4000-8000-000000000006',
       speaker: 'You',
-      text_target: 'Bueno, lo quiero. ?Puedo pagar con tarjeta?',
+      text_target: 'Bueno, lo quiero. ¿Puedo pagar con tarjeta?',
       text_en: 'Okay, I want it. Can I pay with a card?',
     },
   ],
   phrases: [
     {
       id: 'f2000000-0024-4000-8000-000000000001',
-      text_target: '?Busca un regalo?',
+      text_target: '¿Busca un regalo?',
       text_en: 'Are you looking for a gift?',
       literal_translation: 'Look-for-you a gift?',
       usage_note:
@@ -221,7 +221,7 @@ const scene4_2: DialogueSceneData = {
     },
     {
       id: 'f2000000-0024-4000-8000-000000000003',
-      text_target: '?Puede hacer un descuento?',
+      text_target: '¿Puede hacer un descuento?',
       text_en: 'Can you give a discount?',
       literal_translation: 'Can-you make a discount?',
       usage_note:
@@ -230,12 +230,12 @@ const scene4_2: DialogueSceneData = {
     },
     {
       id: 'f2000000-0024-4000-8000-000000000004',
-      text_target: 'Mi ultimo precio',
+      text_target: 'Mi último precio',
       text_en: 'My last price',
       literal_translation: 'My last price',
       usage_note:
-        'Vendors say this when they give their final offer. "Ultimo" means last or final.',
-      wordTexts: ['ultimo', 'precio'],
+        'Vendors say this when they give their final offer. "Último" means last or final.',
+      wordTexts: ['último', 'precio'],
     },
     {
       id: 'f2000000-0024-4000-8000-000000000005',
@@ -257,26 +257,26 @@ const scene4_2: DialogueSceneData = {
       prompt: 'Es ___ caro.',
       hint_en: 'It is too expensive.',
       correct_answer: 'demasiado',
-      distractors: ['muy', 'poco', 'mas'],
+      distractors: ['muy', 'poco', 'más'],
     },
     {
       id: '0b200000-0024-4000-8000-000000000002',
-      pattern_template: '?Puede hacer un ___?',
+      pattern_template: '¿Puede hacer un ___?',
       pattern_en: 'Can you give a discount?',
       explanation:
-        '"Descuento" means "discount." Ask "?Puede hacer un descuento?" to bargain politely.',
-      prompt: '?Puede hacer un ___?',
+        '"Descuento" means "discount." Ask "¿Puede hacer un descuento?" to bargain politely.',
+      prompt: '¿Puede hacer un ___?',
       hint_en: 'Can you give a discount?',
       correct_answer: 'descuento',
       distractors: ['precio', 'regalo', 'recuerdo'],
     },
     {
       id: '0b200000-0024-4000-8000-000000000003',
-      pattern_template: '?Puedo ___ con tarjeta?',
+      pattern_template: '¿Puedo ___ con tarjeta?',
       pattern_en: 'Can I pay with a card?',
       explanation:
-        '"Pagar" means "to pay." Use "?Puedo pagar con ...?" to ask about payment methods.',
-      prompt: '?Puedo ___ con tarjeta?',
+        '"Pagar" means "to pay." Use "¿Puedo pagar con ...?" to ask about payment methods.',
+      prompt: '¿Puedo ___ con tarjeta?',
       hint_en: 'Can I pay with a card?',
       correct_answer: 'pagar',
       distractors: ['comprar', 'tener', 'hacer'],
@@ -290,7 +290,7 @@ const scene4_2: DialogueSceneData = {
     { id: 'b2000000-0001-4000-8000-000000000152', text: 'descuento', meaning_en: 'discount', part_of_speech: 'noun' },
     { id: 'b2000000-0001-4000-8000-000000000153', text: 'demasiado', meaning_en: 'too / too much', part_of_speech: 'adverb' },
     { id: 'b2000000-0001-4000-8000-000000000154', text: 'mejor', meaning_en: 'better / best', part_of_speech: 'adjective' },
-    { id: 'b2000000-0001-4000-8000-000000000155', text: 'ultimo', meaning_en: 'last / final', part_of_speech: 'adjective' },
+    { id: 'b2000000-0001-4000-8000-000000000155', text: 'último', meaning_en: 'last / final', part_of_speech: 'adjective' },
     { id: 'b2000000-0001-4000-8000-000000000156', text: 'pagar', meaning_en: 'to pay', part_of_speech: 'verb' },
     { id: 'b2000000-0001-4000-8000-000000000157', text: 'tarjeta', meaning_en: 'card (credit/debit)', part_of_speech: 'noun' },
   ],
@@ -299,7 +299,7 @@ const scene4_2: DialogueSceneData = {
     // From Unit 1:
     'bonito', 'este', 'muy', 'bienvenido',
     // From Unit 2:
-    'cuanto cuesta',
+    'cuánto cuesta',
     // From Unit 3:
     'barato',
   ],
@@ -318,44 +318,44 @@ const scene4_3: DialogueSceneData = {
     {
       id: 'e2000000-0025-4000-8000-000000000001',
       speaker: 'Cajero',
-      text_target: 'El total son treinta y cinco pesos. ?Como quiere pagar?',
+      text_target: 'El total son treinta y cinco pesos. ¿Cómo quiere pagar?',
       text_en: 'The total is thirty-five pesos. How do you want to pay?',
     },
     {
       id: 'e2000000-0025-4000-8000-000000000002',
       speaker: 'You',
-      text_target: '?Puedo pagar en efectivo?',
+      text_target: '¿Puedo pagar en efectivo?',
       text_en: 'Can I pay in cash?',
     },
     {
       id: 'e2000000-0025-4000-8000-000000000003',
       speaker: 'Cajero',
-      text_target: '!Claro! ?Tiene un billete de cincuenta? No tengo monedas pequenas.',
+      text_target: '¡Claro! ¿Tiene un billete de cincuenta? No tengo monedas pequeñas.',
       text_en: 'Of course! Do you have a fifty bill? I do not have small coins.',
     },
     {
       id: 'e2000000-0025-4000-8000-000000000004',
       speaker: 'You',
-      text_target: 'Si, aqui tiene. ?Me da el recibo, por favor?',
+      text_target: 'Sí, aquí tiene. ¿Me da el recibo, por favor?',
       text_en: 'Yes, here you go. Can you give me the receipt, please?',
     },
     {
       id: 'e2000000-0025-4000-8000-000000000005',
       speaker: 'Cajero',
-      text_target: 'Aqui esta su recibo y su vuelto: quince pesos.',
+      text_target: 'Aquí está su recibo y su vuelto: quince pesos.',
       text_en: 'Here is your receipt and your change: fifteen pesos.',
     },
     {
       id: 'e2000000-0025-4000-8000-000000000006',
       speaker: 'You',
-      text_target: 'Gracias. ?Se deja propina aqui?',
+      text_target: 'Gracias. ¿Se deja propina aquí?',
       text_en: 'Thanks. Do you leave a tip here?',
     },
   ],
   phrases: [
     {
       id: 'f2000000-0025-4000-8000-000000000001',
-      text_target: '?Como quiere pagar?',
+      text_target: '¿Cómo quiere pagar?',
       text_en: 'How do you want to pay?',
       literal_translation: 'How want-you to-pay?',
       usage_note:
@@ -373,7 +373,7 @@ const scene4_3: DialogueSceneData = {
     },
     {
       id: 'f2000000-0025-4000-8000-000000000003',
-      text_target: '?Me da el recibo?',
+      text_target: '¿Me da el recibo?',
       text_en: 'Can you give me the receipt?',
       literal_translation: 'Me give the receipt?',
       usage_note:
@@ -393,22 +393,22 @@ const scene4_3: DialogueSceneData = {
   patterns: [
     {
       id: '0b200000-0025-4000-8000-000000000001',
-      pattern_template: '?Puedo pagar en ___?',
+      pattern_template: '¿Puedo pagar en ___?',
       pattern_en: 'Can I pay in cash?',
       explanation:
         '"Efectivo" means "cash." "En efectivo" is how you say "in cash" in Spanish.',
-      prompt: '?Puedo pagar en ___?',
+      prompt: '¿Puedo pagar en ___?',
       hint_en: 'Can I pay in cash?',
       correct_answer: 'efectivo',
       distractors: ['tarjeta', 'moneda', 'billete'],
     },
     {
       id: '0b200000-0025-4000-8000-000000000002',
-      pattern_template: '?Me da el ___?',
+      pattern_template: '¿Me da el ___?',
       pattern_en: 'Can you give me the receipt?',
       explanation:
-        '"Recibo" is the receipt. "?Me da ...?" is a polite way to ask someone to give you something.',
-      prompt: '?Me da el ___, por favor?',
+        '"Recibo" is the receipt. "¿Me da ...?" is a polite way to ask someone to give you something.',
+      prompt: '¿Me da el ___, por favor?',
       hint_en: 'Can you give me the receipt, please?',
       correct_answer: 'recibo',
       distractors: ['vuelto', 'billete', 'total'],
@@ -440,17 +440,17 @@ const scene4_3: DialogueSceneData = {
   existingWordTexts: [
     'cuenta', 'dinero', 'cuanto', 'gracias', 'por favor', 'si',
     // From Unit 1:
-    'tiene', 'aqui',
+    'tiene', 'aquí',
     // From Scene 4.2:
     'tarjeta', 'pagar', 'precio',
   ],
 };
 
-// ── Scene 4.4: ?Tiene algo mas barato? (Bargaining & Comparing) ─────
+// ── Scene 4.4: ¿Tiene algo más barato? (Bargaining & Comparing) ─────
 
 const scene4_4: DialogueSceneData = {
   id: 'd2000000-0001-4000-8000-000000000026',
-  title: '?Tiene algo mas barato?',
+  title: '¿Tiene algo más barato?',
   description: 'Bargaining and comparing items at a market',
   scene_context:
     'You return to the market to find a gift but everything seems expensive. You compare items, ask for better deals, and practice negotiating prices. Practice comparing items and bargaining phrases.',
@@ -459,19 +459,19 @@ const scene4_4: DialogueSceneData = {
     {
       id: 'e2000000-0026-4000-8000-000000000001',
       speaker: 'You',
-      text_target: 'Me gusta este, pero es muy caro. ?Tiene algo mas barato?',
+      text_target: 'Me gusta este, pero es muy caro. ¿Tiene algo más barato?',
       text_en: 'I like this one, but it is very expensive. Do you have something cheaper?',
     },
     {
       id: 'e2000000-0026-4000-8000-000000000002',
       speaker: 'Vendedora',
-      text_target: '!Si! Este es nuevo y mas barato. Es igual de bonito.',
+      text_target: '¡Sí! Este es nuevo y más barato. Es igual de bonito.',
       text_en: 'Yes! This one is new and cheaper. It is equally pretty.',
     },
     {
       id: 'e2000000-0026-4000-8000-000000000003',
       speaker: 'You',
-      text_target: '?Y el viejo? Es diferente. ?Cual es el mejor precio?',
+      text_target: '¿Y el viejo? Es diferente. ¿Cuál es el mejor precio?',
       text_en: 'And the old one? It is different. What is the best price?',
     },
     {
@@ -483,25 +483,25 @@ const scene4_4: DialogueSceneData = {
     {
       id: 'e2000000-0026-4000-8000-000000000005',
       speaker: 'You',
-      text_target: '?Quince euros por los dos? !Perfecto! !Vale, me los llevo!',
+      text_target: '¿Quince euros por los dos? ¡Perfecto! ¡Vale, me los llevo!',
       text_en: 'Fifteen euros for both? Perfect! Okay, I will take them!',
     },
     {
       id: 'e2000000-0026-4000-8000-000000000006',
       speaker: 'Vendedora',
-      text_target: '!Muy bien! Es un buen negocio. !Gracias, amigo!',
+      text_target: '¡Muy bien! Es un buen negocio. ¡Gracias, amigo!',
       text_en: 'Very good! It is a good deal. Thanks, friend!',
     },
   ],
   phrases: [
     {
       id: 'f2000000-0026-4000-8000-000000000001',
-      text_target: '?Tiene algo mas barato?',
+      text_target: '¿Tiene algo más barato?',
       text_en: 'Do you have something cheaper?',
       literal_translation: 'Have-you something more cheap?',
       usage_note:
-        'The essential bargaining phrase. "Mas barato" means "cheaper" — literally "more cheap."',
-      wordTexts: ['tiene', 'algo', 'mas', 'barato'],
+        'The essential bargaining phrase. "Más barato" means "cheaper" — literally "more cheap."',
+      wordTexts: ['tiene', 'algo', 'más', 'barato'],
     },
     {
       id: 'f2000000-0026-4000-8000-000000000002',
@@ -514,7 +514,7 @@ const scene4_4: DialogueSceneData = {
     },
     {
       id: 'f2000000-0026-4000-8000-000000000003',
-      text_target: '!Vale, me los llevo!',
+      text_target: '¡Vale, me los llevo!',
       text_en: 'Okay, I will take them!',
       literal_translation: 'Okay, me them I-take!',
       usage_note:
@@ -534,36 +534,36 @@ const scene4_4: DialogueSceneData = {
   patterns: [
     {
       id: '0b200000-0026-4000-8000-000000000001',
-      pattern_template: '?Tiene algo mas ___?',
+      pattern_template: '¿Tiene algo más ___?',
       pattern_en: 'Do you have something cheaper?',
       explanation:
-        '"Mas" + adjective makes a comparative. "Mas barato" = cheaper, "mas grande" = bigger.',
-      prompt: '?Tiene algo mas ___?',
+        '"Más" + adjective makes a comparative. "Más barato" = cheaper, "más grande" = bigger.',
+      prompt: '¿Tiene algo más ___?',
       hint_en: 'Do you have something cheaper?',
       correct_answer: 'barato',
       distractors: ['caro', 'bonito', 'nuevo'],
     },
     {
       id: '0b200000-0026-4000-8000-000000000002',
-      pattern_template: '?Cual es el ___ precio?',
+      pattern_template: '¿Cuál es el ___ precio?',
       pattern_en: 'What is the best price?',
       explanation:
         '"Mejor" means "better" or "best." Use "el mejor precio" to ask for the lowest offer.',
-      prompt: '?Cual es el ___ precio?',
+      prompt: '¿Cuál es el ___ precio?',
       hint_en: 'What is the best price?',
       correct_answer: 'mejor',
-      distractors: ['ultimo', 'otro', 'nuevo'],
+      distractors: ['último', 'otro', 'nuevo'],
     },
     {
       id: '0b200000-0026-4000-8000-000000000003',
-      pattern_template: '!___, me lo llevo!',
+      pattern_template: '¡___, me lo llevo!',
       pattern_en: 'Okay, I will take it!',
       explanation:
         '"Vale" means "okay" or "deal." It confirms you agree. Very common in Spain and Latin America.',
-      prompt: '!___, me lo llevo!',
+      prompt: '¡___, me lo llevo!',
       hint_en: 'Okay, I will take it!',
       correct_answer: 'Vale',
-      distractors: ['Bueno', 'Si', 'Bien'],
+      distractors: ['Bueno', 'Sí', 'Bien'],
     },
   ],
   newWords: [
@@ -579,9 +579,9 @@ const scene4_4: DialogueSceneData = {
   existingWordTexts: [
     'caro', 'bueno', 'quiero', 'gracias', 'amigo', 'si',
     // From Unit 1:
-    'tiene', 'grande', 'pequena', 'bonito', 'este', 'muy',
+    'tiene', 'grande', 'pequeña', 'bonito', 'este', 'muy',
     // From Unit 3:
-    'barato', 'otro', 'mas', 'algo',
+    'barato', 'otro', 'más', 'algo',
     // From Scene 4.2:
     'precio', 'mejor', 'demasiado', 'pagar',
   ],

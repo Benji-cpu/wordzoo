@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { PronunciationButton } from '@/components/audio/SpeakerButton';
 
 export interface PopoverData {
   text: string;
@@ -41,7 +42,16 @@ export function WordPopover({ data, anchorRect, onClose }: WordPopoverProps) {
       className="fixed z-50 w-64 rounded-xl bg-background border border-card-border p-4 shadow-xl"
       style={{ top, left }}
     >
-      <div className="text-lg font-bold text-foreground">{data.text}</div>
+      <div className="flex items-center gap-1">
+        <div className="text-lg font-bold text-foreground">{data.text}</div>
+        <PronunciationButton
+          wordId={data.text}
+          audioUrl={data.pronunciation_audio_url}
+          text={data.text}
+          size={18}
+          className="-my-1"
+        />
+      </div>
       {data.romanization && (
         <div className="text-sm text-text-secondary">{data.romanization}</div>
       )}

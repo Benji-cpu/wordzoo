@@ -138,9 +138,30 @@ export function buildTutorSystemPrompt(opts: TutorPromptOptions): string {
 
     blocks.push(
       `## Vocabulary Rules\n` +
+      `The student has learned ${opts.knownWords.length} word(s) total.\n` +
       `The student knows these words: ${knownList}.\n` +
       `Use ONLY these known words in your ${opts.languageName} text.\n` +
       budgetLine
+    );
+
+    // Extra beginner guardrails when vocabulary is very limited
+    if (opts.knownWords.length < 20) {
+      blocks.push(
+        `## Beginner Guardrails (${opts.knownWords.length} words known)\n` +
+        `The student has a VERY limited vocabulary. You MUST follow these rules strictly:\n` +
+        `- Keep ALL responses in English EXCEPT for the ${opts.knownWords.length} known words listed above.\n` +
+        `- Do NOT write full sentences in ${opts.languageName}. Use only individual words or 2-word phrases from the known list, embedded in English sentences.\n` +
+        `- Ask simple questions that can be answered with one known word.\n` +
+        `- Example: "Can you say the ${opts.languageName} word for 'hello'?" — NOT a full ${opts.languageName} sentence.`
+      );
+    }
+  } else {
+    // No known words at all — strongest constraints
+    blocks.push(
+      `## Vocabulary Rules\n` +
+      `The student has learned 0 words so far. They are a complete beginner.\n` +
+      `Do NOT use any ${opts.languageName} words. Speak ENTIRELY in English.\n` +
+      `Help the student get started by suggesting they try a learning scene first.`
     );
   }
 
@@ -180,7 +201,7 @@ export function buildTutorSystemPrompt(opts: TutorPromptOptions): string {
   blocks.push(
     `Formatting rules:\n` +
     `- Bold target-language words on first use in each message as **word** (meaning). Example: **rumah** (house)\n` +
-    `- Keep responses 2-4 sentences long\n` +
+    `- Keep responses ${tier === 'beginner' && opts.knownWords.length < 20 ? '1-2' : '2-4'} sentences long\n` +
     `- When introducing a new word, always include the meaning in parentheses\n` +
     `- ${correctionFormat}\n` +
     `- After your main response, add a full English translation on its own line:\n` +

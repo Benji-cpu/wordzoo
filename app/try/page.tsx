@@ -84,6 +84,7 @@ export default function OnboardingPage() {
             wordNumber={wordIndex + 1}
             speedMultiplier={SPEED_MULTIPLIERS[wordIndex]}
             onComplete={() => dispatch({ type: 'ADVANCE_FROM_WORD', wordIndex })}
+            languageCode={state.selectedLanguage?.code}
           />
         );
       }
@@ -95,6 +96,7 @@ export default function OnboardingPage() {
           <QuizCard
             word={state.words[wordIndex]}
             languageName={state.selectedLanguage.name}
+            languageCode={state.selectedLanguage.code}
             onAnswer={(_, attempts) => {
               dispatch({ type: 'ANSWER_QUIZ', wordIndex, attempts });
               setTimeout(() => dispatch({ type: 'ADVANCE_FROM_QUIZ', wordIndex }), 100);
@@ -110,6 +112,7 @@ export default function OnboardingPage() {
           <QuizCard
             word={phase === 'current' ? state.words[1] : state.words[0]}
             languageName={state.selectedLanguage.name}
+            languageCode={state.selectedLanguage.code}
             promptText={phase === 'surprise' ? 'Still remember this one?' : undefined}
             onAnswer={(_, attempts) => {
               dispatch({ type: 'ANSWER_DOUBLE_QUIZ', phase, attempts });

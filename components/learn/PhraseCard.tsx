@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { Card } from '@/components/ui/Card';
-import { stopPlayback } from '@/lib/audio';
+import { stopPlayback, isAudioUnlocked } from '@/lib/audio';
 import type { ScenePhrase } from '@/types/database';
 
 interface PhraseCardProps {
@@ -26,7 +26,7 @@ export function PhraseCard({ phrase, onContinue }: PhraseCardProps) {
 
   // Auto-play audio when the card appears
   useEffect(() => {
-    if (!phrase.audio_url || autoPlayedRef.current) return;
+    if (!phrase.audio_url || autoPlayedRef.current || !isAudioUnlocked()) return;
     autoPlayedRef.current = true;
 
     const timer = setTimeout(() => {

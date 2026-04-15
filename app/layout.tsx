@@ -3,6 +3,7 @@ import { Nunito } from "next/font/google";
 import { Geist_Mono } from "next/font/google";
 import { AuthSessionProvider } from "@/components/auth/session-provider";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
+import { AudioUnlock } from "@/components/audio/AudioUnlock";
 import "./globals.css";
 
 const nunito = Nunito({
@@ -37,7 +38,10 @@ export default function RootLayout({
         className={`${nunito.variable} ${geistMono.variable} antialiased`}
       >
         <AuthSessionProvider>
-          <ThemeProvider>{children}</ThemeProvider>
+          <ThemeProvider>
+              <AudioUnlock />
+              {children}
+            </ThemeProvider>
         </AuthSessionProvider>
       </body>
     </html>

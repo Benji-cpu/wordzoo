@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { Card } from '@/components/ui/Card';
 import { TappableWord } from '@/components/learn/TappableWord';
 import { tokenizeDialogueLine } from '@/lib/utils/dialogue-tokenizer';
-import { stopPlayback } from '@/lib/audio';
+import { stopPlayback, isAudioUnlocked } from '@/lib/audio';
 import type { SceneDialogue } from '@/types/database';
 import type { LearnWord } from '@/components/learn/LearnClient';
 
@@ -56,7 +56,7 @@ function LineAudioButton({ audioUrl, size = 16 }: { audioUrl: string; size?: num
       <button
         type="button"
         onClick={(e) => handlePlay(e)}
-        className="inline-flex items-center justify-center rounded-full p-1 text-accent-id hover:bg-surface-inset active:bg-surface-inset transition-colors"
+        className="inline-flex items-center justify-center rounded-full p-2 min-w-[44px] min-h-[44px] text-accent-id hover:bg-surface-inset active:bg-surface-inset transition-colors"
         aria-label={isPlaying ? 'Playing' : 'Play audio'}
       >
         <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
@@ -67,7 +67,7 @@ function LineAudioButton({ audioUrl, size = 16 }: { audioUrl: string; size?: num
       <button
         type="button"
         onClick={handleSlow}
-        className="inline-flex items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-medium text-text-secondary hover:bg-surface-inset active:bg-surface-inset transition-colors"
+        className="inline-flex items-center justify-center rounded-full px-2 py-1 min-w-[44px] min-h-[44px] text-[10px] font-medium text-text-secondary hover:bg-surface-inset active:bg-surface-inset transition-colors"
         aria-label="Play at slow speed"
       >
         0.7x
@@ -94,6 +94,7 @@ export function DialoguePlayer({ dialogues, onComplete, onLineAdvance, vocabWord
     const line = dialogues[lastIndex];
     if (!line?.audio_url) return;
 
+    if (!isAudioUnlocked()) return;
     autoPlayedRef.current.add(lastIndex);
     playAudioAtRate(line.audio_url, 1.0).catch(() => {});
   }, [visibleCount, dialogues]);

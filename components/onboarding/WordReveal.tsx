@@ -4,17 +4,20 @@ import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import type { OnboardingWord } from '@/lib/onboarding/data';
 import MnemonicReveal, { type MnemonicPhase } from './MnemonicReveal';
+import { PronunciationButton } from '@/components/audio/SpeakerButton';
+import { playWordPronunciation, isAudioUnlocked } from '@/lib/audio';
 
 interface WordRevealProps {
   word: OnboardingWord;
   wordNumber: number;
   speedMultiplier: number;
   onComplete: () => void;
+  languageCode?: string;
 }
 
 type RevealPhase = 'word' | 'meaning' | 'bridge' | 'keyword' | 'image' | 'caption' | 'ready';
 
-export default function WordReveal({ word, wordNumber, speedMultiplier, onComplete }: WordRevealProps) {
+export default function WordReveal({ word, wordNumber, speedMultiplier, onComplete, languageCode }: WordRevealProps) {
   const [phase, setPhase] = useState<RevealPhase>('word');
 
   const t = useCallback((ms: number) => ms * speedMultiplier, [speedMultiplier]);
@@ -22,15 +25,12 @@ export default function WordReveal({ word, wordNumber, speedMultiplier, onComple
   useEffect(() => {
     const timers: ReturnType<typeof setTimeout>[] = [];
 
-    // Try to speak the word
-    try {
-      if (typeof window !== 'undefined' && window.speechSynthesis) {
-        const utterance = new SpeechSynthesisUtterance(word.romanization || word.text);
-        utterance.rate = 0.8;
-        speechSynthesis.speak(utterance);
-      }
-    } catch {
-      // Speech API not supported
+    // Auto-play pronunciation (guarded by unlock state)
+    if (isAudioUnlocked()) {
+      playWordPronunciation(word.text, {
+        text: word.romanization || word.text,
+        languageCode: languageCode as import('@/types/audio').SupportedLanguageCode | undefined,
+      }).catch(() => {});
     }
 
     timers.push(setTimeout(() => setPhase('meaning'), t(1000)));
@@ -73,6 +73,11 @@ export default function WordReveal({ word, wordNumber, speedMultiplier, onComple
         {word.romanization && (
           <p className="text-xl text-text-secondary mt-2">{word.romanization}</p>
         )}
+        <PronunciationButton
+          wordId={word.text}
+          text={word.romanization || word.text}
+          languageCode={languageCode}
+        />
       </motion.div>
 
       {/* English meaning */}

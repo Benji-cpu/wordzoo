@@ -27,8 +27,8 @@ SCENE RULES:
 
 IMAGE PROMPT RULES:
 - Derived from the bridge sentence — illustrate what it describes
-- The meaning word must appear as VISIBLE TEXT in the image
-- Always end with: "bold text overlay reading [MEANING_WORD], digital illustration, vibrant colors, slightly surreal, centered composition, single focal point"
+- The TARGET LANGUAGE WORD must appear as VISIBLE TEXT in the image (e.g., show 'MAKAN' not 'EAT')
+- Always end with: "bold text overlay reading [TARGET_WORD], digital illustration, vibrant colors, slightly surreal, centered composition, single focal point"
 - Max 75 words total
 - Describe the scene visually, not conceptually
 - The most important visual element (the one that bridges keyword → meaning) must be described FIRST in the prompt
@@ -52,7 +52,8 @@ export function buildGeneratePrompt(
 Word: "${word}"
 Meaning: "${meaning}"
 
-Remember: the keyword must SOUND LIKE "${word}" (phonetically), and the scene must visually link the keyword to the meaning "${meaning}".`;
+Remember: the keyword must SOUND LIKE "${word}" (phonetically), and the scene must visually link the keyword to the meaning "${meaning}".
+The image text overlay must show the target word "${word.toUpperCase()}" (NOT the English meaning).`;
 }
 
 export function buildRegeneratePrompt(
@@ -68,7 +69,8 @@ Meaning: "${meaning}"
 
 DO NOT use any of these previously used keywords: ${excludeKeywords.map((k) => `"${k}"`).join(', ')}
 
-Generate completely different keywords that still SOUND LIKE "${word}" (phonetically) and visually link to the meaning "${meaning}".`;
+Generate completely different keywords that still SOUND LIKE "${word}" (phonetically) and visually link to the meaning "${meaning}".
+The image text overlay must show the target word "${word.toUpperCase()}" (NOT the English meaning).`;
 }
 
 export function buildFeedbackRegeneratePrompt(
@@ -86,7 +88,8 @@ export function buildFeedbackRegeneratePrompt(
 Word: "${word}"
 Meaning: "${meaning}"
 ${feedbackBlock}
-Create completely new keywords and scenes that address the feedback. The keyword must SOUND LIKE "${word}" (phonetically), and the scene must visually link the keyword to the meaning "${meaning}".`;
+Create completely new keywords and scenes that address the feedback. The keyword must SOUND LIKE "${word}" (phonetically), and the scene must visually link the keyword to the meaning "${meaning}".
+The image text overlay must show the target word "${word.toUpperCase()}" (NOT the English meaning).`;
 }
 
 export function buildCustomKeywordPrompt(
@@ -101,6 +104,7 @@ Meaning: "${meaning}"
 User's keyword: "${keyword}"
 
 Generate ONLY 1 candidate using the user's keyword. Create an absurd, vivid scene that visually links "${keyword}" to the meaning "${meaning}".
+The image text overlay must show the target word "${word.toUpperCase()}" (NOT the English meaning).
 
 Return a JSON array with exactly 1 candidate.`;
 }
@@ -206,7 +210,7 @@ COMPOSITE SCENE DESCRIPTION RULES:
 COMPOSITE IMAGE PROMPT RULES:
 - Must include visual elements from ALL word keywords
 - Max 100 words
-- Always end with: "bold text overlay reading [PHRASE_MEANING], digital illustration, vibrant colors, slightly surreal, centered composition, single focal point"
+- Always end with: "bold text overlay reading [PHRASE_TARGET_TEXT], digital illustration, vibrant colors, slightly surreal, centered composition, single focal point"
 
 OUTPUT FORMAT:
 Return ONLY a valid JSON object. No markdown, no explanation, no code fences.
@@ -234,7 +238,8 @@ Literal translation: "${literalTranslation}"
 Word keywords to weave together:
   ${keywordList}
 
-Create a bridge sentence that weaves ALL keywords into a memorable narrative with the meaning in ALL CAPS, a composite scene description with all keyword characters together, and an image prompt combining all visual elements.`;
+Create a bridge sentence that weaves ALL keywords into a memorable narrative with the meaning in ALL CAPS, a composite scene description with all keyword characters together, and an image prompt combining all visual elements.
+The image text overlay must show the target phrase "${phraseText.toUpperCase()}" (NOT the English meaning).`;
 }
 
 export function buildSceneAnchorPrompt(

@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { Card } from '@/components/ui/Card';
 import { PronunciationButton } from '@/components/audio/SpeakerButton';
-import { playWordPronunciation } from '@/lib/audio';
+import { playWordPronunciation, isAudioUnlocked } from '@/lib/audio';
 
 interface WordCardProps {
   text: string;
@@ -21,14 +21,14 @@ export function WordCard({ text, romanization, meaningEn, partOfSpeech, wordId, 
   // Auto-play pronunciation on mount / word change (ref guard prevents StrictMode double-play)
   const hasAutoPlayed = useRef(false);
   useEffect(() => {
-    if (!hasAutoPlayed.current) {
+    if (!hasAutoPlayed.current && isAudioUnlocked()) {
       hasAutoPlayed.current = true;
       playWordPronunciation(wordId, { audioUrl, text, languageCode: languageCode as import('@/types/audio').SupportedLanguageCode | undefined }).catch(() => {});
     }
   }, [wordId, audioUrl, text, languageCode]);
 
   return (
-    <Card className="text-center py-12 animate-slide-up" onClick={onContinue}>
+    <Card className="text-center animate-slide-up flex flex-col items-center justify-center min-h-[60vh] py-8" onClick={onContinue}>
       <p className="text-xs text-text-secondary uppercase tracking-wider mb-4">
         {partOfSpeech}
       </p>
@@ -39,7 +39,7 @@ export function WordCard({ text, romanization, meaningEn, partOfSpeech, wordId, 
       <div onClick={(e) => e.stopPropagation()}>
         <PronunciationButton wordId={wordId} audioUrl={audioUrl} text={text} languageCode={languageCode} />
       </div>
-      <div className="w-12 h-px bg-card-border mx-auto my-4" />
+      <div className="w-12 h-px bg-card-border mx-auto my-6" />
       <p className="text-xl text-foreground">{meaningEn}</p>
       {informalText && (
         <p className="text-sm text-text-secondary mt-3">

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import type { LearnWord } from '@/components/learn/LearnClient';
+import { PronunciationButton } from '@/components/audio/SpeakerButton';
 
 interface TappableWordProps {
   word: LearnWord;
@@ -56,7 +57,16 @@ export function TappableWord({ word, children }: TappableWordProps) {
               sounds like &ldquo;{word.mnemonic.keyword_text}&rdquo;
             </p>
           )}
-          <p className="text-sm font-medium text-foreground">{word.word.meaning_en}</p>
+          <div className="flex items-center justify-center gap-0.5">
+            <p className="text-sm font-medium text-foreground">{word.word.meaning_en}</p>
+            <PronunciationButton
+              wordId={word.word.id}
+              audioUrl={word.word.pronunciation_audio_url}
+              text={word.word.text}
+              size={14}
+              className="-my-1 p-1"
+            />
+          </div>
         </span>
       )}
     </span>

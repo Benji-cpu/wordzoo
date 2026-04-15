@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { Card } from '@/components/ui/Card';
-import { stopPlayback } from '@/lib/audio';
+import { stopPlayback, isAudioUnlocked } from '@/lib/audio';
 
 export interface ListeningExerciseProps {
   audioUrl: string;
@@ -72,7 +72,7 @@ export function ListeningExercise({
 
   // Auto-play on mount
   useEffect(() => {
-    if (autoPlayedRef.current) return;
+    if (autoPlayedRef.current || !isAudioUnlocked()) return;
     autoPlayedRef.current = true;
 
     const timer = setTimeout(() => {

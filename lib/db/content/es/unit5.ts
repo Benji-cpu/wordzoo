@@ -16,13 +16,13 @@ const scene5_1: DialogueSceneData = {
     {
       id: 'e2000000-0027-4000-8000-000000000001',
       speaker: 'Vecina',
-      text_target: '!Hola! ?Eres nueva aqui? Me llamo Rosa. Vivo en el apartamento de al lado.',
+      text_target: '¡Hola! ¿Eres nueva aquí? Me llamo Rosa. Vivo en el apartamento de al lado.',
       text_en: 'Hello! Are you new here? My name is Rosa. I live in the apartment next door.',
     },
     {
       id: 'e2000000-0027-4000-8000-000000000002',
       speaker: 'You',
-      text_target: '!Hola, Rosa! Si, soy nueva. ?Como es el barrio?',
+      text_target: '¡Hola, Rosa! Sí, soy nueva. ¿Cómo es el barrio?',
       text_en: 'Hello, Rosa! Yes, I am new. What is the neighborhood like?',
     },
     {
@@ -34,30 +34,30 @@ const scene5_1: DialogueSceneData = {
     {
       id: 'e2000000-0027-4000-8000-000000000004',
       speaker: 'You',
-      text_target: '!Que bueno! Me gusta mucho la vida aqui. La gente es muy amable.',
+      text_target: '¡Qué bueno! Me gusta mucho la vida aquí. La gente es muy amable.',
       text_en: 'How nice! I really like the life here. The people are very friendly.',
     },
     {
       id: 'e2000000-0027-4000-8000-000000000005',
       speaker: 'Vecina',
-      text_target: 'Si, siempre hay gente en el parque por la manana y por la tarde.',
+      text_target: 'Sí, siempre hay gente en el parque por la mañana y por la tarde.',
       text_en: 'Yes, there are always people in the park in the morning and in the afternoon.',
     },
     {
       id: 'e2000000-0027-4000-8000-000000000006',
       speaker: 'You',
-      text_target: '?Nunca es ruidoso? Yo vengo de una casa tranquila.',
+      text_target: '¿Nunca es ruidoso? Yo vengo de una casa tranquila.',
       text_en: 'It is never noisy? I come from a quiet house.',
     },
   ],
   phrases: [
     {
       id: 'f2000000-0027-4000-8000-000000000001',
-      text_target: '?Como es el barrio?',
+      text_target: '¿Cómo es el barrio?',
       text_en: 'What is the neighborhood like?',
       literal_translation: 'How is the neighborhood?',
       usage_note:
-        'Use "?Como es ...?" to ask what something is like in general. Different from "?Como esta?" which asks about a temporary state.',
+        'Use "¿Cómo es ...?" to ask what something is like in general. Different from "¿Cómo está?" which asks about a temporary state.',
       wordTexts: ['barrio'],
     },
     {
@@ -89,12 +89,12 @@ const scene5_1: DialogueSceneData = {
     },
     {
       id: 'f2000000-0027-4000-8000-000000000005',
-      text_target: 'Por la manana',
+      text_target: 'Por la mañana',
       text_en: 'In the morning',
       literal_translation: 'By the morning',
       usage_note:
-        '"Por la manana" = in the morning, "por la tarde" = in the afternoon, "por la noche" = in the evening.',
-      wordTexts: ['manana', 'tarde'],
+        '"Por la mañana" = in the morning, "por la tarde" = in the afternoon, "por la noche" = in the evening.',
+      wordTexts: ['mañana', 'tarde'],
     },
   ],
   patterns: [
@@ -137,17 +137,17 @@ const scene5_1: DialogueSceneData = {
     { id: 'b2000000-0001-4000-8000-000000000177', text: 'vivir', meaning_en: 'to live', part_of_speech: 'verb' },
     { id: 'b2000000-0001-4000-8000-000000000178', text: 'casa', meaning_en: 'house / home', part_of_speech: 'noun' },
     { id: 'b2000000-0001-4000-8000-000000000179', text: 'tiempo', meaning_en: 'time / weather', part_of_speech: 'noun' },
-    { id: 'b2000000-0001-4000-8000-000000000180', text: 'manana', meaning_en: 'morning / tomorrow', part_of_speech: 'noun' },
+    { id: 'b2000000-0001-4000-8000-000000000180', text: 'mañana', meaning_en: 'morning / tomorrow', part_of_speech: 'noun' },
     { id: 'b2000000-0001-4000-8000-000000000181', text: 'tarde', meaning_en: 'afternoon / late', part_of_speech: 'noun' },
     { id: 'b2000000-0001-4000-8000-000000000182', text: 'siempre', meaning_en: 'always', part_of_speech: 'adverb' },
     { id: 'b2000000-0001-4000-8000-000000000183', text: 'nunca', meaning_en: 'never', part_of_speech: 'adverb' },
-    { id: 'b2000000-0001-4000-8000-000000000184', text: 'todos los dias', meaning_en: 'every day', part_of_speech: 'phrase' },
+    { id: 'b2000000-0001-4000-8000-000000000184', text: 'todos los días', meaning_en: 'every day', part_of_speech: 'phrase' },
     { id: 'b2000000-0001-4000-8000-000000000185', text: 'gustar', meaning_en: 'to like / to please', part_of_speech: 'verb' },
     { id: 'b2000000-0001-4000-8000-000000000186', text: 'me gusta', meaning_en: 'I like (it pleases me)', part_of_speech: 'phrase' },
     { id: 'b2000000-0001-4000-8000-000000000187', text: 'la vida', meaning_en: 'life', part_of_speech: 'noun' },
   ],
   existingWordTexts: [
-    'hola', 'como', 'estas', 'bien', 'bueno', 'bonito', 'aqui', 'cerca', 'hay', 'amigo', 'gente',
+    'hola', 'cómo', 'estás', 'bien', 'bueno', 'bonito', 'aquí', 'cerca', 'hay', 'amigo', 'gente',
     // From Unit 1:
     'me llamo', 'si', 'muy', 'amable', 'eres', 'grande', 'tienda', 'este',
     // From Unit 2:
@@ -155,11 +155,11 @@ const scene5_1: DialogueSceneData = {
   ],
 };
 
-// ── Scene 5.2: Un dia normal (Describing Daily Routine) ──────────────
+// ── Scene 5.2: Un día normal (Describing Daily Routine) ──────────────
 
 const scene5_2: DialogueSceneData = {
   id: 'd2000000-0001-4000-8000-000000000028',
-  title: 'Un dia normal',
+  title: 'Un día normal',
   description: 'Describing your daily routine to a new friend',
   scene_context:
     'You are having coffee with your neighbor Rosa. She asks about your daily routine and you compare schedules. Practice daily activity verbs, time expressions, and sequencing words.',
@@ -168,7 +168,7 @@ const scene5_2: DialogueSceneData = {
     {
       id: 'e2000000-0028-4000-8000-000000000001',
       speaker: 'Vecina',
-      text_target: '?A que hora te despiertas? Yo me despierto muy temprano.',
+      text_target: '¿A qué hora te despiertas? Yo me despierto muy temprano.',
       text_en: 'What time do you wake up? I wake up very early.',
     },
     {
@@ -180,19 +180,19 @@ const scene5_2: DialogueSceneData = {
     {
       id: 'e2000000-0028-4000-8000-000000000003',
       speaker: 'Vecina',
-      text_target: '?Caminas al trabajo? ?A que hora es el almuerzo?',
+      text_target: '¿Caminas al trabajo? ¿A qué hora es el almuerzo?',
       text_en: 'You walk to work? What time is lunch?',
     },
     {
       id: 'e2000000-0028-4000-8000-000000000004',
       speaker: 'You',
-      text_target: 'El almuerzo es a la una. Despues trabajo hasta las cinco.',
+      text_target: 'El almuerzo es a la una. Después trabajo hasta las cinco.',
       text_en: 'Lunch is at one. After that I work until five.',
     },
     {
       id: 'e2000000-0028-4000-8000-000000000005',
       speaker: 'Vecina',
-      text_target: '?Y la cena? ?Cocinas en casa o comes en un restaurante?',
+      text_target: '¿Y la cena? ¿Cocinas en casa o comes en un restaurante?',
       text_en: 'And dinner? Do you cook at home or eat at a restaurant?',
     },
     {
@@ -205,11 +205,11 @@ const scene5_2: DialogueSceneData = {
   phrases: [
     {
       id: 'f2000000-0028-4000-8000-000000000001',
-      text_target: '?A que hora te despiertas?',
+      text_target: '¿A qué hora te despiertas?',
       text_en: 'What time do you wake up?',
       literal_translation: 'At what hour you wake-up?',
       usage_note:
-        '"?A que hora ...?" is how you ask what time something happens. Essential for talking about schedules.',
+        '"¿A qué hora ...?" is how you ask what time something happens. Essential for talking about schedules.',
       wordTexts: ['hora', 'despertarse'],
     },
     {
@@ -281,7 +281,7 @@ const scene5_2: DialogueSceneData = {
       prompt: '___ termino, duermo a las diez.',
       hint_en: 'When I finish, I sleep at ten.',
       correct_answer: 'Cuando',
-      distractors: ['Siempre', 'Luego', 'Despues'],
+      distractors: ['Siempre', 'Luego', 'Después'],
     },
   ],
   newWords: [
@@ -303,11 +303,11 @@ const scene5_2: DialogueSceneData = {
     // From Unit 1:
     'noche', 'muy',
     // From Unit 2:
-    'despues',
+    'después',
     // From Unit 3:
-    'cafe',
+    'café',
     // From Scene 5.1:
-    'manana', 'tarde', 'siempre', 'casa',
+    'mañana', 'tarde', 'siempre', 'casa',
   ],
 };
 
@@ -324,38 +324,38 @@ const scene5_3: DialogueSceneData = {
     {
       id: 'e2000000-0029-4000-8000-000000000001',
       speaker: 'Rosa',
-      text_target: '!Hola! ?Quieres ir a una fiesta esta noche? Un amigo nos invita.',
+      text_target: '¡Hola! ¿Quieres ir a una fiesta esta noche? Un amigo nos invita.',
       text_en: 'Hello! Do you want to go to a party tonight? A friend is inviting us.',
     },
     {
       id: 'e2000000-0029-4000-8000-000000000002',
       speaker: 'You',
-      text_target: '!Claro que si! ?Que tipo de fiesta? ?Hay una pelicula tambien?',
+      text_target: '¡Claro que sí! ¿Qué tipo de fiesta? ¿Hay una película también?',
       text_en: 'Of course! What kind of party? Is there a movie too?',
     },
     {
       id: 'e2000000-0029-4000-8000-000000000003',
       speaker: 'Rosa',
-      text_target: 'No, solo una fiesta con musica. ?Puedes ir a las ocho?',
+      text_target: 'No, solo una fiesta con música. ¿Puedes ir a las ocho?',
       text_en: 'No, just a party with music. Can you go at eight?',
     },
     {
       id: 'e2000000-0029-4000-8000-000000000004',
       speaker: 'You',
-      text_target: 'Si, puedo ir. ?Vamos juntos? !Que genial!',
+      text_target: 'Sí, puedo ir. ¿Vamos juntos? ¡Qué genial!',
       text_en: 'Yes, I can go. Shall we go together? How great!',
     },
     {
       id: 'e2000000-0029-4000-8000-000000000005',
       speaker: 'Rosa',
-      text_target: '!Perfecto! Nos vemos a las ocho en mi casa. !Va a ser divertido!',
+      text_target: '¡Perfecto! Nos vemos a las ocho en mi casa. ¡Va a ser divertido!',
       text_en: 'Perfect! See you at eight at my house. It is going to be fun!',
     },
   ],
   phrases: [
     {
       id: 'f2000000-0029-4000-8000-000000000001',
-      text_target: '!Vamos juntos!',
+      text_target: '¡Vamos juntos!',
       text_en: 'Let us go together!',
       literal_translation: 'We-go together!',
       usage_note:
@@ -364,16 +364,16 @@ const scene5_3: DialogueSceneData = {
     },
     {
       id: 'f2000000-0029-4000-8000-000000000002',
-      text_target: '!Claro que si!',
+      text_target: '¡Claro que sí!',
       text_en: 'Of course!',
       literal_translation: 'Clear that yes!',
       usage_note:
-        '"Claro" means "of course." Adding "que si" makes it emphatic — an enthusiastic yes.',
+        '"Claro" means "of course." Adding "que sí" makes it emphatic — an enthusiastic yes.',
       wordTexts: ['claro'],
     },
     {
       id: 'f2000000-0029-4000-8000-000000000003',
-      text_target: '!Nos vemos!',
+      text_target: '¡Nos vemos!',
       text_en: 'See you!',
       literal_translation: 'Us we-see!',
       usage_note:
@@ -382,7 +382,7 @@ const scene5_3: DialogueSceneData = {
     },
     {
       id: 'f2000000-0029-4000-8000-000000000004',
-      text_target: '?Puedes ir?',
+      text_target: '¿Puedes ir?',
       text_en: 'Can you go?',
       literal_translation: 'Can-you go?',
       usage_note:
@@ -393,22 +393,22 @@ const scene5_3: DialogueSceneData = {
   patterns: [
     {
       id: '0b200000-0029-4000-8000-000000000001',
-      pattern_template: '?___ ir a la fiesta?',
+      pattern_template: '¿___ ir a la fiesta?',
       pattern_en: 'Can you go to the party?',
       explanation:
-        '"Puedes" means "can you." Use "?Puedes + infinitive?" to ask if someone is able to do something.',
-      prompt: '?___ ir a la fiesta?',
+        '"Puedes" means "can you." Use "¿Puedes + infinitive?" to ask if someone is able to do something.',
+      prompt: '¿___ ir a la fiesta?',
       hint_en: 'Can you go to the party?',
       correct_answer: 'Puedes',
       distractors: ['Quieres', 'Tienes', 'Vienes'],
     },
     {
       id: '0b200000-0029-4000-8000-000000000002',
-      pattern_template: '!___ juntos!',
+      pattern_template: '¡___ juntos!',
       pattern_en: 'Let us go together!',
       explanation:
         '"Vamos" means "let us go" or "we go." It is also used to suggest doing something together.',
-      prompt: '!___ juntos!',
+      prompt: '¡___ juntos!',
       hint_en: 'Let us go together!',
       correct_answer: 'Vamos',
       distractors: ['Somos', 'Estamos', 'Tenemos'],
@@ -429,7 +429,7 @@ const scene5_3: DialogueSceneData = {
     { id: 'b2000000-0001-4000-8000-000000000200', text: 'vamos', meaning_en: 'let us go / we go', part_of_speech: 'verb' },
     { id: 'b2000000-0001-4000-8000-000000000201', text: 'juntos', meaning_en: 'together', part_of_speech: 'adverb' },
     { id: 'b2000000-0001-4000-8000-000000000202', text: 'fiesta', meaning_en: 'party / celebration', part_of_speech: 'noun' },
-    { id: 'b2000000-0001-4000-8000-000000000203', text: 'pelicula', meaning_en: 'movie / film', part_of_speech: 'noun' },
+    { id: 'b2000000-0001-4000-8000-000000000203', text: 'película', meaning_en: 'movie / film', part_of_speech: 'noun' },
     { id: 'b2000000-0001-4000-8000-000000000204', text: 'invitar', meaning_en: 'to invite', part_of_speech: 'verb' },
     { id: 'b2000000-0001-4000-8000-000000000205', text: 'poder', meaning_en: 'to be able to / can', part_of_speech: 'verb' },
     { id: 'b2000000-0001-4000-8000-000000000206', text: 'claro', meaning_en: 'of course / clear', part_of_speech: 'adverb' },
@@ -440,7 +440,7 @@ const scene5_3: DialogueSceneData = {
   existingWordTexts: [
     'amigo', 'quiero', 'ir', 'a', 'bueno', 'si', 'no',
     // From Unit 1:
-    'hola', 'noche', 'tambien',
+    'hola', 'noche', 'también',
     // From Unit 2:
     'hoy',
     // From Scene 5.1:

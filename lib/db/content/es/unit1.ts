@@ -3,11 +3,11 @@
 
 import type { DialogueSceneData } from '../../dialogue-data';
 
-// ── Scene 1.1: Hola! Como estas? (Meeting at the Airport) ───────────
+// ── Scene 1.1: ¡Hola! ¿Cómo estás? (Meeting at the Airport) ───────────
 
 const scene1_1: DialogueSceneData = {
   id: 'd2000000-0001-4000-8000-000000000011',
-  title: '!Hola! ?Como estas?',
+  title: '¡Hola! ¿Cómo estás?',
   description: 'Meeting someone at the airport upon arrival',
   scene_context:
     'You have just landed at the airport in a Spanish-speaking country. A friendly local notices you looking at a map and strikes up a conversation. Practice greetings and introductions.',
@@ -16,49 +16,49 @@ const scene1_1: DialogueSceneData = {
     {
       id: 'e2000000-0011-4000-8000-000000000001',
       speaker: 'Carlos',
-      text_target: '!Hola! Bienvenido. ?Como estas?',
+      text_target: '¡Hola! Bienvenido. ¿Cómo estás?',
       text_en: 'Hello! Welcome. How are you?',
     },
     {
       id: 'e2000000-0011-4000-8000-000000000002',
       speaker: 'You',
-      text_target: '!Hola! Estoy bien, gracias. ?Y tu?',
+      text_target: '¡Hola! Estoy bien, gracias. ¿Y tú?',
       text_en: 'Hello! I am fine, thanks. And you?',
     },
     {
       id: 'e2000000-0011-4000-8000-000000000003',
       speaker: 'Carlos',
-      text_target: 'Muy bien, gracias. Me llamo Carlos. ?Como te llamas?',
+      text_target: 'Muy bien, gracias. Me llamo Carlos. ¿Cómo te llamas?',
       text_en: 'Very well, thanks. My name is Carlos. What is your name?',
     },
     {
       id: 'e2000000-0011-4000-8000-000000000004',
       speaker: 'You',
-      text_target: 'Me llamo ... Mucho gusto, senor.',
+      text_target: 'Me llamo ... Mucho gusto, señor.',
       text_en: 'My name is ... Nice to meet you, sir.',
     },
     {
       id: 'e2000000-0011-4000-8000-000000000005',
       speaker: 'Carlos',
-      text_target: '!Encantado! ?Es tu primera vez aqui?',
+      text_target: '¡Encantado! ¿Es tu primera vez aquí?',
       text_en: 'Delighted! Is this your first time here?',
     },
     {
       id: 'e2000000-0011-4000-8000-000000000006',
       speaker: 'You',
-      text_target: 'Si, es mi primera vez. Estoy muy contento.',
+      text_target: 'Sí, es mi primera vez. Estoy muy contento.',
       text_en: 'Yes, it is my first time. I am very happy.',
     },
   ],
   phrases: [
     {
       id: 'f2000000-0011-4000-8000-000000000001',
-      text_target: '?Como estas?',
+      text_target: '¿Cómo estás?',
       text_en: 'How are you?',
       literal_translation: 'How are-you?',
       usage_note:
-        'The standard informal greeting. Use "?Como esta?" (usted) for formal situations.',
-      wordTexts: ['como', 'estas'],
+        'The standard informal greeting. Use "¿Cómo está?" (usted) for formal situations.',
+      wordTexts: ['cómo', 'estás'],
     },
     {
       id: 'f2000000-0011-4000-8000-000000000002',
@@ -66,7 +66,7 @@ const scene1_1: DialogueSceneData = {
       text_en: 'I am fine, thanks',
       literal_translation: 'I-am well, thanks',
       usage_note:
-        'The standard reply to "?Como estas?" Use "estoy" for temporary states like mood or health.',
+        'The standard reply to "¿Cómo estás?" Use "estoy" for temporary states like mood or health.',
       wordTexts: ['estoy', 'bien'],
     },
     {
@@ -80,7 +80,7 @@ const scene1_1: DialogueSceneData = {
     },
     {
       id: 'f2000000-0011-4000-8000-000000000004',
-      text_target: '!Mucho gusto!',
+      text_target: '¡Mucho gusto!',
       text_en: 'Nice to meet you!',
       literal_translation: 'Much pleasure!',
       usage_note:
@@ -89,7 +89,7 @@ const scene1_1: DialogueSceneData = {
     },
     {
       id: 'f2000000-0011-4000-8000-000000000005',
-      text_target: '!Bienvenido!',
+      text_target: '¡Bienvenido!',
       text_en: 'Welcome!',
       literal_translation: 'Well-come!',
       usage_note:
@@ -100,14 +100,14 @@ const scene1_1: DialogueSceneData = {
   patterns: [
     {
       id: '0b200000-0011-4000-8000-000000000001',
-      pattern_template: '?___ estas?',
+      pattern_template: '¿___ estás?',
       pattern_en: 'How are you?',
       explanation:
-        '"Como" means "how" and is used to form questions about manner or state.',
-      prompt: '?___ estas?',
+        '"Cómo" means "how" and is used to form questions about manner or state.',
+      prompt: '¿___ estás?',
       hint_en: 'How are you?',
-      correct_answer: 'Como',
-      distractors: ['Donde', 'Que', 'Quien'],
+      correct_answer: 'Cómo',
+      distractors: ['Dónde', 'Qué', 'Quién'],
     },
     {
       id: '0b200000-0011-4000-8000-000000000002',
@@ -129,18 +129,18 @@ const scene1_1: DialogueSceneData = {
       prompt: 'Estoy ___, gracias.',
       hint_en: 'I am fine, thanks.',
       correct_answer: 'bien',
-      distractors: ['mucho', 'como', 'tu'],
+      distractors: ['mucho', 'cómo', 'tú'],
     },
   ],
   newWords: [
-    { id: 'b2000000-0001-4000-8000-000000000021', text: 'como', meaning_en: 'how / like', part_of_speech: 'adverb' },
-    { id: 'b2000000-0001-4000-8000-000000000022', text: 'estas', meaning_en: 'you are (informal)', part_of_speech: 'verb' },
+    { id: 'b2000000-0001-4000-8000-000000000021', text: 'cómo', meaning_en: 'how / like', part_of_speech: 'adverb' },
+    { id: 'b2000000-0001-4000-8000-000000000022', text: 'estás', meaning_en: 'you are (informal)', part_of_speech: 'verb' },
     { id: 'b2000000-0001-4000-8000-000000000023', text: 'bien', meaning_en: 'well / fine', part_of_speech: 'adverb' },
     { id: 'b2000000-0001-4000-8000-000000000024', text: 'mucho gusto', meaning_en: 'nice to meet you', part_of_speech: 'phrase' },
     { id: 'b2000000-0001-4000-8000-000000000025', text: 'me llamo', meaning_en: 'my name is', part_of_speech: 'phrase' },
     { id: 'b2000000-0001-4000-8000-000000000026', text: 'yo', meaning_en: 'I', part_of_speech: 'pronoun' },
-    { id: 'b2000000-0001-4000-8000-000000000027', text: 'tu', meaning_en: 'you (informal)', part_of_speech: 'pronoun' },
-    { id: 'b2000000-0001-4000-8000-000000000028', text: 'senor', meaning_en: 'sir / mister', part_of_speech: 'noun' },
+    { id: 'b2000000-0001-4000-8000-000000000027', text: 'tú', meaning_en: 'you (informal)', part_of_speech: 'pronoun' },
+    { id: 'b2000000-0001-4000-8000-000000000028', text: 'señor', meaning_en: 'sir / mister', part_of_speech: 'noun' },
     { id: 'b2000000-0001-4000-8000-000000000029', text: 'bienvenido', meaning_en: 'welcome', part_of_speech: 'adjective' },
     { id: 'b2000000-0001-4000-8000-000000000030', text: 'encantado', meaning_en: 'delighted / charmed', part_of_speech: 'adjective' },
     { id: 'b2000000-0001-4000-8000-000000000031', text: 'estoy', meaning_en: 'I am (temporary)', part_of_speech: 'verb' },
@@ -162,44 +162,44 @@ const scene1_2: DialogueSceneData = {
     {
       id: 'e2000000-0012-4000-8000-000000000001',
       speaker: 'Recepcionista',
-      text_target: 'Buenas tardes. ?Tiene una reserva?',
+      text_target: 'Buenas tardes. ¿Tiene una reserva?',
       text_en: 'Good afternoon. Do you have a reservation?',
     },
     {
       id: 'e2000000-0012-4000-8000-000000000002',
       speaker: 'You',
-      text_target: 'Si, tengo una reserva. A nombre de ...',
+      text_target: 'Sí, tengo una reserva. A nombre de ...',
       text_en: 'Yes, I have a reservation. Under the name of ...',
     },
     {
       id: 'e2000000-0012-4000-8000-000000000003',
       speaker: 'Recepcionista',
-      text_target: 'Perfecto. Una habitacion para dos noches. ?Su pasaporte, por favor?',
+      text_target: 'Perfecto. Una habitación para dos noches. ¿Su pasaporte, por favor?',
       text_en: 'Perfect. A room for two nights. Your passport, please?',
     },
     {
       id: 'e2000000-0012-4000-8000-000000000004',
       speaker: 'You',
-      text_target: 'Aqui tiene. ?La habitacion tiene llave?',
+      text_target: 'Aquí tiene. ¿La habitación tiene llave?',
       text_en: 'Here you go. Does the room have a key?',
     },
     {
       id: 'e2000000-0012-4000-8000-000000000005',
       speaker: 'Recepcionista',
-      text_target: 'Si, aqui esta su llave. Habitacion doscientos tres.',
+      text_target: 'Sí, aquí está su llave. Habitación doscientos tres.',
       text_en: 'Yes, here is your key. Room two hundred and three.',
     },
     {
       id: 'e2000000-0012-4000-8000-000000000006',
       speaker: 'You',
-      text_target: 'Muchas gracias. Necesito wifi tambien.',
+      text_target: 'Muchas gracias. Necesito wifi también.',
       text_en: 'Thank you very much. I need wifi too.',
     },
   ],
   phrases: [
     {
       id: 'f2000000-0012-4000-8000-000000000001',
-      text_target: '?Tiene una reserva?',
+      text_target: '¿Tiene una reserva?',
       text_en: 'Do you have a reservation?',
       literal_translation: 'Have you a reservation?',
       usage_note:
@@ -208,12 +208,12 @@ const scene1_2: DialogueSceneData = {
     },
     {
       id: 'f2000000-0012-4000-8000-000000000002',
-      text_target: 'Aqui tiene',
+      text_target: 'Aquí tiene',
       text_en: 'Here you go',
       literal_translation: 'Here have',
       usage_note:
         'A polite way to hand something to someone. Very common in service situations.',
-      wordTexts: ['aqui', 'tiene'],
+      wordTexts: ['aquí', 'tiene'],
     },
     {
       id: 'f2000000-0012-4000-8000-000000000003',
@@ -226,16 +226,16 @@ const scene1_2: DialogueSceneData = {
     },
     {
       id: 'f2000000-0012-4000-8000-000000000004',
-      text_target: 'Una habitacion para dos noches',
+      text_target: 'Una habitación para dos noches',
       text_en: 'A room for two nights',
       literal_translation: 'A room for two nights',
       usage_note:
         'Use "para" + number + "noches" to say how long you are staying.',
-      wordTexts: ['una', 'habitacion', 'dos', 'noche'],
+      wordTexts: ['una', 'habitación', 'dos', 'noche'],
     },
     {
       id: 'f2000000-0012-4000-8000-000000000005',
-      text_target: '?Su pasaporte, por favor?',
+      text_target: '¿Su pasaporte, por favor?',
       text_en: 'Your passport, please?',
       literal_translation: 'Your passport, please?',
       usage_note:
@@ -246,25 +246,25 @@ const scene1_2: DialogueSceneData = {
   patterns: [
     {
       id: '0b200000-0012-4000-8000-000000000001',
-      pattern_template: '?Tiene una ___?',
+      pattern_template: '¿Tiene una ___?',
       pattern_en: 'Do you have a ___?',
       explanation:
         '"Tiene" (you have, formal) + article + noun is how to ask if someone has something.',
-      prompt: '?Tiene una ___?',
+      prompt: '¿Tiene una ___?',
       hint_en: 'Do you have a reservation?',
       correct_answer: 'reserva',
-      distractors: ['llave', 'noche', 'habitacion'],
+      distractors: ['llave', 'noche', 'habitación'],
     },
     {
       id: '0b200000-0012-4000-8000-000000000002',
       pattern_template: '___ tiene',
       pattern_en: 'Here you go',
       explanation:
-        '"Aqui tiene" is a set phrase for handing something over politely.',
+        '"Aquí tiene" is a set phrase for handing something over politely.',
       prompt: '___ tiene.',
       hint_en: 'Here you go.',
-      correct_answer: 'Aqui',
-      distractors: ['Si', 'No', 'Bien'],
+      correct_answer: 'Aquí',
+      distractors: ['Sí', 'No', 'Bien'],
     },
     {
       id: '0b200000-0012-4000-8000-000000000003',
@@ -279,12 +279,12 @@ const scene1_2: DialogueSceneData = {
     },
   ],
   newWords: [
-    { id: 'b2000000-0001-4000-8000-000000000033', text: 'habitacion', meaning_en: 'room', part_of_speech: 'noun' },
+    { id: 'b2000000-0001-4000-8000-000000000033', text: 'habitación', meaning_en: 'room', part_of_speech: 'noun' },
     { id: 'b2000000-0001-4000-8000-000000000034', text: 'noche', meaning_en: 'night', part_of_speech: 'noun' },
     { id: 'b2000000-0001-4000-8000-000000000035', text: 'llave', meaning_en: 'key', part_of_speech: 'noun' },
     { id: 'b2000000-0001-4000-8000-000000000036', text: 'reserva', meaning_en: 'reservation', part_of_speech: 'noun' },
     { id: 'b2000000-0001-4000-8000-000000000037', text: 'pasaporte', meaning_en: 'passport', part_of_speech: 'noun' },
-    { id: 'b2000000-0001-4000-8000-000000000038', text: 'aqui', meaning_en: 'here', part_of_speech: 'adverb' },
+    { id: 'b2000000-0001-4000-8000-000000000038', text: 'aquí', meaning_en: 'here', part_of_speech: 'adverb' },
     { id: 'b2000000-0001-4000-8000-000000000039', text: 'tiene', meaning_en: 'you have / he-she has', part_of_speech: 'verb' },
     { id: 'b2000000-0001-4000-8000-000000000040', text: 'necesito', meaning_en: 'I need', part_of_speech: 'verb' },
     { id: 'b2000000-0001-4000-8000-000000000041', text: 'una', meaning_en: 'a / one (feminine)', part_of_speech: 'article' },
@@ -305,49 +305,49 @@ const scene1_3: DialogueSceneData = {
   dialogues: [
     {
       id: 'e2000000-0013-4000-8000-000000000001',
-      speaker: 'Maria',
-      text_target: '!Hola! ?De donde eres?',
+      speaker: 'María',
+      text_target: '¡Hola! ¿De dónde eres?',
       text_en: 'Hello! Where are you from?',
     },
     {
       id: 'e2000000-0013-4000-8000-000000000002',
       speaker: 'You',
-      text_target: 'Soy de Australia. ?Y tu?',
+      text_target: 'Soy de Australia. ¿Y tú?',
       text_en: 'I am from Australia. And you?',
     },
     {
       id: 'e2000000-0013-4000-8000-000000000003',
-      speaker: 'Maria',
-      text_target: 'Yo soy de aqui. Este es mi esposo, Pedro.',
+      speaker: 'María',
+      text_target: 'Yo soy de aquí. Este es mi esposo, Pedro.',
       text_en: 'I am from here. This is my husband, Pedro.',
     },
     {
       id: 'e2000000-0013-4000-8000-000000000004',
       speaker: 'Pedro',
-      text_target: '!Mucho gusto! Este pais es muy bonito, ?verdad?',
+      text_target: '¡Mucho gusto! Este país es muy bonito, ¿verdad?',
       text_en: 'Nice to meet you! This country is very pretty, right?',
     },
     {
       id: 'e2000000-0013-4000-8000-000000000005',
       speaker: 'You',
-      text_target: '!Si, muy bonito! Tambien la gente es muy amable.',
+      text_target: '¡Sí, muy bonito! También la gente es muy amable.',
       text_en: 'Yes, very pretty! The people are also very friendly.',
     },
     {
       id: 'e2000000-0013-4000-8000-000000000006',
-      speaker: 'Maria',
-      text_target: '!Encantada! Bienvenido a nuestro pais.',
+      speaker: 'María',
+      text_target: '¡Encantada! Bienvenido a nuestro país.',
       text_en: 'Delighted! Welcome to our country.',
     },
   ],
   phrases: [
     {
       id: 'f2000000-0013-4000-8000-000000000001',
-      text_target: '?De donde eres?',
+      text_target: '¿De dónde eres?',
       text_en: 'Where are you from?',
       literal_translation: 'Of where are-you?',
       usage_note:
-        'The informal way to ask someone where they are from. Use "?De donde es usted?" for formal.',
+        'The informal way to ask someone where they are from. Use "¿De dónde es usted?" for formal.',
       wordTexts: ['de donde', 'eres'],
     },
     {
@@ -361,16 +361,16 @@ const scene1_3: DialogueSceneData = {
     },
     {
       id: 'f2000000-0013-4000-8000-000000000003',
-      text_target: 'Este pais es muy bonito',
+      text_target: 'Este país es muy bonito',
       text_en: 'This country is very pretty',
       literal_translation: 'This country is very pretty',
       usage_note:
         '"Este" means "this" for masculine nouns. "Esta" is used for feminine nouns.',
-      wordTexts: ['este', 'pais', 'bonito'],
+      wordTexts: ['este', 'país', 'bonito'],
     },
     {
       id: 'f2000000-0013-4000-8000-000000000004',
-      text_target: '!Encantada!',
+      text_target: '¡Encantada!',
       text_en: 'Delighted!',
       literal_translation: 'Enchanted!',
       usage_note:
@@ -381,14 +381,14 @@ const scene1_3: DialogueSceneData = {
   patterns: [
     {
       id: '0b200000-0013-4000-8000-000000000001',
-      pattern_template: '?De ___ eres?',
+      pattern_template: '¿De ___ eres?',
       pattern_en: 'Where are you from?',
       explanation:
         '"De donde" means "from where." It is used to ask about someone\'s origin.',
-      prompt: '?De ___ eres?',
+      prompt: '¿De ___ eres?',
       hint_en: 'Where are you from?',
       correct_answer: 'donde',
-      distractors: ['como', 'que', 'aqui'],
+      distractors: ['cómo', 'que', 'aquí'],
     },
     {
       id: '0b200000-0013-4000-8000-000000000002',
@@ -403,24 +403,24 @@ const scene1_3: DialogueSceneData = {
     },
     {
       id: '0b200000-0013-4000-8000-000000000003',
-      pattern_template: '___ pais es muy bonito',
+      pattern_template: '___ país es muy bonito',
       pattern_en: 'This country is very pretty',
       explanation:
-        '"Este" means "this" for masculine nouns. "Pais" (country) is masculine.',
-      prompt: '___ pais es muy bonito.',
+        '"Este" means "this" for masculine nouns. "País" (country) is masculine.',
+      prompt: '___ país es muy bonito.',
       hint_en: 'This country is very pretty.',
       correct_answer: 'Este',
-      distractors: ['Aqui', 'Yo', 'Mi'],
+      distractors: ['Aquí', 'Yo', 'Mi'],
     },
   ],
   newWords: [
     { id: 'b2000000-0001-4000-8000-000000000043', text: 'de donde', meaning_en: 'from where', part_of_speech: 'phrase' },
     { id: 'b2000000-0001-4000-8000-000000000044', text: 'soy', meaning_en: 'I am (permanent)', part_of_speech: 'verb' },
     { id: 'b2000000-0001-4000-8000-000000000045', text: 'y', meaning_en: 'and', part_of_speech: 'conjunction' },
-    { id: 'b2000000-0001-4000-8000-000000000046', text: 'tambien', meaning_en: 'also / too', part_of_speech: 'adverb' },
+    { id: 'b2000000-0001-4000-8000-000000000046', text: 'también', meaning_en: 'also / too', part_of_speech: 'adverb' },
     { id: 'b2000000-0001-4000-8000-000000000047', text: 'bonito', meaning_en: 'pretty / beautiful', part_of_speech: 'adjective' },
     { id: 'b2000000-0001-4000-8000-000000000048', text: 'este', meaning_en: 'this (masculine)', part_of_speech: 'determiner' },
-    { id: 'b2000000-0001-4000-8000-000000000049', text: 'pais', meaning_en: 'country', part_of_speech: 'noun' },
+    { id: 'b2000000-0001-4000-8000-000000000049', text: 'país', meaning_en: 'country', part_of_speech: 'noun' },
     { id: 'b2000000-0001-4000-8000-000000000050', text: 'eres', meaning_en: 'you are (informal, permanent)', part_of_speech: 'verb' },
     { id: 'b2000000-0001-4000-8000-000000000051', text: 'gente', meaning_en: 'people', part_of_speech: 'noun' },
     { id: 'b2000000-0001-4000-8000-000000000052', text: 'amable', meaning_en: 'kind / friendly', part_of_speech: 'adjective' },
@@ -428,7 +428,7 @@ const scene1_3: DialogueSceneData = {
   existingWordTexts: [
     'hola', 'nombre', 'amigo', 'bueno', 'gracias',
     // From scene 1.1:
-    'mucho gusto', 'encantado', 'muy', 'aqui', 'bienvenido', 'si',
+    'mucho gusto', 'encantado', 'muy', 'aquí', 'bienvenido', 'si',
   ],
 };
 
@@ -445,66 +445,66 @@ const scene1_4: DialogueSceneData = {
     {
       id: 'e2000000-0014-4000-8000-000000000001',
       speaker: 'You',
-      text_target: 'Perdon, ?donde hay una farmacia?',
+      text_target: 'Perdón, ¿dónde hay una farmacia?',
       text_en: 'Excuse me, where is there a pharmacy?',
     },
     {
       id: 'e2000000-0014-4000-8000-000000000002',
       speaker: 'Local',
-      text_target: 'La farmacia esta cerca. Siga por esta calle.',
+      text_target: 'La farmacia está cerca. Siga por esta calle.',
       text_en: 'The pharmacy is nearby. Continue along this street.',
     },
     {
       id: 'e2000000-0014-4000-8000-000000000003',
       speaker: 'You',
-      text_target: '?Esta lejos la tienda grande?',
+      text_target: '¿Está lejos la tienda grande?',
       text_en: 'Is the big shop far away?',
     },
     {
       id: 'e2000000-0014-4000-8000-000000000004',
       speaker: 'Local',
-      text_target: 'No, no esta lejos. Hay una tienda pequena aqui a la derecha.',
+      text_target: 'No, no está lejos. Hay una tienda pequeña aquí a la derecha.',
       text_en: 'No, it is not far. There is a small shop here on the right.',
     },
     {
       id: 'e2000000-0014-4000-8000-000000000005',
       speaker: 'You',
-      text_target: '!Gracias! ?Y hay un supermercado cerca?',
+      text_target: '¡Gracias! ¿Y hay un supermercado cerca?',
       text_en: 'Thanks! And is there a supermarket nearby?',
     },
     {
       id: 'e2000000-0014-4000-8000-000000000006',
       speaker: 'Local',
-      text_target: 'Si, hay uno grande a la izquierda, por favor siga recto.',
+      text_target: 'Sí, hay uno grande a la izquierda, por favor siga recto.',
       text_en: 'Yes, there is a big one on the left, please go straight.',
     },
   ],
   phrases: [
     {
       id: 'f2000000-0014-4000-8000-000000000001',
-      text_target: 'Perdon, ?donde hay ...?',
+      text_target: 'Perdón, ¿dónde hay ...?',
       text_en: 'Excuse me, where is there ...?',
       literal_translation: 'Pardon, where there-is ...?',
       usage_note:
-        '"Perdon" gets attention politely. "?Donde hay ...?" asks where something can be found.',
-      wordTexts: ['perdon'],
+        '"Perdón" gets attention politely. "¿Dónde hay ...?" asks where something can be found.',
+      wordTexts: ['perdón'],
     },
     {
       id: 'f2000000-0014-4000-8000-000000000002',
-      text_target: 'Esta cerca',
+      text_target: 'Está cerca',
       text_en: 'It is nearby',
       literal_translation: 'Is close',
       usage_note:
-        '"Cerca" means near. Use "esta cerca" to say something is close by.',
+        '"Cerca" means near. Use "está cerca" to say something is close by.',
       wordTexts: ['cerca'],
     },
     {
       id: 'f2000000-0014-4000-8000-000000000003',
-      text_target: 'Esta lejos',
+      text_target: 'Está lejos',
       text_en: 'It is far away',
       literal_translation: 'Is far',
       usage_note:
-        '"Lejos" is the opposite of "cerca." Use "esta lejos" to say something is far.',
+        '"Lejos" is the opposite of "cerca." Use "está lejos" to say something is far.',
       wordTexts: ['lejos'],
     },
     {
@@ -520,52 +520,52 @@ const scene1_4: DialogueSceneData = {
   patterns: [
     {
       id: '0b200000-0014-4000-8000-000000000001',
-      pattern_template: '?Donde ___ una farmacia?',
+      pattern_template: '¿Dónde ___ una farmacia?',
       pattern_en: 'Where is there a pharmacy?',
       explanation:
-        '"Hay" means "there is / there are." Use "?Donde hay ...?" to ask where to find something.',
-      prompt: '?Donde ___ una farmacia?',
+        '"Hay" means "there is / there are." Use "¿Dónde hay ...?" to ask where to find something.',
+      prompt: '¿Dónde ___ una farmacia?',
       hint_en: 'Where is there a pharmacy?',
       correct_answer: 'hay',
-      distractors: ['esta', 'tiene', 'es'],
+      distractors: ['está', 'tiene', 'es'],
     },
     {
       id: '0b200000-0014-4000-8000-000000000002',
-      pattern_template: 'La tienda esta ___',
+      pattern_template: 'La tienda está ___',
       pattern_en: 'The shop is nearby',
       explanation:
-        '"Cerca" means close or nearby. "Lejos" means far. Both follow "esta."',
-      prompt: 'La tienda esta ___.',
+        '"Cerca" means close or nearby. "Lejos" means far. Both follow "está."',
+      prompt: 'La tienda está ___.',
       hint_en: 'The shop is nearby.',
       correct_answer: 'cerca',
-      distractors: ['lejos', 'grande', 'aqui'],
+      distractors: ['lejos', 'grande', 'aquí'],
     },
     {
       id: '0b200000-0014-4000-8000-000000000003',
       pattern_template: 'Una tienda ___ a la derecha',
       pattern_en: 'A small shop on the right',
       explanation:
-        'Adjectives follow the noun in Spanish. "Pequena" means small. "Grande" means big.',
+        'Adjectives follow the noun in Spanish. "Pequeña" means small. "Grande" means big.',
       prompt: 'Una tienda ___ a la derecha.',
       hint_en: 'A small shop on the right.',
-      correct_answer: 'pequena',
+      correct_answer: 'pequeña',
       distractors: ['grande', 'bonito', 'cerca'],
     },
   ],
   newWords: [
-    { id: 'b2000000-0001-4000-8000-000000000053', text: 'perdon', meaning_en: 'excuse me / pardon', part_of_speech: 'interjection' },
+    { id: 'b2000000-0001-4000-8000-000000000053', text: 'perdón', meaning_en: 'excuse me / pardon', part_of_speech: 'interjection' },
     { id: 'b2000000-0001-4000-8000-000000000054', text: 'calle', meaning_en: 'street', part_of_speech: 'noun' },
     { id: 'b2000000-0001-4000-8000-000000000055', text: 'cerca', meaning_en: 'near / close', part_of_speech: 'adverb' },
     { id: 'b2000000-0001-4000-8000-000000000056', text: 'lejos', meaning_en: 'far away', part_of_speech: 'adverb' },
     { id: 'b2000000-0001-4000-8000-000000000057', text: 'hay', meaning_en: 'there is / there are', part_of_speech: 'verb' },
     { id: 'b2000000-0001-4000-8000-000000000058', text: 'grande', meaning_en: 'big / large', part_of_speech: 'adjective' },
-    { id: 'b2000000-0001-4000-8000-000000000059', text: 'pequena', meaning_en: 'small (feminine)', part_of_speech: 'adjective' },
+    { id: 'b2000000-0001-4000-8000-000000000059', text: 'pequeña', meaning_en: 'small (feminine)', part_of_speech: 'adjective' },
     { id: 'b2000000-0001-4000-8000-000000000060', text: 'tienda', meaning_en: 'shop / store', part_of_speech: 'noun' },
   ],
   existingWordTexts: [
     'donde', 'gracias', 'por favor', 'bueno', 'si', 'izquierda', 'derecha', 'no',
     // From scene 1.1:
-    'muy', 'aqui',
+    'muy', 'aquí',
     // From scene 1.2:
     'una',
     // From scene 1.3:

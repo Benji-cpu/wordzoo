@@ -347,8 +347,14 @@ export function TutorChat({
 
           {/* Bottom pinned section: chips + input */}
           <div className="shrink-0 overflow-hidden">
-            {suggestionOptions.length > 0 && (
+            {suggestionOptions.length > 0 ? (
               <SuggestionChips options={suggestionOptions} onSelect={onSendMessage} challengeMode={challengeMode} />
+            ) : (
+              !isStreaming && messages.length > 0 && messages[messages.length - 1].role === 'model' && challengeMode !== 'hard' && (
+                <div className="px-4 py-2">
+                  <p className="text-xs text-text-secondary text-center">Try responding in the language you&apos;re learning, or type in English!</p>
+                </div>
+              )
             )}
             <ChatInput
               onSend={onSendMessage}
