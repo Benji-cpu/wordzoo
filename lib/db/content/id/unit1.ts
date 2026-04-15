@@ -1,7 +1,7 @@
 // Unit 1: Arrivals & Greetings — Scenes 1.3a, 1.3b, 1.4, 1.5
 // Extended dialogue scenes for Indonesian language learning.
 
-import type { DialogueSceneData } from '../dialogue-data';
+import type { DialogueSceneData } from '../../dialogue-data';
 
 // ── Scene 1.3a: Sampai di Bandara (Arriving at the Airport) ─────────
 

@@ -666,4 +666,22 @@ CREATE TABLE IF NOT EXISTS info_bytes (
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_info_bytes_date_lang
   ON info_bytes(publish_date, language_id);
+
+-- App Feedback (general-purpose, context-aware feedback from any page)
+CREATE TABLE IF NOT EXISTS app_feedback (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  message TEXT NOT NULL,
+  page_url TEXT NOT NULL,
+  page_title TEXT,
+  route_params JSONB DEFAULT '{}',
+  screenshot_url TEXT,
+  viewport_width INTEGER,
+  viewport_height INTEGER,
+  user_agent TEXT,
+  status TEXT NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'reviewed', 'actioned', 'dismissed')),
+  admin_notes TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_app_feedback_status ON app_feedback(status, created_at DESC);
 `;

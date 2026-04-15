@@ -44,20 +44,13 @@ const tabs = [
       </svg>
     ),
   },
-  {
-    href: '/gallery',
-    label: 'Gallery',
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-        <circle cx="8.5" cy="8.5" r="1.5" />
-        <polyline points="21 15 16 10 5 21" />
-      </svg>
-    ),
-  },
 ];
 
-export function BottomNav() {
+interface BottomNavProps {
+  onFeedbackTap: () => void;
+}
+
+export function BottomNav({ onFeedbackTap }: BottomNavProps) {
   const pathname = usePathname();
   const keyboardVisible = useKeyboardVisible();
 
@@ -80,6 +73,17 @@ export function BottomNav() {
             </Link>
           );
         })}
+
+        {/* Feedback button (not a link — opens modal overlay) */}
+        <button
+          onClick={onFeedbackTap}
+          className="flex flex-col items-center justify-center gap-0.5 min-w-[64px] py-1 transition-colors rounded-lg text-text-secondary hover:text-accent-id focus-visible:ring-2 focus-visible:ring-accent-id focus-visible:outline-none"
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" />
+          </svg>
+          <span className="text-[10px] font-medium">Feedback</span>
+        </button>
       </div>
     </nav>
   );

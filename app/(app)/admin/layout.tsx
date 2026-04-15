@@ -26,6 +26,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <Link href="/admin/feedback" className="text-sm font-medium text-text-secondary hover:text-foreground transition-colors px-3 py-1.5 rounded-lg hover:bg-surface-inset">
           Feedback
         </Link>
+        <Link href="/admin/app-feedback" className="text-sm font-medium text-text-secondary hover:text-foreground transition-colors px-3 py-1.5 rounded-lg hover:bg-surface-inset">
+          App Feedback
+        </Link>
       </div>
       {children}
     </div>

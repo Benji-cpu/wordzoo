@@ -546,6 +546,22 @@ export interface StudioIntakeProgress {
 
 export type InfoByteDifficulty = 'easy' | 'medium' | 'hard';
 
+export interface AppFeedback {
+  id: string;
+  user_id: string;
+  message: string;
+  page_url: string;
+  page_title: string | null;
+  route_params: Record<string, string>;
+  screenshot_url: string | null;
+  viewport_width: number | null;
+  viewport_height: number | null;
+  user_agent: string | null;
+  status: 'new' | 'reviewed' | 'actioned' | 'dismissed';
+  admin_notes: string | null;
+  created_at: Date;
+}
+
 export interface InfoByte {
   id: string;
   language_id: string;

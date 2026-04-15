@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateDailyInfoByte } from '@/lib/services/info-byte-service';
-
-const INDONESIAN_LANGUAGE_ID = 'a1b2c3d4-0001-4000-8000-000000000001';
+import { getAllLanguages } from '@/lib/db/queries';
 
 export async function GET(request: NextRequest) {
   const authHeader = request.headers.get('authorization');
@@ -11,11 +10,18 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  try {
-    const infoByte = await generateDailyInfoByte(INDONESIAN_LANGUAGE_ID, 'Indonesian', 'id');
-    return NextResponse.json({ success: true, id: infoByte?.id ?? null });
-  } catch (error) {
-    console.error('Generate info byte cron error:', error);
-    return NextResponse.json({ error: 'Failed to generate info byte' }, { status: 500 });
+  const languages = await getAllLanguages();
+  const results: Array<{ language: string; id: string | null; error?: string }> = [];
+
+  for (const lang of languages) {
+    try {
+      const infoByte = await generateDailyInfoByte(lang.id, lang.name, lang.code);
+      results.push({ language: lang.code, id: infoByte?.id ?? null });
+    } catch (error) {
+      console.error(`Generate info byte error for ${lang.code}:`, error);
+      results.push({ language: lang.code, id: null, error: String(error) });
+    }
   }
+
+  return NextResponse.json({ success: true, results });
 }

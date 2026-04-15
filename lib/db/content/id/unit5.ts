@@ -1,7 +1,7 @@
 // Unit 5: Home & Daily Life — Scenes 5.1a, 5.1b, 5.2a, 5.2b, 5.3, 5.4, 5.5
 // Extended dialogue scenes for Indonesian language learning.
 
-import type { DialogueSceneData } from '../dialogue-data';
+import type { DialogueSceneData } from '../../dialogue-data';
 
 // ── Scene 5.1a: Lihat Vila (House Tour) ─────────────────────────────
 

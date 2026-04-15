@@ -2,7 +2,6 @@ import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import {
   getUserActivePath,
-  upsertUserPath,
   getSceneMasteryForPath,
   getPathWordStats,
   getUserDueWords,
@@ -28,8 +27,6 @@ import { InfoByteCard } from '@/components/info-bytes/InfoByteCard';
 import { DailyRecap } from '@/components/learn/DailyRecap';
 import { DashboardUpgradeBanner } from './DashboardUpgradeBanner';
 
-const DEFAULT_INDONESIAN_PATH_ID = 'c1000000-0001-4000-8000-000000000001';
-
 export default async function DashboardPage() {
   const session = await auth();
   if (!session?.user?.id) redirect('/login');
@@ -37,27 +34,10 @@ export default async function DashboardPage() {
   const adminEmails = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim());
   const isAdmin = adminEmails.includes(session.user.email ?? '');
 
-  // Get user's active path, or auto-enroll in default Indonesian path
-  let activePath = await getUserActivePath(userId);
+  // Get user's active path — if none, redirect to path selection
+  const activePath = await getUserActivePath(userId);
   if (!activePath) {
-    await upsertUserPath(userId, DEFAULT_INDONESIAN_PATH_ID, 'active');
-    activePath = await getUserActivePath(userId);
-  }
-
-  // If still no path (e.g. path doesn't exist in DB), show empty state
-  if (!activePath) {
-    return (
-      <div className="max-w-lg mx-auto space-y-4">
-        <DashboardUpgradeBanner />
-        <div>
-          <h1 className="text-xl font-bold text-foreground">Welcome back</h1>
-          <p className="text-sm text-text-secondary mt-1 mb-3">
-            No learning path found.
-          </p>
-          <Button href="/paths" size="sm">Get Started</Button>
-        </div>
-      </div>
-    );
+    redirect('/paths');
   }
 
   const pathId = activePath.path_id;

@@ -239,14 +239,15 @@ Create a bridge sentence that weaves ALL keywords into a memorable narrative wit
 
 export function buildSceneAnchorPrompt(
   sceneTitle: string,
-  sceneContext: string
+  sceneContext: string,
+  culturalContext: string = 'Balinese location'
 ): string {
   return `Generate an atmospheric establishing shot image prompt for a language learning scene location.
 
 Scene: "${sceneTitle}"
 Context: "${sceneContext}"
 
-Create a warm, inviting, detailed image prompt that establishes this Balinese location. Max 80 words. End with: "digital illustration, warm colors, atmospheric lighting, wide composition, establishing shot". Do NOT include text overlays.
+Create a warm, inviting, detailed image prompt that establishes this ${culturalContext}. Max 80 words. End with: "digital illustration, warm colors, atmospheric lighting, wide composition, establishing shot". Do NOT include text overlays.
 
 Return ONLY the image prompt text, no JSON, no explanation.`;
 }

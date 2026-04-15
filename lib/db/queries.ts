@@ -968,6 +968,16 @@ export async function getAllLanguages(): Promise<Language[]> {
   return rows as Language[];
 }
 
+export async function getPremadePathByLanguageCode(languageCode: string): Promise<Path | null> {
+  const rows = await sql`
+    SELECT p.* FROM paths p
+    JOIN languages l ON l.id = p.language_id
+    WHERE l.code = ${languageCode} AND p.type = 'premade'
+    LIMIT 1
+  `;
+  return (rows[0] as Path) ?? null;
+}
+
 export async function getExpiringSubscriptions(): Promise<Subscription[]> {
   const rows = await sql`
     SELECT * FROM subscriptions

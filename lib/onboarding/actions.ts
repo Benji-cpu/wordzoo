@@ -93,6 +93,17 @@ export async function importOnboardingProgress(data: OnboardingImportData) {
     }
   }
 
+  // Auto-enroll in the premade path for this language
+  const { getPremadePathByLanguageCode } = await import('@/lib/db/queries');
+  const premadePath = await getPremadePathByLanguageCode(langCode);
+  if (premadePath) {
+    await sql`
+      INSERT INTO user_paths (user_id, path_id, status)
+      VALUES (${userId}, ${premadePath.id}, 'active')
+      ON CONFLICT (user_id, path_id) DO UPDATE SET status = 'active'
+    `;
+  }
+
   return { success: true, wordsImported: data.words.length };
 }
 

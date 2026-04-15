@@ -14,20 +14,21 @@ const NEW_WORDS = [
   // Indonesian
   { id: 'b1000000-0001-4000-8000-000000000041', languageId: ID_LANG, text: 'kucing', meaning: 'cat', pos: 'noun', rank: 21 },
   { id: 'b1000000-0001-4000-8000-000000000042', languageId: ID_LANG, text: 'besar', meaning: 'big', pos: 'adjective', rank: 22 },
-  // Spanish
-  { id: 'b2000000-0001-4000-8000-000000000021', languageId: ES_LANG, text: 'mariposa', meaning: 'butterfly', pos: 'noun', rank: 21 },
-  { id: 'b2000000-0001-4000-8000-000000000022', languageId: ES_LANG, text: 'cerveza', meaning: 'beer', pos: 'noun', rank: 22 },
-  { id: 'b2000000-0001-4000-8000-000000000023', languageId: ES_LANG, text: 'perezoso', meaning: 'lazy', pos: 'adjective', rank: 23 },
+  // Spanish (IDs 900+ to avoid conflict with expanded content)
+  { id: 'b2000000-0001-4000-8000-000000000901', languageId: ES_LANG, text: 'mariposa', meaning: 'butterfly', pos: 'noun', rank: 901 },
+  { id: 'b2000000-0001-4000-8000-000000000902', languageId: ES_LANG, text: 'cerveza', meaning: 'beer', pos: 'noun', rank: 902 },
+  { id: 'b2000000-0001-4000-8000-000000000903', languageId: ES_LANG, text: 'perezoso', meaning: 'lazy', pos: 'adjective', rank: 903 },
   // Japanese
   { id: 'b3000000-0001-4000-8000-000000000021', languageId: JA_LANG, text: '猫', romanization: 'neko', meaning: 'cat', pos: 'noun', rank: 21 },
   { id: 'b3000000-0001-4000-8000-000000000022', languageId: JA_LANG, text: 'かわいい', romanization: 'kawaii', meaning: 'cute', pos: 'adjective', rank: 22 },
 ];
 
-// Parse --only=word1,word2,... flag for selective regeneration
+// Parse CLI flags
 const onlyWords = process.argv.find(a => a.startsWith('--only='))
   ?.replace('--only=', '')
   .split(',')
   .map(w => w.trim());
+const langFilter = process.argv.find(a => a.startsWith('--lang='))?.replace('--lang=', '');
 
 async function seedMnemonics() {
   const databaseUrl = process.env.DATABASE_URL;
@@ -57,14 +58,17 @@ async function seedMnemonics() {
   }
 
   // Step 2: Query ALL words with their language names
-  const allWords = await sql`
-    SELECT w.id, w.text, w.romanization, w.meaning_en, l.name AS language_name
+  let allWords = await sql`
+    SELECT w.id, w.text, w.romanization, w.meaning_en, l.name AS language_name, l.code AS language_code
     FROM words w
     JOIN languages l ON l.id = w.language_id
     ORDER BY l.name, w.frequency_rank
-  `;
+  ` as Record<string, unknown>[];
+  if (langFilter) {
+    allWords = allWords.filter((w: Record<string, unknown>) => w.language_code === langFilter);
+  }
 
-  console.log(`\nFound ${allWords.length} words total.\n`);
+  console.log(`\nFound ${allWords.length} words${langFilter ? ` for language "${langFilter}"` : ' total'}.\n`);
 
   // Step 3: Generate mnemonics for each word without one
   let successCount = 0;

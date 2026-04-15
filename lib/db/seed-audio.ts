@@ -11,6 +11,7 @@ const onlyWords = args.find(a => a.startsWith('--only='))
   .split(',')
   .map(w => w.trim());
 const force = args.includes('--force');
+const langFilter = args.find(a => a.startsWith('--lang='))?.replace('--lang=', '');
 
 function delay(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -27,8 +28,11 @@ async function seedWordAudio(sql: any) {
     ORDER BY l.code, w.frequency_rank
   `;
 
-  const words = allWords as Record<string, unknown>[];
-  console.log(`Found ${words.length} words total.\n`);
+  let words = allWords as Record<string, unknown>[];
+  if (langFilter) {
+    words = words.filter((w: Record<string, unknown>) => w.language_code === langFilter);
+  }
+  console.log(`Found ${words.length} words${langFilter ? ` for language "${langFilter}"` : ' total'}.\n`);
 
   let successCount = 0;
   let skipCount = 0;
@@ -90,15 +94,19 @@ async function seedNarrationAudio(sql: any) {
 
   const mnemonics = await sql`
     SELECT m.id, m.keyword_text, m.scene_description, m.audio_url,
-      w.text AS word_text, w.romanization
+      w.text AS word_text, w.romanization, l.code AS language_code
     FROM mnemonics m
     JOIN words w ON w.id = m.word_id
+    JOIN languages l ON l.id = w.language_id
     WHERE m.user_id IS NULL
     ORDER BY w.text
   `;
 
-  const rows = mnemonics as Record<string, unknown>[];
-  console.log(`Found ${rows.length} shared mnemonics.\n`);
+  let rows = mnemonics as Record<string, unknown>[];
+  if (langFilter) {
+    rows = rows.filter((r: Record<string, unknown>) => r.language_code === langFilter);
+  }
+  console.log(`Found ${rows.length} shared mnemonics${langFilter ? ` for language "${langFilter}"` : ''}.\n`);
 
   let successCount = 0;
   let skipCount = 0;
@@ -160,27 +168,30 @@ async function seedNarrationAudio(sql: any) {
 async function seedPhraseAudio(sql: any) {
   console.log('=== Seeding Phrase Audio ===\n');
 
-  const phrases = await sql`
+  let phrases = await sql`
     SELECT sp.id, sp.text_target, sp.audio_url, l.code AS language_code
     FROM scene_phrases sp
     JOIN scenes s ON s.id = sp.scene_id
     JOIN paths p ON p.id = s.path_id
     JOIN languages l ON l.id = p.language_id
     ORDER BY s.sort_order, sp.sort_order
-  `;
+  ` as Record<string, unknown>[];
+  if (langFilter) {
+    phrases = phrases.filter((p: Record<string, unknown>) => p.language_code === langFilter);
+  }
 
-  console.log(`Found ${(phrases as unknown[]).length} phrases total.\n`);
+  console.log(`Found ${phrases.length} phrases${langFilter ? ` for language "${langFilter}"` : ' total'}.\n`);
 
   let successCount = 0;
   let skipCount = 0;
   let failCount = 0;
 
-  for (let i = 0; i < (phrases as unknown[]).length; i++) {
-    const phrase = (phrases as Record<string, unknown>[])[i] as {
+  for (let i = 0; i < phrases.length; i++) {
+    const phrase = phrases[i] as {
       id: string; text_target: string; audio_url: string | null; language_code: string;
     };
 
-    console.log(`\n--- [${i + 1}/${(phrases as unknown[]).length}] "${phrase.text_target}" [${phrase.language_code}] ---`);
+    console.log(`\n--- [${i + 1}/${phrases.length}] "${phrase.text_target}" [${phrase.language_code}] ---`);
 
     if (phrase.audio_url && !force) {
       console.log('  Skipping -- already has audio URL');
@@ -211,27 +222,30 @@ async function seedPhraseAudio(sql: any) {
 async function seedDialogueAudio(sql: any) {
   console.log('=== Seeding Dialogue Audio ===\n');
 
-  const dialogues = await sql`
+  let dialogues = await sql`
     SELECT sd.id, sd.text_target, sd.speaker, sd.audio_url, l.code AS language_code
     FROM scene_dialogues sd
     JOIN scenes s ON s.id = sd.scene_id
     JOIN paths p ON p.id = s.path_id
     JOIN languages l ON l.id = p.language_id
     ORDER BY s.sort_order, sd.sort_order
-  `;
+  ` as Record<string, unknown>[];
+  if (langFilter) {
+    dialogues = dialogues.filter((d: Record<string, unknown>) => d.language_code === langFilter);
+  }
 
-  console.log(`Found ${(dialogues as unknown[]).length} dialogue lines total.\n`);
+  console.log(`Found ${dialogues.length} dialogue lines${langFilter ? ` for language "${langFilter}"` : ' total'}.\n`);
 
   let successCount = 0;
   let skipCount = 0;
   let failCount = 0;
 
-  for (let i = 0; i < (dialogues as unknown[]).length; i++) {
-    const line = (dialogues as Record<string, unknown>[])[i] as {
+  for (let i = 0; i < dialogues.length; i++) {
+    const line = dialogues[i] as {
       id: string; text_target: string; speaker: string; audio_url: string | null; language_code: string;
     };
 
-    console.log(`\n--- [${i + 1}/${(dialogues as unknown[]).length}] ${line.speaker}: "${line.text_target}" [${line.language_code}] ---`);
+    console.log(`\n--- [${i + 1}/${dialogues.length}] ${line.speaker}: "${line.text_target}" [${line.language_code}] ---`);
 
     if (line.audio_url && !force) {
       console.log('  Skipping -- already has audio URL');

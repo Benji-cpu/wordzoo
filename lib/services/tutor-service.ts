@@ -74,6 +74,7 @@ export async function startSession(
   } else {
     systemPrompt = buildTutorSystemPrompt({
       languageName: language.name,
+      languageCode: language.code,
       mode,
       scenario,
       knownWords,
@@ -124,6 +125,7 @@ export async function startGuidedSession(
 
   const systemPrompt = buildGuidedConversationPrompt({
     languageName: language.name,
+    languageCode: language.code,
     sceneContext,
     dialogueLines: dialogues.map((d) => ({
       speaker: d.speaker,
@@ -192,6 +194,7 @@ export async function sendMessage(
     const phase = getGuidedPhase(userTurnCount, MAX_GUIDED_TURNS);
     systemPrompt = buildGuidedConversationPrompt({
       languageName: language.name,
+      languageCode: language.code,
       sceneContext: session.scenario ?? '',
       dialogueLines: dialogues.map((d) => ({
         speaker: d.speaker,
@@ -269,6 +272,7 @@ export async function sendMessage(
 
     systemPrompt = buildTutorSystemPrompt({
       languageName: language.name,
+      languageCode: language.code,
       mode: session.mode,
       scenario: session.scenario,
       knownWords,

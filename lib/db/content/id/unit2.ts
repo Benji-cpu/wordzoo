@@ -3,7 +3,7 @@
 // position words, telling time, and buying bus tickets.
 // Each original scene has been split into two scenes of 6-7 words each.
 
-import type { DialogueSceneData } from '../dialogue-data';
+import type { DialogueSceneData } from '../../dialogue-data';
 
 // ── Scene 2.2a: Naik Taksi (Taking a Taxi) ──────────────────────────
 

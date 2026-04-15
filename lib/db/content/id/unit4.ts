@@ -2,7 +2,7 @@
 // Extended dialogue scenes for Indonesian language learning.
 // Each original scene (12-14 words) has been split into two scenes of 6-7 words.
 
-import type { DialogueSceneData } from '../dialogue-data';
+import type { DialogueSceneData } from '../../dialogue-data';
 
 // ── Scene 4.2a: Buah di Pasar (Fruit Shopping) ─────────────────────
 

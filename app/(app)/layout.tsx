@@ -1,9 +1,9 @@
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { BottomNav } from './BottomNav';
 import { OfflineIndicator } from '@/components/offline/OfflineIndicator';
 import { SyncProvider } from '@/components/offline/SyncProvider';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
+import { AppShell } from './AppShell';
 
 export default async function AppLayout({
   children,
@@ -43,11 +43,8 @@ export default async function AppLayout({
           <div id="header-progress-slot" />
         </header>
 
-        {/* Main content */}
-        <main className="flex-1 overflow-y-auto p-4 pb-20">{children}</main>
-
-        {/* Bottom navigation */}
-        <BottomNav />
+        {/* Main content + bottom nav + feedback modal */}
+        <AppShell>{children}</AppShell>
       </div>
     </SyncProvider>
   );

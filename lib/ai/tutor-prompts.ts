@@ -1,5 +1,6 @@
 import type { KnownWordRow } from '@/lib/db/queries';
 import type { ProficiencyTier } from '@/lib/services/learner-profile-service';
+import { getLanguageConfig } from '@/lib/config/language-config';
 
 // --- Phase Types ---
 
@@ -32,37 +33,34 @@ const FREE_CHAT_PHASE_INSTRUCTIONS: Record<FreeChatPhase, string> = {
   close: `## Current Phase: Closing\nWrap up warmly. Summarize 1-2 things done well. Suggest next step (review flashcards, try next scene). Do NOT ask questions.`,
 };
 
-const REGISTER_AWARENESS = `## Register Awareness (Formal vs Informal)
-Indonesian has distinct formal (bahasa baku) and informal registers. This is essential for natural communication.
-Common register pairs: saya/aku/gue (I), tidak/nggak/gak (not), apa kabar/gimana (how are you), terima kasih/makasih (thanks), sudah/udah (already), belum/belom (not yet), ini/nih (this), itu/tuh (that).
-`;
+function getLanguagePolicy(tier: ProficiencyTier, lang: string, langCode?: string): string {
+  const config = langCode ? getLanguageConfig(langCode) : undefined;
+  const registerBlock = config?.registerAwareness[tier] ?? '';
 
-const LANGUAGE_POLICY: Record<ProficiencyTier, (lang: string) => string> = {
-  beginner: (lang) =>
-    `## Language Policy\n` +
-    `Speak primarily in English. Embed individual ${lang} words and short phrases (2-3 words max) within English sentences.\n` +
-    `NEVER write full sentences in ${lang}. The student cannot parse ${lang} grammar yet.\n` +
-    `Example: "Great job! The word **terima kasih** (thank you) is perfect here. Can you try using **selamat pagi** (good morning) in a sentence?"\n\n` +
-    REGISTER_AWARENESS +
-    `At beginner level: use formal Indonesian with informal in parentheses. E.g., "**saya** (or **aku/gue** casually)".\n` +
-    `Only introduce informal variants when the formal form has been learned first.`,
-  intermediate: (lang) =>
-    `## Language Policy\n` +
-    `Use a mix of ${lang} and English. Write simple ${lang} sentences (4-6 words) with immediate English support.\n` +
-    `Use English for corrections and explanations. The student can handle simple ${lang} sentences but not complex ones.\n\n` +
-    REGISTER_AWARENESS +
-    `At intermediate level: can switch to casual register naturally. Explain register differences when they come up.\n` +
-    `If the student uses formal when casual would be more natural (or vice versa), mention it briefly.`,
-  advanced: (lang) =>
-    `## Language Policy\n` +
-    `Speak mostly in ${lang}. Use English only for nuanced corrections or complex explanations.\n` +
-    `The student is comfortable with ${lang} grammar and vocabulary.\n\n` +
-    REGISTER_AWARENESS +
-    `At advanced level: use natural register mixing. Point out subtle register nuances (e.g., Jakarta slang vs standard informal).`,
-};
+  const policyByTier: Record<ProficiencyTier, string> = {
+    beginner:
+      `## Language Policy\n` +
+      `Speak primarily in English. Embed individual ${lang} words and short phrases (2-3 words max) within English sentences.\n` +
+      `NEVER write full sentences in ${lang}. The student cannot parse ${lang} grammar yet.\n` +
+      (registerBlock ? `\n${registerBlock}` : ''),
+    intermediate:
+      `## Language Policy\n` +
+      `Use a mix of ${lang} and English. Write simple ${lang} sentences (4-6 words) with immediate English support.\n` +
+      `Use English for corrections and explanations. The student can handle simple ${lang} sentences but not complex ones.\n` +
+      (registerBlock ? `\n${registerBlock}` : ''),
+    advanced:
+      `## Language Policy\n` +
+      `Speak mostly in ${lang}. Use English only for nuanced corrections or complex explanations.\n` +
+      `The student is comfortable with ${lang} grammar and vocabulary.\n` +
+      (registerBlock ? `\n${registerBlock}` : ''),
+  };
+
+  return policyByTier[tier];
+}
 
 interface TutorPromptOptions {
   languageName: string;
+  languageCode?: string;
   mode: string;
   scenario?: string | null;
   knownWords: KnownWordRow[];
@@ -101,7 +99,7 @@ export function buildTutorSystemPrompt(opts: TutorPromptOptions): string {
 
   // Language policy based on proficiency
   const tier = opts.proficiencyTier ?? 'beginner';
-  blocks.push(LANGUAGE_POLICY[tier](opts.languageName));
+  blocks.push(getLanguagePolicy(tier, opts.languageName, opts.languageCode));
 
   // Student name
   if (opts.userName) {
@@ -205,6 +203,7 @@ export function buildTutorSystemPrompt(opts: TutorPromptOptions): string {
 
 interface GuidedConversationOptions {
   languageName: string;
+  languageCode?: string;
   sceneContext: string;
   dialogueLines: { speaker: string; text_target: string; text_en: string }[];
   phrases: { text_target: string; text_en: string }[];
@@ -228,7 +227,7 @@ export function buildGuidedConversationPrompt(opts: GuidedConversationOptions): 
   );
 
   // Language policy based on proficiency
-  blocks.push(LANGUAGE_POLICY[guidedTier](opts.languageName));
+  blocks.push(getLanguagePolicy(guidedTier, opts.languageName, opts.languageCode));
 
   // Student name
   if (opts.userName) {

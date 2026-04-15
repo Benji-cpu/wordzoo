@@ -2,7 +2,7 @@
 // Extended dialogue scenes for Indonesian language learning.
 // Split from original 3 scenes (14+16+14 words) into 7 scenes (7+7+6+5+5+7+7 words).
 
-import type { DialogueSceneData } from '../dialogue-data';
+import type { DialogueSceneData } from '../../dialogue-data';
 
 // ── Scene 3.3a: Pesan Kopi (Ordering Coffee) ────────────────────────
 

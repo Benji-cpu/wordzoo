@@ -297,3 +297,30 @@ export type StudioStartInput = z.infer<typeof StudioStartSchema>;
 export type StudioChatInput = z.infer<typeof StudioChatSchema>;
 export type StudioGenerateInput = z.infer<typeof StudioGenerateSchema>;
 export type StudioSuggestionsInput = z.infer<typeof StudioSuggestionsSchema>;
+
+// --- App Feedback ---
+
+export const SubmitAppFeedbackSchema = z.object({
+  message: z.string().min(1).max(1000),
+  pageUrl: z.string().min(1).max(2000),
+  pageTitle: z.string().max(200).optional(),
+  routeParams: z.record(z.string(), z.string()).optional(),
+  screenshotUrl: z.string().url().optional(),
+  viewportWidth: z.number().int().positive().optional(),
+  viewportHeight: z.number().int().positive().optional(),
+  userAgent: z.string().max(500).optional(),
+});
+
+export const UpdateAppFeedbackSchema = z.object({
+  status: z.enum(['new', 'reviewed', 'actioned', 'dismissed']),
+  adminNotes: z.string().max(2000).optional(),
+});
+
+export const AppFeedbackQuerySchema = z.object({
+  status: z.enum(['all', 'new', 'reviewed', 'actioned', 'dismissed']).optional().default('all'),
+  page: z.coerce.number().int().min(1).optional().default(1),
+});
+
+export type SubmitAppFeedbackInput = z.infer<typeof SubmitAppFeedbackSchema>;
+export type UpdateAppFeedbackInput = z.infer<typeof UpdateAppFeedbackSchema>;
+export type AppFeedbackQuery = z.infer<typeof AppFeedbackQuerySchema>;

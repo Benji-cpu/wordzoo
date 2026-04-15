@@ -1,5 +1,5 @@
 import { sql } from './client';
-import type { Mnemonic } from '@/types/database';
+import type { Mnemonic, AppFeedback } from '@/types/database';
 
 // --- Content Overview ---
 
@@ -333,4 +333,76 @@ export async function markImageReviewed(
       UPDATE mnemonics SET image_reviewed = true, image_url = NULL WHERE id = ${mnemonicId}
     `;
   }
+}
+
+// --- App Feedback ---
+
+export interface AppFeedbackWithUser extends AppFeedback {
+  user_email: string;
+}
+
+export async function getAppFeedbackStats(): Promise<{
+  total: number;
+  new_count: number;
+  reviewed_count: number;
+  actioned_count: number;
+  dismissed_count: number;
+}> {
+  const rows = await sql`
+    SELECT
+      COUNT(*)::int AS total,
+      COUNT(CASE WHEN status = 'new' THEN 1 END)::int AS new_count,
+      COUNT(CASE WHEN status = 'reviewed' THEN 1 END)::int AS reviewed_count,
+      COUNT(CASE WHEN status = 'actioned' THEN 1 END)::int AS actioned_count,
+      COUNT(CASE WHEN status = 'dismissed' THEN 1 END)::int AS dismissed_count
+    FROM app_feedback
+  `;
+  return rows[0] as {
+    total: number;
+    new_count: number;
+    reviewed_count: number;
+    actioned_count: number;
+    dismissed_count: number;
+  };
+}
+
+export async function getAppFeedbackList(
+  limit: number,
+  offset: number,
+  statusFilter?: string
+): Promise<AppFeedbackWithUser[]> {
+  if (statusFilter && statusFilter !== 'all') {
+    const rows = await sql`
+      SELECT af.*, u.email AS user_email
+      FROM app_feedback af
+      JOIN users u ON u.id = af.user_id
+      WHERE af.status = ${statusFilter}
+      ORDER BY af.created_at DESC
+      LIMIT ${limit} OFFSET ${offset}
+    `;
+    return rows as AppFeedbackWithUser[];
+  }
+
+  const rows = await sql`
+    SELECT af.*, u.email AS user_email
+    FROM app_feedback af
+    JOIN users u ON u.id = af.user_id
+    ORDER BY af.created_at DESC
+    LIMIT ${limit} OFFSET ${offset}
+  `;
+  return rows as AppFeedbackWithUser[];
+}
+
+export async function updateAppFeedbackStatus(
+  id: string,
+  status: string,
+  adminNotes?: string
+): Promise<AppFeedback | null> {
+  const rows = await sql`
+    UPDATE app_feedback
+    SET status = ${status}, admin_notes = COALESCE(${adminNotes ?? null}, admin_notes)
+    WHERE id = ${id}
+    RETURNING *
+  `;
+  return (rows[0] as AppFeedback) ?? null;
 }
