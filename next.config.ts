@@ -1,19 +1,7 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
-  async headers() {
-    return [
-      {
-        source: '/sw.js',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'no-cache, no-store, must-revalidate',
-          },
-        ],
-      },
-    ];
-  },
-};
+// Service worker is served by the app/sw.js/route.ts handler, which sets
+// its own cache-control headers. No static header rewrite needed here.
+const nextConfig: NextConfig = {};
 
 export default nextConfig;
