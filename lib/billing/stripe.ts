@@ -7,11 +7,32 @@ import {
   updateUserSubscriptionTier,
   getUserById,
   insertPurchase,
+  insertStudioPathPurchase,
   getPathById,
+  recordWebhookEvent,
 } from '@/lib/db/queries';
 
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('STRIPE_SECRET_KEY environment variable is not set');
+}
+
+const requiredPriceEnv = {
+  STRIPE_PRICE_MONTHLY: process.env.STRIPE_PRICE_MONTHLY,
+  STRIPE_PRICE_YEARLY: process.env.STRIPE_PRICE_YEARLY,
+  STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
+};
+
+const missingEnv = Object.entries(requiredPriceEnv)
+  .filter(([, v]) => !v)
+  .map(([k]) => k);
+
+if (missingEnv.length > 0) {
+  const msg = `Missing required Stripe env vars: ${missingEnv.join(', ')}`;
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error(msg);
+  } else {
+    console.warn(`[billing] ${msg} — checkouts will fail until these are set.`);
+  }
 }
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -145,6 +166,11 @@ export async function createPortalSession(userId: string): Promise<string> {
 }
 
 export async function handleWebhookEvent(event: Stripe.Event): Promise<void> {
+  // Idempotency guard: atomically claim this event. If another call already
+  // recorded it, skip processing to avoid duplicate subscription/purchase rows.
+  const claimed = await recordWebhookEvent(event.id, event.type);
+  if (!claimed) return;
+
   switch (event.type) {
     case 'checkout.session.completed': {
       const session = event.data.object as Stripe.Checkout.Session;
@@ -167,13 +193,21 @@ export async function handleWebhookEvent(event: Stripe.Event): Promise<void> {
       }
 
       if (session.metadata?.type === 'studio_path') {
-        // Studio path purchases are handled by the generate-callback route
-        // Just record the purchase for tracking
-        const studioSessionId = session.metadata.sessionId;
-        if (studioSessionId && session.payment_intent) {
-          // Note: We don't have a pack_id yet — it will be created by generate-callback
-          // For now, just break — the callback route handles generation
-        }
+        // Record purchase atomically with payment so callback retries are safe
+        // and /api/studio/generate can grant access on retry
+        const studioSessionId = session.metadata.sessionId ?? null;
+        const paymentIntent = session.payment_intent
+          ? (typeof session.payment_intent === 'string'
+              ? session.payment_intent
+              : session.payment_intent.id)
+          : null;
+
+        await insertStudioPathPurchase({
+          userId,
+          stripeSessionId: session.id,
+          studioSessionId,
+          stripePaymentId: paymentIntent,
+        });
         break;
       }
 
@@ -253,6 +287,35 @@ export async function handleWebhookEvent(event: Stripe.Event): Promise<void> {
           : subDetails.subscription.id;
         await updateSubscriptionStatus(subId, 'past_due');
       }
+      break;
+    }
+
+    case 'invoice.paid': {
+      const invoice = event.data.object as Stripe.Invoice;
+      const subDetails = invoice.parent?.subscription_details;
+      if (!subDetails?.subscription) break;
+
+      const subId = typeof subDetails.subscription === 'string'
+        ? subDetails.subscription
+        : subDetails.subscription.id;
+
+      const existing = await getSubscriptionByStripeSubId(subId);
+      if (!existing) break;
+
+      // Refresh from Stripe to get the updated current_period_end after renewal
+      const sub = await stripe.subscriptions.retrieve(subId);
+      const periodEnd = getSubscriptionPeriodEnd(sub);
+
+      await upsertSubscription({
+        userId: existing.user_id,
+        stripeCustomerId: typeof sub.customer === 'string' ? sub.customer : sub.customer.id,
+        stripeSubscriptionId: sub.id,
+        plan: existing.plan,
+        status: 'active',
+        currentPeriodEnd: new Date(periodEnd * 1000).toISOString(),
+      });
+
+      await updateUserSubscriptionTier(existing.user_id, 'premium');
       break;
     }
   }

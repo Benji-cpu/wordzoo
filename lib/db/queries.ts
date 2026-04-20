@@ -730,6 +730,48 @@ export async function getUserById(userId: string): Promise<{ id: string; email: 
   return (rows[0] as { id: string; email: string; subscription_tier: string }) ?? null;
 }
 
+export interface UserProfile {
+  id: string;
+  name: string | null;
+  email: string;
+  image: string | null;
+  native_language: string;
+  subscription_tier: string;
+  preferences: Record<string, unknown>;
+  created_at: string;
+}
+
+export async function getUserProfile(userId: string): Promise<UserProfile | null> {
+  const rows = await sql`
+    SELECT id, name, email, image, native_language, subscription_tier, preferences, created_at
+    FROM users WHERE id = ${userId}
+  `;
+  return (rows[0] as UserProfile) ?? null;
+}
+
+export async function updateUserNativeLanguage(userId: string, nativeLanguage: string): Promise<void> {
+  await sql`
+    UPDATE users SET native_language = ${nativeLanguage}, updated_at = NOW() WHERE id = ${userId}
+  `;
+}
+
+export async function updateUserPreferences(
+  userId: string,
+  preferences: Record<string, unknown>
+): Promise<void> {
+  await sql`
+    UPDATE users
+    SET preferences = preferences || ${JSON.stringify(preferences)}::jsonb,
+        updated_at = NOW()
+    WHERE id = ${userId}
+  `;
+}
+
+export async function deleteUserCascade(userId: string): Promise<void> {
+  // All related tables use ON DELETE CASCADE, so a single delete removes everything.
+  await sql`DELETE FROM users WHERE id = ${userId}`;
+}
+
 export async function getSubscriptionByUserId(userId: string): Promise<Subscription | null> {
   const rows = await sql`
     SELECT * FROM subscriptions WHERE user_id = ${userId} ORDER BY created_at DESC LIMIT 1
@@ -797,6 +839,99 @@ export async function getUserPurchases(userId: string): Promise<Purchase[]> {
 export async function hasPurchasedPack(userId: string, packId: string): Promise<boolean> {
   const rows = await sql`
     SELECT 1 FROM purchases WHERE user_id = ${userId} AND pack_id = ${packId} LIMIT 1
+  `;
+  return rows.length > 0;
+}
+
+// ---- Studio Path Purchases ----
+
+export interface StudioPathPurchase {
+  id: string;
+  user_id: string;
+  stripe_session_id: string;
+  studio_session_id: string | null;
+  stripe_payment_id: string | null;
+  path_id: string | null;
+  created_at: string;
+  consumed_at: string | null;
+}
+
+export async function insertStudioPathPurchase(data: {
+  userId: string;
+  stripeSessionId: string;
+  studioSessionId: string | null;
+  stripePaymentId: string | null;
+}): Promise<StudioPathPurchase> {
+  const rows = await sql`
+    INSERT INTO studio_path_purchases (user_id, stripe_session_id, studio_session_id, stripe_payment_id)
+    VALUES (${data.userId}, ${data.stripeSessionId}, ${data.studioSessionId}, ${data.stripePaymentId})
+    ON CONFLICT (stripe_session_id) DO NOTHING
+    RETURNING *
+  `;
+  if (rows.length === 0) {
+    const existing = await sql`
+      SELECT * FROM studio_path_purchases WHERE stripe_session_id = ${data.stripeSessionId}
+    `;
+    return existing[0] as StudioPathPurchase;
+  }
+  return rows[0] as StudioPathPurchase;
+}
+
+export async function getStudioPathPurchaseBySessionId(
+  stripeSessionId: string
+): Promise<StudioPathPurchase | null> {
+  const rows = await sql`
+    SELECT * FROM studio_path_purchases WHERE stripe_session_id = ${stripeSessionId}
+  `;
+  return (rows[0] as StudioPathPurchase) ?? null;
+}
+
+export async function getUnconsumedStudioPathPurchase(
+  userId: string,
+  studioSessionId?: string
+): Promise<StudioPathPurchase | null> {
+  const rows = studioSessionId
+    ? await sql`
+        SELECT * FROM studio_path_purchases
+        WHERE user_id = ${userId}
+          AND consumed_at IS NULL
+          AND (studio_session_id = ${studioSessionId} OR studio_session_id IS NULL)
+        ORDER BY created_at DESC
+        LIMIT 1
+      `
+    : await sql`
+        SELECT * FROM studio_path_purchases
+        WHERE user_id = ${userId} AND consumed_at IS NULL
+        ORDER BY created_at DESC
+        LIMIT 1
+      `;
+  return (rows[0] as StudioPathPurchase) ?? null;
+}
+
+export async function consumeStudioPathPurchase(
+  purchaseId: string,
+  pathId: string
+): Promise<void> {
+  await sql`
+    UPDATE studio_path_purchases
+    SET path_id = ${pathId}, consumed_at = NOW()
+    WHERE id = ${purchaseId} AND consumed_at IS NULL
+  `;
+}
+
+export async function isWebhookEventProcessed(stripeEventId: string): Promise<boolean> {
+  const rows = await sql`
+    SELECT 1 FROM webhook_events WHERE stripe_event_id = ${stripeEventId} LIMIT 1
+  `;
+  return rows.length > 0;
+}
+
+export async function recordWebhookEvent(stripeEventId: string, eventType: string): Promise<boolean> {
+  const rows = await sql`
+    INSERT INTO webhook_events (stripe_event_id, event_type)
+    VALUES (${stripeEventId}, ${eventType})
+    ON CONFLICT (stripe_event_id) DO NOTHING
+    RETURNING id
   `;
   return rows.length > 0;
 }
@@ -1142,6 +1277,18 @@ export async function updateWordSRS(
   `;
 }
 
+export async function getUserWord(
+  userId: string,
+  wordId: string
+): Promise<{ times_reviewed: number } | null> {
+  const rows = await sql`
+    SELECT times_reviewed FROM user_words
+    WHERE user_id = ${userId} AND word_id = ${wordId}
+    LIMIT 1
+  `;
+  return (rows[0] as { times_reviewed: number }) ?? null;
+}
+
 export async function getOrCreateUserWord(
   userId: string,
   wordId: string,
@@ -1294,14 +1441,23 @@ export interface WordByStatus {
   status: 'learning' | 'reviewing' | 'mastered';
 }
 
-export async function getWordsByMasteryStatus(userId: string): Promise<WordByStatus[]> {
-  const rows = await sql`
-    SELECT w.id AS word_id, w.text, w.romanization, w.meaning_en, uw.status
-    FROM user_words uw
-    JOIN words w ON w.id = uw.word_id
-    WHERE uw.user_id = ${userId} AND uw.status IN ('learning', 'reviewing', 'mastered')
-    ORDER BY CASE uw.status WHEN 'learning' THEN 1 WHEN 'reviewing' THEN 2 WHEN 'mastered' THEN 3 END, w.text
-  `;
+export async function getWordsByMasteryStatus(userId: string, pathId?: string): Promise<WordByStatus[]> {
+  const rows = pathId
+    ? await sql`
+        SELECT w.id AS word_id, w.text, w.romanization, w.meaning_en, uw.status
+        FROM user_words uw
+        JOIN words w ON w.id = uw.word_id
+        JOIN path_words pw ON pw.word_id = uw.word_id
+        WHERE uw.user_id = ${userId} AND uw.status IN ('learning', 'reviewing', 'mastered') AND pw.path_id = ${pathId}
+        ORDER BY CASE uw.status WHEN 'learning' THEN 1 WHEN 'reviewing' THEN 2 WHEN 'mastered' THEN 3 END, w.text
+      `
+    : await sql`
+        SELECT w.id AS word_id, w.text, w.romanization, w.meaning_en, uw.status
+        FROM user_words uw
+        JOIN words w ON w.id = uw.word_id
+        WHERE uw.user_id = ${userId} AND uw.status IN ('learning', 'reviewing', 'mastered')
+        ORDER BY CASE uw.status WHEN 'learning' THEN 1 WHEN 'reviewing' THEN 2 WHEN 'mastered' THEN 3 END, w.text
+      `;
   return rows as WordByStatus[];
 }
 
@@ -1315,17 +1471,29 @@ export interface MasteryDistribution {
   total_count: number;
 }
 
-export async function getWordMasteryDistribution(userId: string): Promise<MasteryDistribution> {
-  const rows = await sql`
-    SELECT
-      COUNT(*) FILTER (WHERE status = 'new')::int AS new_count,
-      COUNT(*) FILTER (WHERE status = 'learning')::int AS learning_count,
-      COUNT(*) FILTER (WHERE status = 'reviewing')::int AS reviewing_count,
-      COUNT(*) FILTER (WHERE status = 'mastered')::int AS mastered_count,
-      COUNT(*)::int AS total_count
-    FROM user_words
-    WHERE user_id = ${userId}
-  `;
+export async function getWordMasteryDistribution(userId: string, pathId?: string): Promise<MasteryDistribution> {
+  const rows = pathId
+    ? await sql`
+        SELECT
+          COUNT(*) FILTER (WHERE uw.status = 'new')::int AS new_count,
+          COUNT(*) FILTER (WHERE uw.status = 'learning')::int AS learning_count,
+          COUNT(*) FILTER (WHERE uw.status = 'reviewing')::int AS reviewing_count,
+          COUNT(*) FILTER (WHERE uw.status = 'mastered')::int AS mastered_count,
+          COUNT(*)::int AS total_count
+        FROM user_words uw
+        JOIN path_words pw ON pw.word_id = uw.word_id
+        WHERE uw.user_id = ${userId} AND pw.path_id = ${pathId}
+      `
+    : await sql`
+        SELECT
+          COUNT(*) FILTER (WHERE status = 'new')::int AS new_count,
+          COUNT(*) FILTER (WHERE status = 'learning')::int AS learning_count,
+          COUNT(*) FILTER (WHERE status = 'reviewing')::int AS reviewing_count,
+          COUNT(*) FILTER (WHERE status = 'mastered')::int AS mastered_count,
+          COUNT(*)::int AS total_count
+        FROM user_words
+        WHERE user_id = ${userId}
+      `;
   return (rows[0] as MasteryDistribution) ?? {
     new_count: 0, learning_count: 0, reviewing_count: 0, mastered_count: 0, total_count: 0,
   };

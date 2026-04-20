@@ -684,4 +684,41 @@ CREATE TABLE IF NOT EXISTS app_feedback (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_app_feedback_status ON app_feedback(status, created_at DESC);
+
+-- User Insights (progressive education system — drip-fed learning science)
+CREATE TABLE IF NOT EXISTS user_insights (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  insight_id TEXT NOT NULL,
+  shown_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  dismissed_at TIMESTAMPTZ,
+  session_date DATE NOT NULL DEFAULT CURRENT_DATE,
+  UNIQUE(user_id, insight_id)
+);
+CREATE INDEX IF NOT EXISTS idx_user_insights_user ON user_insights(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_insights_session ON user_insights(user_id, session_date);
+
+-- Studio Path Purchases (one-time $2.99 per-path purchases for free users)
+CREATE TABLE IF NOT EXISTS studio_path_purchases (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  stripe_session_id TEXT NOT NULL UNIQUE,
+  studio_session_id UUID REFERENCES studio_sessions(id) ON DELETE SET NULL,
+  stripe_payment_id TEXT,
+  path_id UUID REFERENCES paths(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  consumed_at TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS idx_studio_path_purchases_user ON studio_path_purchases(user_id);
+CREATE INDEX IF NOT EXISTS idx_studio_path_purchases_unconsumed
+  ON studio_path_purchases(user_id) WHERE consumed_at IS NULL;
+
+-- Stripe Webhook Events (idempotency guard — prevents duplicate processing on retries)
+CREATE TABLE IF NOT EXISTS webhook_events (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  stripe_event_id TEXT NOT NULL UNIQUE,
+  event_type TEXT NOT NULL,
+  processed_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_webhook_events_stripe_id ON webhook_events(stripe_event_id);
 `;
