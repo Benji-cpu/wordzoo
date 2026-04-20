@@ -5,7 +5,11 @@ import type { Path } from '@/types/database';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { auth } from '@/lib/auth';
 import { generateStudioPath } from '@/lib/services/studio-service';
-import { getUserById } from '@/lib/db/queries';
+import {
+  getUserById,
+  getUnconsumedStudioPathPurchase,
+  consumeStudioPathPurchase,
+} from '@/lib/db/queries';
 
 export async function POST(request: NextRequest) {
   const ip = request.headers.get('x-forwarded-for') ?? 'anonymous';
@@ -38,9 +42,15 @@ export async function POST(request: NextRequest) {
     const { sessionId } = parsed.data;
     const userId = session.user.id;
 
-    // Check billing: studio_path is a premium feature
+    // Billing: allow premium OR anyone with an unconsumed studio_path purchase
     const user = await getUserById(userId);
-    if (!user || user.subscription_tier !== 'premium') {
+    const isPremium = user?.subscription_tier === 'premium';
+
+    const purchase = isPremium
+      ? null
+      : await getUnconsumedStudioPathPurchase(userId, sessionId);
+
+    if (!isPremium && !purchase) {
       return NextResponse.json<ApiResponse<{ needsPayment: boolean }>>(
         { data: { needsPayment: true }, error: null },
         { status: 200 }
@@ -48,6 +58,11 @@ export async function POST(request: NextRequest) {
     }
 
     const path = await generateStudioPath(sessionId, userId);
+
+    // Mark purchase consumed only after successful generation
+    if (purchase) {
+      await consumeStudioPathPurchase(purchase.id, path.id);
+    }
 
     return NextResponse.json<ApiResponse<{ path: Path }>>({
       data: { path },

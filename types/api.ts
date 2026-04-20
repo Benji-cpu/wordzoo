@@ -102,6 +102,10 @@ export const TravelPackCheckoutSchema = z.object({
   packId: z.string().uuid(),
 });
 
+export const StudioPathCheckoutSchema = z.object({
+  sessionId: z.string().uuid(),
+});
+
 export const BillingFeatureEnum = z.enum([
   'new_word',
   'regenerate_mnemonic',
@@ -124,6 +128,7 @@ export const IncrementUsageSchema = z.object({
 
 export type CheckoutInput = z.infer<typeof CheckoutSchema>;
 export type TravelPackCheckoutInput = z.infer<typeof TravelPackCheckoutSchema>;
+export type StudioPathCheckoutInput = z.infer<typeof StudioPathCheckoutSchema>;
 export type BillingFeature = z.infer<typeof BillingFeatureEnum>;
 export type CheckAccessInput = z.infer<typeof CheckAccessSchema>;
 export type IncrementUsageInput = z.infer<typeof IncrementUsageSchema>;
@@ -193,6 +198,13 @@ export const AdminFeedbackQuerySchema = z.object({
   page: z.coerce.number().int().min(1).optional().default(1),
 });
 
+export const AdminMnemonicOverrideSchema = z.object({
+  mnemonicId: z.string().uuid(),
+  keywordText: z.string().min(1).max(200),
+  sceneDescription: z.string().min(1).max(500),
+  bridgeSentence: z.string().max(500).optional(),
+});
+
 // Type exports from schemas
 export type GenerateMnemonicInput = z.infer<typeof GenerateMnemonicSchema>;
 export type RegenerateMnemonicInput = z.infer<typeof RegenerateMnemonicSchema>;
@@ -213,6 +225,7 @@ export type ShareImageQuery = z.infer<typeof ShareImageQuerySchema>;
 export type SubmitFeedbackInput = z.infer<typeof SubmitFeedbackSchema>;
 export type AdminRegenerateMnemonicInput = z.infer<typeof AdminRegenerateMnemonicSchema>;
 export type AdminFeedbackQuery = z.infer<typeof AdminFeedbackQuerySchema>;
+export type AdminMnemonicOverrideInput = z.infer<typeof AdminMnemonicOverrideSchema>;
 
 // Scene Flow Progress
 export const SceneFlowPhaseEnum = z.enum(['dialogue', 'phrases', 'vocabulary', 'patterns', 'affixes', 'conversation', 'summary']);

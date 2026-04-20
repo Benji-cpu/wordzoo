@@ -12,10 +12,28 @@ let currentAudio: HTMLAudioElement | null = null;
 
 let _audioUnlocked = false;
 let _listenerAttached = false;
+const _unlockCallbacks: (() => void)[] = [];
 
 /** Whether the browser audio context has been unlocked by a user gesture. */
 export function isAudioUnlocked(): boolean {
   return _audioUnlocked;
+}
+
+/**
+ * Register a one-time callback that fires when audio is unlocked by user gesture.
+ * If audio is already unlocked, the callback fires immediately.
+ * Returns a cleanup function to remove the callback.
+ */
+export function onAudioUnlocked(callback: () => void): () => void {
+  if (_audioUnlocked) {
+    callback();
+    return () => {};
+  }
+  _unlockCallbacks.push(callback);
+  return () => {
+    const idx = _unlockCallbacks.indexOf(callback);
+    if (idx >= 0) _unlockCallbacks.splice(idx, 1);
+  };
 }
 
 /** Play silent audio + empty utterance to satisfy browser autoplay policy. */
@@ -43,6 +61,12 @@ export function unlockAudio(): void {
     }
   } catch {
     // ignore
+  }
+
+  // 3. Fire one-time unlock callbacks
+  const callbacks = _unlockCallbacks.splice(0);
+  for (const cb of callbacks) {
+    try { cb(); } catch { /* ignore */ }
   }
 }
 

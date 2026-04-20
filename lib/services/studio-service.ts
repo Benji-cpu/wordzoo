@@ -14,6 +14,7 @@ import {
   upsertUserPath,
   getLanguageById,
   getUserKnownWords,
+  getPathById,
 } from '@/lib/db/queries';
 import { generateText, generateChat } from '@/lib/ai/gemini';
 import {
@@ -285,6 +286,13 @@ export async function generateStudioPath(
   }
   if (session.user_id !== userId) {
     throw new Error('Unauthorized');
+  }
+
+  // Idempotency: if this session already produced a path, return it.
+  // Callback retries after payment failures or client refreshes land here safely.
+  if (session.path_id) {
+    const existing = await getPathById(session.path_id);
+    if (existing) return existing;
   }
 
   const intakeData: StudioIntakeData = session.intake_data ?? {};

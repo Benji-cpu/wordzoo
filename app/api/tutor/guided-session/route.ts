@@ -46,9 +46,9 @@ export async function POST(request: NextRequest) {
       { data: result, error: null }
     );
   } catch (error) {
-    console.error('Guided session error:', error);
+    console.error('Guided session error:', error instanceof Error ? error.stack : error);
     return NextResponse.json<ApiResponse<null>>(
-      { data: null, error: 'Failed to start guided conversation' },
+      { data: null, error: 'Could not start conversation. Please try again.' },
       { status: 500 }
     );
   }

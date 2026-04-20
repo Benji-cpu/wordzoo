@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import type { StudioMessage, StudioPathPreview } from '@/types/database';
 import { StudioChat } from './StudioChat';
 import { StudioInput } from './StudioInput';
@@ -13,8 +13,18 @@ interface PathStudioClientProps {
   isPremium: boolean;
 }
 
+const CALLBACK_ERROR_MESSAGES: Record<string, string> = {
+  payment_failed: 'Payment didn’t go through. No charge was made — try again below.',
+  generation_failed:
+    'Payment succeeded but we couldn’t build your path. You won’t be charged again — retry below.',
+  invalid_callback: 'Something went wrong returning from checkout. Try generating again below.',
+};
+
 export function PathStudioClient({ languageId, prefillScenario, isPremium }: PathStudioClientProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackError = searchParams.get('error');
+  const initialErrorMessage = callbackError ? CALLBACK_ERROR_MESSAGES[callbackError] ?? null : null;
 
   const [messages, setMessages] = useState<StudioMessage[]>([]);
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -23,7 +33,7 @@ export function PathStudioClient({ languageId, prefillScenario, isPremium }: Pat
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeTab, setActiveTab] = useState<'chat' | 'preview'>('chat');
   const [hasNewPreview, setHasNewPreview] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(initialErrorMessage);
   const [canGenerate, setCanGenerate] = useState(false);
 
   // Initialize session on mount
@@ -182,6 +192,8 @@ export function PathStudioClient({ languageId, prefillScenario, isPremium }: Pat
     [sessionId, isLoading, messages, activeTab]
   );
 
+  const [showPaywall, setShowPaywall] = useState(false);
+
   const handleGenerate = useCallback(async () => {
     if (!sessionId || isGenerating) return;
     setIsGenerating(true);
@@ -199,7 +211,7 @@ export function PathStudioClient({ languageId, prefillScenario, isPremium }: Pat
         return;
       }
       if (json.data?.needsPayment) {
-        router.push('/pricing');
+        setShowPaywall(true);
         return;
       }
       const { path } = json.data as { path: import('@/types/database').Path };
@@ -210,6 +222,29 @@ export function PathStudioClient({ languageId, prefillScenario, isPremium }: Pat
       setIsGenerating(false);
     }
   }, [sessionId, isGenerating, router]);
+
+  const handlePayPerPath = useCallback(async () => {
+    if (!sessionId) return;
+    setIsGenerating(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/billing/studio-path', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId }),
+      });
+      const json = await res.json();
+      if (!res.ok || json.error || !json.data?.url) {
+        setError(json.error ?? 'Could not start checkout. Please try again.');
+        setIsGenerating(false);
+        return;
+      }
+      window.location.href = json.data.url;
+    } catch {
+      setError('Could not start checkout. Please try again.');
+      setIsGenerating(false);
+    }
+  }, [sessionId]);
 
   function handleTabSwitch(tab: 'chat' | 'preview') {
     setActiveTab(tab);
@@ -306,6 +341,49 @@ export function PathStudioClient({ languageId, prefillScenario, isPremium }: Pat
           onGenerate={handleGenerate}
         />
       </div>
+
+      {showPaywall && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="studio-paywall-title"
+          className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/60 p-4"
+          onClick={() => setShowPaywall(false)}
+        >
+          <div
+            className="w-full max-w-md rounded-2xl bg-card border border-card-border p-6 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 id="studio-paywall-title" className="text-lg font-semibold text-foreground mb-2">
+              Bring this path to life
+            </h3>
+            <p className="text-sm text-text-secondary mb-5">
+              Generate this custom path for a one-time $2.99, or upgrade to Premium for unlimited paths and more.
+            </p>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={handlePayPerPath}
+                disabled={isGenerating}
+                className="w-full min-h-[48px] rounded-lg bg-accent-default text-white font-semibold hover:opacity-90 disabled:opacity-50"
+              >
+                {isGenerating ? 'Opening checkout…' : 'Generate this path — $2.99'}
+              </button>
+              <button
+                onClick={() => router.push('/pricing')}
+                className="w-full min-h-[48px] rounded-lg border border-card-border text-foreground font-medium hover:bg-card-hover"
+              >
+                Upgrade to Premium
+              </button>
+              <button
+                onClick={() => setShowPaywall(false)}
+                className="w-full min-h-[44px] text-sm text-text-secondary hover:text-foreground mt-1"
+              >
+                Maybe later
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
