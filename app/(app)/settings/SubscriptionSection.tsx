@@ -25,6 +25,8 @@ export function SubscriptionSection() {
   const router = useRouter();
   const [status, setStatus] = useState<BillingStatus | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
+  const [cancelLoading, setCancelLoading] = useState(false);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
 
   useEffect(() => {
     fetch('/api/billing/status')
@@ -35,6 +37,31 @@ export function SubscriptionSection() {
       .catch(() => {});
   }, []);
 
+  async function handleCancel() {
+    setCancelLoading(true);
+    try {
+      const res = await fetch('/api/billing/cancel', { method: 'POST' });
+      const data = await res.json();
+      const { toast } = await import('sonner');
+      if (!res.ok || data.error) {
+        toast.error(data.error ?? "Couldn't cancel subscription.");
+        return;
+      }
+      toast.success('Subscription will cancel at period end.');
+      setShowCancelConfirm(false);
+      // Refresh status
+      fetch('/api/billing/status')
+        .then((res) => res.json())
+        .then((res) => { if (res.data) setStatus(res.data); })
+        .catch(() => {});
+    } catch {
+      const { toast } = await import('sonner');
+      toast.error("Couldn't reach the server. Please try again.");
+    } finally {
+      setCancelLoading(false);
+    }
+  }
+
   async function handleManageSubscription() {
     setPortalLoading(true);
     try {
@@ -42,9 +69,13 @@ export function SubscriptionSection() {
       const data = await res.json();
       if (data.data?.url) {
         window.location.href = data.data.url;
+        return;
       }
+      const { toast } = await import('sonner');
+      toast.error(data.error ?? "Couldn't open billing portal. Please try again.");
     } catch {
-      // silently fail
+      const { toast } = await import('sonner');
+      toast.error("Couldn't reach billing. Check your connection and try again.");
     } finally {
       setPortalLoading(false);
     }
@@ -94,20 +125,58 @@ export function SubscriptionSection() {
             )}
           </div>
           {isPremium ? (
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={handleManageSubscription}
-              disabled={portalLoading}
-            >
-              {portalLoading ? 'Loading...' : 'Manage'}
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={handleManageSubscription}
+                disabled={portalLoading}
+              >
+                {portalLoading ? 'Loading…' : 'Manage'}
+              </Button>
+              {status.subscription.status !== 'canceled' && !showCancelConfirm && (
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => setShowCancelConfirm(true)}
+                  className="text-text-secondary"
+                >
+                  Cancel
+                </Button>
+              )}
+            </div>
           ) : (
             <Button size="sm" onClick={() => router.push('/pricing')}>
               Upgrade
             </Button>
           )}
         </div>
+
+        {isPremium && showCancelConfirm && (
+          <div className="mb-4 p-3 rounded-lg bg-surface-inset border border-card-border">
+            <p className="text-sm text-foreground mb-1">Cancel at period end?</p>
+            <p className="text-xs text-text-secondary mb-3">
+              You&apos;ll keep premium access until
+              {status.subscription.currentPeriodEnd
+                ? ` ${new Date(status.subscription.currentPeriodEnd).toLocaleDateString()}`
+                : ' the end of your billing period'}
+              .
+            </p>
+            <div className="flex gap-2">
+              <Button size="sm" onClick={handleCancel} disabled={cancelLoading}>
+                {cancelLoading ? 'Cancelling…' : 'Yes, cancel'}
+              </Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => setShowCancelConfirm(false)}
+                disabled={cancelLoading}
+              >
+                Keep subscription
+              </Button>
+            </div>
+          </div>
+        )}
 
         {!isPremium && (
           <div className="space-y-2 pt-3 border-t border-card-border">
