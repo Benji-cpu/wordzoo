@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { BottomNav } from './BottomNav';
+import { SideNav } from './SideNav';
 import { FeedbackModal } from '@/components/feedback/FeedbackModal';
 import { captureFeedbackContext, type FeedbackContext } from '@/lib/utils/capture-feedback-context';
 import { captureScreenshot } from '@/lib/utils/capture-screenshot';
@@ -31,7 +32,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <main className="flex-1 overflow-y-auto p-4 pb-20">{children}</main>
+      <div className="flex-1 flex min-h-0">
+        <SideNav onFeedbackTap={handleFeedbackTap} />
+        <main className="flex-1 overflow-y-auto p-4 pb-20 lg:pb-8">{children}</main>
+      </div>
       <BottomNav onFeedbackTap={handleFeedbackTap} />
       <FeedbackModal
         isOpen={feedbackOpen}

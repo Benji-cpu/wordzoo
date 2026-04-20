@@ -55,7 +55,7 @@ export function BottomNav({ onFeedbackTap }: BottomNavProps) {
   const keyboardVisible = useKeyboardVisible();
 
   return (
-    <nav className={`fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-card-border safe-area-bottom transition-transform duration-200 ${keyboardVisible ? 'translate-y-full' : ''}`}>
+    <nav className={`lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-card-border safe-area-bottom transition-transform duration-200 ${keyboardVisible ? 'translate-y-full' : ''}`}>
       <div className="flex items-center justify-around max-w-lg mx-auto h-16">
         {tabs.map(tab => {
           const isActive = pathname === tab.href || pathname.startsWith(tab.href + '/');

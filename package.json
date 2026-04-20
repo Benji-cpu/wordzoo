@@ -15,7 +15,8 @@
     "db:seed-dialogues": "npx tsx lib/db/seed-dialogues.ts",
     "db:seed-phrase-mnemonics": "npx tsx lib/db/seed-phrase-mnemonics.ts",
     "db:seed-expanded": "npx tsx lib/db/seed-expanded.ts",
-    "db:seed-phrase-images-auto": "npx tsx lib/db/seed-phrase-images-auto.ts"
+    "db:seed-phrase-images-auto": "npx tsx lib/db/seed-phrase-images-auto.ts",
+    "db:seed-missing-images": "npx tsx lib/db/seed-missing-images.ts"
   },
   "dependencies": {
     "@auth/neon-adapter": "^1.11.1",
@@ -31,6 +32,7 @@
     "next-themes": "^0.4.6",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "sonner": "^2.0.7",
     "stripe": "^20.4.1",
     "uuid": "^13.0.0",
     "ws": "^8.19.0",
