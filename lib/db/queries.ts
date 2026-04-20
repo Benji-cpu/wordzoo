@@ -1379,6 +1379,37 @@ export async function updateUserStreak(userId: string): Promise<void> {
   `;
 }
 
+// --- XP Queries ---
+
+export interface UserXpData {
+  xp_total: number;
+}
+
+export async function getUserXp(userId: string): Promise<UserXpData> {
+  const rows = await sql`SELECT xp_total FROM users WHERE id = ${userId}`;
+  if (!rows[0]) return { xp_total: 0 };
+  return { xp_total: (rows[0] as { xp_total: number }).xp_total ?? 0 };
+}
+
+export async function addUserXp(
+  userId: string,
+  amount: number,
+  reason: string
+): Promise<UserXpData> {
+  const safeAmount = Math.max(0, Math.min(10_000, Math.floor(amount)));
+  if (safeAmount === 0) return getUserXp(userId);
+  await sql`
+    INSERT INTO user_xp_events (user_id, amount, reason)
+    VALUES (${userId}, ${safeAmount}, ${reason})
+  `;
+  const rows = await sql`
+    UPDATE users SET xp_total = xp_total + ${safeAmount}, updated_at = NOW()
+    WHERE id = ${userId}
+    RETURNING xp_total
+  `;
+  return { xp_total: (rows[0] as { xp_total: number }).xp_total ?? safeAmount };
+}
+
 // --- Gallery Queries ---
 
 export interface GalleryWord {

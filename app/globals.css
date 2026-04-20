@@ -57,6 +57,41 @@
   /* Card shadows (Phase 4) */
   --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.04);
   --shadow-card-hover: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  /* ---- Playful layer — Fox/celebration/streak (UI Polish pause) ---- */
+
+  /* Fox palette — warm orange hero color */
+  --color-fox-primary: #F97316;
+  --color-fox-soft: #FFEDD5;
+  --color-fox-deep: #9A3412;
+  --color-fox-ring: rgba(249, 115, 22, 0.18);
+
+  /* Celebration palette — used in confetti bursts + success moments */
+  --color-celebrate-gold: #FBBF24;
+  --color-celebrate-pink: #EC4899;
+  --color-celebrate-cyan: #06B6D4;
+  --color-celebrate-green: #22C55E;
+  --color-celebrate-violet: #8B5CF6;
+
+  /* Streak flame — gradient stops */
+  --color-streak-fire: #FF6B35;
+  --color-streak-core: #FFC93C;
+  --color-streak-glow: rgba(255, 107, 53, 0.35);
+
+  /* Spring/bounce motion curves */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --ease-out-back: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --duration-spring: 350ms;
+  --duration-celebrate: 600ms;
+  --duration-big: 900ms;
+
+  /* Playful elevation */
+  --shadow-elevated: 0 4px 16px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.06);
+  --shadow-pop: 0 8px 24px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.08);
+  --shadow-glow-fox: 0 0 0 4px var(--color-fox-ring), 0 8px 24px rgba(249, 115, 22, 0.24);
+  --shadow-glow-success: 0 0 0 4px rgba(34, 197, 94, 0.18), 0 8px 24px rgba(34, 197, 94, 0.24);
+  --shadow-glow-error: 0 0 0 4px rgba(239, 68, 68, 0.18), 0 8px 24px rgba(239, 68, 68, 0.24);
 }
 
 .dark {
@@ -72,6 +107,12 @@
 
   --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.2);
   --shadow-card-hover: 0 2px 8px rgba(0, 0, 0, 0.3);
+
+  /* Playful tokens — dark variants (fox stays saturated, softer backdrop) */
+  --color-fox-soft: rgba(249, 115, 22, 0.15);
+  --color-fox-ring: rgba(249, 115, 22, 0.28);
+  --shadow-elevated: 0 4px 16px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-pop: 0 8px 24px rgba(0, 0, 0, 0.5), 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 @theme inline {
@@ -88,6 +129,10 @@
   --color-accent-es: var(--accent-spanish);
   --color-accent-ja: var(--accent-japanese);
   --color-accent-default: var(--accent-default);
+  --color-fox: var(--color-fox-primary);
+  --color-fox-soft: var(--color-fox-soft);
+  --color-fox-deep: var(--color-fox-deep);
+  --color-streak: var(--color-streak-fire);
   --font-sans: var(--font-nunito);
   --font-mono: var(--font-geist-mono);
 
@@ -96,6 +141,13 @@
   --animate-slide-in-right: slide-in-right 0.25s var(--ease-default);
   --animate-card-flip: card-flip 0.4s var(--ease-default);
   --animate-typing-dot: typing-dot 1.4s infinite ease-in-out both;
+  --animate-pop: pop var(--duration-spring) var(--ease-spring);
+  --animate-pop-big: pop-big var(--duration-celebrate) var(--ease-spring);
+  --animate-spring-in: spring-in var(--duration-spring) var(--ease-spring);
+  --animate-flame-flicker: flame-flicker 1.6s ease-in-out infinite;
+  --animate-wiggle: wiggle 0.6s var(--ease-default);
+  --animate-bob: bob 2.8s ease-in-out infinite;
+  --animate-xp-tick: xp-tick var(--duration-celebrate) var(--ease-out-back);
 }
 
 @keyframes fade-in {
@@ -176,6 +228,68 @@ body {
 
 .animate-shake {
   animation: shake 0.4s var(--ease-default);
+}
+
+/* ---- Playful motion (UI Polish pause) ---- */
+
+@keyframes pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+@keyframes pop-big {
+  0% { transform: scale(0.6); opacity: 0; }
+  60% { transform: scale(1.12); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes spring-in {
+  0% { transform: translateY(12px) scale(0.96); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+@keyframes flame-flicker {
+  0%, 100% { transform: scale(1) rotate(-1deg); filter: brightness(1); }
+  25% { transform: scale(1.04) rotate(1deg); filter: brightness(1.1); }
+  50% { transform: scale(0.97) rotate(-1deg); filter: brightness(0.95); }
+  75% { transform: scale(1.02) rotate(0.5deg); filter: brightness(1.05); }
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0); }
+  25% { transform: rotate(-6deg); }
+  50% { transform: rotate(4deg); }
+  75% { transform: rotate(-2deg); }
+}
+
+@keyframes bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes xp-tick {
+  0% { transform: translateY(0) scale(1); opacity: 1; }
+  50% { transform: translateY(-16px) scale(1.2); opacity: 1; }
+  100% { transform: translateY(-32px) scale(1); opacity: 0; }
+}
+
+@keyframes confetti-fall {
+  0% { transform: translate3d(0, -20px, 0) rotate(0deg); opacity: 1; }
+  100% { transform: translate3d(var(--dx, 0), var(--dy, 280px), 0) rotate(720deg); opacity: 0; }
+}
+
+.animate-pop { animation: pop var(--duration-spring) var(--ease-spring); }
+.animate-pop-big { animation: pop-big var(--duration-celebrate) var(--ease-spring); }
+.animate-spring-in { animation: spring-in var(--duration-spring) var(--ease-spring) both; }
+.animate-flame-flicker { animation: flame-flicker 1.6s ease-in-out infinite; }
+.animate-wiggle { animation: wiggle 0.6s var(--ease-default); }
+.animate-bob { animation: bob 2.8s ease-in-out infinite; }
+.animate-xp-tick { animation: xp-tick var(--duration-celebrate) var(--ease-out-back) both; }
+
+/* Thumb-zone action-bar safe padding */
+.thumb-zone {
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 16px);
 }
 
 /* Respect reduced motion preference (Phase 5) */
