@@ -353,7 +353,7 @@ function PredictExercise({ exercise, onComplete }: AffixExerciseProps) {
       <div className="grid grid-cols-1 gap-3">
         {options.map((option) => {
           let className =
-            'min-h-[44px] px-4 py-3 rounded-xl text-center font-medium transition-all border ';
+            'min-h-[56px] px-4 py-3 rounded-xl text-center font-medium transition-all border ';
 
           if (selected === option && isCorrect) {
             className += 'bg-green-500/20 border-green-500 text-green-400 scale-[1.02]';

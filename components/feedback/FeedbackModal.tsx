@@ -14,8 +14,13 @@ interface FeedbackModalProps {
 
 type ModalState = 'idle' | 'sending' | 'success' | 'error';
 
+const DRAFT_KEY = 'feedback_draft';
+
 export function FeedbackModal({ isOpen, onClose, context, screenshotBlob }: FeedbackModalProps) {
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState(() => {
+    if (typeof window === 'undefined') return '';
+    return sessionStorage.getItem(DRAFT_KEY) ?? '';
+  });
   const [state, setState] = useState<ModalState>('idle');
   const [mounted, setMounted] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -26,25 +31,37 @@ export function FeedbackModal({ isOpen, onClose, context, screenshotBlob }: Feed
 
   useEffect(() => {
     if (isOpen && textareaRef.current) {
+      // Restore draft when opening
+      const draft = sessionStorage.getItem(DRAFT_KEY);
+      if (draft && !message) setMessage(draft);
       const t = setTimeout(() => textareaRef.current?.focus(), 200);
       return () => clearTimeout(t);
     }
-  }, [isOpen]);
+  }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-dismiss after success
   useEffect(() => {
     if (state === 'success') {
       const t = setTimeout(() => {
-        handleClose();
+        setState('idle');
+        onClose();
       }, 1500);
       return () => clearTimeout(t);
     }
-  }, [state]);
+  }, [state, onClose]);
 
   function handleClose() {
-    setMessage('');
+    // Save draft to sessionStorage on dismiss (don't clear message)
+    if (message.trim()) {
+      sessionStorage.setItem(DRAFT_KEY, message);
+    }
     setState('idle');
     onClose();
+  }
+
+  function clearDraft() {
+    setMessage('');
+    sessionStorage.removeItem(DRAFT_KEY);
   }
 
   async function handleSubmit() {
@@ -84,6 +101,7 @@ export function FeedbackModal({ isOpen, onClose, context, screenshotBlob }: Feed
       });
 
       if (!res.ok) throw new Error('Failed to submit');
+      clearDraft();
       setState('success');
     } catch {
       setState('error');

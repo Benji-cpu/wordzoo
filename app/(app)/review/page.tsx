@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { getDueWords, getDuePhrases } from '@/lib/srs/engine';
 import { getAllLearnedWordsForPractice, getWordFamilies } from '@/lib/db/queries';
 import { getPhraseWordsWithMnemonics } from '@/lib/db/scene-flow-queries';
+import { getInsightState } from '@/lib/db/insight-queries';
 import { ReviewClient } from '@/components/learn/ReviewClient';
 import type { LearnWordFamily } from '@/components/learn/LearnClient';
 import type { PhraseWordMnemonic } from '@/types/database';
@@ -11,10 +12,11 @@ export default async function ReviewPage() {
   const session = await auth();
   if (!session?.user?.id) redirect('/login');
 
-  const [dueWords, duePhrases, practiceWords] = await Promise.all([
+  const [dueWords, duePhrases, practiceWords, insightState] = await Promise.all([
     getDueWords(session.user.id),
     getDuePhrases(session.user.id),
     getAllLearnedWordsForPractice(session.user.id),
+    getInsightState(session.user.id),
   ]);
 
   // Collect all unique word IDs and batch-fetch word families
@@ -57,7 +59,7 @@ export default async function ReviewPage() {
 
   return (
     <div className="max-w-lg mx-auto -mt-2">
-      <ReviewClient dueWords={dueWords} duePhrases={duePhrases} practiceWords={practiceWords} wordFamiliesMap={wordFamiliesMap} phraseWordMap={phraseWordMap} />
+      <ReviewClient dueWords={dueWords} duePhrases={duePhrases} practiceWords={practiceWords} wordFamiliesMap={wordFamiliesMap} phraseWordMap={phraseWordMap} insightState={{ seenIds: Array.from(insightState.seenIds), shownToday: insightState.shownToday }} />
     </div>
   );
 }

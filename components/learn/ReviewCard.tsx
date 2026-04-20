@@ -103,7 +103,7 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, w
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={mnemonic.image_url}
-        alt=""
+        alt={mnemonic.keyword_text ? `Mnemonic illustration: ${mnemonic.keyword_text}` : 'Mnemonic illustration'}
         className={`w-full max-h-[calc(100dvh-340px)] min-h-[120px] object-cover rounded-xl transition-opacity duration-300 ${
           imageLoaded ? 'opacity-100' : 'opacity-0 h-0'
         }`}

@@ -7,6 +7,9 @@ import { MnemonicCard } from '@/components/learn/MnemonicCard';
 import { CollapsibleWordFamily } from '@/components/learn/WordFamilyCard';
 import { QuizOptions } from '@/components/learn/QuizOptions';
 import { SceneSummary } from '@/components/learn/SceneSummary';
+import { InsightCard } from '@/components/insights/InsightCard';
+import { getEligibleInsight, type InsightUserState } from '@/lib/insights/engine';
+import type { InsightDefinition, TriggerContext } from '@/lib/insights/data';
 import type { SupportedLanguageCode } from '@/types/audio';
 
 export interface LearnWordFamily {
@@ -50,16 +53,56 @@ interface LearnClientProps {
   pathId?: string;
   sceneNumber?: number;
   totalScenes?: number;
+  insightState?: { seenIds: string[]; shownToday: number } | null;
 }
 
 type SceneState =
   | { phase: 'word_learning'; wordIndex: number; step: 'word' | 'mnemonic' | 'quiz' }
   | { phase: 'scene_complete' };
 
-export function LearnClient({ sceneId, sceneTitle, sceneDescription, languageName, languageCode, words, nextScene, pathId, sceneNumber, totalScenes }: LearnClientProps) {
+export function LearnClient({ sceneId, sceneTitle, sceneDescription, languageName, languageCode, words, nextScene, pathId, sceneNumber, totalScenes, insightState }: LearnClientProps) {
   const [state, setState] = useState<SceneState>(
     { phase: 'word_learning', wordIndex: 0, step: 'word' }
   );
+
+  // Insight tracking
+  const [seenInsightIds, setSeenInsightIds] = useState<Set<string>>(
+    () => new Set(insightState?.seenIds ?? [])
+  );
+  const [insightsShownToday, setInsightsShownToday] = useState(insightState?.shownToday ?? 0);
+  const [mnemonicsViewedInSession, setMnemonicsViewedInSession] = useState(0);
+  const [firstQuizCorrect, setFirstQuizCorrect] = useState(false);
+  const [activeInsight, setActiveInsight] = useState<InsightDefinition | null>(null);
+  const [activeInsightContext, setActiveInsightContext] = useState<TriggerContext | null>(null);
+
+  const checkInsight = useCallback((context: TriggerContext, overrides?: Partial<InsightUserState>) => {
+    if (!insightState) return;
+    const userState: InsightUserState = {
+      seenInsightIds,
+      insightsShownToday,
+      totalMnemonicsViewed: mnemonicsViewedInSession,
+      totalScenesCompleted: sceneNumber ? sceneNumber - 1 : 0,
+      totalWordsLearned: 0,
+      ...overrides,
+    };
+    const insight = getEligibleInsight(context, userState);
+    if (insight) {
+      setActiveInsight(insight);
+      setActiveInsightContext(context);
+      setSeenInsightIds(prev => new Set(prev).add(insight.id));
+      setInsightsShownToday(prev => prev + 1);
+      fetch('/api/insights', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ insightId: insight.id, action: 'shown' }),
+      }).catch(() => {});
+    }
+  }, [insightState, seenInsightIds, insightsShownToday, mnemonicsViewedInSession, sceneNumber]);
+
+  const dismissInsight = useCallback(() => {
+    setActiveInsight(null);
+    setActiveInsightContext(null);
+  }, []);
 
   // Fetch learned word IDs from API on mount and skip to the first unlearned word.
   // We can't rely on RSC props for userWordStatus because Next.js 16 hydration
@@ -132,15 +175,21 @@ export function LearnClient({ sceneId, sceneTitle, sceneDescription, languageNam
       const { wordIndex, step } = prev;
       const word = wordsRef.current[wordIndex];
       if (step === 'word') {
-        return word?.mnemonic
-          ? { phase: 'word_learning', wordIndex, step: 'mnemonic' }
-          : { phase: 'word_learning', wordIndex, step: 'quiz' };
+        if (word?.mnemonic) {
+          const newCount = mnemonicsViewedInSession + 1;
+          setMnemonicsViewedInSession(newCount);
+          if (!activeInsight) {
+            checkInsight('mnemonic_card', { totalMnemonicsViewed: newCount });
+          }
+          return { phase: 'word_learning', wordIndex, step: 'mnemonic' };
+        }
+        return { phase: 'word_learning', wordIndex, step: 'quiz' };
       } else if (step === 'mnemonic') {
         return { phase: 'word_learning', wordIndex, step: 'quiz' };
       }
       return prev;
     });
-  }, []);
+  }, [mnemonicsViewedInSession, activeInsight, checkInsight]);
 
   const handleQuizAnswer = useCallback((correct: boolean) => {
     if (state.phase !== 'word_learning') return;
@@ -163,6 +212,10 @@ export function LearnClient({ sceneId, sceneTitle, sceneDescription, languageNam
 
   const onQuizCorrect = useCallback(() => {
     userHasInteractedRef.current = true;
+    if (!firstQuizCorrect && !activeInsight) {
+      setFirstQuizCorrect(true);
+      checkInsight('quiz_correct');
+    }
     setState(prev => {
       if (prev.phase !== 'word_learning') return prev;
       const currentWords = wordsRef.current;
@@ -181,7 +234,7 @@ export function LearnClient({ sceneId, sceneTitle, sceneDescription, languageNam
       }
       return { phase: 'word_learning', wordIndex: nextIndex, step: 'word' };
     });
-  }, []);
+  }, [firstQuizCorrect, activeInsight, checkInsight]);
 
   // Handle swipe right to advance
   useEffect(() => {
@@ -204,6 +257,15 @@ export function LearnClient({ sceneId, sceneTitle, sceneDescription, languageNam
       document.removeEventListener('touchend', onTouchEnd);
     };
   }, [state, advanceWord]);
+
+  // Check for scene_summary insight when scene is complete
+  const summaryInsightChecked = useRef(false);
+  useEffect(() => {
+    if (state.phase === 'scene_complete' && !summaryInsightChecked.current && !activeInsight) {
+      summaryInsightChecked.current = true;
+      checkInsight('scene_summary');
+    }
+  }, [state.phase, activeInsight, checkInsight]);
 
   return (
     <div className="max-w-lg mx-auto">
@@ -243,6 +305,11 @@ export function LearnClient({ sceneId, sceneTitle, sceneDescription, languageNam
                 languageName={languageName}
                 onContinue={advanceWord}
               />
+              {activeInsight && activeInsightContext === 'mnemonic_card' && (
+                <div className="mt-3">
+                  <InsightCard insight={activeInsight} onDismiss={dismissInsight} />
+                </div>
+              )}
               {currentWord.wordFamilies && currentWord.wordFamilies.length > 0 && (
                 <CollapsibleWordFamily
                   rootWord={{
@@ -256,21 +323,28 @@ export function LearnClient({ sceneId, sceneTitle, sceneDescription, languageNam
           )}
 
           {state.step === 'quiz' && (
-            <QuizOptions
-              key={currentWord.word.id}
-              wordText={currentWord.word.text}
-              wordId={currentWord.word.id}
-              correctAnswer={currentWord.word.meaning_en}
-              distractors={currentWord.distractors}
-              onCorrect={onQuizCorrect}
-              onAnswer={handleQuizAnswer}
-            />
+            <>
+              <QuizOptions
+                key={currentWord.word.id}
+                wordText={currentWord.word.text}
+                wordId={currentWord.word.id}
+                correctAnswer={currentWord.word.meaning_en}
+                distractors={currentWord.distractors}
+                onCorrect={onQuizCorrect}
+                onAnswer={handleQuizAnswer}
+              />
+              {activeInsight && activeInsightContext === 'quiz_correct' && (
+                <div className="mt-3">
+                  <InsightCard insight={activeInsight} onDismiss={dismissInsight} />
+                </div>
+              )}
+            </>
           )}
         </>
       )}
 
       {state.phase === 'scene_complete' && (
-        <SceneSummary sceneTitle={sceneTitle} sceneDescription={sceneDescription} words={words} nextScene={nextScene} pathId={pathId} sceneNumber={sceneNumber} totalScenes={totalScenes} />
+        <SceneSummary sceneTitle={sceneTitle} sceneDescription={sceneDescription} words={words} nextScene={nextScene} pathId={pathId} sceneNumber={sceneNumber} totalScenes={totalScenes} insight={activeInsight && activeInsightContext === 'scene_summary' ? activeInsight : undefined} onInsightDismiss={dismissInsight} />
       )}
     </div>
   );

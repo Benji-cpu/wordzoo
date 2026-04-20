@@ -17,6 +17,9 @@ import { AffixExercise } from '@/components/learn/AffixExercise';
 import { AffixReferenceCard } from '@/components/learn/AffixReferenceCard';
 import { CollapsibleWordFamily } from '@/components/learn/WordFamilyCard';
 import { SceneSummary } from '@/components/learn/SceneSummary';
+import { InsightCard } from '@/components/insights/InsightCard';
+import { getEligibleInsight, type InsightUserState } from '@/lib/insights/engine';
+import type { InsightDefinition, TriggerContext } from '@/lib/insights/data';
 import type { SceneDialogue, ScenePhraseWithMnemonics, ScenePatternExercise, AffixExercise as AffixExerciseData, UserSceneProgress } from '@/types/database';
 import type { LearnWord } from '@/components/learn/LearnClient';
 import type { SupportedLanguageCode } from '@/types/audio';
@@ -40,6 +43,7 @@ interface SceneFlowClientProps {
   userName?: string | null;
   sceneNumber?: number;
   totalScenes?: number;
+  insightState?: { seenIds: string[]; shownToday: number } | null;
 }
 
 type FlowState =
@@ -220,7 +224,7 @@ export function SceneFlowClient({
   languageCode,
   dialogues,
   phrases,
-  words,
+  words: allWords,
   patternExercises,
   affixExercises = [],
   initialProgress,
@@ -231,23 +235,133 @@ export function SceneFlowClient({
   userName,
   sceneNumber,
   totalScenes,
+  insightState,
 }: SceneFlowClientProps) {
   const hasAnchorImage = !!anchorImageUrl;
+
+  // Filter out already-learned words so users don't re-learn duplicates across scenes
+  const [learnedWordIds, setLearnedWordIds] = useState<Set<string> | null>(null);
+  const words = learnedWordIds
+    ? allWords.filter(w => !learnedWordIds.has(w.word.id))
+    : allWords;
+
   const [state, setState] = useState<FlowState>(() =>
-    initialStateFromProgress(initialProgress, dialogues.length, phrases.length, words.length, patternExercises.length, affixExercises.length, hasAnchorImage)
+    initialStateFromProgress(initialProgress, dialogues.length, phrases.length, allWords.length, patternExercises.length, affixExercises.length, hasAnchorImage)
   );
   const [dailyStats, setDailyStats] = useState<{ words_learned: number; scenes_completed: number }>({ words_learned: 0, scenes_completed: 0 });
   const statsFetched = useRef(false);
 
+  // Fetch learned word IDs on mount — skip already-learned words in vocabulary phase
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`/api/scenes/${sceneId}/progress`)
+      .then(r => r.json())
+      .then(res => {
+        if (cancelled || !res.data) return;
+        const ids = new Set<string>(res.data.learnedWordIds);
+        if (ids.size === 0) return;
+        setLearnedWordIds(ids);
+
+        // If we're currently in vocabulary phase, check if all words are now learned
+        const unlearnedWords = allWords.filter(w => !ids.has(w.word.id));
+        setState(prev => {
+          if (prev.phase !== 'vocabulary') return prev;
+          if (unlearnedWords.length === 0) {
+            // All words learned — skip to next phase
+            if (patternExercises.length > 0) return { phase: 'patterns', exerciseIndex: 0 };
+            if (affixExercises.length > 0) return { phase: 'affixes', exerciseIndex: 0 };
+            return { phase: 'summary' };
+          }
+          // Clamp wordIndex to filtered list bounds
+          if (prev.wordIndex >= unlearnedWords.length) {
+            return { phase: 'vocabulary', wordIndex: 0, step: 'word' };
+          }
+          return prev;
+        });
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [sceneId, allWords, patternExercises.length, affixExercises.length]);
+
+  // Fix stale DB records: if we initialize into summary but DB never recorded completion,
+  // save progress now so completed_at gets set (e.g. legacy 'conversation' phase rows)
+  const completionSynced = useRef(false);
+  useEffect(() => {
+    if (state.phase === 'summary' && !initialProgress.completed_at && !completionSynced.current) {
+      completionSynced.current = true;
+      fetch(`/api/scenes/${sceneId}/progress`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentPhase: 'summary', phaseIndex: 0 }),
+      }).catch(() => {});
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Insight tracking
+  const [seenInsightIds, setSeenInsightIds] = useState<Set<string>>(
+    () => new Set(insightState?.seenIds ?? [])
+  );
+  const [insightsShownToday, setInsightsShownToday] = useState(insightState?.shownToday ?? 0);
+  const [mnemonicsViewedInSession, setMnemonicsViewedInSession] = useState(0);
+  const [firstQuizCorrect, setFirstQuizCorrect] = useState(false);
+  const [activeInsight, setActiveInsight] = useState<InsightDefinition | null>(null);
+  const [activeInsightContext, setActiveInsightContext] = useState<TriggerContext | null>(null);
+
+  const checkInsight = useCallback((context: TriggerContext, overrides?: Partial<InsightUserState>) => {
+    if (!insightState) return; // not logged in
+    const userState: InsightUserState = {
+      seenInsightIds,
+      insightsShownToday,
+      totalMnemonicsViewed: mnemonicsViewedInSession,
+      totalScenesCompleted: sceneNumber ? sceneNumber - 1 : 0,
+      totalWordsLearned: dailyStats.words_learned,
+      ...overrides,
+    };
+    const insight = getEligibleInsight(context, userState);
+    if (insight) {
+      setActiveInsight(insight);
+      setActiveInsightContext(context);
+      // Mark as shown
+      setSeenInsightIds(prev => new Set(prev).add(insight.id));
+      setInsightsShownToday(prev => prev + 1);
+      fetch('/api/insights', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ insightId: insight.id, action: 'shown' }),
+      }).catch(() => {});
+    }
+  }, [insightState, seenInsightIds, insightsShownToday, mnemonicsViewedInSession, sceneNumber, dailyStats.words_learned]);
+
+  const dismissInsight = useCallback(() => {
+    setActiveInsight(null);
+    setActiveInsightContext(null);
+  }, []);
+
   const router = useRouter();
+  const [saveFailed, setSaveFailed] = useState(false);
 
   const saveProgress = useCallback((phase: string, phaseIndex: number, phaseCompleted?: string) => {
-    fetch(`/api/scenes/${sceneId}/progress`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ currentPhase: phase, phaseIndex, phaseCompleted }),
-    }).catch(() => {});
+    const body = JSON.stringify({ currentPhase: phase, phaseIndex, phaseCompleted });
+    const doFetch = (retries: number) => {
+      fetch(`/api/scenes/${sceneId}/progress`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body,
+      }).catch(() => {
+        if (phase === 'summary' && retries > 0) {
+          setTimeout(() => doFetch(retries - 1), 1000);
+        } else if (phase === 'summary') {
+          setSaveFailed(true);
+        }
+      });
+    };
+    doFetch(phase === 'summary' ? 2 : 0);
   }, [sceneId]);
+
+  const retrySave = useCallback(() => {
+    setSaveFailed(false);
+    saveProgress('summary', 0);
+  }, [saveProgress]);
 
   // --- Scene Intro ---
   const handleSceneIntroContinue = useCallback(() => {
@@ -267,20 +381,23 @@ export function SceneFlowClient({
 
   // --- Dialogue Phase ---
   const handleDialogueComplete = useCallback(() => {
-    if (phrases.length === 0) {
-      // Skip phrases phase (empty for studio paths)
-      if (words.length > 0) {
-        saveProgress('vocabulary', 0, 'dialogue');
-        setState({ phase: 'vocabulary', wordIndex: 0, step: 'word' });
-      } else {
-        saveProgress('summary', 0, 'dialogue');
-        setState({ phase: 'summary' });
-      }
-    } else {
+    if (phrases.length > 0) {
       saveProgress('phrases', 0, 'dialogue');
       setState({ phase: 'phrases', phraseIndex: 0, step: 'show' });
+    } else if (words.length > 0) {
+      saveProgress('vocabulary', 0, 'dialogue');
+      setState({ phase: 'vocabulary', wordIndex: 0, step: 'word' });
+    } else if (patternExercises.length > 0) {
+      saveProgress('patterns', 0, 'dialogue');
+      setState({ phase: 'patterns', exerciseIndex: 0 });
+    } else if (affixExercises.length > 0) {
+      saveProgress('affixes', 0, 'dialogue');
+      setState({ phase: 'affixes', exerciseIndex: 0 });
+    } else {
+      saveProgress('summary', 0, 'dialogue');
+      setState({ phase: 'summary' });
     }
-  }, [saveProgress, phrases.length, words.length]);
+  }, [saveProgress, phrases.length, words.length, patternExercises.length, affixExercises.length]);
 
   const handleDialogueLineAdvance = useCallback((lineIndex: number) => {
     saveProgress('dialogue', lineIndex);
@@ -318,23 +435,38 @@ export function SceneFlowClient({
     if (next < phrases.length) {
       saveProgress('phrases', next);
       setState({ phase: 'phrases', phraseIndex: next, step: 'show' });
-    } else {
-      // Move to vocabulary
+    } else if (words.length > 0) {
+      // Move to vocabulary (only unlearned words remain after filtering)
       saveProgress('vocabulary', 0, 'phrases');
       setState({ phase: 'vocabulary', wordIndex: 0, step: 'word' });
+    } else if (patternExercises.length > 0) {
+      saveProgress('patterns', 0, 'phrases');
+      setState({ phase: 'patterns', exerciseIndex: 0 });
+    } else if (affixExercises.length > 0) {
+      saveProgress('affixes', 0, 'phrases');
+      setState({ phase: 'affixes', exerciseIndex: 0 });
+    } else {
+      saveProgress('summary', 0, 'phrases');
+      setState({ phase: 'summary' });
     }
-  }, [state, phrases, saveProgress]);
+  }, [state, phrases, words.length, patternExercises.length, affixExercises.length, saveProgress]);
 
   // --- Vocabulary Phase (reuses existing word/mnemonic/quiz components) ---
   const handleWordContinue = useCallback(() => {
     if (state.phase !== 'vocabulary') return;
     const word = words[state.wordIndex];
     if (word?.mnemonic) {
+      const newCount = mnemonicsViewedInSession + 1;
+      setMnemonicsViewedInSession(newCount);
       setState({ phase: 'vocabulary', wordIndex: state.wordIndex, step: 'mnemonic' });
+      // Check for mnemonic or word_family insight
+      if (!activeInsight) {
+        checkInsight('mnemonic_card', { totalMnemonicsViewed: newCount });
+      }
     } else {
       setState({ phase: 'vocabulary', wordIndex: state.wordIndex, step: 'quiz' });
     }
-  }, [state, words]);
+  }, [state, words, mnemonicsViewedInSession, activeInsight, checkInsight]);
 
   const handleMnemonicContinue = useCallback(() => {
     if (state.phase !== 'vocabulary') return;
@@ -358,6 +490,11 @@ export function SceneFlowClient({
 
   const handleVocabQuizCorrect = useCallback(() => {
     if (state.phase !== 'vocabulary') return;
+    // Check for testing_effect insight on first correct quiz
+    if (!firstQuizCorrect && !activeInsight) {
+      setFirstQuizCorrect(true);
+      checkInsight('quiz_correct');
+    }
     const next = state.wordIndex + 1;
     if (next < words.length) {
       saveProgress('vocabulary', next);
@@ -375,7 +512,7 @@ export function SceneFlowClient({
       saveProgress('summary', 0, 'vocabulary');
       setState({ phase: 'summary' });
     }
-  }, [state, words.length, patternExercises.length, affixExercises.length, saveProgress]);
+  }, [state, words.length, patternExercises.length, affixExercises.length, saveProgress, firstQuizCorrect, activeInsight, checkInsight]);
 
   // --- Patterns Phase ---
   const handlePatternCorrect = useCallback((_correct?: boolean) => {
@@ -408,6 +545,30 @@ export function SceneFlowClient({
       setState({ phase: 'summary' });
     }
   }, [state, affixExercises.length, saveProgress]);
+
+  // Check for word_family insight when a word family is first displayed
+  const wordFamilyInsightChecked = useRef(false);
+  useEffect(() => {
+    if (
+      state.phase === 'vocabulary' &&
+      state.step === 'mnemonic' &&
+      !wordFamilyInsightChecked.current &&
+      !activeInsight &&
+      words[state.wordIndex]?.wordFamilies?.length
+    ) {
+      wordFamilyInsightChecked.current = true;
+      checkInsight('word_family');
+    }
+  }, [state, words, activeInsight, checkInsight]);
+
+  // Check for scene_summary insight when entering summary phase
+  const summaryInsightChecked = useRef(false);
+  useEffect(() => {
+    if (state.phase === 'summary' && !summaryInsightChecked.current && !activeInsight) {
+      summaryInsightChecked.current = true;
+      checkInsight('scene_summary');
+    }
+  }, [state.phase, activeInsight, checkInsight]);
 
   // Fetch daily stats when entering summary phase
   useEffect(() => {
@@ -574,6 +735,11 @@ export function SceneFlowClient({
                 languageName={languageName}
                 onContinue={handleMnemonicContinue}
               />
+              {activeInsight && activeInsightContext === 'mnemonic_card' && (
+                <div className="mt-3">
+                  <InsightCard insight={activeInsight} onDismiss={dismissInsight} />
+                </div>
+              )}
               {words[state.wordIndex].wordFamilies && words[state.wordIndex].wordFamilies!.length > 0 && (
                 <CollapsibleWordFamily
                   rootWord={{
@@ -583,18 +749,30 @@ export function SceneFlowClient({
                   derivedForms={words[state.wordIndex].wordFamilies!}
                 />
               )}
+              {activeInsight && activeInsightContext === 'word_family' && (
+                <div className="mt-3">
+                  <InsightCard insight={activeInsight} onDismiss={dismissInsight} />
+                </div>
+              )}
             </>
           )}
           {state.step === 'quiz' && (
-            <QuizOptions
-              key={words[state.wordIndex].word.id}
-              wordText={words[state.wordIndex].word.text}
-              wordId={words[state.wordIndex].word.id}
-              correctAnswer={words[state.wordIndex].word.meaning_en}
-              distractors={words[state.wordIndex].distractors}
-              onCorrect={handleVocabQuizCorrect}
-              onAnswer={handleVocabQuizAnswer}
-            />
+            <>
+              <QuizOptions
+                key={words[state.wordIndex].word.id}
+                wordText={words[state.wordIndex].word.text}
+                wordId={words[state.wordIndex].word.id}
+                correctAnswer={words[state.wordIndex].word.meaning_en}
+                distractors={words[state.wordIndex].distractors}
+                onCorrect={handleVocabQuizCorrect}
+                onAnswer={handleVocabQuizAnswer}
+              />
+              {activeInsight && activeInsightContext === 'quiz_correct' && (
+                <div className="mt-3">
+                  <InsightCard insight={activeInsight} onDismiss={dismissInsight} />
+                </div>
+              )}
+            </>
           )}
         </>
       )}
@@ -653,7 +831,17 @@ export function SceneFlowClient({
 
       {/* Summary Phase */}
       {state.phase === 'summary' && (
-        <SceneSummary sceneTitle={sceneTitle} sceneDescription={sceneDescription} words={words} nextScene={nextScene} pathId={pathId} sceneId={sceneId} sceneNumber={sceneNumber} totalScenes={totalScenes} wordsLearnedToday={dailyStats.words_learned} scenesCompletedToday={dailyStats.scenes_completed} />
+        <>
+          {saveFailed && (
+            <button
+              onClick={retrySave}
+              className="w-full mb-3 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-sm text-center hover:bg-amber-500/20 transition-colors"
+            >
+              Progress not saved — tap to retry
+            </button>
+          )}
+          <SceneSummary sceneTitle={sceneTitle} sceneDescription={sceneDescription} words={allWords} nextScene={nextScene} pathId={pathId} sceneId={sceneId} sceneNumber={sceneNumber} totalScenes={totalScenes} wordsLearnedToday={dailyStats.words_learned} scenesCompletedToday={dailyStats.scenes_completed} insight={activeInsight && activeInsightContext === 'scene_summary' ? activeInsight : undefined} onInsightDismiss={dismissInsight} />
+        </>
       )}
     </div>
   );

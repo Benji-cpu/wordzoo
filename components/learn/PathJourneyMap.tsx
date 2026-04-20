@@ -94,6 +94,7 @@ export function PathJourneyMap({ sceneMastery, pathId }: PathJourneyMapProps) {
       {sceneMastery.map((s, i) => {
         const complete = isSceneComplete(s);
         const isCurrent = i === activeIdx;
+        const isUnlocked = complete || isCurrent || i === 0;
         const progress = sceneProgress(s);
         const status = sceneStatusLabel(s);
         const nodeX = getNodeX(i);
@@ -113,18 +114,26 @@ export function PathJourneyMap({ sceneMastery, pathId }: PathJourneyMapProps) {
           >
             {/* Node circle */}
             <button
-              onClick={() => router.push(`/learn/${s.id}`)}
+              onClick={() => isUnlocked && router.push(`/learn/${s.id}`)}
+              disabled={!isUnlocked}
               className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold shrink-0 transition-all ${
                 complete
                   ? 'bg-green-500/20 text-green-400 border-2 border-green-500/40'
                   : isCurrent
                   ? 'bg-accent-id/20 text-accent-id border-2 border-accent-id shadow-[0_0_12px_rgba(var(--accent-id-rgb,99,102,241),0.4)] scale-110'
+                  : !isUnlocked
+                  ? 'bg-surface-inset/50 text-text-secondary/40 border-2 border-card-border/50 opacity-50 cursor-not-allowed'
                   : 'bg-surface-inset text-text-secondary border-2 border-card-border'
               }`}
             >
               {complete ? (
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="20 6 9 17 4 12" />
+                </svg>
+              ) : !isUnlocked ? (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                 </svg>
               ) : (
                 i + 1
@@ -134,7 +143,7 @@ export function PathJourneyMap({ sceneMastery, pathId }: PathJourneyMapProps) {
             {/* Label */}
             <div className={`min-w-0 max-w-[140px] ${isLeft ? 'text-right' : 'text-left'}`}>
               <p className={`text-sm font-medium truncate ${
-                complete ? 'text-green-400' : isCurrent ? 'text-foreground' : 'text-text-secondary'
+                complete ? 'text-green-400' : isCurrent ? 'text-foreground' : !isUnlocked ? 'text-text-secondary/40' : 'text-text-secondary'
               }`}>
                 {s.title}
               </p>
@@ -149,8 +158,11 @@ export function PathJourneyMap({ sceneMastery, pathId }: PathJourneyMapProps) {
                   </div>
                 </div>
               )}
-              {!complete && !isCurrent && (
+              {!complete && !isCurrent && isUnlocked && (
                 <p className="text-xs text-text-tertiary">{status}</p>
+              )}
+              {!isUnlocked && (
+                <p className="text-xs text-text-secondary/40">Locked</p>
               )}
             </div>
           </div>

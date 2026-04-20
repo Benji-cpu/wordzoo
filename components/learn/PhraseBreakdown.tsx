@@ -40,16 +40,22 @@ export function PhraseBreakdown({ phrase, onContinue }: PhraseBreakdownProps) {
       <p className="text-lg text-foreground mb-2">{phrase.text_en}</p>
 
       {/* Phrase-level composite mnemonic */}
-      {phrase.composite_image_url && (
-        <div className="my-4 px-2" onClick={(e) => e.stopPropagation()}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
+      <div className="my-4 px-2" onClick={(e) => e.stopPropagation()}>
+        {phrase.composite_image_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={phrase.composite_image_url}
             alt={phrase.text_en}
             className="max-h-[200px] rounded-lg object-cover mx-auto"
           />
-        </div>
-      )}
+        ) : (
+          <div className="rounded-lg bg-gradient-to-br from-accent-id/15 to-surface-inset py-6 px-4 mx-auto max-w-sm">
+            <p className="text-lg font-bold text-accent-id">{phrase.text_target}</p>
+            <p className="text-sm text-foreground mt-1">{phrase.text_en}</p>
+            <p className="text-xs text-text-secondary mt-3">Visual coming soon</p>
+          </div>
+        )}
+      </div>
       {phrase.phrase_bridge_sentence && (
         <p className="text-sm text-foreground italic px-4 mb-2 whitespace-nowrap overflow-hidden text-ellipsis" onClick={(e) => e.stopPropagation()}>
           {renderBridgeSentence(phrase.phrase_bridge_sentence)}
@@ -81,13 +87,17 @@ export function PhraseBreakdown({ phrase, onContinue }: PhraseBreakdownProps) {
         <div className="animate-slide-up px-4 py-3 rounded-lg bg-surface-inset mx-auto max-w-sm mb-4" onClick={(e) => e.stopPropagation()}>
           {expandedWord.keyword_text ? (
             <>
-              {expandedWord.image_url && (
+              {expandedWord.image_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={expandedWord.image_url}
                   alt={expandedWord.keyword_text}
                   className="max-h-[150px] rounded-lg object-cover mx-auto mb-2"
                 />
+              ) : (
+                <div className="rounded-lg bg-gradient-to-br from-accent-id/10 to-surface-inset py-4 px-3 mx-auto mb-2">
+                  <p className="text-lg font-bold text-accent-id">&ldquo;{expandedWord.keyword_text}&rdquo;</p>
+                </div>
               )}
               <p className="text-sm text-foreground whitespace-nowrap overflow-hidden text-ellipsis">
                 <span className="font-bold text-accent-id">{expandedWord.word_text}</span>

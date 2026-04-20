@@ -22,13 +22,13 @@ export function PhraseQuiz({ promptText, correctAnswer, distractors, onCorrect }
     setIsCorrect(correct);
 
     if (correct) {
-      setTimeout(onCorrect, 600);
+      setTimeout(onCorrect, 1200);
     } else {
       setTimeout(() => {
         setSelected(correctAnswer);
         setIsCorrect(true);
-        setTimeout(onCorrect, 600);
-      }, 800);
+        setTimeout(onCorrect, 1500);
+      }, 1000);
     }
   }, [selected, correctAnswer, onCorrect]);
 
@@ -39,7 +39,7 @@ export function PhraseQuiz({ promptText, correctAnswer, distractors, onCorrect }
       <div className="space-y-3">
         {options.map((option) => {
           let className =
-            'w-full min-h-[44px] px-4 py-3 rounded-xl text-center font-medium transition-all border ';
+            'w-full min-h-[56px] px-4 py-3 rounded-xl text-center text-sm font-medium transition-all border flex items-center justify-center line-clamp-2 ';
 
           if (selected === option && isCorrect) {
             className += 'bg-green-500/20 border-green-500 text-green-400 scale-[1.02]';

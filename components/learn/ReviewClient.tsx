@@ -9,6 +9,9 @@ import { ReviewComplete } from '@/components/learn/ReviewComplete';
 import { MnemonicCard } from '@/components/learn/MnemonicCard';
 import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
+import { InsightCard } from '@/components/insights/InsightCard';
+import { getEligibleInsight } from '@/lib/insights/engine';
+import type { InsightDefinition } from '@/lib/insights/data';
 import type { DueWordForReview } from '@/lib/db/queries';
 import type { DuePhraseForReview } from '@/lib/db/scene-flow-queries';
 import type { LearnWordFamily } from '@/components/learn/LearnClient';
@@ -89,9 +92,10 @@ interface ReviewClientProps {
   practiceWords?: DueWordForReview[];
   wordFamiliesMap?: Record<string, LearnWordFamily[]>;
   phraseWordMap?: Record<string, PhraseWordMnemonic[]>;
+  insightState?: { seenIds: string[]; shownToday: number };
 }
 
-export function ReviewClient({ dueWords, duePhrases, practiceWords = [], wordFamiliesMap = {}, phraseWordMap = {} }: ReviewClientProps) {
+export function ReviewClient({ dueWords, duePhrases, practiceWords = [], wordFamiliesMap = {}, phraseWordMap = {}, insightState }: ReviewClientProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
@@ -103,6 +107,30 @@ export function ReviewClient({ dueWords, duePhrases, practiceWords = [], wordFam
   const [revisionCorrectCount, setRevisionCorrectCount] = useState(0);
   const startXRef = useRef(0);
   const [practiceMode, setPracticeMode] = useState(false);
+
+  // Insight: check for spacing_effect insight on first review visit
+  const [reviewInsight] = useState<InsightDefinition | null>(() => {
+    if (!insightState) return null;
+    return getEligibleInsight('review_start', {
+      seenInsightIds: new Set(insightState.seenIds),
+      insightsShownToday: insightState.shownToday,
+      totalMnemonicsViewed: 0,
+      totalScenesCompleted: 0,
+      totalWordsLearned: 0,
+    });
+  });
+  const [showReviewInsight, setShowReviewInsight] = useState(!!reviewInsight);
+
+  // Mark insight as shown on mount
+  useEffect(() => {
+    if (reviewInsight) {
+      fetch('/api/insights', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ insightId: reviewInsight.id, action: 'shown' }),
+      }).catch(() => {});
+    }
+  }, [reviewInsight]);
 
   // In practice mode, use all learned words; otherwise use SRS-due items
   const effectiveWords = practiceMode ? practiceWords : dueWords;
@@ -140,6 +168,12 @@ export function ReviewClient({ dueWords, duePhrases, practiceWords = [], wordFam
       setMissedItems(missedItemsRef.current);
     }
 
+    const recordFailure = () => {
+      import('sonner').then(({ toast }) =>
+        toast.error("Couldn't save that rating. Check your connection — we'll retry on next submit.")
+      );
+    };
+
     if (current.type === 'word') {
       fetch('/api/reviews/record', {
         method: 'POST',
@@ -149,7 +183,9 @@ export function ReviewClient({ dueWords, duePhrases, practiceWords = [], wordFam
           direction: wordMode,
           rating,
         }),
-      }).catch(() => {});
+      })
+        .then((res) => { if (!res.ok) recordFailure(); })
+        .catch(recordFailure);
     } else {
       fetch('/api/reviews/record-phrase', {
         method: 'POST',
@@ -158,7 +194,9 @@ export function ReviewClient({ dueWords, duePhrases, practiceWords = [], wordFam
           phraseId: current.data.phrase_id,
           rating,
         }),
-      }).catch(() => {});
+      })
+        .then((res) => { if (!res.ok) recordFailure(); })
+        .catch(recordFailure);
     }
 
     const nextIndex = currentIndex + 1;
@@ -244,7 +282,7 @@ export function ReviewClient({ dueWords, duePhrases, practiceWords = [], wordFam
         <p className="text-text-secondary mb-6 text-center max-w-xs">
           {practiceWords.length > 0
             ? `No reviews due right now. You can practice ${practiceWords.length} words if you'd like.`
-            : 'No reviews due. Come back tomorrow, or learn new words to grow your queue.'}
+            : 'Nothing to review yet — learn new words to grow your queue.'}
         </p>
         {practiceWords.length > 0 ? (
           <button
@@ -368,6 +406,12 @@ export function ReviewClient({ dueWords, duePhrases, practiceWords = [], wordFam
         </span>
       </HeaderPortal>
       <ProgressBarPortal current={currentIndex + 1} total={items.length} />
+
+      {showReviewInsight && reviewInsight && (
+        <div className="mb-4">
+          <InsightCard insight={reviewInsight} onDismiss={() => setShowReviewInsight(false)} />
+        </div>
+      )}
 
       {current.type === 'word' ? (
         <ReviewCard

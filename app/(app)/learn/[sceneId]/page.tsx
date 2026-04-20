@@ -12,6 +12,7 @@ import { getSceneFlowData, getOrCreateSceneProgress } from '@/lib/db/scene-flow-
 import { auth } from '@/lib/auth';
 import { LearnClient, type LearnWord } from '@/components/learn/LearnClient';
 import { SceneFlowClient } from '@/components/learn/SceneFlowClient';
+import { getInsightState } from '@/lib/db/insight-queries';
 import type { SupportedLanguageCode } from '@/types/audio';
 
 interface PageProps {
@@ -113,7 +114,10 @@ export default async function LearnPage({ params }: PageProps) {
 
   // Legacy scenes use the original LearnClient
   if (scene.scene_type === 'legacy') {
-    const words = await buildWordsArray(sceneId, scene.language_id, userId);
+    const [words, legacyInsightState] = await Promise.all([
+      buildWordsArray(sceneId, scene.language_id, userId),
+      userId ? getInsightState(userId) : null,
+    ]);
     return (
       <LearnClient
         sceneId={sceneId}
@@ -126,15 +130,17 @@ export default async function LearnPage({ params }: PageProps) {
         pathId={scene.path_id}
         sceneNumber={sceneNumber}
         totalScenes={totalScenes}
+        insightState={legacyInsightState ? { seenIds: Array.from(legacyInsightState.seenIds), shownToday: legacyInsightState.shownToday } : null}
       />
     );
   }
 
   // Dialogue scenes use the new SceneFlowClient
-  const [flowData, words, progress] = await Promise.all([
+  const [flowData, words, progress, insightState] = await Promise.all([
     getSceneFlowData(sceneId, userId),
     buildWordsArray(sceneId, scene.language_id, userId),
     userId ? getOrCreateSceneProgress(userId, sceneId) : null,
+    userId ? getInsightState(userId) : null,
   ]);
 
   const defaultProgress = {
@@ -174,6 +180,7 @@ export default async function LearnPage({ params }: PageProps) {
       userName={session?.user?.name ?? null}
       sceneNumber={sceneNumber}
       totalScenes={totalScenes}
+      insightState={insightState ? { seenIds: Array.from(insightState.seenIds), shownToday: insightState.shownToday } : null}
     />
   );
 }

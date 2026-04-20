@@ -27,32 +27,37 @@ export function QuizOptions({ wordText, wordId, correctAnswer, distractors, onCo
     onAnswer?.(correct);
 
     if (correct) {
-      setTimeout(onCorrect, 600);
+      setTimeout(onCorrect, 1200);
     } else {
       // Show correct answer after a beat then proceed
       setTimeout(() => {
         setSelected(correctAnswer);
         setIsCorrect(true);
-        setTimeout(onCorrect, 600);
-      }, 800);
+        setTimeout(onCorrect, 1500);
+      }, 1000);
     }
   }, [selected, correctAnswer, onCorrect]);
 
+  // Use stacked layout if any option is long
+  const useStacked = options.some(o => o.length > 15);
+
   return (
-    <div className="animate-slide-up">
-      <p className="text-center text-text-secondary text-sm mb-2">
-        What does this mean?
-      </p>
-      <div className="flex items-center justify-center gap-1 mb-6">
-        <p className="text-2xl font-bold text-accent-id">{wordText}</p>
-        <div onClick={(e) => e.stopPropagation()}>
-          <PronunciationButton wordId={wordId} size={20} />
+    <div className="animate-slide-up flex flex-col min-h-[50vh]">
+      <div className="flex-1 flex flex-col items-center justify-center">
+        <p className="text-center text-text-secondary text-sm mb-2">
+          What does this mean?
+        </p>
+        <div className="flex items-center justify-center gap-1">
+          <p className="text-2xl font-bold text-accent-id">{wordText}</p>
+          <div onClick={(e) => e.stopPropagation()}>
+            <PronunciationButton wordId={wordId} size={20} />
+          </div>
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-3">
+      <div className={useStacked ? 'space-y-3 mt-auto' : 'grid grid-cols-2 gap-3 mt-auto'}>
         {options.map((option) => {
           let className =
-            'min-h-[44px] px-4 py-3 rounded-xl text-center font-medium transition-all border ';
+            'min-h-[64px] px-4 py-3 rounded-xl text-center text-base font-medium transition-all border flex items-center justify-center ';
 
           if (selected === option && isCorrect) {
             className += 'bg-green-500/20 border-green-500 text-green-400 scale-[1.02]';

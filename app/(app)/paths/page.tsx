@@ -46,24 +46,32 @@ export default async function PathsPage() {
     return true;
   });
 
-  // Get word stats and scene mastery for each path in parallel
-  let statsResults: Awaited<ReturnType<typeof getPathWordStats>>[];
-  let masteryResults: Awaited<ReturnType<typeof getSceneMasteryForPath>>[];
-  try {
-    [statsResults, masteryResults] = await Promise.all([
-      Promise.all(uniquePaths.map(p => getPathWordStats(userId, p.id))),
-      Promise.all(uniquePaths.map(p => getSceneMasteryForPath(userId, p.id))),
-    ]);
-  } catch (e) {
-    console.error('PathsPage: stats/mastery fetch failed:', e);
-    statsResults = uniquePaths.map(() => ({ total_words: 0, words_learned: 0, words_mastered: 0 }));
-    masteryResults = uniquePaths.map(() => []);
-  }
+  // Fetch stats+mastery per path, isolating failures so one bad path can't break the page
+  const EMPTY_STATS = { total_words: 0, words_learned: 0, words_mastered: 0 };
+  const [statsResults, masteryResults] = await Promise.all([
+    Promise.all(
+      uniquePaths.map(p =>
+        getPathWordStats(userId, p.id).catch(e => {
+          console.error(`PathsPage: getPathWordStats failed for ${p.id}:`, e);
+          return EMPTY_STATS;
+        })
+      )
+    ),
+    Promise.all(
+      uniquePaths.map(p =>
+        getSceneMasteryForPath(userId, p.id).catch(e => {
+          console.error(`PathsPage: getSceneMasteryForPath failed for ${p.id}:`, e);
+          return [] as SceneMasteryRow[];
+        })
+      )
+    ),
+  ]);
 
   const pathsWithStats = uniquePaths.map((path, i) => {
     const mastery = masteryResults[i];
     const scenesCompleted = mastery.filter(isSceneComplete).length;
     const totalScenes = mastery.length;
+    const nextScene = mastery.find(s => !isSceneComplete(s));
     return {
       path,
       wordCount: statsResults[i].total_words,
@@ -73,6 +81,7 @@ export default async function PathsPage() {
         : 0,
       scenesCompleted,
       totalScenes,
+      nextSceneId: nextScene?.id ?? null,
     };
   });
 
@@ -82,7 +91,7 @@ export default async function PathsPage() {
   const studio = pathsWithStats.filter(p => p.path.type === 'studio');
 
   return (
-    <div className="max-w-lg mx-auto space-y-6 pb-24">
+    <div className="max-w-lg lg:max-w-5xl mx-auto space-y-6 pb-24">
       <div>
         <h1 className="text-2xl font-bold text-foreground">Learning Paths</h1>
         <p className="text-sm text-text-secondary mt-1">
@@ -96,7 +105,7 @@ export default async function PathsPage() {
           <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wider mb-3">
             Premade Paths
           </h2>
-          <div className="space-y-3">
+          <div className="space-y-3 lg:grid lg:grid-cols-2 lg:gap-3 lg:space-y-0">
             {premade.map(p => (
               <PathCard
                 key={p.path.id}
@@ -106,6 +115,7 @@ export default async function PathsPage() {
                 progress={p.progress}
                 scenesCompleted={p.scenesCompleted}
                 totalScenes={p.totalScenes}
+                nextSceneId={p.nextSceneId}
               />
             ))}
           </div>
@@ -118,7 +128,7 @@ export default async function PathsPage() {
           <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wider mb-3">
             Travel Packs
           </h2>
-          <div className="space-y-3">
+          <div className="space-y-3 lg:grid lg:grid-cols-2 lg:gap-3 lg:space-y-0">
             {travel.map(p => (
               <TravelPackCard key={p.path.id} path={p.path} wordCount={p.wordCount} />
             ))}
@@ -132,7 +142,7 @@ export default async function PathsPage() {
           <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wider mb-3">
             Studio Paths
           </h2>
-          <div className="space-y-3">
+          <div className="space-y-3 lg:grid lg:grid-cols-2 lg:gap-3 lg:space-y-0">
             {studio.map(p => (
               <PathCard
                 key={p.path.id}
@@ -142,6 +152,7 @@ export default async function PathsPage() {
                 progress={p.progress}
                 scenesCompleted={p.scenesCompleted}
                 totalScenes={p.totalScenes}
+                nextSceneId={p.nextSceneId}
               />
             ))}
           </div>
@@ -154,7 +165,7 @@ export default async function PathsPage() {
           Custom Paths
         </h2>
         {custom.length > 0 && (
-          <div className="space-y-3 mb-3">
+          <div className="space-y-3 mb-3 lg:grid lg:grid-cols-2 lg:gap-3 lg:space-y-0">
             {custom.map(p => (
               <PathCard
                 key={p.path.id}
@@ -164,6 +175,7 @@ export default async function PathsPage() {
                 progress={p.progress}
                 scenesCompleted={p.scenesCompleted}
                 totalScenes={p.totalScenes}
+                nextSceneId={p.nextSceneId}
               />
             ))}
           </div>

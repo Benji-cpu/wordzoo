@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { Card } from '@/components/ui/Card';
 import { PronunciationButton } from '@/components/audio/SpeakerButton';
-import { playWordPronunciation, isAudioUnlocked } from '@/lib/audio';
+import { playWordPronunciation, isAudioUnlocked, onAudioUnlocked } from '@/lib/audio';
 
 interface WordCardProps {
   text: string;
@@ -18,13 +18,30 @@ interface WordCardProps {
 }
 
 export function WordCard({ text, romanization, meaningEn, partOfSpeech, wordId, audioUrl, languageCode, informalText, onContinue }: WordCardProps) {
-  // Auto-play pronunciation on mount / word change (ref guard prevents StrictMode double-play)
+  // Auto-play pronunciation on mount / word change
   const hasAutoPlayed = useRef(false);
+  const prevWordId = useRef(wordId);
+
+  // Reset autoplay flag when word changes
+  if (prevWordId.current !== wordId) {
+    prevWordId.current = wordId;
+    hasAutoPlayed.current = false;
+  }
+
   useEffect(() => {
-    if (!hasAutoPlayed.current && isAudioUnlocked()) {
+    const play = () => {
+      if (hasAutoPlayed.current) return;
       hasAutoPlayed.current = true;
       playWordPronunciation(wordId, { audioUrl, text, languageCode: languageCode as import('@/types/audio').SupportedLanguageCode | undefined }).catch(() => {});
+    };
+
+    if (isAudioUnlocked()) {
+      play();
+      return;
     }
+
+    // Subscribe to unlock event — play when user first interacts
+    return onAudioUnlocked(play);
   }, [wordId, audioUrl, text, languageCode]);
 
   return (

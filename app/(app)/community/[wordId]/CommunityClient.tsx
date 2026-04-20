@@ -33,9 +33,13 @@ export function CommunityClient({ wordId, initialItems, initialTotal, userId, us
         setItems(prev => append ? [...prev, ...json.data.items] : json.data.items);
         setHasMore(json.data.hasMore);
         setPage(newPage);
+        return;
       }
+      const { toast } = await import('sonner');
+      toast.error(json.error ?? "Couldn't load mnemonics. Please try again.");
     } catch {
-      // Silently fail
+      const { toast } = await import('sonner');
+      toast.error("Couldn't load mnemonics. Check your connection and try again.");
     } finally {
       setLoading(false);
     }
@@ -74,7 +78,15 @@ export function CommunityClient({ wordId, initialItems, initialTotal, userId, us
       {items.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-text-secondary">No community mnemonics yet.</p>
-          <p className="text-xs text-text-secondary mt-1">Be the first to share yours!</p>
+          <p className="text-xs text-text-secondary mt-1 mb-4">Be the first to share yours!</p>
+          {userMnemonic && !hasSubmitted && (
+            <button
+              onClick={() => setShowSubmitModal(true)}
+              className="inline-flex items-center gap-2 min-h-[44px] px-5 rounded-xl bg-accent-default text-white font-medium hover:brightness-110 transition-colors"
+            >
+              Submit your mnemonic
+            </button>
+          )}
         </div>
       ) : (
         <div className="space-y-4">

@@ -157,12 +157,16 @@ export function PhraseReviewCard({
                     {renderBridgeSentence(phraseBridgeSentence)}
                   </p>
                 )}
-                {compositeImageUrl && (
+                {compositeImageUrl ? (
                   <div className="relative w-full rounded-xl overflow-hidden mb-3 bg-surface-inset">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={compositeImageUrl} alt="" className="w-full max-h-[45dvh] object-cover rounded-xl" />
+                    <img src={compositeImageUrl} alt={`Illustration for phrase: ${textEn}`} className="w-full max-h-[45dvh] object-cover rounded-xl" />
                   </div>
-                )}
+                ) : !phraseBridgeSentence ? (
+                  <div className="rounded-xl bg-gradient-to-br from-accent-id/15 to-surface-inset py-6 px-4 mb-3">
+                    <p className="text-xs text-text-secondary">Visual coming soon</p>
+                  </div>
+                ) : null}
                 {wordBreakdown}
               </div>
             )}
@@ -178,10 +182,14 @@ export function PhraseReviewCard({
               How do you say...
             </p>
             <h2 className="text-2xl font-bold text-foreground mb-2">{textEn}</h2>
-            {compositeImageUrl && (
+            {compositeImageUrl ? (
               <div className="relative w-full rounded-xl overflow-hidden mb-3 bg-surface-inset">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={compositeImageUrl} alt="" className="w-full max-h-[45dvh] object-cover rounded-xl" />
+                <img src={compositeImageUrl} alt={`Illustration for phrase: ${textEn}`} className="w-full max-h-[45dvh] object-cover rounded-xl" />
+              </div>
+            ) : (
+              <div className="rounded-xl bg-gradient-to-br from-accent-id/15 to-surface-inset py-6 px-4 mb-3">
+                <p className="text-xs text-text-secondary">Visual coming soon</p>
               </div>
             )}
 

@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/Button';
 import { UpgradePrompt } from '@/components/billing/UpgradePrompt';
 import { PacingNudge, getPacingLevel } from '@/components/learn/PacingNudge';
 import { PronunciationButton } from '@/components/audio/SpeakerButton';
+import { InsightCard } from '@/components/insights/InsightCard';
+import type { InsightDefinition } from '@/lib/insights/data';
 
 interface SummaryWord {
   word: { id: string; text: string; meaning_en: string };
@@ -25,9 +27,11 @@ interface SceneSummaryProps {
   totalScenes?: number;
   wordsLearnedToday?: number;
   scenesCompletedToday?: number;
+  insight?: InsightDefinition;
+  onInsightDismiss?: () => void;
 }
 
-export function SceneSummary({ sceneTitle, sceneDescription, words, showUpgrade = false, nextScene, pathId, sceneId, sceneNumber, totalScenes, wordsLearnedToday = 0, scenesCompletedToday = 0 }: SceneSummaryProps) {
+export function SceneSummary({ sceneTitle, sceneDescription, words, showUpgrade = false, nextScene, pathId, sceneId, sceneNumber, totalScenes, wordsLearnedToday = 0, scenesCompletedToday = 0, insight, onInsightDismiss }: SceneSummaryProps) {
   const [expandedWordId, setExpandedWordId] = useState<string | null>(null);
 
   const returnTo = nextScene
@@ -96,6 +100,13 @@ export function SceneSummary({ sceneTitle, sceneDescription, words, showUpgrade 
           ))}
         </div>
       </Card>
+
+      {/* Insight card — educational moment */}
+      {insight && onInsightDismiss && (
+        <div className="mb-4">
+          <InsightCard insight={insight} onDismiss={onInsightDismiss} />
+        </div>
+      )}
 
       {/* Spacer to distribute content vertically */}
       <div className="flex-1" />

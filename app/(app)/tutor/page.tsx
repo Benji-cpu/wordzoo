@@ -5,6 +5,10 @@ import { useSearchParams } from 'next/navigation';
 import { TutorChat } from '@/components/tutor/TutorChat';
 import type { SessionSummaryData } from '@/components/tutor/TutorChat';
 import { useTutorChat } from '@/lib/hooks/useTutorChat';
+import { InsightCard } from '@/components/insights/InsightCard';
+import { getEligibleInsight } from '@/lib/insights/engine';
+import { INSIGHTS } from '@/lib/insights/data';
+import type { InsightDefinition } from '@/lib/insights/data';
 import type { TutorRecommendation } from '@/app/api/tutor/recommendation/route';
 
 export default function TutorPage() {
@@ -26,6 +30,8 @@ export default function TutorPage() {
   const [isLoadingRecommendation, setIsLoadingRecommendation] = useState(false);
 
   const [isCheckingSession, setIsCheckingSession] = useState(true);
+  const [guidedError, setGuidedError] = useState<string | null>(null);
+  const [tutorInsight, setTutorInsight] = useState<InsightDefinition | null>(null);
 
   // Defined before useTutorChat so it can be passed as onAutoEnd callback
   const handleEndSession = useCallback(async () => {
@@ -75,10 +81,17 @@ export default function TutorPage() {
             if (json.data.languageCode) {
               setLangCode(json.data.languageCode);
             }
+          } else {
+            // Tutor will default to English — warn so the user isn't silently misaligned
+            import('sonner').then(({ toast }) =>
+              toast.warning("Couldn't detect your learning language. The tutor will default to English.")
+            );
           }
         }
       } catch {
-        // Fallback
+        import('sonner').then(({ toast }) =>
+          toast.warning("Couldn't detect your learning language. The tutor will default to English.")
+        );
       } finally {
         setIsLoadingLanguage(false);
       }
@@ -138,6 +151,37 @@ export default function TutorPage() {
     fetchRecommendation();
   }, [languageId, sessionId, isCheckingSession]);
 
+  // Check for tutor_production insight on first tutor visit (no active session)
+  useEffect(() => {
+    if (sessionId || isCheckingSession || tutorInsight) return;
+    async function checkTutorInsight() {
+      try {
+        const res = await fetch('/api/insights');
+        if (!res.ok) return;
+        const json = await res.json();
+        if (!json.data) return;
+        const insight = getEligibleInsight('tutor_first', {
+          seenInsightIds: new Set(json.data.seenIds),
+          insightsShownToday: json.data.shownToday,
+          totalMnemonicsViewed: 0,
+          totalScenesCompleted: 0,
+          totalWordsLearned: 0,
+        });
+        if (insight) {
+          setTutorInsight(insight);
+          fetch('/api/insights', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ insightId: insight.id, action: 'shown' }),
+          }).catch(() => {});
+        }
+      } catch {
+        // Non-critical
+      }
+    }
+    checkTutorInsight();
+  }, [sessionId, isCheckingSession, tutorInsight]);
+
   const handleStartSession = useCallback(
     async (mode: string, scenario?: string) => {
       if (!languageId) return;
@@ -158,6 +202,8 @@ export default function TutorPage() {
         addGreeting(json.data.greeting);
       } catch (err) {
         console.error('Start session error:', err);
+        const message = err instanceof Error ? err.message : 'Could not start the tutor. Please try again.';
+        import('sonner').then(({ toast }) => toast.error(message));
       } finally {
         setIsStarting(false);
       }
@@ -169,6 +215,7 @@ export default function TutorPage() {
     async (sceneId: string) => {
       setIsStarting(true);
       setActiveMode('guided_conversation');
+      setGuidedError(null);
       try {
         const res = await fetch('/api/tutor/guided-session', {
           method: 'POST',
@@ -178,12 +225,15 @@ export default function TutorPage() {
         const json = await res.json();
         if (!res.ok || json.error) {
           setActiveMode(null);
-          throw new Error(json.error ?? 'Failed to start guided session');
+          setGuidedError(json.error ?? 'Could not start conversation. Please try again.');
+          return;
         }
         setSessionId(json.data.sessionId);
         addGreeting(json.data.greeting);
       } catch (err) {
         console.error('Start guided session error:', err);
+        setActiveMode(null);
+        setGuidedError('Could not start conversation. Please try again.');
       } finally {
         setIsStarting(false);
       }
@@ -234,6 +284,27 @@ export default function TutorPage() {
 
   return (
     <div className="max-w-lg mx-auto -mt-4 -mb-20 h-[calc(100dvh-3.5rem)] overflow-hidden">
+      {guidedError && !sessionId && (
+        <div className="px-4 pt-2 pb-2">
+          <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-red-500/10 border border-red-500/20">
+            <p className="text-sm text-red-400">{guidedError}</p>
+            <button
+              onClick={() => {
+                setGuidedError(null);
+                if (sceneIdParam) handleStartGuidedSession(sceneIdParam);
+              }}
+              className="shrink-0 px-3 py-1.5 text-sm font-medium rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      )}
+      {tutorInsight && !sessionId && !guidedError && (
+        <div className="px-4 pt-2 pb-2">
+          <InsightCard insight={tutorInsight} onDismiss={() => setTutorInsight(null)} />
+        </div>
+      )}
       <TutorChat
         languageId={languageId}
         langCode={langCode}
