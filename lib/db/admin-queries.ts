@@ -406,3 +406,126 @@ export async function updateAppFeedbackStatus(
   `;
   return (rows[0] as AppFeedback) ?? null;
 }
+
+// --- Image Coverage Stats ---
+
+export interface ImageCoverageStats {
+  mnemonics: { total: number; withImage: number; missing: number; coveragePercent: number };
+  phrases: { total: number; withImage: number; missing: number; coveragePercent: number };
+  scenes: { total: number; withAnchorImage: number; missingAnchor: number; coveragePercent: number };
+}
+
+export async function getImageCoverageStats(): Promise<ImageCoverageStats> {
+  const rows = await sql`
+    SELECT
+      (SELECT COUNT(*)::int FROM mnemonics WHERE user_id IS NULL) AS mn_total,
+      (SELECT COUNT(*)::int FROM mnemonics WHERE user_id IS NULL AND image_url IS NOT NULL) AS mn_with_image,
+      (SELECT COUNT(*)::int FROM scene_phrases) AS ph_total,
+      (SELECT COUNT(*)::int FROM scene_phrases WHERE composite_image_url IS NOT NULL) AS ph_with_image,
+      (SELECT COUNT(*)::int FROM scenes) AS sc_total,
+      (SELECT COUNT(*)::int FROM scenes WHERE anchor_image_url IS NOT NULL) AS sc_with_anchor
+  `;
+  const r = rows[0] as {
+    mn_total: number; mn_with_image: number;
+    ph_total: number; ph_with_image: number;
+    sc_total: number; sc_with_anchor: number;
+  };
+  return {
+    mnemonics: {
+      total: r.mn_total,
+      withImage: r.mn_with_image,
+      missing: r.mn_total - r.mn_with_image,
+      coveragePercent: r.mn_total > 0 ? Math.round((r.mn_with_image / r.mn_total) * 100) : 0,
+    },
+    phrases: {
+      total: r.ph_total,
+      withImage: r.ph_with_image,
+      missing: r.ph_total - r.ph_with_image,
+      coveragePercent: r.ph_total > 0 ? Math.round((r.ph_with_image / r.ph_total) * 100) : 0,
+    },
+    scenes: {
+      total: r.sc_total,
+      withAnchorImage: r.sc_with_anchor,
+      missingAnchor: r.sc_total - r.sc_with_anchor,
+      coveragePercent: r.sc_total > 0 ? Math.round((r.sc_with_anchor / r.sc_total) * 100) : 0,
+    },
+  };
+}
+
+// --- Missing Images Lists ---
+
+export interface MissingMnemonicImage {
+  id: string;
+  word_id: string;
+  keyword_text: string;
+  bridge_sentence: string | null;
+  scene_description: string;
+  word_text: string;
+  meaning_en: string;
+  scene_title: string | null;
+  scene_id: string | null;
+  path_title: string | null;
+  path_id: string | null;
+}
+
+export async function getMissingMnemonicImages(): Promise<MissingMnemonicImage[]> {
+  const rows = await sql`
+    SELECT m.id, m.word_id, m.keyword_text, m.bridge_sentence, m.scene_description,
+      w.text AS word_text, w.meaning_en,
+      s.title AS scene_title, s.id AS scene_id,
+      p.title AS path_title, p.id AS path_id
+    FROM mnemonics m
+    JOIN words w ON w.id = m.word_id
+    LEFT JOIN scene_words sw ON sw.word_id = w.id
+    LEFT JOIN scenes s ON s.id = sw.scene_id
+    LEFT JOIN paths p ON p.id = s.path_id
+    WHERE m.user_id IS NULL AND m.image_url IS NULL
+    ORDER BY p.title, s.sort_order, w.text
+  `;
+  return rows as MissingMnemonicImage[];
+}
+
+export interface MissingPhraseImage {
+  id: string;
+  text_target: string;
+  text_en: string;
+  phrase_bridge_sentence: string | null;
+  scene_title: string;
+  scene_id: string;
+  path_title: string;
+  path_id: string;
+}
+
+export async function getMissingPhraseImages(): Promise<MissingPhraseImage[]> {
+  const rows = await sql`
+    SELECT sp.id, sp.text_target, sp.text_en, sp.phrase_bridge_sentence,
+      s.title AS scene_title, s.id AS scene_id,
+      p.title AS path_title, p.id AS path_id
+    FROM scene_phrases sp
+    JOIN scenes s ON s.id = sp.scene_id
+    JOIN paths p ON p.id = s.path_id
+    WHERE sp.composite_image_url IS NULL
+    ORDER BY p.title, s.sort_order
+  `;
+  return rows as MissingPhraseImage[];
+}
+
+export interface MissingSceneAnchor {
+  id: string;
+  title: string;
+  description: string | null;
+  path_title: string;
+  path_id: string;
+}
+
+export async function getMissingSceneAnchors(): Promise<MissingSceneAnchor[]> {
+  const rows = await sql`
+    SELECT s.id, s.title, s.description,
+      p.title AS path_title, p.id AS path_id
+    FROM scenes s
+    JOIN paths p ON p.id = s.path_id
+    WHERE s.anchor_image_url IS NULL
+    ORDER BY p.title, s.sort_order
+  `;
+  return rows as MissingSceneAnchor[];
+}
