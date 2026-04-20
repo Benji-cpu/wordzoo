@@ -26,6 +26,9 @@ import Link from 'next/link';
 import { InfoByteCard } from '@/components/info-bytes/InfoByteCard';
 import { DailyRecap } from '@/components/learn/DailyRecap';
 import { DashboardUpgradeBanner } from './DashboardUpgradeBanner';
+import { getInsightState } from '@/lib/db/insight-queries';
+import { getEligibleInsight } from '@/lib/insights/engine';
+import { DashboardInsight } from './DashboardInsight';
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -49,17 +52,18 @@ export default async function DashboardPage() {
   const yesterdayStr = yesterday.toISOString().split('T')[0];
 
   // Fetch scene mastery, word stats, due words/phrases, language, and mastery distribution in parallel
-  const [sceneMastery, wordStats, dueWords, duePhrases, language, streakData, masteryDist, wordsByStatus, todayInfoByte, yesterdayStats] = await Promise.all([
+  const [sceneMastery, wordStats, dueWords, duePhrases, language, streakData, masteryDist, wordsByStatus, todayInfoByte, yesterdayStats, insightState] = await Promise.all([
     getSceneMasteryForPath(userId, pathId),
     getPathWordStats(userId, pathId),
     getUserDueWords(userId, languageId),
     getDuePhrasesForReview(userId, 100),
     getLanguageById(languageId),
     getUserStreak(userId),
-    getWordMasteryDistribution(userId),
-    getWordsByMasteryStatus(userId),
+    getWordMasteryDistribution(userId, pathId),
+    getWordsByMasteryStatus(userId, pathId),
     getTodayInfoByte(languageId),
     getDailyLearningStats(userId, yesterdayStr),
+    getInsightState(userId),
   ]);
 
   // Find next incomplete scene
@@ -69,10 +73,20 @@ export default async function DashboardPage() {
 
   const totalDueCount = dueWords.length + duePhrases.length;
 
+  // Check for dashboard insight (learning_loop)
+  const completedSceneCount = sceneMastery.filter(s => isSceneComplete(s)).length;
+  const dashboardInsight = getEligibleInsight('dashboard', {
+    seenInsightIds: insightState.seenIds,
+    insightsShownToday: insightState.shownToday,
+    totalMnemonicsViewed: 0,
+    totalScenesCompleted: completedSceneCount,
+    totalWordsLearned: wordStats.words_learned,
+  });
+
   const streak = streakData.current_streak;
 
   return (
-    <div className="max-w-lg mx-auto space-y-4">
+    <div className="max-w-lg lg:max-w-3xl mx-auto space-y-4">
       {/* Upgrade banner for free tier near quota */}
       <DashboardUpgradeBanner />
 
@@ -107,6 +121,11 @@ export default async function DashboardPage() {
         yesterdayScenes={yesterdayStats.scenes_completed}
         dueReviewCount={totalDueCount}
       />
+
+      {/* Learning Loop insight — only for users with 15+ words */}
+      {dashboardInsight && (
+        <DashboardInsight insight={dashboardInsight} />
+      )}
 
       {/* Main actions */}
       {(() => {
