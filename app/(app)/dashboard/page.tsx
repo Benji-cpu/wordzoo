@@ -17,7 +17,8 @@ import { isSceneComplete, sceneProgress as getSceneProgress, findCurrentSceneInd
 import { ContinueLearningCard } from '@/components/learn/ContinueLearningCard';
 import { QuickReviewCard } from '@/components/learn/QuickReviewCard';
 import { ProgressChart } from '@/components/learn/ProgressChart';
-import { StreakCounter } from '@/components/learn/StreakCounter';
+import { StreakFlame } from '@/components/ui/StreakFlame';
+import { Fox, type FoxPose } from '@/components/mascot/Fox';
 import { TutorNudgeCard } from '@/components/tutor/TutorNudgeCard';
 import { TutorInsights } from '@/components/tutor/TutorInsights';
 import { Card } from '@/components/ui/Card';
@@ -29,6 +30,23 @@ import { DashboardUpgradeBanner } from './DashboardUpgradeBanner';
 import { getInsightState } from '@/lib/db/insight-queries';
 import { getEligibleInsight } from '@/lib/insights/engine';
 import { DashboardInsight } from './DashboardInsight';
+
+function pickFoxPose(dueCount: number): FoxPose {
+  if (dueCount >= 10) return 'thinking';
+  if (dueCount > 0) return 'wave';
+  return 'proud';
+}
+
+function pickGreeting(name: string | null): string {
+  const hour = new Date().getHours();
+  const first = name?.split(/\s+/)[0];
+  const tag = first ? `, ${first}` : '';
+  if (hour < 5) return `Still up${tag}?`;
+  if (hour < 12) return `Morning${tag}`;
+  if (hour < 17) return `Afternoon${tag}`;
+  if (hour < 21) return `Evening${tag}`;
+  return `Night${tag}`;
+}
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -105,14 +123,23 @@ export default async function DashboardPage() {
       )}
 
       {/* Greeting + Streak */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-foreground">Welcome back</h1>
-          <p className="text-sm text-text-secondary mt-1">
-            Keep building your {language?.name ?? 'language'} vocabulary
-          </p>
+      <div className="flex items-center gap-4 justify-between">
+        <div className="flex items-center gap-3 min-w-0">
+          <Fox pose={pickFoxPose(totalDueCount)} size="md" />
+          <div className="min-w-0">
+            <h1 className="text-xl font-bold text-foreground truncate">
+              {pickGreeting(session.user.name ?? null)}
+            </h1>
+            <p className="text-sm text-text-secondary mt-0.5 truncate">
+              {totalDueCount > 0
+                ? `${totalDueCount} review${totalDueCount === 1 ? '' : 's'} due — keep your ${language?.name ?? 'language'} streak alive`
+                : `Keep building your ${language?.name ?? 'language'} vocabulary`}
+            </p>
+          </div>
         </div>
-        <StreakCounter streak={streak} />
+        {streak > 0 ? (
+          <StreakFlame count={streak} size="md" />
+        ) : null}
       </div>
 
       {/* Yesterday's recap */}

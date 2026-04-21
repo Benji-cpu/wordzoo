@@ -4,6 +4,7 @@ import { getUserProfile } from '@/lib/db/queries';
 import { SubscriptionSection } from './SubscriptionSection';
 import { ProfileSection } from './ProfileSection';
 import { LanguageSection } from './LanguageSection';
+import { FeedbackSection } from './FeedbackSection';
 import { DangerSection } from './DangerSection';
 
 export default async function SettingsPage() {
@@ -24,6 +25,7 @@ export default async function SettingsPage() {
       <ProfileSection userId={session.user.id} />
       <SubscriptionSection />
       <LanguageSection initialNativeLanguage={profile?.native_language ?? 'en'} />
+      <FeedbackSection />
       {profile && <DangerSection userEmail={profile.email} />}
     </div>
   );

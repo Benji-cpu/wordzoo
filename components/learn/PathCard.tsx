@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Card } from '@/components/ui/Card';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { Badge } from '@/components/ui/Badge';
+import { ThumbButton } from '@/components/ui/ThumbButton';
 import type { Path } from '@/types/database';
 
 interface PathCardProps {
@@ -42,21 +43,21 @@ export function PathCard({ path, wordCount, wordsCompleted, progress, scenesComp
           <p className="text-sm text-text-secondary mb-3">{path.description}</p>
         )}
         <ProgressBar value={progress} accentColor="bg-accent-id" height="sm" />
-        <div className="flex items-center justify-between mt-2">
-          <p className="text-xs text-text-secondary">
-            {totalScenes != null && scenesCompleted != null
-              ? `${scenesCompleted}/${totalScenes} scenes · ${wordsCompleted}/${wordCount} words`
-              : `${wordsCompleted}/${wordCount} words`}
-          </p>
-          {nextSceneId && progress < 100 && (
-            <Link
-              href={`/learn/${nextSceneId}`}
-              className="pointer-events-auto text-xs font-medium text-accent-id hover:text-accent-id/80 transition-colors"
-            >
-              Continue &rarr;
-            </Link>
-          )}
-        </div>
+        <p className="text-xs text-text-secondary mt-2">
+          {totalScenes != null && scenesCompleted != null
+            ? `${scenesCompleted}/${totalScenes} scenes · ${wordsCompleted}/${wordCount} words`
+            : `${wordsCompleted}/${wordCount} words`}
+        </p>
+        {nextSceneId && progress < 100 && (
+          <Link
+            href={`/learn/${nextSceneId}`}
+            className="pointer-events-auto block mt-3"
+          >
+            <ThumbButton variant="primary" size="md" sound={false} haptic={false}>
+              {progress > 0 ? 'Continue' : 'Start'} →
+            </ThumbButton>
+          </Link>
+        )}
       </div>
     </Card>
   );
