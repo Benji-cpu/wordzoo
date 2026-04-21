@@ -36,7 +36,7 @@ export function Fox({
   size = 'md',
   animate = true,
   className = '',
-  'aria-label': ariaLabel = 'Wordzoo fox mascot',
+  'aria-label': ariaLabel = 'WordZoo fox mascot',
 }: Props) {
   const px = SIZE_PX[size];
   const ambient =

@@ -41,9 +41,15 @@ export function useHaptic() {
   const setEnabled = useCallback((next: boolean) => {
     if (typeof window === 'undefined') return;
     window.localStorage.setItem(STORAGE_KEY, next ? '1' : '0');
-    // Fire a storage event for same-tab subscribers (native event only
-    // fires cross-tab).
+    // Fire a storage event for same-tab subscribers; same-tab events
+    // don't populate newValue, so subscribers re-read from storage.
     window.dispatchEvent(new StorageEvent('storage', { key: STORAGE_KEY }));
+    // Fire-and-forget: also persist cross-device via preferences API.
+    fetch('/api/user/preferences', {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ preferences: { haptic_enabled: next } }),
+    }).catch(() => {});
   }, []);
 
   const trigger = useCallback(

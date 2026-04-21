@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useSyncExternalStore } from 'react';
 
 export type XpReason =
   | 'correct_answer'
@@ -25,15 +25,45 @@ type XpState = {
 };
 
 /**
- * Client-side XP tracker.
+ * Module-level XP store. All useXP() instances share the same state so
+ * a SceneSummary's "+N XP earned" pill reflects every correct answer
+ * awarded earlier in the same scene, not just the scene_complete bonus.
+ */
+let state: XpState = { total: 0, sessionEarned: 0 };
+const listeners = new Set<() => void>();
+
+function snapshot(): XpState {
+  return state;
+}
+
+function serverSnapshot(): XpState {
+  // Same reference every render on the server so React is happy.
+  return SERVER_STATE;
+}
+const SERVER_STATE: XpState = { total: 0, sessionEarned: 0 };
+
+function setState(next: XpState) {
+  state = next;
+  for (const l of listeners) l();
+}
+
+function subscribe(cb: () => void) {
+  listeners.add(cb);
+  return () => {
+    listeners.delete(cb);
+  };
+}
+
+/**
+ * Client-side XP tracker. Shared module state across components.
  *
  * Optimistic: local state updates immediately, server persists async.
- * `sessionEarned` tracks XP earned since the hook mounted — useful for
- * session-summary "You earned X XP" displays. Server persistence is
- * best-effort; transient failures are ignored so the UI never blocks.
+ * `sessionEarned` accumulates XP since the module was first loaded
+ * (roughly "since this tab opened"); call `resetSession()` to zero it
+ * at a meaningful boundary (e.g., entering a new scene).
  */
 export function useXP() {
-  const [state, setState] = useState<XpState>({ total: 0, sessionEarned: 0 });
+  const value = useSyncExternalStore(subscribe, snapshot, serverSnapshot);
   const loadedRef = useRef(false);
 
   useEffect(() => {
@@ -45,7 +75,7 @@ export function useXP() {
         if (!res.ok) return;
         const body = (await res.json()) as { data?: { xp_total?: number } };
         if (typeof body?.data?.xp_total === 'number') {
-          setState((prev) => ({ ...prev, total: body.data!.xp_total! }));
+          setState({ ...state, total: body.data!.xp_total! });
         }
       } catch {
         // ignore — leaves total at 0 locally
@@ -56,10 +86,10 @@ export function useXP() {
   const award = useCallback(
     async (reason: XpReason, amountOverride?: number) => {
       const amount = amountOverride ?? XP_AMOUNTS[reason];
-      setState((prev) => ({
-        total: prev.total + amount,
-        sessionEarned: prev.sessionEarned + amount,
-      }));
+      setState({
+        total: state.total + amount,
+        sessionEarned: state.sessionEarned + amount,
+      });
       try {
         await fetch('/api/xp', {
           method: 'POST',
@@ -75,12 +105,12 @@ export function useXP() {
   );
 
   const resetSession = useCallback(() => {
-    setState((prev) => ({ ...prev, sessionEarned: 0 }));
+    setState({ ...state, sessionEarned: 0 });
   }, []);
 
   return {
-    total: state.total,
-    sessionEarned: state.sessionEarned,
+    total: value.total,
+    sessionEarned: value.sessionEarned,
     award,
     resetSession,
   };

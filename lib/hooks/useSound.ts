@@ -129,6 +129,11 @@ export function useSound() {
     if (typeof window === 'undefined') return;
     window.localStorage.setItem(STORAGE_KEY, next ? '1' : '0');
     window.dispatchEvent(new StorageEvent('storage', { key: STORAGE_KEY }));
+    fetch('/api/user/preferences', {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ preferences: { sound_enabled: next } }),
+    }).catch(() => {});
   }, []);
 
   const play = useCallback(
