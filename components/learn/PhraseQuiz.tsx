@@ -1,6 +1,11 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { ThumbButton } from '@/components/ui/ThumbButton';
+import { Celebration } from '@/components/ui/Celebration';
+import { Fox } from '@/components/mascot/Fox';
+import { useSound } from '@/lib/hooks/useSound';
+import { useHaptic } from '@/lib/hooks/useHaptic';
 
 interface PhraseQuizProps {
   promptText: string;
@@ -9,57 +14,95 @@ interface PhraseQuizProps {
   onCorrect: () => void;
 }
 
-export function PhraseQuiz({ promptText, correctAnswer, distractors, onCorrect }: PhraseQuizProps) {
+export function PhraseQuiz({
+  promptText,
+  correctAnswer,
+  distractors,
+  onCorrect,
+}: PhraseQuizProps) {
   const [selected, setSelected] = useState<string | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+  const [celebrate, setCelebrate] = useState(false);
+  const { play } = useSound();
+  const { trigger } = useHaptic();
 
   const options = useShuffled(correctAnswer, distractors, promptText);
 
-  const handleSelect = useCallback((option: string) => {
-    if (selected) return;
-    setSelected(option);
-    const correct = option === correctAnswer;
-    setIsCorrect(correct);
+  const handleSelect = useCallback(
+    (option: string) => {
+      if (selected) return;
+      setSelected(option);
+      const correct = option === correctAnswer;
+      setIsCorrect(correct);
 
-    if (correct) {
-      setTimeout(onCorrect, 1200);
-    } else {
-      setTimeout(() => {
-        setSelected(correctAnswer);
-        setIsCorrect(true);
-        setTimeout(onCorrect, 1500);
-      }, 1000);
-    }
-  }, [selected, correctAnswer, onCorrect]);
+      if (correct) {
+        setCelebrate(true);
+        play('correct');
+        trigger('success');
+        setTimeout(onCorrect, 1100);
+      } else {
+        play('incorrect');
+        trigger('error');
+        setTimeout(() => {
+          setSelected(correctAnswer);
+          setIsCorrect(true);
+          setCelebrate(true);
+          play('reveal');
+          setTimeout(onCorrect, 1300);
+        }, 900);
+      }
+    },
+    [selected, correctAnswer, onCorrect, play, trigger],
+  );
 
   return (
-    <div className="animate-slide-up">
-      <p className="text-center text-text-secondary text-sm mb-2">How do you say...</p>
-      <p className="text-center text-xl font-bold text-foreground mb-6">{promptText}</p>
-      <div className="space-y-3">
+    <div className="flex flex-col flex-1 min-h-0">
+      <div className="flex-1 flex flex-col items-center justify-center py-6 relative">
+        <p className="text-center text-text-secondary text-sm mb-2">
+          How do you say...
+        </p>
+        <p className="text-center text-2xl font-bold text-foreground">{promptText}</p>
+        {selected ? (
+          <div className="mt-4 animate-spring-in">
+            <Fox
+              pose={isCorrect ? 'celebrating' : 'thinking'}
+              size="sm"
+            />
+          </div>
+        ) : null}
+        <Celebration active={celebrate && !!isCorrect} variant="correct" />
+      </div>
+      <div className="flex flex-col gap-3 pb-2">
         {options.map((option) => {
-          let className =
-            'w-full min-h-[56px] px-4 py-3 rounded-xl text-center text-sm font-medium transition-all border flex items-center justify-center line-clamp-2 ';
+          const isSelectedCorrect = selected === option && isCorrect;
+          const isSelectedWrong = selected === option && isCorrect === false;
+          const isRevealedCorrect =
+            selected !== null && selected !== correctAnswer && option === correctAnswer;
 
-          if (selected === option && isCorrect) {
-            className += 'bg-green-500/20 border-green-500 text-green-400 scale-[1.02]';
-          } else if (selected === option && !isCorrect) {
-            className += 'bg-red-500/20 border-red-500 text-red-400';
-          } else if (selected && option === correctAnswer) {
-            className += 'bg-green-500/20 border-green-500 text-green-400';
-          } else {
-            className += 'bg-card-surface border-card-border text-foreground hover:bg-surface-inset active:scale-95';
+          let variant: 'primary' | 'secondary' | 'success' | 'destructive' =
+            'secondary';
+          let extra = '';
+          if (isSelectedCorrect || isRevealedCorrect) {
+            variant = 'success';
+            extra = 'animate-pop';
+          } else if (isSelectedWrong) {
+            variant = 'destructive';
+            extra = 'animate-shake';
           }
 
           return (
-            <button
+            <ThumbButton
               key={option}
-              className={className}
+              variant={variant}
+              size="md"
+              haptic={false}
+              sound={false}
+              disabled={selected !== null && !isSelectedCorrect && !isSelectedWrong && !isRevealedCorrect}
+              className={`${extra} whitespace-normal text-base leading-snug h-auto py-3`}
               onClick={() => handleSelect(option)}
-              disabled={selected !== null}
             >
               {option}
-            </button>
+            </ThumbButton>
           );
         })}
       </div>

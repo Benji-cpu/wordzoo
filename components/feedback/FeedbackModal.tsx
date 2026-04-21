@@ -50,13 +50,26 @@ export function FeedbackModal({ isOpen, onClose, context, screenshotBlob }: Feed
     }
   }, [state, onClose]);
 
+  const [confirmDiscard, setConfirmDiscard] = useState(false);
+
   function handleClose() {
     // Save draft to sessionStorage on dismiss (don't clear message)
     if (message.trim()) {
       sessionStorage.setItem(DRAFT_KEY, message);
     }
     setState('idle');
+    setConfirmDiscard(false);
     onClose();
+  }
+
+  function handleBackdropClick() {
+    // Guard accidental dismissal of in-progress feedback. Surface a
+    // confirm step instead of silently closing.
+    if (message.trim() && !confirmDiscard && state !== 'success') {
+      setConfirmDiscard(true);
+      return;
+    }
+    handleClose();
   }
 
   function clearDraft() {
@@ -123,7 +136,7 @@ export function FeedbackModal({ isOpen, onClose, context, screenshotBlob }: Feed
             transition={{ duration: 0.2 }}
             className="fixed inset-0 bg-black/40"
             style={{ zIndex: 9998 }}
-            onClick={handleClose}
+            onClick={handleBackdropClick}
           />
 
           {/* Bottom sheet */}
@@ -137,7 +150,7 @@ export function FeedbackModal({ isOpen, onClose, context, screenshotBlob }: Feed
             dragConstraints={{ top: 0 }}
             dragElastic={0.1}
             onDragEnd={(_, info) => {
-              if (info.offset.y > 100) handleClose();
+              if (info.offset.y > 100) handleBackdropClick();
             }}
             className="fixed bottom-0 left-0 right-0 bg-background rounded-t-2xl border-t border-card-border shadow-2xl max-w-lg mx-auto"
             style={{ zIndex: 9999 }}
@@ -148,7 +161,30 @@ export function FeedbackModal({ isOpen, onClose, context, screenshotBlob }: Feed
             </div>
 
             <div className="px-5 pb-6 safe-area-bottom">
-              {state === 'success' ? (
+              {confirmDiscard ? (
+                <div className="py-6 flex flex-col gap-4">
+                  <p className="text-foreground text-base font-medium">
+                    Discard your feedback?
+                  </p>
+                  <p className="text-sm text-text-secondary">
+                    Your draft will be kept if you come back — or tap keep editing to continue.
+                  </p>
+                  <div className="flex gap-2 mt-2">
+                    <button
+                      onClick={() => setConfirmDiscard(false)}
+                      className="flex-1 py-3 rounded-xl bg-[var(--color-fox-primary)] text-white text-sm font-semibold"
+                    >
+                      Keep editing
+                    </button>
+                    <button
+                      onClick={handleClose}
+                      className="flex-1 py-3 rounded-xl bg-[var(--surface-inset)] text-foreground text-sm font-medium"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              ) : state === 'success' ? (
                 <div className="flex flex-col items-center py-8 gap-2">
                   <span className="text-3xl">&#10003;</span>
                   <p className="text-foreground font-medium">Thanks for your feedback!</p>

@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { SceneFlowHeader } from '@/components/learn/SceneFlowHeader';
+import { SceneShell } from '@/components/learn/SceneShell';
 import { DialoguePlayer } from '@/components/learn/DialoguePlayer';
 import { PhraseCard } from '@/components/learn/PhraseCard';
 import { PhraseBreakdown } from '@/components/learn/PhraseBreakdown';
@@ -640,9 +641,20 @@ export function SceneFlowClient({
   })();
 
   return (
-    <div className="max-w-lg mx-auto">
-      <SceneFlowHeader title={sceneTitle} description={sceneDescription} currentPhase={state.phase} phaseProgress={phaseProgress} onBack={handleBack} sceneNumber={sceneNumber} totalScenes={totalScenes} />
-
+    <SceneShell
+      top={
+        <SceneFlowHeader
+          title={sceneTitle}
+          description={sceneDescription}
+          currentPhase={state.phase}
+          phaseProgress={phaseProgress}
+          onBack={handleBack}
+          sceneNumber={sceneNumber}
+          totalScenes={totalScenes}
+        />
+      }
+      className="max-w-lg mx-auto"
+    >
       {/* Scene Intro Phase */}
       {state.phase === 'scene-intro' && (
         <div className="animate-slide-up cursor-pointer" onClick={handleSceneIntroContinue}>
@@ -843,6 +855,6 @@ export function SceneFlowClient({
           <SceneSummary sceneTitle={sceneTitle} sceneDescription={sceneDescription} words={allWords} nextScene={nextScene} pathId={pathId} sceneId={sceneId} sceneNumber={sceneNumber} totalScenes={totalScenes} wordsLearnedToday={dailyStats.words_learned} scenesCompletedToday={dailyStats.scenes_completed} insight={activeInsight && activeInsightContext === 'scene_summary' ? activeInsight : undefined} onInsightDismiss={dismissInsight} />
         </>
       )}
-    </div>
+    </SceneShell>
   );
 }

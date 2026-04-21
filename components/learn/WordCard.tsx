@@ -45,27 +45,38 @@ export function WordCard({ text, romanization, meaningEn, partOfSpeech, wordId, 
   }, [wordId, audioUrl, text, languageCode]);
 
   return (
-    <Card className="text-center animate-slide-up flex flex-col items-center justify-center min-h-[60vh] py-8" onClick={onContinue}>
+    <Card
+      className="text-center animate-spring-in flex flex-col items-center justify-center flex-1 min-h-0 py-8 cursor-pointer"
+      onClick={onContinue}
+    >
       <p className="text-xs text-text-secondary uppercase tracking-wider mb-4">
         {partOfSpeech}
       </p>
-      <h2 className="text-4xl font-bold text-accent-id mb-2">{text}</h2>
+      <h2 className="text-5xl font-bold text-[var(--color-fox-primary)] mb-2">
+        {text}
+      </h2>
       {romanization && (
         <p className="text-lg text-text-secondary mb-4">{romanization}</p>
       )}
       <div onClick={(e) => e.stopPropagation()}>
-        <PronunciationButton wordId={wordId} audioUrl={audioUrl} text={text} languageCode={languageCode} />
+        <PronunciationButton
+          wordId={wordId}
+          audioUrl={audioUrl}
+          text={text}
+          languageCode={languageCode}
+          size={28}
+        />
       </div>
       <div className="w-12 h-px bg-card-border mx-auto my-6" />
       <p className="text-xl text-foreground">{meaningEn}</p>
       {informalText && (
         <p className="text-sm text-text-secondary mt-3">
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent-id/10 text-accent-id text-xs font-medium">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--color-fox-soft)] text-[var(--color-fox-deep)] text-xs font-medium">
             Casual: {informalText}
           </span>
         </p>
       )}
-      <p className="text-sm text-text-secondary mt-8">Tap to continue</p>
+      <p className="text-sm text-text-secondary mt-8 animate-pulse">Tap to continue</p>
     </Card>
   );
 }

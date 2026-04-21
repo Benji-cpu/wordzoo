@@ -2,6 +2,11 @@
 
 import { useState, useCallback } from 'react';
 import { PronunciationButton } from '@/components/audio/SpeakerButton';
+import { ThumbButton } from '@/components/ui/ThumbButton';
+import { Celebration } from '@/components/ui/Celebration';
+import { Fox } from '@/components/mascot/Fox';
+import { useSound } from '@/lib/hooks/useSound';
+import { useHaptic } from '@/lib/hooks/useHaptic';
 
 interface QuizOptionsProps {
   wordText: string;
@@ -12,72 +17,117 @@ interface QuizOptionsProps {
   onAnswer?: (correct: boolean) => void;
 }
 
-export function QuizOptions({ wordText, wordId, correctAnswer, distractors, onCorrect, onAnswer }: QuizOptionsProps) {
+export function QuizOptions({
+  wordText,
+  wordId,
+  correctAnswer,
+  distractors,
+  onCorrect,
+  onAnswer,
+}: QuizOptionsProps) {
   const [selected, setSelected] = useState<string | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+  const [celebrate, setCelebrate] = useState(false);
+  const { play } = useSound();
+  const { trigger } = useHaptic();
 
-  // Shuffle options deterministically based on wordText
   const options = useShuffled(correctAnswer, distractors, wordText);
 
-  const handleSelect = useCallback((option: string) => {
-    if (selected) return; // already answered
-    setSelected(option);
-    const correct = option === correctAnswer;
-    setIsCorrect(correct);
-    onAnswer?.(correct);
+  const handleSelect = useCallback(
+    (option: string) => {
+      if (selected) return;
+      setSelected(option);
+      const correct = option === correctAnswer;
+      setIsCorrect(correct);
+      onAnswer?.(correct);
 
-    if (correct) {
-      setTimeout(onCorrect, 1200);
-    } else {
-      // Show correct answer after a beat then proceed
-      setTimeout(() => {
-        setSelected(correctAnswer);
-        setIsCorrect(true);
-        setTimeout(onCorrect, 1500);
-      }, 1000);
-    }
-  }, [selected, correctAnswer, onCorrect]);
-
-  // Use stacked layout if any option is long
-  const useStacked = options.some(o => o.length > 15);
+      if (correct) {
+        setCelebrate(true);
+        play('correct');
+        trigger('success');
+        setTimeout(onCorrect, 1100);
+      } else {
+        play('incorrect');
+        trigger('error');
+        setTimeout(() => {
+          setSelected(correctAnswer);
+          setIsCorrect(true);
+          setCelebrate(true);
+          play('reveal');
+          setTimeout(onCorrect, 1300);
+        }, 900);
+      }
+    },
+    [selected, correctAnswer, onCorrect, onAnswer, play, trigger],
+  );
 
   return (
-    <div className="animate-slide-up flex flex-col min-h-[50vh]">
-      <div className="flex-1 flex flex-col items-center justify-center">
+    <div className="flex flex-col flex-1 min-h-0">
+      {/* Prompt area */}
+      <div className="flex-1 flex flex-col items-center justify-center py-6 relative">
         <p className="text-center text-text-secondary text-sm mb-2">
           What does this mean?
         </p>
-        <div className="flex items-center justify-center gap-1">
-          <p className="text-2xl font-bold text-accent-id">{wordText}</p>
-          <div onClick={(e) => e.stopPropagation()}>
-            <PronunciationButton wordId={wordId} size={20} />
-          </div>
+        <div className="flex items-center justify-center gap-2">
+          <p className="text-3xl font-bold text-[var(--color-fox-primary)]">
+            {wordText}
+          </p>
+          <span
+            onClick={(e) => e.stopPropagation()}
+            className="inline-flex"
+          >
+            <PronunciationButton wordId={wordId} size={22} />
+          </span>
         </div>
-      </div>
-      <div className={useStacked ? 'space-y-3 mt-auto' : 'grid grid-cols-2 gap-3 mt-auto'}>
-        {options.map((option) => {
-          let className =
-            'min-h-[64px] px-4 py-3 rounded-xl text-center text-base font-medium transition-all border flex items-center justify-center ';
 
-          if (selected === option && isCorrect) {
-            className += 'bg-green-500/20 border-green-500 text-green-400 scale-[1.02]';
-          } else if (selected === option && !isCorrect) {
-            className += 'bg-red-500/20 border-red-500 text-red-400';
-          } else if (selected && option === correctAnswer) {
-            className += 'bg-green-500/20 border-green-500 text-green-400';
-          } else {
-            className += 'bg-card-surface border-card-border text-foreground hover:bg-surface-inset active:scale-95';
+        {/* Inline fox moment on answer */}
+        {selected ? (
+          <div className="mt-4 animate-spring-in">
+            <Fox
+              pose={isCorrect ? 'celebrating' : 'thinking'}
+              size="sm"
+              aria-label={isCorrect ? 'Correct' : 'Try again'}
+            />
+          </div>
+        ) : null}
+
+        {/* Celebration burst — anchored at the center of the prompt area */}
+        <Celebration active={celebrate && !!isCorrect} variant="correct" />
+      </div>
+
+      {/* Answer options — always stacked, full-width on mobile;
+          two-column on md+ for dense vocab quizzes */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pb-2">
+        {options.map((option) => {
+          const isSelectedCorrect = selected === option && isCorrect;
+          const isSelectedWrong = selected === option && isCorrect === false;
+          const isRevealedCorrect =
+            selected !== null && selected !== correctAnswer && option === correctAnswer;
+
+          let variant: 'primary' | 'secondary' | 'success' | 'destructive' =
+            'secondary';
+          let extra = '';
+          if (isSelectedCorrect || isRevealedCorrect) {
+            variant = 'success';
+            extra = 'animate-pop';
+          } else if (isSelectedWrong) {
+            variant = 'destructive';
+            extra = 'animate-shake';
           }
 
           return (
-            <button
+            <ThumbButton
               key={option}
-              className={className}
+              variant={variant}
+              size="md"
+              haptic={false}
+              sound={false}
+              disabled={selected !== null && !isSelectedCorrect && !isSelectedWrong && !isRevealedCorrect}
+              className={extra}
               onClick={() => handleSelect(option)}
-              disabled={selected !== null}
             >
               {option}
-            </button>
+            </ThumbButton>
           );
         })}
       </div>
@@ -86,10 +136,8 @@ export function QuizOptions({ wordText, wordId, correctAnswer, distractors, onCo
 }
 
 function useShuffled(correct: string, distractors: string[], seed: string): string[] {
-  // Simple deterministic shuffle based on seed string
   const all = [correct, ...distractors.slice(0, 3)];
   const hash = seed.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
-
   return all
     .map((item, i) => ({ item, sort: (hash * (i + 1) * 31) % 1000 }))
     .sort((a, b) => a.sort - b.sort)

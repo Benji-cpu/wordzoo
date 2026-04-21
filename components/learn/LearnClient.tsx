@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { SceneHeader } from '@/components/learn/SceneHeader';
+import { SceneShell } from '@/components/learn/SceneShell';
 import { WordCard } from '@/components/learn/WordCard';
 import { MnemonicCard } from '@/components/learn/MnemonicCard';
 import { CollapsibleWordFamily } from '@/components/learn/WordFamilyCard';
@@ -268,15 +269,20 @@ export function LearnClient({ sceneId, sceneTitle, sceneDescription, languageNam
   }, [state.phase, activeInsight, checkInsight]);
 
   return (
-    <div className="max-w-lg mx-auto">
-      {state.phase === 'word_learning' && currentWord && (
-        <>
+    <SceneShell
+      top={
+        state.phase === 'word_learning' && currentWord ? (
           <SceneHeader
             title={sceneTitle}
             current={state.wordIndex + 1}
             total={words.length}
           />
-
+        ) : null
+      }
+      className="max-w-lg mx-auto"
+    >
+      {state.phase === 'word_learning' && currentWord && (
+        <>
           {state.step === 'word' && (
             <WordCard
               text={currentWord.word.text}
@@ -346,6 +352,6 @@ export function LearnClient({ sceneId, sceneTitle, sceneDescription, languageNam
       {state.phase === 'scene_complete' && (
         <SceneSummary sceneTitle={sceneTitle} sceneDescription={sceneDescription} words={words} nextScene={nextScene} pathId={pathId} sceneNumber={sceneNumber} totalScenes={totalScenes} insight={activeInsight && activeInsightContext === 'scene_summary' ? activeInsight : undefined} onInsightDismiss={dismissInsight} />
       )}
-    </div>
+    </SceneShell>
   );
 }
