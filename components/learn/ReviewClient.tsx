@@ -8,6 +8,8 @@ import { RatingButtons } from '@/components/learn/RatingButtons';
 import { ReviewComplete } from '@/components/learn/ReviewComplete';
 import { MnemonicCard } from '@/components/learn/MnemonicCard';
 import { Button } from '@/components/ui/Button';
+import { ThumbButton } from '@/components/ui/ThumbButton';
+import { Fox } from '@/components/mascot/Fox';
 import Link from 'next/link';
 import { InsightCard } from '@/components/insights/InsightCard';
 import { getEligibleInsight } from '@/lib/insights/engine';
@@ -271,32 +273,28 @@ export function ReviewClient({ dueWords, duePhrases, practiceWords = [], wordFam
   // --- Empty state ---
   if (items.length === 0 && !practiceMode) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] animate-slide-up">
-        <div className="w-16 h-16 rounded-full bg-surface-inset flex items-center justify-center mb-4">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-accent-id">
-            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-            <polyline points="22 4 12 14.01 9 11.01" />
-          </svg>
-        </div>
-        <h2 className="text-xl font-bold text-foreground mb-1">All caught up!</h2>
-        <p className="text-text-secondary mb-6 text-center max-w-xs">
+      <div className="flex flex-col items-center justify-center flex-1 min-h-[60vh] animate-spring-in max-w-md mx-auto text-center">
+        <Fox pose="proud" size="lg" aria-label="All caught up" />
+        <h2 className="text-2xl font-bold text-foreground mb-1 mt-2">All caught up!</h2>
+        <p className="text-text-secondary mb-6 max-w-xs">
           {practiceWords.length > 0
             ? `No reviews due right now. You can practice ${practiceWords.length} words if you'd like.`
             : 'Nothing to review yet — learn new words to grow your queue.'}
         </p>
         {practiceWords.length > 0 ? (
-          <button
+          <ThumbButton
             onClick={() => setPracticeMode(true)}
-            className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-accent-default text-white font-semibold hover:brightness-110 active:scale-[0.97] transition-all"
+            size="lg"
+            variant="primary"
+            fullWidth={false}
           >
             Practice Now ({practiceWords.length} words)
-          </button>
+          </ThumbButton>
         ) : (
-          <Link
-            href="/paths"
-            className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-accent-default text-white font-semibold hover:brightness-110 active:scale-[0.97] transition-all"
-          >
-            Go to Learning Paths
+          <Link href="/paths" className="block w-full">
+            <ThumbButton size="lg" variant="primary">
+              Go to Learning Paths
+            </ThumbButton>
           </Link>
         )}
       </div>
@@ -318,26 +316,27 @@ export function ReviewClient({ dueWords, duePhrases, practiceWords = [], wordFam
   // --- Transition interstitial ---
   if (phase === 'transition') {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] animate-slide-up">
-        <p className="text-4xl mb-4">🔄</p>
-        <h2 className="text-xl font-bold text-foreground mb-2">Revision Round</h2>
-        <p className="text-text-secondary text-center mb-2">
+      <div className="flex flex-col items-center justify-center flex-1 min-h-[60vh] animate-spring-in max-w-md mx-auto text-center">
+        <Fox pose="thinking" size="lg" aria-label="Revision round" />
+        <h2 className="text-2xl font-bold text-foreground mb-2 mt-2">Revision Round</h2>
+        <p className="text-text-secondary mb-2">
           You forgot {missedItems.length} word{missedItems.length !== 1 ? 's' : ''} during review.
         </p>
-        <p className="text-text-secondary text-center mb-8">
+        <p className="text-text-secondary mb-8">
           Let&apos;s go through them again with the mnemonics until you get each one right.
         </p>
-        <Button
+        <ThumbButton
           onClick={() => {
             setPhase('revision');
             setRevisionIndex(0);
             setRevisionStep('quiz');
             setRevealed(false);
           }}
-          className="w-full max-w-xs"
+          size="lg"
+          variant="primary"
         >
           Start Revision Round
-        </Button>
+        </ThumbButton>
       </div>
     );
   }
