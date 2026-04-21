@@ -7,6 +7,7 @@ import { Celebration } from '@/components/ui/Celebration';
 import { Fox } from '@/components/mascot/Fox';
 import { useSound } from '@/lib/hooks/useSound';
 import { useHaptic } from '@/lib/hooks/useHaptic';
+import { useXP, XP_AMOUNTS } from '@/lib/hooks/useXP';
 
 interface QuizOptionsProps {
   wordText: string;
@@ -28,8 +29,10 @@ export function QuizOptions({
   const [selected, setSelected] = useState<string | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [celebrate, setCelebrate] = useState(false);
+  const [xpPopped, setXpPopped] = useState(false);
   const { play } = useSound();
   const { trigger } = useHaptic();
+  const { award } = useXP();
 
   const options = useShuffled(correctAnswer, distractors, wordText);
 
@@ -43,8 +46,10 @@ export function QuizOptions({
 
       if (correct) {
         setCelebrate(true);
+        setXpPopped(true);
         play('correct');
         trigger('success');
+        void award('correct_answer');
         setTimeout(onCorrect, 1100);
       } else {
         play('incorrect');
@@ -58,7 +63,7 @@ export function QuizOptions({
         }, 900);
       }
     },
-    [selected, correctAnswer, onCorrect, onAnswer, play, trigger],
+    [selected, correctAnswer, onCorrect, onAnswer, play, trigger, award],
   );
 
   return (
@@ -93,6 +98,16 @@ export function QuizOptions({
 
         {/* Celebration burst — anchored at the center of the prompt area */}
         <Celebration active={celebrate && !!isCorrect} variant="correct" />
+
+        {/* XP tick float-up */}
+        {xpPopped && isCorrect ? (
+          <span
+            aria-hidden
+            className="absolute top-10 right-6 animate-xp-tick text-base font-bold text-[var(--color-fox-primary)]"
+          >
+            +{XP_AMOUNTS.correct_answer} XP
+          </span>
+        ) : null}
       </div>
 
       {/* Answer options — always stacked, full-width on mobile;

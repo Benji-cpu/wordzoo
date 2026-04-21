@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
+import { ThumbButton } from '@/components/ui/ThumbButton';
 import type { FeedbackContext } from '@/lib/utils/capture-feedback-context';
 
 interface FeedbackModalProps {
@@ -216,7 +217,7 @@ export function FeedbackModal({ isOpen, onClose, context, screenshotBlob }: Feed
                       {message.length}/1000
                     </span>
 
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 items-center">
                       <button
                         onClick={handleClose}
                         className="px-4 py-2 text-sm text-text-secondary hover:text-foreground transition-colors rounded-lg"
@@ -224,13 +225,19 @@ export function FeedbackModal({ isOpen, onClose, context, screenshotBlob }: Feed
                       >
                         Cancel
                       </button>
-                      <button
+                      <ThumbButton
                         onClick={handleSubmit}
-                        disabled={!message.trim() || state === 'sending'}
-                        className="px-5 py-2 text-sm font-medium rounded-xl bg-accent-id text-white hover:bg-accent-id/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                        disabled={!message.trim()}
+                        loading={state === 'sending'}
+                        size="md"
+                        variant="primary"
+                        fullWidth={false}
+                        haptic="success"
+                        sound="reveal"
+                        className="min-h-0 h-11 px-5"
                       >
-                        {state === 'sending' ? 'Sending...' : state === 'error' ? 'Retry' : 'Send'}
-                      </button>
+                        {state === 'error' ? 'Retry' : 'Send'}
+                      </ThumbButton>
                     </div>
                   </div>
                 </>

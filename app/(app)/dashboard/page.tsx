@@ -137,9 +137,7 @@ export default async function DashboardPage() {
             </p>
           </div>
         </div>
-        {streak > 0 ? (
-          <StreakFlame count={streak} size="md" />
-        ) : null}
+        <StreakFlame count={streak} size="md" active={streak > 0} />
       </div>
 
       {/* Yesterday's recap */}

@@ -6,6 +6,7 @@ import { Celebration } from '@/components/ui/Celebration';
 import { Fox } from '@/components/mascot/Fox';
 import { useSound } from '@/lib/hooks/useSound';
 import { useHaptic } from '@/lib/hooks/useHaptic';
+import { useXP, XP_AMOUNTS } from '@/lib/hooks/useXP';
 
 interface PhraseQuizProps {
   promptText: string;
@@ -23,7 +24,9 @@ export function PhraseQuiz({
   const [selected, setSelected] = useState<string | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [celebrate, setCelebrate] = useState(false);
+  const [xpPopped, setXpPopped] = useState(false);
   const { play } = useSound();
+  const { award } = useXP();
   const { trigger } = useHaptic();
 
   const options = useShuffled(correctAnswer, distractors, promptText);
@@ -37,8 +40,10 @@ export function PhraseQuiz({
 
       if (correct) {
         setCelebrate(true);
+        setXpPopped(true);
         play('correct');
         trigger('success');
+        void award('phrase_complete');
         setTimeout(onCorrect, 1100);
       } else {
         play('incorrect');
@@ -52,7 +57,7 @@ export function PhraseQuiz({
         }, 900);
       }
     },
-    [selected, correctAnswer, onCorrect, play, trigger],
+    [selected, correctAnswer, onCorrect, play, trigger, award],
   );
 
   return (
@@ -71,6 +76,14 @@ export function PhraseQuiz({
           </div>
         ) : null}
         <Celebration active={celebrate && !!isCorrect} variant="correct" />
+        {xpPopped && isCorrect ? (
+          <span
+            aria-hidden
+            className="absolute top-10 right-6 animate-xp-tick text-base font-bold text-[var(--color-fox-primary)]"
+          >
+            +{XP_AMOUNTS.phrase_complete} XP
+          </span>
+        ) : null}
       </div>
       <div className="flex flex-col gap-3 pb-2">
         {options.map((option) => {
