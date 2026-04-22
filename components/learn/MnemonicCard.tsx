@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Card } from '@/components/ui/Card';
 import { PronunciationButton } from '@/components/audio/SpeakerButton';
+import { MnemonicImage } from '@/components/shared/MnemonicImage';
 import { playWordPronunciation, isAudioUnlocked } from '@/lib/audio/pronunciation';
 
 function renderBridgeSentence(sentence: string) {
@@ -148,24 +149,21 @@ export function MnemonicCard({
       )}
 
       <div className="relative">
-        {imageUrl ? (
-          <>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={imageUrl}
-              alt={keyword}
-              className="w-full max-h-[55dvh] rounded-xl mx-auto block object-cover shadow-[var(--shadow-elevated)]"
-            />
-          </>
-        ) : (
-          <div className="w-full rounded-xl bg-gradient-to-br from-accent-id/15 to-surface-inset flex flex-col items-center justify-center py-10 px-6">
-            <p className="text-2xl font-bold text-accent-id mb-2">&ldquo;{keyword}&rdquo;</p>
-            {bridgeSentence && (
-              <p className="text-sm text-foreground italic text-center">{renderBridgeSentence(bridgeSentence)}</p>
-            )}
-            <p className="text-xs text-text-secondary mt-4">Visual coming soon</p>
-          </div>
-        )}
+        <MnemonicImage
+          src={imageUrl}
+          alt={keyword}
+          variant="card"
+          keyword={keyword}
+          fallback={
+            <div className="w-full rounded-xl bg-gradient-to-br from-accent-id/15 to-surface-inset flex flex-col items-center justify-center py-10 px-6">
+              <p className="text-2xl font-bold text-accent-id mb-2">&ldquo;{keyword}&rdquo;</p>
+              {bridgeSentence && (
+                <p className="text-sm text-foreground italic text-center">{renderBridgeSentence(bridgeSentence)}</p>
+              )}
+              <p className="text-xs text-text-secondary mt-4">Visual coming soon</p>
+            </div>
+          }
+        />
       </div>
       {/* Feedback + share action strip — larger thumb targets (44px) in
           their own row below the image instead of tiny overlay buttons. */}

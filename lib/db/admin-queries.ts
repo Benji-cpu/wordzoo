@@ -413,6 +413,7 @@ export interface ImageCoverageStats {
   mnemonics: { total: number; withImage: number; missing: number; coveragePercent: number };
   phrases: { total: number; withImage: number; missing: number; coveragePercent: number };
   scenes: { total: number; withAnchorImage: number; missingAnchor: number; coveragePercent: number };
+  orphanWords: { total: number; withMnemonic: number; missing: number; coveragePercent: number };
 }
 
 export async function getImageCoverageStats(): Promise<ImageCoverageStats> {
@@ -423,12 +424,15 @@ export async function getImageCoverageStats(): Promise<ImageCoverageStats> {
       (SELECT COUNT(*)::int FROM scene_phrases) AS ph_total,
       (SELECT COUNT(*)::int FROM scene_phrases WHERE composite_image_url IS NOT NULL) AS ph_with_image,
       (SELECT COUNT(*)::int FROM scenes) AS sc_total,
-      (SELECT COUNT(*)::int FROM scenes WHERE anchor_image_url IS NOT NULL) AS sc_with_anchor
+      (SELECT COUNT(*)::int FROM scenes WHERE anchor_image_url IS NOT NULL) AS sc_with_anchor,
+      (SELECT COUNT(DISTINCT w.id)::int FROM words w JOIN scene_words sw ON sw.word_id = w.id) AS ow_total,
+      (SELECT COUNT(DISTINCT w.id)::int FROM words w JOIN scene_words sw ON sw.word_id = w.id WHERE EXISTS (SELECT 1 FROM mnemonics m WHERE m.word_id = w.id AND m.user_id IS NULL)) AS ow_with_mn
   `;
   const r = rows[0] as {
     mn_total: number; mn_with_image: number;
     ph_total: number; ph_with_image: number;
     sc_total: number; sc_with_anchor: number;
+    ow_total: number; ow_with_mn: number;
   };
   return {
     mnemonics: {
@@ -448,6 +452,12 @@ export async function getImageCoverageStats(): Promise<ImageCoverageStats> {
       withAnchorImage: r.sc_with_anchor,
       missingAnchor: r.sc_total - r.sc_with_anchor,
       coveragePercent: r.sc_total > 0 ? Math.round((r.sc_with_anchor / r.sc_total) * 100) : 0,
+    },
+    orphanWords: {
+      total: r.ow_total,
+      withMnemonic: r.ow_with_mn,
+      missing: r.ow_total - r.ow_with_mn,
+      coveragePercent: r.ow_total > 0 ? Math.round((r.ow_with_mn / r.ow_total) * 100) : 0,
     },
   };
 }
@@ -528,4 +538,35 @@ export async function getMissingSceneAnchors(): Promise<MissingSceneAnchor[]> {
     ORDER BY p.title, s.sort_order
   `;
   return rows as MissingSceneAnchor[];
+}
+
+// Scene words that have no canonical mnemonic row at all — the common
+// reason UI shows "Visual coming soon" isn't a null image_url on an
+// existing row, it's that the row itself doesn't exist.
+export interface OrphanWord {
+  word_id: string;
+  word_text: string;
+  meaning_en: string;
+  language_name: string;
+  scene_title: string;
+  scene_id: string;
+  path_title: string;
+  path_id: string;
+}
+
+export async function getOrphanWords(): Promise<OrphanWord[]> {
+  const rows = await sql`
+    SELECT w.id AS word_id, w.text AS word_text, w.meaning_en,
+      l.name AS language_name,
+      s.title AS scene_title, s.id AS scene_id, s.sort_order AS scene_sort_order,
+      p.title AS path_title, p.id AS path_id
+    FROM words w
+    JOIN scene_words sw ON sw.word_id = w.id
+    JOIN scenes s ON s.id = sw.scene_id
+    JOIN paths p ON p.id = s.path_id
+    JOIN languages l ON l.id = w.language_id
+    WHERE NOT EXISTS (SELECT 1 FROM mnemonics m WHERE m.word_id = w.id AND m.user_id IS NULL)
+    ORDER BY p.title, s.sort_order, w.text
+  `;
+  return rows as OrphanWord[];
 }

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import type { ImageCoverageStats } from '@/lib/db/admin-queries';
 
-type Tab = 'mnemonics' | 'phrases' | 'scenes';
+type Tab = 'mnemonics' | 'phrases' | 'scenes' | 'orphans';
 
 interface MissingMnemonicItem {
   id: string;
@@ -39,11 +39,23 @@ interface MissingSceneItem {
   path_id: string;
 }
 
+interface OrphanWordItem {
+  word_id: string;
+  word_text: string;
+  meaning_en: string;
+  language_name: string;
+  scene_title: string;
+  scene_id: string;
+  path_title: string;
+  path_id: string;
+}
+
 export function ImageCoverageClient({ stats }: { stats: ImageCoverageStats }) {
   const [activeTab, setActiveTab] = useState<Tab>('mnemonics');
   const [mnemonics, setMnemonics] = useState<MissingMnemonicItem[] | null>(null);
   const [phrases, setPhrases] = useState<MissingPhraseItem[] | null>(null);
   const [scenes, setScenes] = useState<MissingSceneItem[] | null>(null);
+  const [orphans, setOrphans] = useState<OrphanWordItem[] | null>(null);
   const [loading, setLoading] = useState(false);
 
   async function loadMissing(tab: Tab) {
@@ -53,6 +65,7 @@ export function ImageCoverageClient({ stats }: { stats: ImageCoverageStats }) {
     if (tab === 'mnemonics' && mnemonics) return;
     if (tab === 'phrases' && phrases) return;
     if (tab === 'scenes' && scenes) return;
+    if (tab === 'orphans' && orphans) return;
 
     setLoading(true);
     try {
@@ -62,6 +75,7 @@ export function ImageCoverageClient({ stats }: { stats: ImageCoverageStats }) {
         if (tab === 'mnemonics') setMnemonics(json.data.items);
         if (tab === 'phrases') setPhrases(json.data.items);
         if (tab === 'scenes') setScenes(json.data.items);
+        if (tab === 'orphans') setOrphans(json.data.items);
       }
     } catch (e) {
       console.error('Failed to load missing items:', e);
@@ -115,9 +129,18 @@ export function ImageCoverageClient({ stats }: { stats: ImageCoverageStats }) {
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
         <StatCard
-          label="Mnemonics"
+          label="Words w/ mnemonic"
+          total={stats.orphanWords.total}
+          filled={stats.orphanWords.withMnemonic}
+          missing={stats.orphanWords.missing}
+          pct={stats.orphanWords.coveragePercent}
+          colorFn={coverageColor}
+          bgFn={coverageBg}
+        />
+        <StatCard
+          label="Mnemonic images"
           total={stats.mnemonics.total}
           filled={stats.mnemonics.withImage}
           missing={stats.mnemonics.missing}
@@ -126,7 +149,7 @@ export function ImageCoverageClient({ stats }: { stats: ImageCoverageStats }) {
           bgFn={coverageBg}
         />
         <StatCard
-          label="Phrases"
+          label="Phrase images"
           total={stats.phrases.total}
           filled={stats.phrases.withImage}
           missing={stats.phrases.missing}
@@ -135,7 +158,7 @@ export function ImageCoverageClient({ stats }: { stats: ImageCoverageStats }) {
           bgFn={coverageBg}
         />
         <StatCard
-          label="Scene Anchors"
+          label="Scene anchors"
           total={stats.scenes.total}
           filled={stats.scenes.withAnchorImage}
           missing={stats.scenes.missingAnchor}
@@ -147,21 +170,24 @@ export function ImageCoverageClient({ stats }: { stats: ImageCoverageStats }) {
 
       {/* CLI hint */}
       <div className="bg-zinc-800/50 border border-zinc-700 rounded-lg p-4 mb-8">
-        <p className="text-zinc-300 text-sm font-medium mb-2">Batch fill missing images:</p>
+        <p className="text-zinc-300 text-sm font-medium mb-2">Batch fill in order (safe to rerun):</p>
         <code className="text-xs text-emerald-400 block">
-          npm run db:seed-missing-images -- --type=mnemonics --limit=10 --dry-run
-        </code>
-        <code className="text-xs text-emerald-400 block mt-1">
-          npm run db:seed-missing-images -- --type=phrases --limit=5 --delay=3000
+          npm run db:seed-orphan-mnemonics -- --lang=id --limit=10 --dry-run
         </code>
         <code className="text-xs text-emerald-400 block mt-1">
           npm run db:seed-missing-images -- --type=all --limit=20
         </code>
+        <code className="text-xs text-emerald-400 block mt-1">
+          npm run db:seed-scene-anchors -- --limit=10
+        </code>
+        <code className="text-xs text-emerald-400 block mt-1">
+          npm run db:backfill-images   # composes all three with generous limits
+        </code>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 mb-6">
-        {(['mnemonics', 'phrases', 'scenes'] as Tab[]).map((tab) => (
+      <div className="flex gap-2 mb-6 flex-wrap">
+        {(['orphans', 'mnemonics', 'phrases', 'scenes'] as Tab[]).map((tab) => (
           <button
             key={tab}
             onClick={() => loadMissing(tab)}
@@ -171,13 +197,19 @@ export function ImageCoverageClient({ stats }: { stats: ImageCoverageStats }) {
                 : 'bg-zinc-800 text-zinc-400 hover:text-white'
             }`}
           >
-            {tab === 'scenes' ? 'Scene Anchors' : tab.charAt(0).toUpperCase() + tab.slice(1)}
+            {tab === 'orphans'
+              ? 'Orphan Words'
+              : tab === 'scenes'
+                ? 'Scene Anchors'
+                : tab.charAt(0).toUpperCase() + tab.slice(1)}
             <span className="ml-2 text-xs opacity-60">
               ({tab === 'mnemonics'
                 ? stats.mnemonics.missing
                 : tab === 'phrases'
                   ? stats.phrases.missing
-                  : stats.scenes.missingAnchor} missing)
+                  : tab === 'scenes'
+                    ? stats.scenes.missingAnchor
+                    : stats.orphanWords.missing} missing)
             </span>
           </button>
         ))}
@@ -200,6 +232,10 @@ export function ImageCoverageClient({ stats }: { stats: ImageCoverageStats }) {
         <ScenesList items={scenes} groupByPath={groupByPath} />
       )}
 
+      {!loading && activeTab === 'orphans' && orphans && (
+        <OrphanWordsList items={orphans} groupByPath={groupByPath} />
+      )}
+
       {!loading && !mnemonics && activeTab === 'mnemonics' && (
         <EmptyPrompt tab="mnemonics" onLoad={() => loadMissing('mnemonics')} />
       )}
@@ -209,6 +245,45 @@ export function ImageCoverageClient({ stats }: { stats: ImageCoverageStats }) {
       {!loading && !scenes && activeTab === 'scenes' && (
         <EmptyPrompt tab="scenes" onLoad={() => loadMissing('scenes')} />
       )}
+      {!loading && !orphans && activeTab === 'orphans' && (
+        <EmptyPrompt tab="orphans" onLoad={() => loadMissing('orphans')} />
+      )}
+    </div>
+  );
+}
+
+function OrphanWordsList({
+  items,
+  groupByPath,
+}: {
+  items: OrphanWordItem[];
+  groupByPath: <T extends { path_title: string | null; path_id: string | null }>(items: T[]) => Map<string, T[]>;
+}) {
+  if (items.length === 0) {
+    return <p className="text-center text-green-400 py-8">Every scene word has a canonical mnemonic row!</p>;
+  }
+  const groups = groupByPath(items);
+  return (
+    <div className="space-y-6">
+      {Array.from(groups.entries()).map(([pathTitle, groupItems]) => (
+        <div key={pathTitle}>
+          <h3 className="text-sm font-semibold text-zinc-300 mb-2">{pathTitle} <span className="text-zinc-500 font-normal">({groupItems.length})</span></h3>
+          <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg divide-y divide-zinc-800">
+            {groupItems.map((w) => (
+              <div key={`${w.word_id}-${w.scene_id}`} className="px-4 py-3 flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="text-white font-medium">
+                    {w.word_text} <span className="text-zinc-500">({w.meaning_en})</span>
+                  </p>
+                  <p className="text-xs text-zinc-400 mt-0.5">
+                    {w.language_name} &middot; {w.scene_title}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

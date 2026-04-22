@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { PronunciationButton } from '@/components/audio/SpeakerButton';
+import { MnemonicImage } from '@/components/shared/MnemonicImage';
 
 export interface PopoverData {
   text: string;
@@ -10,6 +11,7 @@ export interface PopoverData {
   pronunciation_audio_url?: string | null;
   keyword_text?: string | null;
   scene_description?: string | null;
+  image_url?: string | null;
 }
 
 interface WordPopoverProps {
@@ -59,7 +61,17 @@ export function WordPopover({ data, anchorRect, onClose }: WordPopoverProps) {
       {data.keyword_text && (
         <div className="mt-2 pt-2 border-t border-card-border">
           <div className="text-xs text-text-secondary">Mnemonic</div>
-          <div className="text-sm text-foreground">{data.keyword_text}</div>
+          {data.image_url && (
+            <div className="mt-1.5 -mx-1 overflow-hidden rounded-lg bg-surface-inset">
+              <MnemonicImage
+                src={data.image_url}
+                alt={`Mnemonic for ${data.text}`}
+                variant="community"
+                fallback={null}
+              />
+            </div>
+          )}
+          <div className="text-sm text-foreground mt-1.5">{data.keyword_text}</div>
           {data.scene_description && (
             <div className="text-xs text-text-secondary mt-1">{data.scene_description}</div>
           )}

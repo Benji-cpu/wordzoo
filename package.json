@@ -16,7 +16,10 @@
     "db:seed-phrase-mnemonics": "npx tsx lib/db/seed-phrase-mnemonics.ts",
     "db:seed-expanded": "npx tsx lib/db/seed-expanded.ts",
     "db:seed-phrase-images-auto": "npx tsx lib/db/seed-phrase-images-auto.ts",
-    "db:seed-missing-images": "npx tsx lib/db/seed-missing-images.ts"
+    "db:seed-missing-images": "npx tsx lib/db/seed-missing-images.ts",
+    "db:seed-orphan-mnemonics": "npx tsx lib/db/seed-orphan-mnemonics.ts",
+    "db:seed-scene-anchors": "npx tsx lib/db/seed-scene-anchors.ts",
+    "db:backfill-images": "npm run db:seed-orphan-mnemonics -- --limit=500 && npm run db:seed-missing-images -- --type=all --limit=500 && npm run db:seed-scene-anchors -- --limit=100"
   },
   "dependencies": {
     "@auth/neon-adapter": "^1.11.1",

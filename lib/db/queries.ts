@@ -262,6 +262,7 @@ export interface SceneMasteryRow {
   title: string;
   description: string | null;
   scene_type: 'legacy' | 'dialogue';
+  anchor_image_url: string | null;
   total_words: number;
   mastered_words: number;
   current_phase: string | null;
@@ -273,7 +274,7 @@ export async function getSceneMasteryForPath(
   pathId: string
 ): Promise<SceneMasteryRow[]> {
   const rows = await sql`
-    SELECT s.id, s.sort_order, s.title, s.description, s.scene_type,
+    SELECT s.id, s.sort_order, s.title, s.description, s.scene_type, s.anchor_image_url,
       COUNT(DISTINCT sw.word_id)::int AS total_words,
       COUNT(DISTINCT CASE WHEN uw.status IN ('reviewing', 'mastered') THEN sw.word_id END)::int AS mastered_words,
       usp.current_phase,
@@ -283,7 +284,7 @@ export async function getSceneMasteryForPath(
     LEFT JOIN user_words uw ON uw.word_id = sw.word_id AND uw.user_id = ${userId}
     LEFT JOIN user_scene_progress usp ON usp.scene_id = s.id AND usp.user_id = ${userId}
     WHERE s.path_id = ${pathId}
-    GROUP BY s.id, s.sort_order, s.title, s.description, s.scene_type, usp.current_phase, usp.completed_at
+    GROUP BY s.id, s.sort_order, s.title, s.description, s.scene_type, s.anchor_image_url, usp.current_phase, usp.completed_at
     ORDER BY s.sort_order
   `;
   return rows as SceneMasteryRow[];
@@ -693,6 +694,7 @@ export interface VocabWithMnemonic {
   keyword_text: string | null;
   scene_description: string | null;
   bridge_sentence: string | null;
+  image_url: string | null;
 }
 
 export async function getUserVocabWithMnemonics(
@@ -701,11 +703,11 @@ export async function getUserVocabWithMnemonics(
 ): Promise<VocabWithMnemonic[]> {
   const rows = await sql`
     SELECT w.id AS word_id, w.text, w.romanization, w.meaning_en,
-      w.pronunciation_audio_url, m.keyword_text, m.scene_description, m.bridge_sentence
+      w.pronunciation_audio_url, m.keyword_text, m.scene_description, m.bridge_sentence, m.image_url
     FROM user_words uw
     JOIN words w ON w.id = uw.word_id
     LEFT JOIN LATERAL (
-      SELECT keyword_text, scene_description, bridge_sentence
+      SELECT keyword_text, scene_description, bridge_sentence, image_url
       FROM mnemonics
       WHERE word_id = w.id
         AND (user_id IS NULL OR user_id = ${userId})

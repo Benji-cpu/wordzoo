@@ -144,6 +144,7 @@ export function TutorChat({
               pronunciation_audio_url: item.pronunciation_audio_url,
               keyword_text: item.keyword_text,
               scene_description: item.scene_description,
+              image_url: item.image_url,
             });
           }
           setVocabMap(map);

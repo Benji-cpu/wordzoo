@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Card } from '@/components/ui/Card';
 import { ProgressBar } from '@/components/ui/ProgressBar';
-import { isSceneComplete } from '@/lib/utils/scene-progress';
+import { MnemonicImage } from '@/components/shared/MnemonicImage';
 
 const PHASE_LABELS: Record<string, string> = {
   dialogue: 'Dialogue',
@@ -25,6 +25,7 @@ interface ContinueLearningCardProps {
   sceneIndex: number;
   totalScenes: number;
   sceneDots: SceneDot[];
+  anchorImageUrl?: string | null;
 }
 
 export function ContinueLearningCard({
@@ -35,6 +36,7 @@ export function ContinueLearningCard({
   sceneIndex,
   totalScenes,
   sceneDots,
+  anchorImageUrl,
 }: ContinueLearningCardProps) {
   // Show 3 dots around current scene
   const startIdx = Math.max(0, sceneIndex - 1);
@@ -43,7 +45,19 @@ export function ContinueLearningCard({
 
   return (
     <Link href={`/learn/${sceneId}`} className="block">
-      <Card className="animate-fade-in hover:border-accent-id/30 transition-colors">
+      <Card className="animate-fade-in hover:border-accent-id/30 transition-colors overflow-hidden !p-0">
+        {anchorImageUrl && (
+          <div className="w-full h-28 sm:h-36 overflow-hidden bg-surface-inset relative">
+            <MnemonicImage
+              src={anchorImageUrl}
+              alt={sceneTitle}
+              variant="community"
+              fallback={null}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-card-surface/80 via-transparent to-transparent pointer-events-none" />
+          </div>
+        )}
+        <div className="p-4">
         {/* Scene position + dot map */}
         <div className="flex items-center justify-between mb-2">
           <p className="text-xs text-text-secondary">
@@ -90,6 +104,7 @@ export function ContinueLearningCard({
           <span className="text-sm font-medium text-accent-id">
             Continue →
           </span>
+        </div>
         </div>
       </Card>
     </Link>

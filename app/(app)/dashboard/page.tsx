@@ -203,6 +203,7 @@ export default async function DashboardPage() {
                   sceneIndex={currentSceneIndex}
                   totalScenes={sceneMastery.length}
                   sceneDots={sceneMastery.map(s => ({ id: s.id, completed: isSceneComplete(s) }))}
+                  anchorImageUrl={nextScene!.anchor_image_url}
                 />
               </section>
             )}

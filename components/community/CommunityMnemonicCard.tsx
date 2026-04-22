@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { VoteButton } from './VoteButton';
 import { FlagButton } from './FlagButton';
+import { MnemonicImage } from '@/components/shared/MnemonicImage';
 import type { CommunityMnemonicCard as CardData } from '@/types/community';
 
 interface CommunityMnemonicCardProps {
@@ -62,11 +63,11 @@ export function CommunityMnemonicCard({ card, isOwnMnemonic }: CommunityMnemonic
       {/* Image */}
       {card.image_url && (
         <div className="w-full aspect-[4/3] rounded-xl overflow-hidden mb-3 bg-surface-inset">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <MnemonicImage
             src={card.image_url}
             alt={card.scene_description}
-            className="w-full h-full object-cover"
+            variant="community"
+            fallback={null}
           />
         </div>
       )}

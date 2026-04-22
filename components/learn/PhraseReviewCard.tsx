@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Card } from '@/components/ui/Card';
 import { SwipeIndicators, getSwipeBorderStyle } from '@/components/learn/SwipeIndicators';
+import { MnemonicImage } from '@/components/shared/MnemonicImage';
 import type { PhraseWordMnemonic } from '@/types/database';
 
 function renderBridgeSentence(sentence: string) {
@@ -89,18 +90,14 @@ export function PhraseReviewCard({
         <div className="mt-3 space-y-2.5 animate-slide-up">
           {words.map((w) => (
             <div key={w.word_id} className="flex items-start gap-3 text-left">
-              {w.image_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
+              <div className="mt-0.5">
+                <MnemonicImage
                   src={w.image_url}
                   alt=""
-                  className="w-10 h-10 rounded-lg object-cover flex-shrink-0 mt-0.5"
+                  variant="thumb"
+                  keyword={w.word_text}
                 />
-              ) : (
-                <div className="w-10 h-10 rounded-lg bg-card-border/30 flex-shrink-0 mt-0.5 flex items-center justify-center text-xs text-text-secondary">
-                  {w.word_text.charAt(0)}
-                </div>
-              )}
+              </div>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-foreground">
                   {w.word_text} <span className="text-text-secondary font-normal">= {w.word_en}</span>
@@ -159,8 +156,7 @@ export function PhraseReviewCard({
                 )}
                 {compositeImageUrl ? (
                   <div className="relative w-full rounded-xl overflow-hidden mb-3 bg-surface-inset">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={compositeImageUrl} alt={`Illustration for phrase: ${textEn}`} className="w-full max-h-[45dvh] object-cover rounded-xl" />
+                    <MnemonicImage src={compositeImageUrl} alt={`Illustration for phrase: ${textEn}`} variant="phrase-composite" />
                   </div>
                 ) : !phraseBridgeSentence ? (
                   <div className="rounded-xl bg-gradient-to-br from-accent-id/15 to-surface-inset py-6 px-4 mb-3">
@@ -182,16 +178,18 @@ export function PhraseReviewCard({
               How do you say...
             </p>
             <h2 className="text-2xl font-bold text-foreground mb-2">{textEn}</h2>
-            {compositeImageUrl ? (
-              <div className="relative w-full rounded-xl overflow-hidden mb-3 bg-surface-inset">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={compositeImageUrl} alt={`Illustration for phrase: ${textEn}`} className="w-full max-h-[45dvh] object-cover rounded-xl" />
-              </div>
-            ) : (
-              <div className="rounded-xl bg-gradient-to-br from-accent-id/15 to-surface-inset py-6 px-4 mb-3">
-                <p className="text-xs text-text-secondary">Visual coming soon</p>
-              </div>
-            )}
+            <div className="mb-3">
+              <MnemonicImage
+                src={compositeImageUrl}
+                alt={`Illustration for phrase: ${textEn}`}
+                variant="phrase-composite"
+                fallback={
+                  <div className="rounded-xl bg-gradient-to-br from-accent-id/15 to-surface-inset py-6 px-4">
+                    <p className="text-xs text-text-secondary">Visual coming soon</p>
+                  </div>
+                }
+              />
+            </div>
 
             {revealed && (
               <div className="mt-3 pt-3 border-t border-card-border animate-slide-up">

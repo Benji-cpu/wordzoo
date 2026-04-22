@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/Card';
 import { FeedbackButtons } from '@/components/learn/FeedbackButtons';
 import { RatingButtons } from '@/components/learn/RatingButtons';
 import { PronunciationButton } from '@/components/audio/SpeakerButton';
+import { MnemonicImage } from '@/components/shared/MnemonicImage';
 import { playWordPronunciation, isAudioUnlocked } from '@/lib/audio/pronunciation';
 import { SwipeIndicators, getSwipeBorderStyle } from '@/components/learn/SwipeIndicators';
 import { CollapsibleWordFamily } from '@/components/learn/WordFamilyCard';
@@ -24,10 +25,6 @@ function renderBridgeSentence(sentence: string) {
   );
 }
 
-function ImageSkeleton() {
-  return <div className="w-full h-[200px] bg-surface-inset animate-pulse rounded-xl" />;
-}
-
 interface ReviewCardProps {
   word: Word;
   mnemonic: Mnemonic;
@@ -43,10 +40,13 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, w
   const [imageLoaded, setImageLoaded] = useState(false);
   const startXRef = useRef(0);
 
-  // Reset image loaded state when word changes
-  useEffect(() => {
+  // Reset overlay visibility when word changes — derive during render
+  // (avoids the effect-then-setState cascade lint rule).
+  const [prevWordId, setPrevWordId] = useState(word.id);
+  if (word.id !== prevWordId) {
+    setPrevWordId(word.id);
     setImageLoaded(false);
-  }, [word.id]);
+  }
 
   // Swipe handling
   useEffect(() => {
@@ -99,14 +99,11 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, w
 
   const mnemonicImage = mnemonic.image_url && (
     <div className="relative w-full rounded-xl overflow-hidden mb-1 bg-surface-inset">
-      {!imageLoaded && <ImageSkeleton />}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      <MnemonicImage
         src={mnemonic.image_url}
         alt={mnemonic.keyword_text ? `Mnemonic illustration: ${mnemonic.keyword_text}` : 'Mnemonic illustration'}
-        className={`w-full max-h-[calc(100dvh-340px)] min-h-[120px] object-cover rounded-xl transition-opacity duration-300 ${
-          imageLoaded ? 'opacity-100' : 'opacity-0 h-0'
-        }`}
+        variant="review"
+        keyword={mnemonic.keyword_text ?? undefined}
         onLoad={() => setImageLoaded(true)}
       />
       {imageLoaded && (
@@ -114,6 +111,21 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, w
           <FeedbackButtons mnemonicId={mnemonic.id} context="review" compact overlay />
         </div>
       )}
+    </div>
+  );
+
+  // Pre-reveal teaser — a heavily-blurred strip of the mnemonic image hinting
+  // that there's a visual waiting. Gives the brain a retrieval cue without
+  // spoiling the answer.
+  const teaser = !revealed && mnemonic.image_url && (
+    <div className="w-full h-10 rounded-lg overflow-hidden mb-3 opacity-60">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={mnemonic.image_url}
+        alt=""
+        aria-hidden
+        className="w-full h-full object-cover scale-125 blur-2xl"
+      />
     </div>
   );
 
@@ -148,6 +160,7 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, w
                 revealed ? 'max-h-0 opacity-0' : 'max-h-[300px] opacity-100'
               }`}
             >
+              {teaser}
               <p className="text-xs text-text-secondary uppercase tracking-wider mb-2">
                 What does this mean?
               </p>
@@ -211,9 +224,10 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, w
             {/* Question label — collapses on reveal */}
             <div
               className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                revealed ? 'max-h-0 opacity-0' : 'max-h-[80px] opacity-100'
+                revealed ? 'max-h-0 opacity-0' : 'max-h-[140px] opacity-100'
               }`}
             >
+              {teaser}
               <p className="text-xs text-text-secondary uppercase tracking-wider mb-2">
                 How do you say...
               </p>
