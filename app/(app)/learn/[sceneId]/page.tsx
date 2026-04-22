@@ -170,14 +170,11 @@ export default async function LearnPage({ params }: PageProps) {
       dialogues={flowData.dialogues}
       phrases={flowData.phrases}
       words={words}
-      patternExercises={flowData.patternExercises}
-      affixExercises={flowData.affixExercises}
       initialProgress={progress ?? defaultProgress}
       sceneContext={scene.scene_context}
       anchorImageUrl={scene.anchor_image_url}
       nextScene={nextScene}
       pathId={scene.path_id}
-      userName={session?.user?.name ?? null}
       sceneNumber={sceneNumber}
       totalScenes={totalScenes}
       insightState={insightState ? { seenIds: Array.from(insightState.seenIds), shownToday: insightState.shownToday } : null}

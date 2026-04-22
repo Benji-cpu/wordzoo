@@ -75,7 +75,6 @@ export {
   getSceneFlowData,
   getSceneDialogues,
   getScenePhrases,
-  getScenePatternExercises,
   getPhraseWords,
   getOrCreateSceneProgress,
   updateSceneProgress,

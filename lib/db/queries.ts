@@ -1,5 +1,5 @@
 import { sql } from './client';
-import type { Word, Mnemonic, Path, Scene, SceneDialogue, Language, UserPath, TutorSession, TutorMessage, Subscription, Purchase, DailyUsage, MnemonicFeedback, LearnerProfile, TutorWordReview, TutorNudge, StudioSession, StudioIntakeData, StudioMessage, StudioPathPreview, AffixExercise, WordFamily, InfoByte } from '@/types/database';
+import type { Word, Mnemonic, Path, Scene, SceneDialogue, Language, UserPath, TutorSession, TutorMessage, Subscription, Purchase, DailyUsage, MnemonicFeedback, LearnerProfile, TutorWordReview, TutorNudge, StudioSession, StudioIntakeData, StudioMessage, StudioPathPreview, WordFamily, InfoByte } from '@/types/database';
 
 export interface WordWithLanguage extends Word {
   language_code: string;
@@ -1691,17 +1691,6 @@ export async function updateTutorSessionLearnerContext(
   learnerContext: Record<string, unknown>
 ): Promise<void> {
   await sql`UPDATE tutor_sessions SET learner_context = ${JSON.stringify(learnerContext)} WHERE id = ${sessionId}`;
-}
-
-// --- Affix Exercises ---
-
-export async function getAffixExercisesForScene(sceneId: string): Promise<AffixExercise[]> {
-  const rows = await sql`
-    SELECT * FROM affix_exercises
-    WHERE scene_id = ${sceneId}
-    ORDER BY sort_order
-  `;
-  return rows as AffixExercise[];
 }
 
 export interface WordFamilyWithDerived extends WordFamily {

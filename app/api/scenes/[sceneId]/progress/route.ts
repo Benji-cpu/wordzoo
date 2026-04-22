@@ -69,11 +69,20 @@ export async function POST(
 
   const { currentPhase, phaseIndex, phaseCompleted } = parsed.data;
 
+  // Legacy 'patterns' / 'affixes' phases are forward-normalized to 'summary'
+  // on the client before this route is called; accept both here defensively.
+  const phase = (currentPhase === 'patterns' || currentPhase === 'affixes')
+    ? 'summary'
+    : currentPhase;
+  const completed = (phaseCompleted === 'patterns' || phaseCompleted === 'affixes')
+    ? undefined
+    : phaseCompleted;
+
   await updateSceneProgress(session.user.id, sceneId, {
-    currentPhase: currentPhase as 'dialogue' | 'phrases' | 'vocabulary' | 'patterns' | 'affixes' | 'summary',
+    currentPhase: phase as 'dialogue' | 'phrases' | 'vocabulary' | 'summary',
     phaseIndex,
-    phaseCompleted: phaseCompleted as 'dialogue' | 'phrases' | 'vocabulary' | 'patterns' | 'affixes' | undefined,
-    completedAt: currentPhase === 'summary' ? new Date() : undefined,
+    phaseCompleted: completed as 'dialogue' | 'phrases' | 'vocabulary' | undefined,
+    completedAt: phase === 'summary' ? new Date() : undefined,
   });
 
   // Track scene completion for pacing system

@@ -11,17 +11,12 @@ import { PhraseQuiz } from '@/components/learn/PhraseQuiz';
 import { WordCard } from '@/components/learn/WordCard';
 import { MnemonicCard } from '@/components/learn/MnemonicCard';
 import { QuizOptions } from '@/components/learn/QuizOptions';
-import { PatternExercise } from '@/components/learn/PatternExercise';
-import { SentenceBuilder } from '@/components/learn/SentenceBuilder';
-import { TypedTranslation } from '@/components/learn/TypedTranslation';
-import { AffixExercise } from '@/components/learn/AffixExercise';
-import { AffixReferenceCard } from '@/components/learn/AffixReferenceCard';
 import { CollapsibleWordFamily } from '@/components/learn/WordFamilyCard';
 import { SceneSummary } from '@/components/learn/SceneSummary';
 import { InsightCard } from '@/components/insights/InsightCard';
 import { getEligibleInsight, type InsightUserState } from '@/lib/insights/engine';
 import type { InsightDefinition, TriggerContext } from '@/lib/insights/data';
-import type { SceneDialogue, ScenePhraseWithMnemonics, ScenePatternExercise, AffixExercise as AffixExerciseData, UserSceneProgress } from '@/types/database';
+import type { SceneDialogue, ScenePhraseWithMnemonics, UserSceneProgress } from '@/types/database';
 import type { LearnWord } from '@/components/learn/LearnClient';
 import type { SupportedLanguageCode } from '@/types/audio';
 
@@ -34,14 +29,11 @@ interface SceneFlowClientProps {
   dialogues: SceneDialogue[];
   phrases: ScenePhraseWithMnemonics[];
   words: LearnWord[];
-  patternExercises: ScenePatternExercise[];
-  affixExercises?: AffixExerciseData[];
   initialProgress: UserSceneProgress;
   sceneContext: string | null;
   anchorImageUrl: string | null;
   nextScene?: { id: string; title: string; description?: string | null } | null;
   pathId?: string;
-  userName?: string | null;
   sceneNumber?: number;
   totalScenes?: number;
   insightState?: { seenIds: string[]; shownToday: number } | null;
@@ -52,12 +44,11 @@ type FlowState =
   | { phase: 'dialogue'; lineIndex: number }
   | { phase: 'phrases'; phraseIndex: number; step: 'show' | 'breakdown' | 'quiz' }
   | { phase: 'vocabulary'; wordIndex: number; step: 'word' | 'mnemonic' | 'quiz' }
-  | { phase: 'patterns'; exerciseIndex: number }
-  | { phase: 'affixes'; exerciseIndex: number }
   | { phase: 'summary' };
 
-function initialStateFromProgress(p: UserSceneProgress, totalDialogues: number, totalPhrases: number, totalWords: number, totalPatterns: number, totalAffixes: number, hasAnchorImage: boolean): FlowState {
-  // Cast to string to handle legacy 'conversation' phase from existing DB rows
+function initialStateFromProgress(p: UserSceneProgress, totalDialogues: number, totalPhrases: number, totalWords: number, hasAnchorImage: boolean): FlowState {
+  // Cast to string to handle legacy phases ('conversation' / 'patterns' / 'affixes')
+  // from existing DB rows — these flow-stages were removed in Phase 0.
   const phase = p.current_phase as string;
   switch (phase) {
     case 'dialogue':
@@ -75,19 +66,10 @@ function initialStateFromProgress(p: UserSceneProgress, totalDialogues: number, 
       return { phase: 'phrases', phraseIndex: Math.min(p.phase_index, totalPhrases - 1), step: 'show' };
     case 'vocabulary':
       return { phase: 'vocabulary', wordIndex: Math.min(p.phase_index, totalWords - 1), step: 'word' };
+    // Legacy phases — forward-normalize to summary (content was already consumed).
     case 'patterns':
-      if (totalPatterns === 0) {
-        return { phase: 'summary' };
-      }
-      return { phase: 'patterns', exerciseIndex: Math.min(p.phase_index, totalPatterns - 1) };
     case 'affixes':
-      if (totalAffixes === 0) {
-        return { phase: 'summary' };
-      }
-      return { phase: 'affixes', exerciseIndex: Math.min(p.phase_index, totalAffixes - 1) };
     case 'conversation':
-      // Legacy fallback for existing users with conversation progress
-      return { phase: 'summary' };
     case 'summary':
       return { phase: 'summary' };
     default:
@@ -99,8 +81,6 @@ interface FlowContext {
   dialogues: SceneDialogue[];
   phrases: ScenePhraseWithMnemonics[];
   words: LearnWord[];
-  patternExercises: ScenePatternExercise[];
-  affixExercises: AffixExerciseData[];
 }
 
 /** Returns the previous FlowState, or null to exit the scene. */
@@ -159,50 +139,7 @@ function computePreviousState(current: FlowState, ctx: FlowContext & { hasAnchor
       return null;
     }
 
-    case 'patterns': {
-      if (current.exerciseIndex > 0) {
-        return { phase: 'patterns', exerciseIndex: current.exerciseIndex - 1 };
-      }
-      // First pattern → back to last vocab word, or last phrase, or dialogue, or exit
-      if (ctx.words.length > 0) {
-        return { phase: 'vocabulary', wordIndex: ctx.words.length - 1, step: 'word' };
-      }
-      if (ctx.phrases.length > 0) {
-        return { phase: 'phrases', phraseIndex: ctx.phrases.length - 1, step: 'show' };
-      }
-      if (ctx.dialogues.length > 0) {
-        return { phase: 'dialogue', lineIndex: ctx.dialogues.length - 1 };
-      }
-      return null;
-    }
-
-    case 'affixes': {
-      if (current.exerciseIndex > 0) {
-        return { phase: 'affixes', exerciseIndex: current.exerciseIndex - 1 };
-      }
-      // First affix → back to last pattern, or last vocab, or last phrase, or dialogue, or exit
-      if (ctx.patternExercises.length > 0) {
-        return { phase: 'patterns', exerciseIndex: ctx.patternExercises.length - 1 };
-      }
-      if (ctx.words.length > 0) {
-        return { phase: 'vocabulary', wordIndex: ctx.words.length - 1, step: 'word' };
-      }
-      if (ctx.phrases.length > 0) {
-        return { phase: 'phrases', phraseIndex: ctx.phrases.length - 1, step: 'show' };
-      }
-      if (ctx.dialogues.length > 0) {
-        return { phase: 'dialogue', lineIndex: ctx.dialogues.length - 1 };
-      }
-      return null;
-    }
-
     case 'summary': {
-      if (ctx.affixExercises.length > 0) {
-        return { phase: 'affixes', exerciseIndex: ctx.affixExercises.length - 1 };
-      }
-      if (ctx.patternExercises.length > 0) {
-        return { phase: 'patterns', exerciseIndex: ctx.patternExercises.length - 1 };
-      }
       if (ctx.words.length > 0) {
         return { phase: 'vocabulary', wordIndex: ctx.words.length - 1, step: 'word' };
       }
@@ -226,14 +163,11 @@ export function SceneFlowClient({
   dialogues,
   phrases,
   words: allWords,
-  patternExercises,
-  affixExercises = [],
   initialProgress,
   sceneContext,
   anchorImageUrl,
   nextScene,
   pathId,
-  userName,
   sceneNumber,
   totalScenes,
   insightState,
@@ -247,7 +181,7 @@ export function SceneFlowClient({
     : allWords;
 
   const [state, setState] = useState<FlowState>(() =>
-    initialStateFromProgress(initialProgress, dialogues.length, phrases.length, allWords.length, patternExercises.length, affixExercises.length, hasAnchorImage)
+    initialStateFromProgress(initialProgress, dialogues.length, phrases.length, allWords.length, hasAnchorImage)
   );
   const [dailyStats, setDailyStats] = useState<{ words_learned: number; scenes_completed: number }>({ words_learned: 0, scenes_completed: 0 });
   const statsFetched = useRef(false);
@@ -268,9 +202,6 @@ export function SceneFlowClient({
         setState(prev => {
           if (prev.phase !== 'vocabulary') return prev;
           if (unlearnedWords.length === 0) {
-            // All words learned — skip to next phase
-            if (patternExercises.length > 0) return { phase: 'patterns', exerciseIndex: 0 };
-            if (affixExercises.length > 0) return { phase: 'affixes', exerciseIndex: 0 };
             return { phase: 'summary' };
           }
           // Clamp wordIndex to filtered list bounds
@@ -282,7 +213,7 @@ export function SceneFlowClient({
       })
       .catch(() => {});
     return () => { cancelled = true; };
-  }, [sceneId, allWords, patternExercises.length, affixExercises.length]);
+  }, [sceneId, allWords]);
 
   // Fix stale DB records: if we initialize into summary but DB never recorded completion,
   // save progress now so completed_at gets set (e.g. legacy 'conversation' phase rows)
@@ -371,14 +302,14 @@ export function SceneFlowClient({
 
   // --- Back Navigation ---
   const handleBack = useCallback(() => {
-    const ctx: FlowContext & { hasAnchorImage: boolean } = { dialogues, phrases, words, patternExercises, affixExercises, hasAnchorImage };
+    const ctx: FlowContext & { hasAnchorImage: boolean } = { dialogues, phrases, words, hasAnchorImage };
     const prev = computePreviousState(state, ctx);
     if (prev) {
       setState(prev);
     } else {
       router.push(pathId ? `/paths/${pathId}` : '/dashboard');
     }
-  }, [state, dialogues, phrases, words, patternExercises, affixExercises, hasAnchorImage, pathId, router]);
+  }, [state, dialogues, phrases, words, hasAnchorImage, pathId, router]);
 
   // --- Dialogue Phase ---
   const handleDialogueComplete = useCallback(() => {
@@ -388,17 +319,11 @@ export function SceneFlowClient({
     } else if (words.length > 0) {
       saveProgress('vocabulary', 0, 'dialogue');
       setState({ phase: 'vocabulary', wordIndex: 0, step: 'word' });
-    } else if (patternExercises.length > 0) {
-      saveProgress('patterns', 0, 'dialogue');
-      setState({ phase: 'patterns', exerciseIndex: 0 });
-    } else if (affixExercises.length > 0) {
-      saveProgress('affixes', 0, 'dialogue');
-      setState({ phase: 'affixes', exerciseIndex: 0 });
     } else {
       saveProgress('summary', 0, 'dialogue');
       setState({ phase: 'summary' });
     }
-  }, [saveProgress, phrases.length, words.length, patternExercises.length, affixExercises.length]);
+  }, [saveProgress, phrases.length, words.length]);
 
   const handleDialogueLineAdvance = useCallback((lineIndex: number) => {
     saveProgress('dialogue', lineIndex);
@@ -440,17 +365,11 @@ export function SceneFlowClient({
       // Move to vocabulary (only unlearned words remain after filtering)
       saveProgress('vocabulary', 0, 'phrases');
       setState({ phase: 'vocabulary', wordIndex: 0, step: 'word' });
-    } else if (patternExercises.length > 0) {
-      saveProgress('patterns', 0, 'phrases');
-      setState({ phase: 'patterns', exerciseIndex: 0 });
-    } else if (affixExercises.length > 0) {
-      saveProgress('affixes', 0, 'phrases');
-      setState({ phase: 'affixes', exerciseIndex: 0 });
     } else {
       saveProgress('summary', 0, 'phrases');
       setState({ phase: 'summary' });
     }
-  }, [state, phrases, words.length, patternExercises.length, affixExercises.length, saveProgress]);
+  }, [state, phrases, words.length, saveProgress]);
 
   // --- Vocabulary Phase (reuses existing word/mnemonic/quiz components) ---
   const handleWordContinue = useCallback(() => {
@@ -500,52 +419,11 @@ export function SceneFlowClient({
     if (next < words.length) {
       saveProgress('vocabulary', next);
       setState({ phase: 'vocabulary', wordIndex: next, step: 'word' });
-    } else if (patternExercises.length > 0) {
-      // Move to patterns
-      saveProgress('patterns', 0, 'vocabulary');
-      setState({ phase: 'patterns', exerciseIndex: 0 });
-    } else if (affixExercises.length > 0) {
-      // Skip patterns, move to affixes
-      saveProgress('affixes', 0, 'vocabulary');
-      setState({ phase: 'affixes', exerciseIndex: 0 });
     } else {
-      // Skip patterns and affixes phases (empty for studio paths)
       saveProgress('summary', 0, 'vocabulary');
       setState({ phase: 'summary' });
     }
-  }, [state, words.length, patternExercises.length, affixExercises.length, saveProgress, firstQuizCorrect, activeInsight, checkInsight]);
-
-  // --- Patterns Phase ---
-  const handlePatternCorrect = useCallback((_correct?: boolean) => {
-    if (state.phase !== 'patterns') return;
-    const next = state.exerciseIndex + 1;
-    if (next < patternExercises.length) {
-      saveProgress('patterns', next);
-      setState({ phase: 'patterns', exerciseIndex: next });
-    } else if (affixExercises.length > 0) {
-      // Move to affixes
-      saveProgress('affixes', 0, 'patterns');
-      setState({ phase: 'affixes', exerciseIndex: 0 });
-    } else {
-      // Move to summary
-      saveProgress('summary', 0, 'patterns');
-      setState({ phase: 'summary' });
-    }
-  }, [state, patternExercises.length, affixExercises.length, saveProgress]);
-
-  // --- Affixes Phase ---
-  const handleAffixComplete = useCallback((_correct: boolean) => {
-    if (state.phase !== 'affixes') return;
-    const next = state.exerciseIndex + 1;
-    if (next < affixExercises.length) {
-      saveProgress('affixes', next);
-      setState({ phase: 'affixes', exerciseIndex: next });
-    } else {
-      // Move to summary
-      saveProgress('summary', 0, 'affixes');
-      setState({ phase: 'summary' });
-    }
-  }, [state, affixExercises.length, saveProgress]);
+  }, [state, words.length, saveProgress, firstQuizCorrect, activeInsight, checkInsight]);
 
   // Check for word_family insight when a word family is first displayed
   const wordFamilyInsightChecked = useRef(false);
@@ -631,10 +509,6 @@ export function SceneFlowClient({
       case 'vocabulary':
         if (words.length === 0) return 0;
         return (state.wordIndex + substepFraction(state.step, ['word', 'mnemonic', 'quiz'])) / words.length;
-      case 'patterns':
-        return patternExercises.length > 1 ? state.exerciseIndex / (patternExercises.length - 1) : 0;
-      case 'affixes':
-        return affixExercises.length > 1 ? state.exerciseIndex / (affixExercises.length - 1) : 0;
       case 'summary':
         return 1;
     }
@@ -786,58 +660,6 @@ export function SceneFlowClient({
               )}
             </>
           )}
-        </>
-      )}
-
-      {/* Patterns Phase */}
-      {state.phase === 'patterns' && patternExercises[state.exerciseIndex] && (() => {
-        const exercise = patternExercises[state.exerciseIndex];
-        const exerciseType = exercise.exercise_type || 'fill_blank';
-
-        if (exerciseType === 'sentence_build') {
-          return (
-            <SentenceBuilder
-              key={exercise.id}
-              prompt={exercise.hint_en || exercise.prompt}
-              correctAnswer={exercise.correct_answer}
-              distractors={exercise.distractors}
-              explanation={exercise.explanation ?? undefined}
-              onComplete={handlePatternCorrect}
-            />
-          );
-        }
-
-        if (exerciseType === 'typed_translation') {
-          return (
-            <TypedTranslation
-              key={exercise.id}
-              promptEn={exercise.hint_en || exercise.prompt}
-              correctAnswer={exercise.correct_answer}
-              onComplete={handlePatternCorrect}
-            />
-          );
-        }
-
-        // Default: fill_blank
-        return (
-          <PatternExercise
-            key={exercise.id}
-            exercise={exercise}
-            onCorrect={handlePatternCorrect}
-            userName={userName}
-          />
-        );
-      })()}
-
-      {/* Affixes Phase */}
-      {state.phase === 'affixes' && affixExercises[state.exerciseIndex] && (
-        <>
-          <AffixExercise
-            key={affixExercises[state.exerciseIndex].id}
-            exercise={affixExercises[state.exerciseIndex]}
-            onComplete={handleAffixComplete}
-          />
-          <AffixReferenceCard />
         </>
       )}
 
