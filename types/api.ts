@@ -148,33 +148,6 @@ export const BatchSyncSchema = z.object({
   events: z.array(SyncEventSchema),
 });
 
-// Community
-export const SubmitCommunityMnemonicSchema = z.object({
-  mnemonicId: z.string().uuid(),
-});
-
-export const VoteMnemonicSchema = z.object({
-  mnemonicId: z.string().uuid(),
-});
-
-export const FlagReasonEnum = z.enum(['offensive', 'spam', 'misleading', 'other']);
-
-export const FlagMnemonicSchema = z.object({
-  mnemonicId: z.string().uuid(),
-  reason: FlagReasonEnum,
-  detail: z.string().max(500).optional(),
-});
-
-export const AdoptMnemonicSchema = z.object({
-  mnemonicId: z.string().uuid(),
-  wordId: z.string().uuid(),
-});
-
-export const CommunityListQuerySchema = z.object({
-  sort: z.enum(['top', 'new']).optional().default('top'),
-  page: z.coerce.number().int().min(1).optional().default(1),
-});
-
 export const ShareImageQuerySchema = z.object({
   format: z.enum(['square', 'story']).optional().default('square'),
 });
@@ -216,11 +189,6 @@ export type TutorMessageInput = z.infer<typeof TutorMessageSchema>;
 export type TutorEndSessionInput = z.infer<typeof TutorEndSessionSchema>;
 export type TravelPackInput = z.infer<typeof TravelPackSchema>;
 export type GraduatePathInput = z.infer<typeof GraduatePathSchema>;
-export type SubmitCommunityMnemonicInput = z.infer<typeof SubmitCommunityMnemonicSchema>;
-export type VoteMnemonicInput = z.infer<typeof VoteMnemonicSchema>;
-export type FlagMnemonicInput = z.infer<typeof FlagMnemonicSchema>;
-export type AdoptMnemonicInput = z.infer<typeof AdoptMnemonicSchema>;
-export type CommunityListQuery = z.infer<typeof CommunityListQuerySchema>;
 export type ShareImageQuery = z.infer<typeof ShareImageQuerySchema>;
 export type SubmitFeedbackInput = z.infer<typeof SubmitFeedbackSchema>;
 export type AdminRegenerateMnemonicInput = z.infer<typeof AdminRegenerateMnemonicSchema>;

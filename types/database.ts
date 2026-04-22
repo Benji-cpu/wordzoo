@@ -215,32 +215,6 @@ export interface DailyUsage {
   scenes_completed: number;
 }
 
-export interface CommunityMnemonic {
-  id: string;
-  mnemonic_id: string;
-  submitted_by: string;
-  status: 'pending' | 'approved' | 'rejected' | 'flagged';
-  submitted_at: Date;
-  reviewed_at: Date | null;
-}
-
-export interface MnemonicVote {
-  id: string;
-  user_id: string;
-  mnemonic_id: string;
-  created_at: Date;
-}
-
-export interface MnemonicFlag {
-  id: string;
-  user_id: string;
-  mnemonic_id: string;
-  reason: 'offensive' | 'spam' | 'misleading' | 'other';
-  detail: string | null;
-  created_at: Date;
-  resolved: boolean;
-}
-
 export interface MnemonicFeedback {
   id: string;
   user_id: string;
@@ -249,16 +223,6 @@ export interface MnemonicFeedback {
   comment: string | null;
   created_at: Date;
   updated_at: Date;
-}
-
-export interface ShareEvent {
-  id: string;
-  user_id: string | null;
-  mnemonic_id: string;
-  word_id: string;
-  platform: string | null;
-  format: 'square' | 'story';
-  created_at: Date;
 }
 
 export interface Referral {

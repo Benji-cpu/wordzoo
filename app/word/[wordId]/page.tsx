@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import { cookies } from 'next/headers';
 import Link from 'next/link';
-import { getPublicWordData } from '@/lib/db/community-queries';
+import { getPublicWordData } from '@/lib/db/public-queries';
 import { trackReferralClick } from '@/lib/services/share-service';
 
 interface Props {

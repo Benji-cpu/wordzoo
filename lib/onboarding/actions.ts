@@ -118,7 +118,7 @@ export async function claimReferral(referrerId: string) {
     return { success: false, reason: 'self-referral' };
   }
 
-  const { attributeReferralSignup } = await import('@/lib/db/community-queries');
+  const { attributeReferralSignup } = await import('@/lib/db/public-queries');
   const result = await attributeReferralSignup(referrerId, session.user.id);
   return { success: !!result };
 }

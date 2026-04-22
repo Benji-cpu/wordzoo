@@ -195,52 +195,6 @@ CREATE TABLE IF NOT EXISTS tutor_messages (
 );
 CREATE INDEX IF NOT EXISTS idx_tutor_messages_session ON tutor_messages(session_id, created_at);
 
--- Community Mnemonics (submitted to community)
-CREATE TABLE IF NOT EXISTS community_mnemonics (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  mnemonic_id UUID NOT NULL REFERENCES mnemonics(id) ON DELETE CASCADE,
-  submitted_by UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','approved','rejected','flagged')),
-  submitted_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  reviewed_at TIMESTAMPTZ,
-  UNIQUE(mnemonic_id)
-);
-CREATE INDEX IF NOT EXISTS idx_community_mnemonics_status ON community_mnemonics(status);
-
--- Mnemonic Votes (one upvote per user per mnemonic)
-CREATE TABLE IF NOT EXISTS mnemonic_votes (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  mnemonic_id UUID NOT NULL REFERENCES mnemonics(id) ON DELETE CASCADE,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  UNIQUE(user_id, mnemonic_id)
-);
-CREATE INDEX IF NOT EXISTS idx_mnemonic_votes_mnemonic ON mnemonic_votes(mnemonic_id);
-
--- Mnemonic Flags (user reports)
-CREATE TABLE IF NOT EXISTS mnemonic_flags (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  mnemonic_id UUID NOT NULL REFERENCES mnemonics(id) ON DELETE CASCADE,
-  reason TEXT NOT NULL CHECK (reason IN ('offensive','spam','misleading','other')),
-  detail TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  resolved BOOLEAN NOT NULL DEFAULT false,
-  UNIQUE(user_id, mnemonic_id)
-);
-
--- Share Events
-CREATE TABLE IF NOT EXISTS share_events (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES users(id) ON DELETE SET NULL,
-  mnemonic_id UUID NOT NULL REFERENCES mnemonics(id) ON DELETE CASCADE,
-  word_id UUID NOT NULL REFERENCES words(id) ON DELETE CASCADE,
-  platform TEXT,
-  format TEXT NOT NULL DEFAULT 'square' CHECK (format IN ('square','story')),
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-CREATE INDEX IF NOT EXISTS idx_share_events_user ON share_events(user_id, created_at DESC);
-
 -- Referrals
 CREATE TABLE IF NOT EXISTS referrals (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

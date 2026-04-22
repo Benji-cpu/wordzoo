@@ -26,7 +26,6 @@ const PREMIUM_FEATURES = [
   'Unlimited regenerations',
   'Custom learning paths',
   'Offline downloads',
-  'Community submissions',
   'Priority support',
 ];
 

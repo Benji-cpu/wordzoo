@@ -13,7 +13,6 @@ export interface UserDataExport {
   userPhrases: unknown[];
   mnemonicFeedback: unknown[];
   appFeedback: unknown[];
-  communityMnemonics: unknown[];
   dailyUsage: unknown[];
 }
 
@@ -30,7 +29,6 @@ export async function exportUserData(userId: string): Promise<UserDataExport> {
     userPhrases,
     mnemonicFeedback,
     appFeedback,
-    communityMnemonics,
     dailyUsage,
   ] = await Promise.all([
     sql`SELECT * FROM subscriptions WHERE user_id = ${userId}`,
@@ -42,7 +40,6 @@ export async function exportUserData(userId: string): Promise<UserDataExport> {
     sql`SELECT phrase_id, status, ease_factor, interval_days, next_review_at, times_reviewed, times_correct, last_reviewed_at FROM user_phrases WHERE user_id = ${userId}`,
     sql`SELECT mnemonic_id, rating, comment, created_at FROM mnemonic_feedback WHERE user_id = ${userId}`,
     sql`SELECT message, page_url, status, created_at FROM app_feedback WHERE user_id = ${userId}`,
-    sql`SELECT id, mnemonic_id, status, submitted_at FROM community_mnemonics WHERE submitted_by = ${userId}`,
     sql`SELECT date, words_learned, tutor_messages, hands_free_seconds, regenerations FROM daily_usage WHERE user_id = ${userId} ORDER BY date DESC LIMIT 365`,
   ]);
 
@@ -58,7 +55,6 @@ export async function exportUserData(userId: string): Promise<UserDataExport> {
     userPhrases,
     mnemonicFeedback,
     appFeedback,
-    communityMnemonics,
     dailyUsage,
   };
 }

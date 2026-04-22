@@ -1,5 +1,5 @@
 import { ImageResponse } from 'next/og';
-import { getPublicWordData } from '@/lib/db/community-queries';
+import { getPublicWordData } from '@/lib/db/public-queries';
 
 export const runtime = 'edge';
 export const alt = 'WordZoo — Learn with mnemonics';

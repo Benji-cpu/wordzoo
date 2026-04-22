@@ -18,7 +18,6 @@ const ROUTE_PATTERNS: Array<{ pattern: RegExp; label: string; params: string[] }
   { pattern: /^\/tutor$/, label: 'Tutor', params: [] },
   { pattern: /^\/settings$/, label: 'Settings', params: [] },
   { pattern: /^\/admin/, label: 'Admin', params: [] },
-  { pattern: /^\/community/, label: 'Community', params: [] },
   { pattern: /^\/studio/, label: 'Studio', params: [] },
 ];
 

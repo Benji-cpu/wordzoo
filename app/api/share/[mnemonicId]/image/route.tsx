@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 import { NextRequest } from 'next/server';
 import { ShareImageQuerySchema } from '@/types/api';
-import { getMnemonicForShare } from '@/lib/db/community-queries';
+import { getMnemonicForShare } from '@/lib/db/public-queries';
 
 export const runtime = 'edge';
 

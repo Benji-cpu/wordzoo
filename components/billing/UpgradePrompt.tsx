@@ -35,10 +35,6 @@ const FEATURE_MESSAGES: Record<string, { title: string; description: string }> =
     title: 'Premium Feature',
     description: 'Offline downloads are available with a Premium subscription.',
   },
-  community_submit: {
-    title: 'Premium Feature',
-    description: 'Community submissions are available with a Premium subscription.',
-  },
 };
 
 export function UpgradePrompt({ feature, message, compact = false }: UpgradePromptProps) {
