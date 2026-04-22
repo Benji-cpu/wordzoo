@@ -14,15 +14,15 @@ import {
 } from '@/lib/db/queries';
 import { getDuePhrasesForReview } from '@/lib/db/scene-flow-queries';
 import { isSceneComplete, sceneProgress as getSceneProgress, findCurrentSceneIndex } from '@/lib/utils/scene-progress';
-import { ContinueLearningCard } from '@/components/learn/ContinueLearningCard';
-import { QuickReviewCard } from '@/components/learn/QuickReviewCard';
+import { habitatFromLanguageCode } from '@/lib/utils/language-habitat';
 import { ProgressChart } from '@/components/learn/ProgressChart';
 import { StreakFlame } from '@/components/ui/StreakFlame';
-import { Fox, type FoxPose } from '@/components/mascot/Fox';
+import { Fox } from '@/components/mascot/Fox';
 import { TutorNudgeCard } from '@/components/tutor/TutorNudgeCard';
 import { TutorInsights } from '@/components/tutor/TutorInsights';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
+import { HeroCard } from '@/components/ui/HeroCard';
+import { ActionCard, ActionCardRow } from '@/components/ui/ActionCard';
+import { EmptyStateCard } from '@/components/ui/EmptyStateCard';
 import Link from 'next/link';
 import { InfoByteCard } from '@/components/info-bytes/InfoByteCard';
 import { DailyRecap } from '@/components/learn/DailyRecap';
@@ -31,21 +31,19 @@ import { getInsightState } from '@/lib/db/insight-queries';
 import { getEligibleInsight } from '@/lib/insights/engine';
 import { DashboardInsight } from './DashboardInsight';
 
-function pickFoxPose(dueCount: number): FoxPose {
-  if (dueCount >= 10) return 'thinking';
-  if (dueCount > 0) return 'wave';
-  return 'proud';
+function pickGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 5) return 'Still up?';
+  if (hour < 12) return 'Good morning';
+  if (hour < 17) return 'Good afternoon';
+  if (hour < 21) return 'Good evening';
+  return 'Good night';
 }
 
-function pickGreeting(name: string | null): string {
-  const hour = new Date().getHours();
-  const first = name?.split(/\s+/)[0];
-  const tag = first ? `, ${first}` : '';
-  if (hour < 5) return `Still up${tag}?`;
-  if (hour < 12) return `Morning${tag}`;
-  if (hour < 17) return `Afternoon${tag}`;
-  if (hour < 21) return `Evening${tag}`;
-  return `Night${tag}`;
+function pickKicker(streak: number): string {
+  const weekday = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+  if (streak > 0) return `${weekday} · day ${streak}`;
+  return weekday;
 }
 
 export default async function DashboardPage() {
@@ -64,13 +62,25 @@ export default async function DashboardPage() {
   const pathId = activePath.path_id;
   const languageId = activePath.path_language_id;
 
-  // Compute yesterday's date string
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
   const yesterdayStr = yesterday.toISOString().split('T')[0];
+  const todayStr = new Date().toISOString().split('T')[0];
 
-  // Fetch scene mastery, word stats, due words/phrases, language, and mastery distribution in parallel
-  const [sceneMastery, wordStats, dueWords, duePhrases, language, streakData, masteryDist, wordsByStatus, todayInfoByte, yesterdayStats, insightState] = await Promise.all([
+  const [
+    sceneMastery,
+    wordStats,
+    dueWords,
+    duePhrases,
+    language,
+    streakData,
+    masteryDist,
+    wordsByStatus,
+    todayInfoByte,
+    yesterdayStats,
+    todayStats,
+    insightState,
+  ] = await Promise.all([
     getSceneMasteryForPath(userId, pathId),
     getPathWordStats(userId, pathId),
     getUserDueWords(userId, languageId),
@@ -81,17 +91,24 @@ export default async function DashboardPage() {
     getWordsByMasteryStatus(userId, pathId),
     getTodayInfoByte(languageId),
     getDailyLearningStats(userId, yesterdayStr),
+    getDailyLearningStats(userId, todayStr),
     getInsightState(userId),
   ]);
 
-  // Find next incomplete scene
+  const firstName = session.user.name?.split(/\s+/)[0] ?? null;
+  const greeting = pickGreeting();
+  const kicker = pickKicker(streakData.current_streak);
+  const habitat = habitatFromLanguageCode(language?.code);
+
   const nextScene = sceneMastery.find(s => !isSceneComplete(s)) ?? sceneMastery[0];
   const currentSceneIndex = findCurrentSceneIndex(sceneMastery);
   const currentSceneProgress = nextScene ? getSceneProgress(nextScene) : 0;
 
   const totalDueCount = dueWords.length + duePhrases.length;
+  const newWordsToday = wordStats.words_learned - (todayStats.words_learned ?? 0) >= 0
+    ? Math.max(0, todayStats.words_learned ?? 0)
+    : 0;
 
-  // Check for dashboard insight (learning_loop)
   const completedSceneCount = sceneMastery.filter(s => isSceneComplete(s)).length;
   const dashboardInsight = getEligibleInsight('dashboard', {
     seenInsightIds: insightState.seenIds,
@@ -102,11 +119,73 @@ export default async function DashboardPage() {
   });
 
   const streak = streakData.current_streak;
+  const hasReviews = totalDueCount > 0;
+  const hasNextScene = !!nextScene;
+  const caughtUp = !hasReviews && !hasNextScene;
 
   return (
     <div className="max-w-lg lg:max-w-3xl mx-auto space-y-4">
       {/* Upgrade banner for free tier near quota */}
       <DashboardUpgradeBanner />
+
+      {/* Greeting + streak */}
+      <div className="flex items-center justify-between pt-1">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-11 h-11 rounded-[14px] bg-[color:var(--accent-indonesian-soft)] flex items-center justify-center flex-shrink-0">
+            <Fox pose={caughtUp ? 'proud' : hasReviews ? 'wave' : 'idle'} size="xs" />
+          </div>
+          <div className="min-w-0">
+            <div className="text-[11px] uppercase tracking-[0.12em] font-extrabold text-[color:var(--text-secondary)]">
+              {kicker}
+            </div>
+            <h1 className="text-[22px] font-extrabold tracking-tight text-[color:var(--foreground)] leading-tight truncate">
+              {caughtUp ? 'All caught up!' : firstName ? `${greeting}, ${firstName}` : greeting}
+            </h1>
+          </div>
+        </div>
+        <StreakFlame count={streak} size="sm" active={streak > 0} />
+      </div>
+
+      {/* Hero / empty state */}
+      {caughtUp ? (
+        <EmptyStateCard
+          foxPose="proud"
+          title="You've cleared review"
+          subtitle={
+            <>
+              Nothing due until tomorrow. Meet a few more words, or ask Fox about what
+              you&apos;ve learned.
+            </>
+          }
+          primary={{ label: 'Meet 3 new words →', href: '/paths' }}
+          secondary={{ label: 'Chat about yesterday', href: '/tutor' }}
+        />
+      ) : hasNextScene ? (
+        <HeroCard
+          label="Continue"
+          title={nextScene!.title}
+          subtitle={
+            currentSceneIndex >= 0 && sceneMastery.length > 0
+              ? `${language?.name ?? 'Learning'} · scene ${currentSceneIndex + 1} of ${sceneMastery.length}`
+              : language?.name ?? 'Resume learning'
+          }
+          progress={currentSceneProgress}
+          ctaText="Resume session"
+          href={`/learn/${nextScene!.id}`}
+          language={habitat}
+        />
+      ) : null}
+
+      {/* Action row — due / new */}
+      {!caughtUp && (
+        <ActionCardRow>
+          <ActionCard icon="⏱️" value={totalDueCount} label="Due now" tone="warm" href="/review" />
+          <ActionCard icon="✨" value={newWordsToday} label="New today" tone="cream" />
+        </ActionCardRow>
+      )}
+
+      {/* Tutor Nudge (Insight archetype underneath) */}
+      <TutorNudgeCard languageId={languageId} />
 
       {/* Daily Info Byte */}
       {todayInfoByte && (
@@ -122,24 +201,6 @@ export default async function DashboardPage() {
         />
       )}
 
-      {/* Greeting + Streak */}
-      <div className="flex items-center gap-4 justify-between">
-        <div className="flex items-center gap-3 min-w-0">
-          <Fox pose={pickFoxPose(totalDueCount)} size="md" />
-          <div className="min-w-0">
-            <h1 className="text-xl font-bold text-foreground truncate">
-              {pickGreeting(session.user.name ?? null)}
-            </h1>
-            <p className="text-sm text-text-secondary mt-0.5 truncate">
-              {totalDueCount > 0
-                ? `${totalDueCount} review${totalDueCount === 1 ? '' : 's'} due — keep your ${language?.name ?? 'language'} streak alive`
-                : `Keep building your ${language?.name ?? 'language'} vocabulary`}
-            </p>
-          </div>
-        </div>
-        <StreakFlame count={streak} size="md" active={streak > 0} />
-      </div>
-
       {/* Yesterday's recap */}
       <DailyRecap
         yesterdayWords={yesterdayStats.words_learned}
@@ -147,91 +208,30 @@ export default async function DashboardPage() {
         dueReviewCount={totalDueCount}
       />
 
-      {/* Learning Loop insight — only for users with 15+ words */}
-      {dashboardInsight && (
-        <DashboardInsight insight={dashboardInsight} />
-      )}
-
-      {/* Main actions */}
-      {(() => {
-        const hasReviews = totalDueCount > 0;
-        const hasNextScene = !!nextScene;
-
-        if (!hasReviews && !hasNextScene) {
-          return (
-            <section>
-              <Card className="animate-fade-in text-center py-6">
-                <h3 className="text-foreground font-semibold text-lg">All caught up!</h3>
-                <p className="text-sm text-text-secondary mt-1 mb-4">
-                  You&apos;ve mastered everything so far.
-                </p>
-                <div className="flex gap-2 justify-center">
-                  <Button href="/tutor" size="sm">Practice with Tutor</Button>
-                  <Button href="/paths" variant="secondary" size="sm">Explore More Paths</Button>
-                </div>
-              </Card>
-            </section>
-          );
-        }
-
-        return (
-          <>
-            {hasReviews && (
-              <section>
-                <h2 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">
-                  Review
-                </h2>
-                <QuickReviewCard dueCount={totalDueCount} />
-              </section>
-            )}
-
-            {/* Tutor Nudge */}
-            <section>
-              <TutorNudgeCard languageId={languageId} />
-            </section>
-
-            {hasNextScene && (
-              <section>
-                <h2 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">
-                  Continue Learning
-                </h2>
-                <ContinueLearningCard
-                  sceneTitle={nextScene!.title}
-                  sceneId={nextScene!.id}
-                  progress={currentSceneProgress}
-                  currentPhase={nextScene!.scene_type === 'dialogue' ? nextScene!.current_phase : undefined}
-                  sceneIndex={currentSceneIndex}
-                  totalScenes={sceneMastery.length}
-                  sceneDots={sceneMastery.map(s => ({ id: s.id, completed: isSceneComplete(s) }))}
-                  anchorImageUrl={nextScene!.anchor_image_url}
-                />
-              </section>
-            )}
-          </>
-        );
-      })()}
+      {/* Learning-loop insight */}
+      {dashboardInsight && <DashboardInsight insight={dashboardInsight} />}
 
       {/* Progress Stats */}
       <section>
-        <h2 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">
-          Your Progress
+        <h2 className="text-[10.5px] font-extrabold text-[color:var(--text-secondary)] uppercase tracking-[0.16em] mb-2 px-1">
+          Your progress
         </h2>
         <ProgressChart distribution={masteryDist} streak={streak} wordsByStatus={wordsByStatus} />
       </section>
 
       {/* Tutor Insights */}
       <section>
-        <h2 className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">
+        <h2 className="text-[10.5px] font-extrabold text-[color:var(--text-secondary)] uppercase tracking-[0.16em] mb-2 px-1">
           Tutor
         </h2>
         <TutorInsights languageId={languageId} />
       </section>
 
-      {/* Admin link — only visible to admin users */}
+      {/* Admin link */}
       {isAdmin && (
         <Link
           href="/admin"
-          className="block text-center text-sm text-text-secondary hover:text-foreground transition-colors"
+          className="block text-center text-sm text-[color:var(--text-secondary)] hover:text-[color:var(--foreground)] transition-colors py-2"
         >
           Admin Dashboard
         </Link>

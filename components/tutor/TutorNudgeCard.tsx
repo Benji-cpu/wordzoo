@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Card } from '@/components/ui/Card';
+import { InsightCard } from '@/components/ui/InsightCard';
 import { InlineMarkdown } from '@/components/ui/InlineMarkdown';
 
 interface NudgeData {
@@ -50,31 +50,23 @@ export function TutorNudgeCard({ languageId }: TutorNudgeCardProps) {
   if (!nudge) return null;
 
   return (
-    <Card className="animate-fade-in">
-      <div className="flex items-start gap-3">
-        <div className="w-10 h-10 rounded-full bg-accent-default/20 flex items-center justify-center flex-shrink-0">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-accent-default">
-            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-          </svg>
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm text-foreground"><InlineMarkdown text={nudge.message} /></p>
-          <div className="flex gap-2 mt-2">
-            <Link
-              href={`/tutor?mode=${nudge.suggestedMode}`}
-              className="px-3 py-1.5 rounded-lg bg-accent-default text-white text-xs font-medium hover:bg-accent-default/90 transition-colors"
-            >
-              Start
-            </Link>
-            <button
-              onClick={handleDismiss}
-              className="px-3 py-1.5 rounded-lg bg-card-surface border border-card-border text-text-secondary text-xs hover:text-foreground transition-colors"
-            >
-              Dismiss
-            </button>
-          </div>
-        </div>
-      </div>
-    </Card>
+    <div className="relative group">
+      <Link
+        href={`/tutor?mode=${nudge.suggestedMode}`}
+        className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nav-active)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)] rounded-[18px] active:scale-[0.99] transition-transform"
+      >
+        <InsightCard foxPose="thinking">
+          <InlineMarkdown text={nudge.message} />
+        </InsightCard>
+      </Link>
+      <button
+        type="button"
+        onClick={handleDismiss}
+        aria-label="Dismiss nudge"
+        className="absolute top-2 right-2 w-6 h-6 rounded-full text-[color:var(--text-secondary)] opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity flex items-center justify-center text-xs hover:text-[color:var(--foreground)]"
+      >
+        ×
+      </button>
+    </div>
   );
 }
