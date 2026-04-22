@@ -1,64 +1,75 @@
-import Link from 'next/link';
-import { Card } from '@/components/ui/Card';
-import { ProgressBar } from '@/components/ui/ProgressBar';
-import { Badge } from '@/components/ui/Badge';
-import { ThumbButton } from '@/components/ui/ThumbButton';
+import { HabitatCard } from '@/components/ui/HabitatCard';
+import type { HabitatLanguage } from '@/lib/utils/language-habitat';
 import type { Path } from '@/types/database';
 
 interface PathCardProps {
   path: Path;
   wordCount: number;
   wordsCompleted: number;
+  /** 0–100 integer percent (kept as percent for back-compat with callers). */
   progress: number;
   scenesCompleted?: number;
   totalScenes?: number;
   nextSceneId?: string | null;
+  language: HabitatLanguage;
 }
 
-function tierLabel(type: Path['type']): string {
+function iconForType(type: Path['type']): string {
   switch (type) {
-    case 'premade': return 'Premade';
-    case 'custom': return 'Custom';
-    case 'travel': return 'Travel';
-    case 'studio': return 'Studio';
+    case 'travel':
+      return '✈️';
+    case 'studio':
+      return '🎬';
+    case 'custom':
+      return '✦';
+    case 'premade':
+    default:
+      return '📚';
   }
 }
 
-export function PathCard({ path, wordCount, wordsCompleted, progress, scenesCompleted, totalScenes, nextSceneId }: PathCardProps) {
+function labelForPath(path: Path): string {
+  switch (path.type) {
+    case 'travel':
+      return 'Travel pack';
+    case 'studio':
+      return 'Studio path';
+    case 'custom':
+      return 'Custom path';
+    case 'premade':
+    default:
+      return 'Path';
+  }
+}
+
+export function PathCard({
+  path,
+  wordCount,
+  wordsCompleted,
+  progress,
+  scenesCompleted,
+  totalScenes,
+  nextSceneId,
+  language,
+}: PathCardProps) {
+  const trailing =
+    totalScenes != null && scenesCompleted != null
+      ? `${scenesCompleted}/${totalScenes} scenes`
+      : `${wordsCompleted}/${wordCount} words`;
+
+  // Tap anywhere on the card → continue into the next scene when we have one;
+  // otherwise fall back to the path detail page.
+  const href = nextSceneId && progress < 100 ? `/learn/${nextSceneId}` : `/paths/${path.id}`;
+
   return (
-    <Card className="animate-fade-in relative">
-      <Link
-        href={`/paths/${path.id}`}
-        aria-label={path.title}
-        className="absolute inset-0 z-0 rounded-[inherit]"
-      />
-      <div className="relative z-10 pointer-events-none">
-        <div className="flex items-start justify-between mb-2 gap-2">
-          <h3 className="text-base font-semibold text-foreground min-w-0 truncate">{path.title}</h3>
-          <Badge variant={path.type === 'travel' ? 'tier' : 'default'}>
-            {tierLabel(path.type)}
-          </Badge>
-        </div>
-        {path.description && (
-          <p className="text-sm text-text-secondary mb-3">{path.description}</p>
-        )}
-        <ProgressBar value={progress} accentColor="bg-accent-id" height="sm" />
-        <p className="text-xs text-text-secondary mt-2">
-          {totalScenes != null && scenesCompleted != null
-            ? `${scenesCompleted}/${totalScenes} scenes · ${wordsCompleted}/${wordCount} words`
-            : `${wordsCompleted}/${wordCount} words`}
-        </p>
-        {nextSceneId && progress < 100 && (
-          <Link
-            href={`/learn/${nextSceneId}`}
-            className="pointer-events-auto block mt-3"
-          >
-            <ThumbButton variant="primary" size="md" sound={false} haptic={false}>
-              {progress > 0 ? 'Continue' : 'Start'} →
-            </ThumbButton>
-          </Link>
-        )}
-      </div>
-    </Card>
+    <HabitatCard
+      icon={iconForType(path.type)}
+      label={labelForPath(path)}
+      title={path.title}
+      progress={progress / 100}
+      trailing={trailing}
+      href={href}
+      language={language}
+    />
   );
 }

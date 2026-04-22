@@ -1,27 +1,22 @@
-import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
+import { HabitatCard } from '@/components/ui/HabitatCard';
+import type { HabitatLanguage } from '@/lib/utils/language-habitat';
 import type { Path } from '@/types/database';
 
 interface TravelPackCardProps {
   path: Path;
   wordCount: number;
+  language: HabitatLanguage;
 }
 
-export function TravelPackCard({ path, wordCount }: TravelPackCardProps) {
+export function TravelPackCard({ path, wordCount, language }: TravelPackCardProps) {
   return (
-    <Card className="animate-fade-in">
-      <div className="flex items-center gap-3">
-        <div className="w-12 h-12 rounded-xl bg-accent-id/10 flex items-center justify-center text-xl">
-          ✈️
-        </div>
-        <div className="flex-1 min-w-0">
-          <h3 className="text-base font-semibold text-foreground">{path.title}</h3>
-          {path.description && (
-            <p className="text-sm text-text-secondary truncate">{path.description}</p>
-          )}
-        </div>
-        <Badge variant="tier">{wordCount} words</Badge>
-      </div>
-    </Card>
+    <HabitatCard
+      icon="✈️"
+      label="Travel pack"
+      title={path.title}
+      trailing={`${wordCount} words`}
+      href={`/paths/${path.id}`}
+      language={language}
+    />
   );
 }

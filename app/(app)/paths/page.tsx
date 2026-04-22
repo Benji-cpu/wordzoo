@@ -12,7 +12,8 @@ import type { SceneMasteryRow } from '@/lib/db/queries';
 import { PathCard } from '@/components/learn/PathCard';
 import { TravelPackCard } from '@/components/learn/TravelPackCard';
 import { PathsClientSection } from './PathsClientSection';
-import type { Path } from '@/types/database';
+import { habitatFromLanguageCode, type HabitatLanguage } from '@/lib/utils/language-habitat';
+import type { Path, Language } from '@/types/database';
 
 function isSceneComplete(s: SceneMasteryRow): boolean {
   return s.scene_type === 'dialogue' ? s.scene_completed : s.mastered_words >= s.total_words;
@@ -23,8 +24,8 @@ export default async function PathsPage() {
   if (!session?.user?.id) redirect('/login');
   const userId = session.user.id;
 
-  // Determine default language from active path or first language
   const languages = await getAllLanguages();
+  const languageById = new Map<string, Language>(languages.map((l) => [l.id, l]));
   const activePath = await getUserActivePath(userId);
   const activeLanguageId = activePath?.path_language_id ?? languages[0]?.id ?? null;
 
@@ -38,32 +39,30 @@ export default async function PathsPage() {
     }
   }
 
-  // Deduplicate (in case a path shows up under multiple queries)
   const seen = new Set<string>();
-  const uniquePaths = allPathsRaw.filter(p => {
+  const uniquePaths = allPathsRaw.filter((p) => {
     if (seen.has(p.id)) return false;
     seen.add(p.id);
     return true;
   });
 
-  // Fetch stats+mastery per path, isolating failures so one bad path can't break the page
   const EMPTY_STATS = { total_words: 0, words_learned: 0, words_mastered: 0 };
   const [statsResults, masteryResults] = await Promise.all([
     Promise.all(
-      uniquePaths.map(p =>
-        getPathWordStats(userId, p.id).catch(e => {
+      uniquePaths.map((p) =>
+        getPathWordStats(userId, p.id).catch((e) => {
           console.error(`PathsPage: getPathWordStats failed for ${p.id}:`, e);
           return EMPTY_STATS;
-        })
-      )
+        }),
+      ),
     ),
     Promise.all(
-      uniquePaths.map(p =>
-        getSceneMasteryForPath(userId, p.id).catch(e => {
+      uniquePaths.map((p) =>
+        getSceneMasteryForPath(userId, p.id).catch((e) => {
           console.error(`PathsPage: getSceneMasteryForPath failed for ${p.id}:`, e);
           return [] as SceneMasteryRow[];
-        })
-      )
+        }),
+      ),
     ),
   ]);
 
@@ -71,30 +70,35 @@ export default async function PathsPage() {
     const mastery = masteryResults[i];
     const scenesCompleted = mastery.filter(isSceneComplete).length;
     const totalScenes = mastery.length;
-    const nextScene = mastery.find(s => !isSceneComplete(s));
+    const nextScene = mastery.find((s) => !isSceneComplete(s));
+    const language: HabitatLanguage = habitatFromLanguageCode(languageById.get(path.language_id)?.code);
     return {
       path,
       wordCount: statsResults[i].total_words,
       wordsCompleted: statsResults[i].words_learned,
-      progress: statsResults[i].total_words > 0
-        ? Math.round((statsResults[i].words_learned / statsResults[i].total_words) * 100)
-        : 0,
+      progress:
+        statsResults[i].total_words > 0
+          ? Math.round((statsResults[i].words_learned / statsResults[i].total_words) * 100)
+          : 0,
       scenesCompleted,
       totalScenes,
       nextSceneId: nextScene?.id ?? null,
+      language,
     };
   });
 
-  const premade = pathsWithStats.filter(p => p.path.type === 'premade');
-  const travel = pathsWithStats.filter(p => p.path.type === 'travel');
-  const custom = pathsWithStats.filter(p => p.path.type === 'custom');
-  const studio = pathsWithStats.filter(p => p.path.type === 'studio');
+  const premade = pathsWithStats.filter((p) => p.path.type === 'premade');
+  const travel = pathsWithStats.filter((p) => p.path.type === 'travel');
+  const custom = pathsWithStats.filter((p) => p.path.type === 'custom');
+  const studio = pathsWithStats.filter((p) => p.path.type === 'studio');
 
   return (
     <div className="max-w-lg lg:max-w-5xl mx-auto space-y-6 pb-24">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Learning Paths</h1>
-        <p className="text-sm text-text-secondary mt-1">
+        <h1 className="text-2xl font-extrabold text-[color:var(--foreground)] tracking-tight">
+          Learning paths
+        </h1>
+        <p className="text-sm text-[color:var(--text-secondary)] font-semibold mt-1">
           Choose a path to start learning
         </p>
       </div>
@@ -102,11 +106,11 @@ export default async function PathsPage() {
       {/* Premade Paths */}
       {premade.length > 0 && (
         <section>
-          <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wider mb-3">
-            Premade Paths
+          <h2 className="text-[10.5px] font-extrabold text-[color:var(--text-secondary)] uppercase tracking-[0.16em] mb-3 px-1">
+            Premade paths
           </h2>
           <div className="space-y-3 lg:grid lg:grid-cols-2 lg:gap-3 lg:space-y-0">
-            {premade.map(p => (
+            {premade.map((p) => (
               <PathCard
                 key={p.path.id}
                 path={p.path}
@@ -116,6 +120,7 @@ export default async function PathsPage() {
                 scenesCompleted={p.scenesCompleted}
                 totalScenes={p.totalScenes}
                 nextSceneId={p.nextSceneId}
+                language={p.language}
               />
             ))}
           </div>
@@ -125,12 +130,17 @@ export default async function PathsPage() {
       {/* Travel Packs */}
       {travel.length > 0 && (
         <section>
-          <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wider mb-3">
-            Travel Packs
+          <h2 className="text-[10.5px] font-extrabold text-[color:var(--text-secondary)] uppercase tracking-[0.16em] mb-3 px-1">
+            Travel packs
           </h2>
           <div className="space-y-3 lg:grid lg:grid-cols-2 lg:gap-3 lg:space-y-0">
-            {travel.map(p => (
-              <TravelPackCard key={p.path.id} path={p.path} wordCount={p.wordCount} />
+            {travel.map((p) => (
+              <TravelPackCard
+                key={p.path.id}
+                path={p.path}
+                wordCount={p.wordCount}
+                language={p.language}
+              />
             ))}
           </div>
         </section>
@@ -139,11 +149,11 @@ export default async function PathsPage() {
       {/* Studio Paths */}
       {studio.length > 0 && (
         <section>
-          <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wider mb-3">
-            Studio Paths
+          <h2 className="text-[10.5px] font-extrabold text-[color:var(--text-secondary)] uppercase tracking-[0.16em] mb-3 px-1">
+            Studio paths
           </h2>
           <div className="space-y-3 lg:grid lg:grid-cols-2 lg:gap-3 lg:space-y-0">
-            {studio.map(p => (
+            {studio.map((p) => (
               <PathCard
                 key={p.path.id}
                 path={p.path}
@@ -153,6 +163,7 @@ export default async function PathsPage() {
                 scenesCompleted={p.scenesCompleted}
                 totalScenes={p.totalScenes}
                 nextSceneId={p.nextSceneId}
+                language={p.language}
               />
             ))}
           </div>
@@ -161,12 +172,12 @@ export default async function PathsPage() {
 
       {/* Custom Paths */}
       <section>
-        <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wider mb-3">
-          Custom Paths
+        <h2 className="text-[10.5px] font-extrabold text-[color:var(--text-secondary)] uppercase tracking-[0.16em] mb-3 px-1">
+          Custom paths
         </h2>
         {custom.length > 0 && (
           <div className="space-y-3 mb-3 lg:grid lg:grid-cols-2 lg:gap-3 lg:space-y-0">
-            {custom.map(p => (
+            {custom.map((p) => (
               <PathCard
                 key={p.path.id}
                 path={p.path}
@@ -176,22 +187,27 @@ export default async function PathsPage() {
                 scenesCompleted={p.scenesCompleted}
                 totalScenes={p.totalScenes}
                 nextSceneId={p.nextSceneId}
+                language={p.language}
               />
             ))}
           </div>
         )}
         <Link
           href={`/paths/studio${activeLanguageId ? `?languageId=${activeLanguageId}` : ''}`}
-          className="block w-full p-4 rounded-xl border-2 border-dashed border-accent-default/30 hover:border-accent-default/60 bg-accent-default/5 hover:bg-accent-default/10 transition-all text-center group"
+          className="block w-full p-4 rounded-[20px] border-2 border-dashed text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nav-active)]"
+          style={{
+            borderColor: 'color-mix(in srgb, var(--accent-indonesian) 45%, transparent)',
+            background: 'color-mix(in srgb, var(--accent-indonesian) 6%, var(--card-surface))',
+          }}
         >
-          <div className="flex items-center justify-center gap-2 text-accent-default">
+          <div className="flex items-center justify-center gap-2 text-[color:var(--accent-indonesian)]">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 20h9" />
               <path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
             </svg>
-            <span className="font-medium">Path Studio</span>
+            <span className="font-extrabold">Path Studio</span>
           </div>
-          <p className="text-xs text-text-secondary mt-1">
+          <p className="text-xs text-[color:var(--text-secondary)] font-semibold mt-1">
             Co-create rich dialogue paths with AI
           </p>
         </Link>

@@ -36,6 +36,7 @@ export default async function PathDetailPage({ params }: PageProps) {
     <PathDetailClient
       path={path}
       languageName={language?.name ?? 'Unknown'}
+      languageCode={language?.code ?? null}
       sceneMastery={sceneMastery}
       wordStats={wordStats}
     />
