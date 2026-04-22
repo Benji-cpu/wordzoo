@@ -346,7 +346,7 @@ export interface SessionEvaluation {
   tip: string;
 }
 
-export type SceneFlowPhase = 'dialogue' | 'phrases' | 'vocabulary' | 'patterns' | 'affixes' | 'summary';
+export type SceneFlowPhase = 'dialogue' | 'phrases' | 'vocabulary' | 'summary';
 
 export interface UserSceneProgress {
   id: string;

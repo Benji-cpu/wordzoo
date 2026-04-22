@@ -18,10 +18,13 @@ function renderBridgeSentence(sentence: string) {
 
 interface PhraseBreakdownProps {
   phrase: ScenePhraseWithMnemonics;
-  onContinue: () => void;
+  onContinue?: () => void;
+  /** When true, renders without the outer Card wrapper and without the tap-to-continue
+   *  affordance — for embedding inside another surface like PhraseQuiz. */
+  embedded?: boolean;
 }
 
-export function PhraseBreakdown({ phrase, onContinue }: PhraseBreakdownProps) {
+export function PhraseBreakdown({ phrase, onContinue, embedded = false }: PhraseBreakdownProps) {
   const [expandedWordId, setExpandedWordId] = useState<string | null>(null);
   const [hasExpandedAny, setHasExpandedAny] = useState(false);
 
@@ -33,9 +36,11 @@ export function PhraseBreakdown({ phrase, onContinue }: PhraseBreakdownProps) {
     setHasExpandedAny(true);
   };
 
-  return (
-    <Card className="text-center py-8 animate-slide-up" onClick={onContinue}>
-      <p className="text-xs text-text-secondary uppercase tracking-wider mb-4">Key Phrase</p>
+  const inner = (
+    <>
+      {!embedded && (
+        <p className="text-xs text-text-secondary uppercase tracking-wider mb-4">Key Phrase</p>
+      )}
 
       <h2 className="text-3xl font-bold text-accent-id mb-2">{phrase.text_target}</h2>
       <p className="text-lg text-foreground mb-2">{phrase.text_en}</p>
@@ -141,7 +146,21 @@ export function PhraseBreakdown({ phrase, onContinue }: PhraseBreakdownProps) {
         </p>
       )}
 
-      <p className="text-sm text-text-secondary mt-6">Tap to continue</p>
+      {!embedded && <p className="text-sm text-text-secondary mt-6">Tap to continue</p>}
+    </>
+  );
+
+  if (embedded) {
+    return (
+      <div className="text-center py-4 animate-slide-up" onClick={(e) => e.stopPropagation()}>
+        {inner}
+      </div>
+    );
+  }
+
+  return (
+    <Card className="text-center py-8 animate-slide-up" onClick={onContinue}>
+      {inner}
     </Card>
   );
 }

@@ -6,7 +6,6 @@ import { SceneFlowHeader } from '@/components/learn/SceneFlowHeader';
 import { SceneShell } from '@/components/learn/SceneShell';
 import { DialoguePlayer } from '@/components/learn/DialoguePlayer';
 import { PhraseCard } from '@/components/learn/PhraseCard';
-import { PhraseBreakdown } from '@/components/learn/PhraseBreakdown';
 import { PhraseQuiz } from '@/components/learn/PhraseQuiz';
 import { WordCard } from '@/components/learn/WordCard';
 import { MnemonicCard } from '@/components/learn/MnemonicCard';
@@ -42,7 +41,7 @@ interface SceneFlowClientProps {
 type FlowState =
   | { phase: 'scene-intro' }
   | { phase: 'dialogue'; lineIndex: number }
-  | { phase: 'phrases'; phraseIndex: number; step: 'show' | 'breakdown' | 'quiz' }
+  | { phase: 'phrases'; phraseIndex: number; step: 'show' | 'quiz' }
   | { phase: 'vocabulary'; wordIndex: number; step: 'word' | 'mnemonic' | 'quiz' }
   | { phase: 'summary' };
 
@@ -94,13 +93,6 @@ function computePreviousState(current: FlowState, ctx: FlowContext & { hasAnchor
 
     case 'phrases': {
       if (current.step === 'quiz') {
-        const phrase = ctx.phrases[current.phraseIndex];
-        if (phrase?.words.some((w) => w.keyword_text !== null)) {
-          return { phase: 'phrases', phraseIndex: current.phraseIndex, step: 'breakdown' };
-        }
-        return { phase: 'phrases', phraseIndex: current.phraseIndex, step: 'show' };
-      }
-      if (current.step === 'breakdown') {
         return { phase: 'phrases', phraseIndex: current.phraseIndex, step: 'show' };
       }
       // step === 'show'
@@ -332,17 +324,7 @@ export function SceneFlowClient({
   // --- Phrases Phase ---
   const handlePhraseContinue = useCallback(() => {
     if (state.phase !== 'phrases') return;
-    const phrase = phrases[state.phraseIndex];
-    // If phrase has words with mnemonics, show breakdown; otherwise skip to quiz
-    if (phrase?.words.some((w) => w.keyword_text !== null)) {
-      setState({ phase: 'phrases', phraseIndex: state.phraseIndex, step: 'breakdown' });
-    } else {
-      setState({ phase: 'phrases', phraseIndex: state.phraseIndex, step: 'quiz' });
-    }
-  }, [state, phrases]);
-
-  const handleBreakdownContinue = useCallback(() => {
-    if (state.phase !== 'phrases') return;
+    // show → quiz. Any breakdown is revealed inline inside PhraseQuiz after a correct answer.
     setState({ phase: 'phrases', phraseIndex: state.phraseIndex, step: 'quiz' });
   }, [state]);
 
@@ -476,7 +458,6 @@ export function SceneFlowClient({
         if (state.phase === 'vocabulary' && state.step === 'word') handleWordContinue();
         else if (state.phase === 'vocabulary' && state.step === 'mnemonic') handleMnemonicContinue();
         else if (state.phase === 'phrases' && state.step === 'show') handlePhraseContinue();
-        else if (state.phase === 'phrases' && state.step === 'breakdown') handleBreakdownContinue();
       }
     }
     document.addEventListener('touchstart', onTouchStart, { passive: true });
@@ -485,7 +466,7 @@ export function SceneFlowClient({
       document.removeEventListener('touchstart', onTouchStart);
       document.removeEventListener('touchend', onTouchEnd);
     };
-  }, [state, handleWordContinue, handleMnemonicContinue, handlePhraseContinue, handleBreakdownContinue]);
+  }, [state, handleWordContinue, handleMnemonicContinue, handlePhraseContinue]);
 
   // Generate phrase distractors from other phrases in the same scene
   const getPhraseDistractors = useCallback((targetPhrase: string): string[] => {
@@ -505,7 +486,7 @@ export function SceneFlowClient({
         return dialogues.length > 1 ? state.lineIndex / (dialogues.length - 1) : 0;
       case 'phrases':
         if (phrases.length === 0) return 0;
-        return (state.phraseIndex + substepFraction(state.step, ['show', 'breakdown', 'quiz'])) / phrases.length;
+        return (state.phraseIndex + substepFraction(state.step, ['show', 'quiz'])) / phrases.length;
       case 'vocabulary':
         if (words.length === 0) return 0;
         return (state.wordIndex + substepFraction(state.step, ['word', 'mnemonic', 'quiz'])) / words.length;
@@ -575,17 +556,13 @@ export function SceneFlowClient({
             phrase={phrases[state.phraseIndex]}
             onContinue={handlePhraseContinue}
           />
-        ) : state.step === 'breakdown' ? (
-          <PhraseBreakdown
-            phrase={phrases[state.phraseIndex]}
-            onContinue={handleBreakdownContinue}
-          />
         ) : (
           <PhraseQuiz
             key={phrases[state.phraseIndex].id}
             promptText={phrases[state.phraseIndex].text_en}
             correctAnswer={phrases[state.phraseIndex].text_target}
             distractors={getPhraseDistractors(phrases[state.phraseIndex].text_target)}
+            phrase={phrases[state.phraseIndex]}
             onCorrect={handlePhraseQuizCorrect}
           />
         )

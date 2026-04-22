@@ -181,6 +181,8 @@ export type AdminFeedbackQuery = z.infer<typeof AdminFeedbackQuerySchema>;
 export type AdminMnemonicOverrideInput = z.infer<typeof AdminMnemonicOverrideSchema>;
 
 // Scene Flow Progress
+// Accept legacy 'patterns' / 'affixes' / 'conversation' from older clients so
+// progress POSTs don't 400 — the route normalizes them forward to 'summary'.
 export const SceneFlowPhaseEnum = z.enum(['dialogue', 'phrases', 'vocabulary', 'patterns', 'affixes', 'conversation', 'summary']);
 
 export const UpdateSceneProgressSchema = z.object({
