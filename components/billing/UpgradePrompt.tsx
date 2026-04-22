@@ -31,10 +31,6 @@ const FEATURE_MESSAGES: Record<string, { title: string; description: string }> =
     title: 'Premium Feature',
     description: 'Custom paths are available with a Premium subscription.',
   },
-  offline_download: {
-    title: 'Premium Feature',
-    description: 'Offline downloads are available with a Premium subscription.',
-  },
 };
 
 export function UpgradePrompt({ feature, message, compact = false }: UpgradePromptProps) {

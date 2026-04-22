@@ -28,7 +28,6 @@ const FREE_LIMITS: Record<string, { field: string; limit: number }> = {
 
 const PREMIUM_ONLY_FEATURES = new Set<string>([
   'custom_path',
-  'offline_download',
 ]);
 
 const UPGRADE_MESSAGES: Record<string, string> = {
@@ -37,7 +36,6 @@ const UPGRADE_MESSAGES: Record<string, string> = {
   hands_free: 'You\'ve reached your daily hands-free time limit. Upgrade for unlimited hands-free learning!',
   regenerate_mnemonic: 'You\'ve used all your free mnemonic regenerations today. Upgrade for unlimited creativity!',
   custom_path: 'Custom paths are a Premium feature. Upgrade to create personalized learning paths!',
-  offline_download: 'Offline downloads are a Premium feature. Upgrade to learn anywhere!',
   studio_path: 'Create rich dialogue paths with Path Studio! $2.99 per path, or upgrade to Premium for unlimited.',
 };
 

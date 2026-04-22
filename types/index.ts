@@ -2,4 +2,3 @@ export * from './database';
 export * from './api';
 export * from './ai';
 export * from './audio';
-export * from './offline';

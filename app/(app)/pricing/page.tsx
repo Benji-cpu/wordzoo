@@ -25,7 +25,6 @@ const PREMIUM_FEATURES = [
   'Unlimited hands-free mode',
   'Unlimited regenerations',
   'Custom learning paths',
-  'Offline downloads',
   'Priority support',
 ];
 

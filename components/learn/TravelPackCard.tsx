@@ -1,6 +1,5 @@
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import { OfflineBadge } from '@/components/offline/OfflineBadge';
 import type { Path } from '@/types/database';
 
 interface TravelPackCardProps {
@@ -21,7 +20,6 @@ export function TravelPackCard({ path, wordCount }: TravelPackCardProps) {
             <p className="text-sm text-text-secondary truncate">{path.description}</p>
           )}
         </div>
-        <OfflineBadge pathId={path.id} />
         <Badge variant="tier">{wordCount} words</Badge>
       </div>
     </Card>

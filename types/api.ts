@@ -133,21 +133,6 @@ export type BillingFeature = z.infer<typeof BillingFeatureEnum>;
 export type CheckAccessInput = z.infer<typeof CheckAccessSchema>;
 export type IncrementUsageInput = z.infer<typeof IncrementUsageSchema>;
 
-// Offline sync
-export const SyncEventSchema = z.object({
-  id: z.string().uuid(),
-  user_id: z.string().uuid(),
-  word_id: z.string().uuid(),
-  direction: ReviewDirectionEnum,
-  rating: ReviewRatingEnum,
-  reviewed_at: z.string(),
-  created_at: z.string(),
-});
-
-export const BatchSyncSchema = z.object({
-  events: z.array(SyncEventSchema),
-});
-
 export const ShareImageQuerySchema = z.object({
   format: z.enum(['square', 'story']).optional().default('square'),
 });
