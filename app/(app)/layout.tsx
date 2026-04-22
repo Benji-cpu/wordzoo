@@ -27,18 +27,20 @@ export default async function AppLayout({
             <div className="flex items-center gap-2 flex-shrink-0">
               <OfflineIndicator />
               <ThemeToggle />
-              {session.user.image ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={session.user.image}
-                  alt=""
-                  className="w-8 h-8 rounded-full border border-card-border"
-                />
-              ) : (
-                <div className="w-8 h-8 rounded-full bg-card-surface border border-card-border flex items-center justify-center text-xs text-text-secondary">
-                  {session.user.email?.[0]?.toUpperCase()}
-                </div>
-              )}
+              <a
+                href="/settings"
+                aria-label="Settings"
+                className="w-8 h-8 rounded-full border border-[color:var(--card-border)] overflow-hidden flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nav-active)]"
+              >
+                {session.user.image ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={session.user.image} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-xs text-[color:var(--text-secondary)] font-bold">
+                    {session.user.email?.[0]?.toUpperCase()}
+                  </span>
+                )}
+              </a>
             </div>
           </nav>
           <div id="header-progress-slot" />

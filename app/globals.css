@@ -8,21 +8,39 @@
 
 :root {
   /* Colors — warm neutrals (Phase 2) */
-  --background: #FAFAF8;
-  --foreground: #1C1917;
-  --text-secondary: #78716C;
+  --background: #FDF8EE;
+  --foreground: #2A2013;
+  --text-secondary: #8C7A62;
   --card-surface: #FFFFFF;
-  --card-border: rgba(0, 0, 0, 0.06);
+  --card-border: rgba(138, 104, 66, 0.08);
   --surface-raised: #FFFFFF;
-  --surface-inset: #F5F5F0;
-  --border-subtle: rgba(0, 0, 0, 0.04);
-  --border-default: rgba(0, 0, 0, 0.08);
+  --surface-inset: #FFF4E3;
+  --border-subtle: rgba(138, 104, 66, 0.05);
+  --border-default: rgba(138, 104, 66, 0.12);
+  --surface-warm: #FFF4E3;
 
-  /* Accents */
-  --accent-indonesian: #F97316;
-  --accent-spanish: #EF4444;
-  --accent-japanese: #F472B6;
+  /* Nav — active pill (NV2) */
+  --nav-active: #FF8A3D;
+  --nav-active-soft: #FFF0E0;
+  --nav-inactive: #A89778;
+
+  /* Accents — refined to Warm Mid palette */
+  --accent-indonesian: #D56F1F;
+  --accent-indonesian-mid: #F5A65B;
+  --accent-indonesian-soft: #FFCBA0;
+  --accent-spanish: #993D2C;
+  --accent-spanish-mid: #C86B54;
+  --accent-spanish-soft: #E49684;
+  --accent-japanese: #854966;
+  --accent-japanese-mid: #B97094;
+  --accent-japanese-soft: #D6A0BA;
   --accent-default: #3B82F6;
+
+  /* Habitat gradients (language-themed card backgrounds) */
+  --habitat-indonesian: linear-gradient(135deg, #D56F1F 0%, #F5A65B 55%, #FFCBA0 100%);
+  --habitat-spanish: linear-gradient(135deg, #993D2C 0%, #C86B54 50%, #E49684 100%);
+  --habitat-japanese: linear-gradient(135deg, #854966 0%, #B97094 50%, #D6A0BA 100%);
+  --habitat-default: linear-gradient(135deg, #D56F1F 0%, #F5A65B 55%, #FFCBA0 100%);
 
   /* Semantic colors (Phase 2) */
   --color-success: #22C55E;
@@ -95,15 +113,21 @@
 }
 
 .dark {
-  --background: #141210;
-  --foreground: #F5F5F0;
-  --text-secondary: #A8A29E;
-  --card-surface: #1C1A17;
-  --card-border: rgba(255, 255, 255, 0.08);
-  --surface-raised: #1C1A17;
-  --surface-inset: #0F0E0C;
-  --border-subtle: rgba(255, 255, 255, 0.04);
-  --border-default: rgba(255, 255, 255, 0.08);
+  --background: #171210;
+  --foreground: #F5EFDF;
+  --text-secondary: #B5A388;
+  --card-surface: #221C17;
+  --card-border: rgba(255, 220, 180, 0.10);
+  --surface-raised: #221C17;
+  --surface-inset: #100C0A;
+  --border-subtle: rgba(255, 220, 180, 0.05);
+  --border-default: rgba(255, 220, 180, 0.12);
+  --surface-warm: #1C1612;
+
+  /* Nav dark */
+  --nav-active: #FF8A3D;
+  --nav-active-soft: rgba(255, 138, 61, 0.15);
+  --nav-inactive: #8A7A63;
 
   --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.2);
   --shadow-card-hover: 0 2px 8px rgba(0, 0, 0, 0.3);
@@ -133,8 +157,13 @@
   --color-fox-soft: var(--color-fox-soft);
   --color-fox-deep: var(--color-fox-deep);
   --color-streak: var(--color-streak-fire);
+  --color-nav-active: var(--nav-active);
+  --color-nav-active-soft: var(--nav-active-soft);
+  --color-nav-inactive: var(--nav-inactive);
+  --color-surface-warm: var(--surface-warm);
   --font-sans: var(--font-nunito);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-fraunces);
 
   --animate-fade-in: fade-in 0.25s var(--ease-default);
   --animate-slide-up: slide-up 0.25s var(--ease-default);
@@ -181,6 +210,20 @@ body {
   color: var(--foreground);
   font-family: var(--font-nunito), system-ui, -apple-system, sans-serif;
 }
+
+/* Warm display serif — used only on words being learned and scene titles */
+.font-display {
+  font-family: var(--font-fraunces), 'Fraunces', Charter, Georgia, serif;
+  font-style: italic;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+}
+
+/* Habitat card backgrounds (language-themed) */
+.habitat-bg-id { background: var(--habitat-indonesian); }
+.habitat-bg-es { background: var(--habitat-spanish); }
+.habitat-bg-ja { background: var(--habitat-japanese); }
+.habitat-bg-default { background: var(--habitat-default); }
 
 /* Solid card surface — replaces glassmorphism (Phase 4) */
 .glass-card {

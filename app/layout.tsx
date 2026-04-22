@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Nunito } from "next/font/google";
+import { Nunito, Fraunces } from "next/font/google";
 import { Geist_Mono } from "next/font/google";
 import { AuthSessionProvider } from "@/components/auth/session-provider";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
@@ -10,6 +10,14 @@ const nunito = Nunito({
   variable: "--font-nunito",
   subsets: ["latin", "latin-ext"],
   weight: ["400", "500", "600", "700", "800"],
+});
+
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  style: ["italic", "normal"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
@@ -35,7 +43,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${nunito.variable} ${geistMono.variable} antialiased`}
+        className={`${nunito.variable} ${fraunces.variable} ${geistMono.variable} antialiased`}
       >
         <AuthSessionProvider>
           <ThemeProvider>

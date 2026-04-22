@@ -3,47 +3,18 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useKeyboardVisible } from '@/lib/hooks/useKeyboardVisible';
+import { NavIcon, type NavIconName } from './NavIcons';
 
-const tabs = [
-  {
-    href: '/dashboard',
-    label: 'Home',
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
-        <polyline points="9 22 9 12 15 12 15 22" />
-      </svg>
-    ),
-  },
-  {
-    href: '/paths',
-    label: 'Paths',
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M4 19.5A2.5 2.5 0 016.5 17H20" />
-        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />
-      </svg>
-    ),
-  },
-  {
-    href: '/review',
-    label: 'Review',
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="2" y="4" width="20" height="16" rx="2" />
-        <path d="M12 8v8M8 12h8" />
-      </svg>
-    ),
-  },
-  {
-    href: '/tutor',
-    label: 'Tutor',
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-      </svg>
-    ),
-  },
+type Tab =
+  | { kind: 'link'; href: string; label: string; icon: NavIconName }
+  | { kind: 'action'; label: string; icon: NavIconName };
+
+const tabs: Tab[] = [
+  { kind: 'link', href: '/dashboard', label: 'Home', icon: 'home' },
+  { kind: 'link', href: '/paths', label: 'Paths', icon: 'paths' },
+  { kind: 'link', href: '/review', label: 'Review', icon: 'review' },
+  { kind: 'link', href: '/tutor', label: 'Tutor', icon: 'tutor' },
+  { kind: 'action', label: 'Feedback', icon: 'feedback' },
 ];
 
 interface BottomNavProps {
@@ -55,35 +26,75 @@ export function BottomNav({ onFeedbackTap }: BottomNavProps) {
   const keyboardVisible = useKeyboardVisible();
 
   return (
-    <nav className={`lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-card-border safe-area-bottom transition-transform duration-200 ${keyboardVisible ? 'translate-y-full' : ''}`}>
-      <div className="flex items-center justify-around max-w-lg mx-auto h-16">
-        {tabs.map(tab => {
-          const isActive = pathname === tab.href || pathname.startsWith(tab.href + '/');
+    <nav
+      className={`lg:hidden fixed bottom-0 left-0 right-0 z-50 transition-transform duration-200 ${
+        keyboardVisible ? 'translate-y-full' : ''
+      }`}
+      style={{
+        background: 'color-mix(in srgb, var(--background) 94%, transparent)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        borderTop: '1px solid var(--border-subtle)',
+        paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 4px)',
+      }}
+    >
+      <div className="flex items-stretch justify-around max-w-lg mx-auto px-1 pt-1.5 pb-1.5">
+        {tabs.map((tab, i) => {
+          const isActive =
+            tab.kind === 'link' &&
+            (pathname === tab.href || pathname.startsWith(tab.href + '/'));
+
+          const content = (
+            <div className="relative flex flex-col items-center justify-center gap-0.5 py-1.5 px-2 rounded-full transition-all">
+              {isActive && (
+                <span
+                  aria-hidden
+                  className="absolute inset-0 rounded-full"
+                  style={{ background: 'var(--nav-active-soft)' }}
+                />
+              )}
+              <span
+                className="relative z-10 flex items-center justify-center"
+                style={{ color: isActive ? 'var(--nav-active)' : 'var(--nav-inactive)' }}
+              >
+                <NavIcon name={tab.icon} filled={isActive} size={22} />
+              </span>
+              <span
+                className="relative z-10 text-[10px] font-extrabold tracking-wide"
+                style={{ color: isActive ? 'var(--nav-active)' : 'var(--nav-inactive)' }}
+              >
+                {tab.label}
+              </span>
+            </div>
+          );
+
+          const sharedClass =
+            'flex-1 min-w-0 flex justify-center items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nav-active)] rounded-full';
+
+          if (tab.kind === 'link') {
+            return (
+              <Link
+                key={tab.href}
+                href={tab.href}
+                className={sharedClass}
+                aria-current={isActive ? 'page' : undefined}
+              >
+                {content}
+              </Link>
+            );
+          }
 
           return (
-            <Link
-              key={tab.href}
-              href={tab.href}
-              className={`flex flex-col items-center justify-center gap-0.5 min-w-[64px] py-1 transition-colors rounded-lg focus-visible:ring-2 focus-visible:ring-accent-id focus-visible:outline-none ${
-                isActive ? 'text-accent-id' : 'text-text-secondary'
-              }`}
+            <button
+              key={`action-${i}`}
+              type="button"
+              onClick={onFeedbackTap}
+              className={sharedClass}
             >
-              {tab.icon}
-              <span className="text-[10px] font-medium">{tab.label}</span>
-            </Link>
+              {content}
+            </button>
           );
         })}
-
-        {/* Feedback button (not a link — opens modal overlay) */}
-        <button
-          onClick={onFeedbackTap}
-          className="flex flex-col items-center justify-center gap-0.5 min-w-[64px] py-1 transition-colors rounded-lg text-text-secondary hover:text-accent-id focus-visible:ring-2 focus-visible:ring-accent-id focus-visible:outline-none"
-        >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" />
-          </svg>
-          <span className="text-[10px] font-medium">Feedback</span>
-        </button>
       </div>
     </nav>
   );
