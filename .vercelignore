@@ -1,0 +1,6 @@
+backups/
+.next/
+node_modules/
+.worktrees/
+.claude/
+*.tsbuildinfo
