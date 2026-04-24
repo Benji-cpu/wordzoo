@@ -70,17 +70,17 @@ export function QuizOptions({
     <div className="flex flex-col flex-1 min-h-0">
       {/* Prompt area */}
       <div className="flex-1 flex flex-col items-center justify-center py-6 relative">
-        <p className="text-center text-text-secondary text-sm mb-2">
+        <p className="text-center text-[color:var(--text-secondary)] text-[13px] font-semibold mb-3">
           What does this mean?
         </p>
         <div className="flex items-center justify-center gap-2">
-          <p className="text-3xl font-bold text-[var(--color-fox-primary)]">
+          <p
+            className="font-display text-[color:var(--color-fox-primary)] leading-none"
+            style={{ fontSize: 'clamp(2rem, 7.5vw, 2.75rem)' }}
+          >
             {wordText}
           </p>
-          <span
-            onClick={(e) => e.stopPropagation()}
-            className="inline-flex"
-          >
+          <span onClick={(e) => e.stopPropagation()} className="inline-flex">
             <PronunciationButton wordId={wordId} size={22} />
           </span>
         </div>

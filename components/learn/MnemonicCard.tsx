@@ -11,10 +11,10 @@ function renderBridgeSentence(sentence: string) {
   const parts = sentence.split(/\b([A-Z]{2,}(?:\s+[A-Z]{2,})*)\b/);
   return parts.map((part, i) =>
     /^[A-Z]{2,}(?:\s+[A-Z]{2,})*$/.test(part) ? (
-      <span key={i} className="font-bold text-accent-id not-italic">{part}</span>
+      <span key={i} className="font-extrabold not-italic text-[color:var(--accent-indonesian)]">{part}</span>
     ) : (
       <span key={i}>{part}</span>
-    )
+    ),
   );
 }
 
@@ -52,7 +52,6 @@ export function MnemonicCard({
   const [commentText, setCommentText] = useState('');
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
 
-  // Auto-play pronunciation when card appears
   useEffect(() => {
     if (wordId && !hasAutoPlayed.current && isAudioUnlocked()) {
       hasAutoPlayed.current = true;
@@ -60,7 +59,6 @@ export function MnemonicCard({
     }
   }, [wordId]);
 
-  // Track mnemonic view count — hide label after 3 views
   useEffect(() => {
     try {
       const views = parseInt(localStorage.getItem(MNEMONIC_VIEWS_KEY) || '0', 10);
@@ -71,7 +69,6 @@ export function MnemonicCard({
     }
   }, []);
 
-  // Auto-hide "Thanks!" after 2s
   useEffect(() => {
     if (!feedbackSubmitted) return;
     const timer = setTimeout(() => setFeedbackSubmitted(false), 2000);
@@ -112,11 +109,13 @@ export function MnemonicCard({
     const shareText = `I learned "${wordText}" in ${languageName ?? ''} — it means "${meaningEn ?? ''}"! Try this memory trick on WordZoo.`;
 
     if (navigator.share) {
-      navigator.share({
-        title: `${wordText} — WordZoo`,
-        text: shareText,
-        url: shareUrl,
-      }).catch(() => {});
+      navigator
+        .share({
+          title: `${wordText} — WordZoo`,
+          text: shareText,
+          url: shareUrl,
+        })
+        .catch(() => {});
     } else {
       navigator.clipboard.writeText(`${shareText}\n${shareUrl}`).catch(() => {});
     }
@@ -125,25 +124,40 @@ export function MnemonicCard({
   return (
     <Card className="animate-spring-in overflow-hidden cursor-pointer" onClick={onContinue}>
       {showLabel && (
-        <p className="text-sm text-text-secondary mb-1">Remember it like this:</p>
+        <p className="text-[11px] font-extrabold tracking-[0.14em] uppercase text-[color:var(--text-secondary)] mb-2">
+          Remember it like this
+        </p>
       )}
-      <div className="flex items-center gap-1 whitespace-nowrap overflow-hidden mb-1">
-        <span className="text-[clamp(0.9rem,4vw,1.25rem)] font-bold text-[var(--color-fox-primary)]">{wordText}</span>
+
+      <div className="flex items-baseline gap-2 flex-wrap mb-2">
+        <span
+          className="font-display text-[color:var(--color-fox-primary)] leading-none"
+          style={{ fontSize: 'clamp(1.35rem, 5.5vw, 1.75rem)' }}
+        >
+          {wordText}
+        </span>
         {wordId && (
-          <span onClick={(e) => e.stopPropagation()}>
+          <span onClick={(e) => e.stopPropagation()} className="inline-flex">
             <PronunciationButton wordId={wordId} size={18} className="-my-1" />
           </span>
         )}
         {keyword && (
           <>
-            <span className="text-[clamp(0.85rem,3.8vw,1.125rem)] text-foreground">sounds like</span>
-            <span className="text-[clamp(0.9rem,4vw,1.25rem)] font-bold text-foreground">&ldquo;{keyword}&rdquo;</span>
+            <span className="text-[14px] text-[color:var(--text-secondary)] font-semibold">
+              sounds like
+            </span>
+            <span
+              className="font-extrabold text-[color:var(--foreground)]"
+              style={{ fontSize: 'clamp(1.1rem, 4.8vw, 1.35rem)' }}
+            >
+              &ldquo;{keyword}&rdquo;
+            </span>
           </>
         )}
       </div>
 
       {bridgeSentence && (
-        <p className="text-sm sm:text-base text-foreground italic mb-2 whitespace-nowrap overflow-hidden text-ellipsis">
+        <p className="text-[14px] sm:text-[15px] italic text-[color:var(--foreground)] mb-3 leading-snug whitespace-nowrap overflow-hidden text-ellipsis">
           {renderBridgeSentence(bridgeSentence)}
         </p>
       )}
@@ -155,18 +169,30 @@ export function MnemonicCard({
           variant="card"
           keyword={keyword}
           fallback={
-            <div className="w-full rounded-xl bg-gradient-to-br from-accent-id/15 to-surface-inset flex flex-col items-center justify-center py-10 px-6">
-              <p className="text-2xl font-bold text-accent-id mb-2">&ldquo;{keyword}&rdquo;</p>
+            <div
+              className="w-full rounded-[18px] flex flex-col items-center justify-center py-10 px-6"
+              style={{
+                background:
+                  'linear-gradient(135deg, color-mix(in srgb, var(--accent-indonesian) 15%, var(--surface-inset)), var(--surface-inset))',
+              }}
+            >
+              <p className="font-display text-[color:var(--accent-indonesian)] mb-2" style={{ fontSize: '1.75rem' }}>
+                &ldquo;{keyword}&rdquo;
+              </p>
               {bridgeSentence && (
-                <p className="text-sm text-foreground italic text-center">{renderBridgeSentence(bridgeSentence)}</p>
+                <p className="text-sm text-[color:var(--foreground)] italic text-center">
+                  {renderBridgeSentence(bridgeSentence)}
+                </p>
               )}
-              <p className="text-xs text-text-secondary mt-4">Visual coming soon</p>
+              <p className="text-xs text-[color:var(--text-secondary)] mt-4 font-semibold">
+                Visual coming soon
+              </p>
             </div>
           }
         />
       </div>
-      {/* Feedback + share action strip — larger thumb targets (44px) in
-          their own row below the image instead of tiny overlay buttons. */}
+
+      {/* Feedback + share strip */}
       {mnemonicId && (
         <div
           className="flex items-center justify-end gap-2 mt-3"
@@ -175,12 +201,12 @@ export function MnemonicCard({
           <button
             onClick={() => handleRate('thumbs_up')}
             disabled={feedbackRating !== null}
-            className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all ${
+            className={`w-11 h-11 flex items-center justify-center rounded-[14px] transition-[transform,background-color,color] duration-[var(--duration-micro)] ${
               feedbackRating === 'thumbs_up'
-                ? 'bg-[var(--color-success)]/15 text-[var(--color-success)] scale-110'
+                ? 'bg-[color:var(--color-success)]/15 text-[color:var(--color-success)] scale-110'
                 : feedbackRating
-                  ? 'text-text-secondary/40'
-                  : 'bg-[var(--surface-inset)] text-text-secondary hover:text-foreground active:scale-95'
+                  ? 'text-[color:var(--text-secondary)]/40'
+                  : 'bg-[color:var(--surface-inset)] text-[color:var(--text-secondary)] hover:text-[color:var(--foreground)] active:scale-95'
             }`}
             aria-label="Thumbs up"
           >
@@ -192,12 +218,12 @@ export function MnemonicCard({
           <button
             onClick={() => handleRate('thumbs_down')}
             disabled={feedbackRating !== null}
-            className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all ${
+            className={`w-11 h-11 flex items-center justify-center rounded-[14px] transition-[transform,background-color,color] duration-[var(--duration-micro)] ${
               feedbackRating === 'thumbs_down'
-                ? 'bg-[var(--color-error)]/15 text-[var(--color-error)] scale-110'
+                ? 'bg-[color:var(--color-error)]/15 text-[color:var(--color-error)] scale-110'
                 : feedbackRating
-                  ? 'text-text-secondary/40'
-                  : 'bg-[var(--surface-inset)] text-text-secondary hover:text-foreground active:scale-95'
+                  ? 'text-[color:var(--text-secondary)]/40'
+                  : 'bg-[color:var(--surface-inset)] text-[color:var(--text-secondary)] hover:text-[color:var(--foreground)] active:scale-95'
             }`}
             aria-label="Thumbs down"
           >
@@ -209,7 +235,7 @@ export function MnemonicCard({
           {wordId && (
             <button
               onClick={handleShare}
-              className="w-11 h-11 flex items-center justify-center rounded-xl bg-[var(--surface-inset)] text-text-secondary hover:text-foreground active:scale-95 transition-all"
+              className="w-11 h-11 flex items-center justify-center rounded-[14px] bg-[color:var(--surface-inset)] text-[color:var(--text-secondary)] hover:text-[color:var(--foreground)] active:scale-95 transition-[transform,color] duration-[var(--duration-micro)]"
               aria-label="Share"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -224,29 +250,29 @@ export function MnemonicCard({
         </div>
       )}
 
-      {/* Comment input — appears below image after rating */}
+      {/* Comment input */}
       {showComment && (
-        <div className="mt-2 animate-slide-up" onClick={(e) => e.stopPropagation()}>
+        <div className="mt-3 animate-slide-up" onClick={(e) => e.stopPropagation()}>
           <input
             type="text"
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
             placeholder="What made it memorable (or not)?"
-            className="w-full px-3 py-2 rounded-lg bg-surface-inset border border-card-border text-sm text-foreground placeholder:text-text-secondary focus:outline-none focus:border-accent-default/50 transition-colors"
+            className="w-full px-3 py-2.5 rounded-[12px] bg-[color:var(--surface-inset)] border border-[color:var(--border-default)] text-sm text-[color:var(--foreground)] placeholder:text-[color:var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[color:var(--nav-active)]/50 transition-colors"
             maxLength={500}
             autoFocus
           />
           <div className="flex items-center justify-end gap-2 mt-2">
             <button
               onClick={handleSkipComment}
-              className="px-3 py-1 text-xs text-text-secondary hover:text-foreground transition-colors"
+              className="px-3 py-1.5 text-xs font-bold text-[color:var(--text-secondary)] hover:text-[color:var(--foreground)] transition-colors"
             >
               Skip
             </button>
             {commentText.trim() && (
               <button
                 onClick={handleSendComment}
-                className="px-3 py-1 rounded-lg text-xs font-medium bg-accent-default text-white hover:brightness-110 transition-all"
+                className="px-3 py-1.5 rounded-[10px] text-xs font-extrabold bg-[color:var(--accent-indonesian)] text-white active:scale-[0.97] transition-transform"
               >
                 Send
               </button>
@@ -255,9 +281,8 @@ export function MnemonicCard({
         </div>
       )}
 
-      {/* Thanks message */}
       {feedbackSubmitted && (
-        <p className="mt-2 text-xs text-text-secondary text-center animate-fade-in">
+        <p className="mt-2 text-xs font-semibold text-[color:var(--text-secondary)] text-center animate-fade-in">
           Thanks!
         </p>
       )}

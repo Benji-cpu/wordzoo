@@ -94,22 +94,25 @@ export function SceneSummary({
   return (
     <div className="flex flex-col flex-1 min-h-0 pt-4">
       {/* Hero celebration band */}
-      <div className="relative text-center mb-6">
+      <div className="relative text-center mb-6 animate-spring-in">
         <div className="flex justify-center mb-3">
           <Fox pose="celebrating" size="lg" aria-label="Scene complete!" />
         </div>
         <Celebration active variant="scene-complete" />
-        <h2 className="text-2xl font-bold text-foreground animate-spring-in">
+        <p className="text-[10.5px] font-extrabold tracking-[0.18em] uppercase text-[color:var(--accent-indonesian)] mb-2">
           {sceneNumber && totalScenes
-            ? `Scene ${sceneNumber} of ${totalScenes} complete!`
-            : 'Scene complete!'}
+            ? `Scene ${sceneNumber} of ${totalScenes}`
+            : 'Scene'}
+        </p>
+        <h2 className="text-[22px] font-extrabold tracking-tight text-[color:var(--foreground)] leading-tight">
+          Scene complete!
         </h2>
-        <p className="text-sm text-text-secondary mt-1">{sceneTitle}</p>
+        <p className="text-[13px] font-semibold text-[color:var(--text-secondary)] mt-1">{sceneTitle}</p>
         {sceneDescription && (
-          <p className="text-xs text-text-secondary mt-1">{sceneDescription}</p>
+          <p className="text-xs text-[color:var(--text-secondary)] mt-1 font-semibold">{sceneDescription}</p>
         )}
         {sessionEarned > 0 && (
-          <p className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[var(--color-fox-soft)] text-[var(--color-fox-deep)] dark:text-[var(--color-fox-primary)] text-sm font-semibold">
+          <p className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[color:var(--color-fox-soft)] text-[color:var(--color-fox-deep)] dark:text-[color:var(--color-fox-primary)] text-[13px] font-extrabold">
             <span aria-hidden>✨</span>
             +{sessionEarned} XP earned
           </p>
@@ -117,38 +120,45 @@ export function SceneSummary({
       </div>
 
       <Card className="mb-6">
-        <div className="text-sm font-medium text-foreground mb-2">
-          {words.length} words learned
+        <div className="text-[11px] font-extrabold tracking-[0.14em] uppercase text-[color:var(--text-secondary)] mb-3">
+          {words.length} {words.length === 1 ? 'word' : 'words'} learned
         </div>
         <div className="flex flex-wrap gap-1.5">
-          {words.map(({ word }) => (
-            <button
-              key={word.id}
-              type="button"
-              onClick={() =>
-                setExpandedWordId(expandedWordId === word.id ? null : word.id)
-              }
-              className="px-2 py-0.5 rounded-full bg-[var(--color-fox-soft)] text-[var(--color-fox-deep)] dark:text-[var(--color-fox-primary)] text-xs font-medium transition-all"
-            >
-              {word.text}
-              {expandedWordId === word.id && (
-                <>
-                  <span className="text-text-secondary"> = {word.meaning_en}</span>
-                  <span
-                    className="inline-flex ml-0.5"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <PronunciationButton
-                      wordId={word.id}
-                      text={word.text}
-                      size={12}
-                      className="p-0.5 -my-0.5"
-                    />
-                  </span>
-                </>
-              )}
-            </button>
-          ))}
+          {words.map(({ word }) => {
+            const isExpanded = expandedWordId === word.id;
+            return (
+              <button
+                key={word.id}
+                type="button"
+                onClick={() =>
+                  setExpandedWordId(isExpanded ? null : word.id)
+                }
+                className={`px-2.5 py-1 rounded-full text-[12.5px] font-bold transition-all ${
+                  isExpanded
+                    ? 'bg-[color:var(--accent-indonesian)] text-white'
+                    : 'bg-[color:var(--color-fox-soft)] text-[color:var(--color-fox-deep)] dark:text-[color:var(--color-fox-primary)]'
+                }`}
+              >
+                {word.text}
+                {isExpanded && (
+                  <>
+                    <span className="opacity-85"> = {word.meaning_en}</span>
+                    <span
+                      className="inline-flex ml-0.5"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <PronunciationButton
+                        wordId={word.id}
+                        text={word.text}
+                        size={12}
+                        className="p-0.5 -my-0.5"
+                      />
+                    </span>
+                  </>
+                )}
+              </button>
+            );
+          })}
         </div>
       </Card>
 
