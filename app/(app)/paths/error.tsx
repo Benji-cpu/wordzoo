@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { Button } from '@/components/ui/Button';
+import { EmptyStateCard } from '@/components/ui/EmptyStateCard';
 
 export default function PathsError({
   error,
@@ -15,13 +15,14 @@ export default function PathsError({
   }, [error]);
 
   return (
-    <div className="max-w-lg mx-auto flex flex-col items-center justify-center min-h-[60vh]">
-      <p className="text-4xl mb-4">😵</p>
-      <h2 className="text-xl font-bold text-foreground mb-2">Something went wrong</h2>
-      <p className="text-text-secondary mb-6 text-center">
-        Could not load learning paths. Please try again.
-      </p>
-      <Button onClick={reset}>Try again</Button>
+    <div className="max-w-lg mx-auto flex flex-col justify-center min-h-[60vh] px-4">
+      <EmptyStateCard
+        foxPose="sad"
+        title="Something went wrong"
+        subtitle="Couldn't load learning paths. The network may be hiccuping — try again, or head back to your dashboard."
+        primary={{ label: 'Try again', onClick: reset }}
+        secondary={{ label: 'Back to dashboard', href: '/dashboard' }}
+      />
     </div>
   );
 }
