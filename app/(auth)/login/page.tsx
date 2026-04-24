@@ -21,12 +21,12 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   return (
     <div className="space-y-6">
       {errorMessage && (
-        <div className="rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-[14px] border border-[color:var(--color-error)]/20 bg-[color:var(--color-error)]/10 px-4 py-3 text-sm font-semibold text-[color:var(--color-error)]">
           {errorMessage}
         </div>
       )}
       <div className="text-center">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-accent-default/10 text-accent-default mb-3">
+        <div className="inline-flex items-center justify-center w-12 h-12 rounded-[14px] bg-[color:var(--accent-indonesian-soft)] text-[color:var(--accent-indonesian)] mb-3">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" className="w-8 h-8">
             <path d="M12 10 L16 18 L20 12 Z" fill="currentColor"/>
             <path d="M36 10 L32 18 L28 12 Z" fill="currentColor"/>
@@ -36,8 +36,8 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
             <path d="M20.5 32 Q24 35 27.5 32" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
           </svg>
         </div>
-        <h2 className="text-3xl font-bold">Sign in to WordZoo</h2>
-        <p className="text-sm text-text-secondary mt-1">Welcome back — let&apos;s keep learning.</p>
+        <h2 className="text-[26px] font-extrabold tracking-tight text-[color:var(--foreground)]">Sign in to WordZoo</h2>
+        <p className="text-sm font-semibold text-[color:var(--text-secondary)] mt-1">Welcome back — let&apos;s keep learning.</p>
       </div>
       <form
         action={async () => {
@@ -47,7 +47,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
       >
         <button
           type="submit"
-          className="w-full flex items-center justify-center gap-3 rounded-xl border border-card-border bg-card-surface px-4 py-3 font-medium text-foreground hover:border-accent-default/30 transition-colors"
+          className="w-full flex items-center justify-center gap-3 rounded-[16px] border border-[color:var(--border-default)] bg-[color:var(--card-surface)] px-4 py-3 font-extrabold text-[color:var(--foreground)] transition-[transform,border-color] duration-[var(--duration-micro)] hover:border-[color:var(--accent-indonesian)]/40 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nav-active)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)]"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
@@ -59,11 +59,11 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         </button>
       </form>
       <div className="space-y-3">
-        <p className="text-center text-xs text-text-secondary">
+        <p className="text-center text-xs font-semibold text-[color:var(--text-secondary)]">
           By signing in, you agree to our terms of service.
         </p>
         <div className="text-center">
-          <Link href="/" className="text-sm text-text-secondary hover:text-foreground transition-colors">
+          <Link href="/" className="text-sm font-bold text-[color:var(--text-secondary)] hover:text-[color:var(--foreground)] transition-colors">
             ← Back to home
           </Link>
         </div>

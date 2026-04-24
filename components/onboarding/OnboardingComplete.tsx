@@ -83,7 +83,7 @@ export default function OnboardingComplete({
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.8 }}
         onClick={onKeepLearning}
-        className="w-full max-w-sm py-4 rounded-xl bg-green-600 text-white text-lg font-semibold hover:bg-green-500 active:bg-green-700 transition-colors cursor-pointer"
+        className="w-full max-w-sm py-4 rounded-[16px] bg-[color:var(--accent-indonesian)] text-white text-lg font-extrabold tracking-wide shadow-[0_4px_12px_color-mix(in_srgb,var(--accent-indonesian)_30%,transparent)] active:scale-[0.98] transition-transform"
       >
         Keep Learning
       </motion.button>

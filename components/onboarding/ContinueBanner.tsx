@@ -26,7 +26,7 @@ export default function ContinueBanner() {
       <div className="flex items-center gap-2">
         <Link
           href="/"
-          className="px-4 py-2 bg-green-600 text-white rounded-xl text-sm font-medium hover:bg-green-500 transition-colors"
+          className="px-4 py-2 rounded-[12px] bg-[color:var(--accent-indonesian)] text-white text-sm font-extrabold tracking-wide shadow-[0_3px_8px_color-mix(in_srgb,var(--accent-indonesian)_25%,transparent)] active:scale-[0.98] transition-transform"
         >
           Continue
         </Link>

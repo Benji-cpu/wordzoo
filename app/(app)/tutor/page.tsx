@@ -6,6 +6,7 @@ import { TutorChat } from '@/components/tutor/TutorChat';
 import type { SessionSummaryData } from '@/components/tutor/TutorChat';
 import { useTutorChat } from '@/lib/hooks/useTutorChat';
 import { InsightCard } from '@/components/insights/InsightCard';
+import { EmptyStateCard } from '@/components/ui/EmptyStateCard';
 import { getEligibleInsight } from '@/lib/insights/engine';
 import { INSIGHTS } from '@/lib/insights/data';
 import type { InsightDefinition } from '@/lib/insights/data';
@@ -267,17 +268,14 @@ export default function TutorPage() {
 
   if (!languageId) {
     return (
-      <div className="max-w-lg mx-auto px-4 pt-8 text-center">
-        <h1 className="text-2xl font-bold text-foreground">Tutor</h1>
-        <p className="mt-2 text-text-secondary mb-4">
-          Start a learning path first to use the tutor.
-        </p>
-        <a
-          href="/paths"
-          className="inline-block px-5 py-3 rounded-xl font-medium bg-accent-default text-white hover:brightness-110 transition-all"
-        >
-          Choose a Learning Path
-        </a>
+      <div className="max-w-lg mx-auto px-4 pt-8">
+        <EmptyStateCard
+          foxPose="thinking"
+          title="Pick a language first"
+          subtitle="The tutor learns alongside you — choose a path to get started."
+          primary={{ label: 'Choose a learning path', href: '/paths' }}
+          secondary={{ label: 'Back to home', href: '/dashboard' }}
+        />
       </div>
     );
   }

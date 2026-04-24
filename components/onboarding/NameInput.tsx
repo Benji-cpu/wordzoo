@@ -45,11 +45,11 @@ export default function NameInput({ onSubmit }: NameInputProps) {
           onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
           placeholder="Your first name"
           autoFocus
-          className="w-full rounded-xl border border-card-border bg-card-surface px-4 py-3 text-lg text-foreground placeholder:text-text-secondary/50 focus:outline-none focus:ring-2 focus:ring-accent-default"
+          className="w-full rounded-[16px] border border-[color:var(--border-default)] bg-[color:var(--card-surface)] px-4 py-3 text-lg font-bold text-[color:var(--foreground)] placeholder:text-[color:var(--text-secondary)]/50 focus:outline-none focus:ring-2 focus:ring-[var(--nav-active)]"
         />
         <button
           onClick={handleSubmit}
-          className="w-full py-3 rounded-xl bg-green-600 text-white text-lg font-semibold hover:bg-green-500 active:bg-green-700 transition-colors cursor-pointer"
+          className="w-full py-3.5 rounded-[16px] bg-[color:var(--accent-indonesian)] text-white text-lg font-extrabold tracking-wide shadow-[0_4px_12px_color-mix(in_srgb,var(--accent-indonesian)_30%,transparent)] active:scale-[0.98] transition-transform"
         >
           Continue
         </button>
