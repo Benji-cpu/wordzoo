@@ -506,6 +506,7 @@ export function SceneFlowClient({
           onBack={handleBack}
           sceneNumber={sceneNumber}
           totalScenes={totalScenes}
+          languageCode={languageCode}
         />
       }
       className="max-w-lg mx-auto"

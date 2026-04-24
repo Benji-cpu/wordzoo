@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { Card } from '@/components/ui/Card';
 import { PronunciationButton } from '@/components/audio/SpeakerButton';
 import { playWordPronunciation, isAudioUnlocked, onAudioUnlocked } from '@/lib/audio';
 
@@ -17,12 +16,21 @@ interface WordCardProps {
   onContinue: () => void;
 }
 
-export function WordCard({ text, romanization, meaningEn, partOfSpeech, wordId, audioUrl, languageCode, informalText, onContinue }: WordCardProps) {
+export function WordCard({
+  text,
+  romanization,
+  meaningEn,
+  partOfSpeech,
+  wordId,
+  audioUrl,
+  languageCode,
+  informalText,
+  onContinue,
+}: WordCardProps) {
   // Auto-play pronunciation on mount / word change
   const hasAutoPlayed = useRef(false);
   const prevWordId = useRef(wordId);
 
-  // Reset autoplay flag when word changes
   if (prevWordId.current !== wordId) {
     prevWordId.current = wordId;
     hasAutoPlayed.current = false;
@@ -32,7 +40,11 @@ export function WordCard({ text, romanization, meaningEn, partOfSpeech, wordId, 
     const play = () => {
       if (hasAutoPlayed.current) return;
       hasAutoPlayed.current = true;
-      playWordPronunciation(wordId, { audioUrl, text, languageCode: languageCode as import('@/types/audio').SupportedLanguageCode | undefined }).catch(() => {});
+      playWordPronunciation(wordId, {
+        audioUrl,
+        text,
+        languageCode: languageCode as import('@/types/audio').SupportedLanguageCode | undefined,
+      }).catch(() => {});
     };
 
     if (isAudioUnlocked()) {
@@ -40,25 +52,32 @@ export function WordCard({ text, romanization, meaningEn, partOfSpeech, wordId, 
       return;
     }
 
-    // Subscribe to unlock event — play when user first interacts
     return onAudioUnlocked(play);
   }, [wordId, audioUrl, text, languageCode]);
 
   return (
-    <Card
-      className="text-center animate-spring-in flex flex-col items-center justify-center flex-1 min-h-0 py-8 cursor-pointer"
+    <div
+      className="flex flex-col items-center justify-center text-center flex-1 min-h-0 py-8 px-4 cursor-pointer animate-spring-in"
       onClick={onContinue}
     >
-      <p className="text-xs text-text-secondary uppercase tracking-wider mb-4">
+      <p className="text-[10.5px] font-extrabold tracking-[0.18em] uppercase text-[color:var(--text-secondary)] mb-5">
         {partOfSpeech}
       </p>
-      <h2 className="text-5xl font-bold text-[var(--color-fox-primary)] mb-2">
+
+      <h2
+        className="font-display text-[color:var(--color-fox-primary)] leading-[0.95] mb-3"
+        style={{ fontSize: 'clamp(2.75rem, 9.5vw, 4.25rem)' }}
+      >
         {text}
       </h2>
+
       {romanization && (
-        <p className="text-lg text-text-secondary mb-4">{romanization}</p>
+        <p className="text-[15px] font-semibold text-[color:var(--text-secondary)] tracking-wide mb-4">
+          {romanization}
+        </p>
       )}
-      <div onClick={(e) => e.stopPropagation()}>
+
+      <div onClick={(e) => e.stopPropagation()} className="mb-2">
         <PronunciationButton
           wordId={wordId}
           audioUrl={audioUrl}
@@ -67,16 +86,24 @@ export function WordCard({ text, romanization, meaningEn, partOfSpeech, wordId, 
           size={28}
         />
       </div>
-      <div className="w-12 h-px bg-card-border mx-auto my-6" />
-      <p className="text-xl text-foreground">{meaningEn}</p>
+
+      <div className="w-10 h-px bg-[color:var(--border-default)] mx-auto my-6" aria-hidden />
+
+      <p className="text-[19px] font-semibold text-[color:var(--foreground)] leading-snug">
+        {meaningEn}
+      </p>
+
       {informalText && (
-        <p className="text-sm text-text-secondary mt-3">
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--color-fox-soft)] text-[var(--color-fox-deep)] text-xs font-medium">
+        <p className="mt-4">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[var(--color-fox-soft)] text-[var(--color-fox-deep)] text-[11.5px] font-bold">
             Casual: {informalText}
           </span>
         </p>
       )}
-      <p className="text-sm text-text-secondary mt-8 animate-pulse">Tap to continue</p>
-    </Card>
+
+      <p className="text-[12px] font-semibold text-[color:var(--text-secondary)] mt-10 animate-pulse">
+        Tap to continue
+      </p>
+    </div>
   );
 }
