@@ -50,3 +50,6 @@ MEMORY.md
 *.tsbuildinfo
 next-env.d.ts
 .worktrees/
+
+# local-only image archive (originals from generateImage during backfill)
+/backups/
