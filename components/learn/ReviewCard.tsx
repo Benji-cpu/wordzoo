@@ -18,7 +18,7 @@ function renderBridgeSentence(sentence: string) {
   const parts = sentence.split(/\b([A-Z]{2,}(?:\s+[A-Z]{2,})*)\b/);
   return parts.map((part, i) =>
     /^[A-Z]{2,}(?:\s+[A-Z]{2,})*$/.test(part) ? (
-      <span key={i} className="font-bold text-accent-id not-italic">{part}</span>
+      <span key={i} className="font-extrabold not-italic text-[color:var(--accent-indonesian)]">{part}</span>
     ) : (
       <span key={i}>{part}</span>
     )
@@ -161,17 +161,22 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, w
               }`}
             >
               {teaser}
-              <p className="text-xs text-text-secondary uppercase tracking-wider mb-2">
+              <p className="text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-[color:var(--text-secondary)] mb-3">
                 What does this mean?
               </p>
-              <h2 className="text-3xl font-bold text-accent-id mb-2">{word.text}</h2>
+              <h2
+                className="font-display text-[color:var(--color-fox-primary)] leading-none mb-3"
+                style={{ fontSize: 'clamp(2.25rem, 8.5vw, 3.25rem)' }}
+              >
+                {word.text}
+              </h2>
               {word.romanization && (
-                <p className="text-lg text-text-secondary">{word.romanization}</p>
+                <p className="text-[15px] font-semibold text-[color:var(--text-secondary)] tracking-wide mb-2">{word.romanization}</p>
               )}
               <div onClick={(e) => e.stopPropagation()}>
                 <PronunciationButton wordId={word.id} audioUrl={word.pronunciation_audio_url} text={word.text} />
               </div>
-              <p className="text-sm text-text-secondary mt-4">Tap to reveal</p>
+              <p className="text-[12px] font-semibold text-[color:var(--text-secondary)] mt-4">Tap to reveal</p>
             </div>
 
             {/* Compact header bar — appears on reveal */}
@@ -181,12 +186,12 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, w
               }`}
             >
               <div className="flex items-center justify-center gap-2 py-1">
-                <span className="text-lg font-bold text-accent-id">{word.text}</span>
+                <span className="font-display text-[color:var(--color-fox-primary)] leading-none" style={{ fontSize: '1.45rem' }}>{word.text}</span>
                 <div onClick={(e) => e.stopPropagation()} className="flex items-center">
                   <PronunciationButton wordId={word.id} audioUrl={word.pronunciation_audio_url} text={word.text} size={18} />
                 </div>
-                <span className="text-text-secondary">=</span>
-                <span className="text-lg text-foreground font-medium">{word.meaning_en}</span>
+                <span className="text-[color:var(--text-secondary)] font-semibold">=</span>
+                <span className="text-[16px] text-[color:var(--foreground)] font-bold">{word.meaning_en}</span>
               </div>
             </div>
 
@@ -194,10 +199,10 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, w
             {revealed && (
               <div className="pt-2 border-t border-card-border animate-slide-up">
                 {mnemonic.keyword_text && (
-                  <p className="text-sm sm:text-base text-foreground text-center mb-1 whitespace-nowrap overflow-hidden text-ellipsis px-1">
-                    <span className="font-bold text-accent-id">{word.text}</span>
+                  <p className="text-[14px] sm:text-[15px] text-[color:var(--foreground)] text-center mb-1 whitespace-nowrap overflow-hidden text-ellipsis px-1 font-semibold">
+                    <span className="font-display text-[color:var(--color-fox-primary)]" style={{ fontSize: '1.05em' }}>{word.text}</span>
                     {' '}sounds like{' '}
-                    <span className="font-bold">&ldquo;{mnemonic.keyword_text}&rdquo;</span>
+                    <span className="font-extrabold">&ldquo;{mnemonic.keyword_text}&rdquo;</span>
                   </p>
                 )}
                 {mnemonic.bridge_sentence && (
@@ -207,7 +212,7 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, w
                 )}
                 {word.informal_text && (
                   <p className="text-sm text-text-secondary mb-2">
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent-id/10 text-accent-id text-xs font-medium">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[var(--color-fox-soft)] text-[var(--color-fox-deep)] text-[11.5px] font-bold">
                       Casual: {word.informal_text}
                     </span>
                   </p>
@@ -228,10 +233,10 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, w
               }`}
             >
               {teaser}
-              <p className="text-xs text-text-secondary uppercase tracking-wider mb-2">
+              <p className="text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-[color:var(--text-secondary)] mb-3">
                 How do you say...
               </p>
-              <h2 className="text-2xl font-bold text-foreground mb-3">{word.meaning_en}</h2>
+              <h2 className="text-[22px] font-extrabold tracking-tight text-[color:var(--foreground)] mb-3 leading-tight">{word.meaning_en}</h2>
             </div>
 
             {/* Compact header — appears on reveal */}
@@ -250,13 +255,13 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, w
               <div className="pt-2 border-t border-card-border animate-slide-up">
                 {mnemonicImage}
                 <div className="flex items-center justify-center gap-2 mb-1">
-                  <p className="text-2xl font-bold text-accent-id">{word.text}</p>
+                  <p className="font-display text-[color:var(--color-fox-primary)] leading-none" style={{ fontSize: 'clamp(1.9rem, 7.5vw, 2.5rem)' }}>{word.text}</p>
                   <div onClick={(e) => e.stopPropagation()} className="flex items-center">
                     <PronunciationButton wordId={word.id} audioUrl={word.pronunciation_audio_url} text={word.text} size={20} />
                   </div>
                 </div>
                 {word.romanization && (
-                  <p className="text-base text-text-secondary mb-1">{word.romanization}</p>
+                  <p className="text-[14px] font-semibold text-[color:var(--text-secondary)] mb-1 tracking-wide">{word.romanization}</p>
                 )}
                 {mnemonic.keyword_text && (
                   <p className="text-sm sm:text-base text-foreground text-center mt-1 whitespace-nowrap overflow-hidden text-ellipsis px-1">
@@ -270,7 +275,7 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, w
                 )}
                 {word.informal_text && (
                   <p className="text-sm text-text-secondary mt-2">
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent-id/10 text-accent-id text-xs font-medium">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[var(--color-fox-soft)] text-[var(--color-fox-deep)] text-[11.5px] font-bold">
                       Casual: {word.informal_text}
                     </span>
                   </p>

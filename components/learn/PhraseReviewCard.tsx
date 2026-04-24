@@ -10,7 +10,7 @@ function renderBridgeSentence(sentence: string) {
   const parts = sentence.split(/\b([A-Z]{2,}(?:\s+[A-Z]{2,})*)\b/);
   return parts.map((part, i) =>
     /^[A-Z]{2,}(?:\s+[A-Z]{2,})*$/.test(part) ? (
-      <span key={i} className="font-bold text-accent-id not-italic">{part}</span>
+      <span key={i} className="font-extrabold not-italic text-[color:var(--accent-indonesian)]">{part}</span>
     ) : (
       <span key={i}>{part}</span>
     )
@@ -139,7 +139,7 @@ export function PhraseReviewCard({
             <p className="text-xs text-text-secondary uppercase tracking-wider mb-4">
               What does this mean?
             </p>
-            <h2 className="text-2xl font-bold text-accent-id mb-2">{textTarget}</h2>
+            <h2 className="font-display text-[color:var(--color-fox-primary)] leading-[1.05] mb-3" style={{ fontSize: 'clamp(1.75rem, 6.8vw, 2.5rem)' }}>{textTarget}</h2>
 
             {revealed && (
               <div className="mt-3 pt-3 border-t border-card-border animate-slide-up">
@@ -177,7 +177,7 @@ export function PhraseReviewCard({
             <p className="text-xs text-text-secondary uppercase tracking-wider mb-4">
               How do you say...
             </p>
-            <h2 className="text-2xl font-bold text-foreground mb-2">{textEn}</h2>
+            <h2 className="text-[22px] font-extrabold tracking-tight text-[color:var(--foreground)] mb-3 leading-tight">{textEn}</h2>
             <div className="mb-3">
               <MnemonicImage
                 src={compositeImageUrl}
@@ -193,7 +193,7 @@ export function PhraseReviewCard({
 
             {revealed && (
               <div className="mt-3 pt-3 border-t border-card-border animate-slide-up">
-                <p className="text-2xl font-bold text-accent-id mb-2">{textTarget}</p>
+                <p className="font-display text-[color:var(--color-fox-primary)] leading-[1.05] mb-3" style={{ fontSize: 'clamp(1.65rem, 6.5vw, 2.25rem)' }}>{textTarget}</p>
                 {literalTranslation && (
                   <p className="text-sm text-text-secondary italic mb-3">
                     Literally: &ldquo;{literalTranslation}&rdquo;
