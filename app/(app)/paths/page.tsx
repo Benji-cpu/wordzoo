@@ -11,7 +11,6 @@ import {
 import type { SceneMasteryRow } from '@/lib/db/queries';
 import { PathCard } from '@/components/learn/PathCard';
 import { TravelPackCard } from '@/components/learn/TravelPackCard';
-import { PathsClientSection } from './PathsClientSection';
 import { habitatFromLanguageCode, type HabitatLanguage } from '@/lib/utils/language-habitat';
 import type { Path, Language } from '@/types/database';
 
@@ -194,10 +193,10 @@ export default async function PathsPage() {
         )}
         <Link
           href={`/paths/studio${activeLanguageId ? `?languageId=${activeLanguageId}` : ''}`}
-          className="block w-full p-4 rounded-[20px] border-2 border-dashed text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nav-active)]"
+          className="block w-full p-5 rounded-[20px] text-center transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nav-active)]"
           style={{
-            borderColor: 'color-mix(in srgb, var(--accent-indonesian) 45%, transparent)',
-            background: 'color-mix(in srgb, var(--accent-indonesian) 6%, var(--card-surface))',
+            background: 'color-mix(in srgb, var(--accent-indonesian) 12%, var(--card-surface))',
+            border: '1px solid color-mix(in srgb, var(--accent-indonesian) 30%, transparent)',
           }}
         >
           <div className="flex items-center justify-center gap-2 text-[color:var(--accent-indonesian)]">
@@ -205,13 +204,12 @@ export default async function PathsPage() {
               <path d="M12 20h9" />
               <path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
             </svg>
-            <span className="font-extrabold">Path Studio</span>
+            <span className="font-extrabold">Create a custom path</span>
           </div>
           <p className="text-xs text-[color:var(--text-secondary)] font-semibold mt-1">
-            Co-create rich dialogue paths with AI
+            Co-create a path around a topic you care about
           </p>
         </Link>
-        <PathsClientSection languageId={activeLanguageId} />
       </section>
     </div>
   );

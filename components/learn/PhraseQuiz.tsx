@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { ThumbButton } from '@/components/ui/ThumbButton';
 import { Celebration } from '@/components/ui/Celebration';
 import { Fox } from '@/components/mascot/Fox';
@@ -32,7 +32,6 @@ export function PhraseQuiz({
   const [celebrate, setCelebrate] = useState(false);
   const [xpPopped, setXpPopped] = useState(false);
   const [showBreakdown, setShowBreakdown] = useState(false);
-  const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { play } = useSound();
   const { award } = useXP();
   const { trigger } = useHaptic();
@@ -40,24 +39,6 @@ export function PhraseQuiz({
   const breakdownAvailable = !!phrase && phrase.words.some((w) => w.keyword_text !== null);
 
   const options = useShuffled(correctAnswer, distractors, promptText);
-
-  useEffect(() => {
-    return () => {
-      if (advanceTimer.current) clearTimeout(advanceTimer.current);
-    };
-  }, []);
-
-  const scheduleAdvance = useCallback((delay: number) => {
-    if (advanceTimer.current) clearTimeout(advanceTimer.current);
-    advanceTimer.current = setTimeout(onCorrect, delay);
-  }, [onCorrect]);
-
-  const cancelAdvance = useCallback(() => {
-    if (advanceTimer.current) {
-      clearTimeout(advanceTimer.current);
-      advanceTimer.current = null;
-    }
-  }, []);
 
   const handleSelect = useCallback(
     (option: string) => {
@@ -72,8 +53,6 @@ export function PhraseQuiz({
         play('correct');
         trigger('success');
         void award('phrase_complete');
-        // Hold longer when a breakdown is available so the user has time to notice the affordance.
-        scheduleAdvance(breakdownAvailable ? 2200 : 1100);
       } else {
         play('incorrect');
         trigger('error');
@@ -82,17 +61,15 @@ export function PhraseQuiz({
           setIsCorrect(true);
           setCelebrate(true);
           play('reveal');
-          scheduleAdvance(breakdownAvailable ? 2200 : 1300);
         }, 900);
       }
     },
-    [selected, correctAnswer, play, trigger, award, breakdownAvailable, scheduleAdvance],
+    [selected, correctAnswer, play, trigger, award],
   );
 
   const handleExpandBreakdown = useCallback(() => {
-    cancelAdvance();
     setShowBreakdown(true);
-  }, [cancelAdvance]);
+  }, []);
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
@@ -166,14 +143,25 @@ export function PhraseQuiz({
             );
           })}
 
-          {selected && isCorrect && breakdownAvailable && (
-            <button
-              type="button"
-              onClick={handleExpandBreakdown}
-              className="mt-1 mx-auto text-sm font-semibold text-[color:var(--accent-indonesian)] underline underline-offset-4 py-1 animate-fade-in"
-            >
-              Break it down →
-            </button>
+          {selected && isCorrect && (
+            <div className="flex flex-col gap-2 mt-2 animate-fade-in">
+              <button
+                type="button"
+                onClick={onCorrect}
+                className="w-full rounded-2xl bg-[color:var(--accent-indonesian)] text-white font-extrabold py-3.5 shadow-[0_4px_12px_color-mix(in_srgb,var(--accent-indonesian)_35%,transparent)] active:scale-[0.97] transition-transform"
+              >
+                Continue →
+              </button>
+              {breakdownAvailable && (
+                <button
+                  type="button"
+                  onClick={handleExpandBreakdown}
+                  className="mx-auto text-sm font-semibold text-[color:var(--accent-indonesian)] underline underline-offset-4 py-1"
+                >
+                  Break it down
+                </button>
+              )}
+            </div>
           )}
         </div>
       )}

@@ -1,5 +1,6 @@
 import { HabitatCard } from '@/components/ui/HabitatCard';
 import type { HabitatLanguage } from '@/lib/utils/language-habitat';
+import { displayPathTitle } from '@/lib/utils/path-display';
 import type { Path } from '@/types/database';
 
 interface PathCardProps {
@@ -65,7 +66,7 @@ export function PathCard({
     <HabitatCard
       icon={iconForType(path.type)}
       label={labelForPath(path)}
-      title={path.title}
+      title={displayPathTitle(path.title)}
       progress={progress / 100}
       trailing={trailing}
       href={href}

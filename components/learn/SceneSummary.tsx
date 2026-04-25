@@ -39,7 +39,6 @@ interface SceneSummaryProps {
 
 export function SceneSummary({
   sceneTitle,
-  sceneDescription,
   words,
   showUpgrade = false,
   nextScene,
@@ -92,35 +91,29 @@ export function SceneSummary({
   const isEarlyScene = sceneNumber !== undefined && sceneNumber <= 3;
 
   return (
-    <div className="flex flex-col flex-1 min-h-0 pt-4">
-      {/* Hero celebration band */}
-      <div className="relative text-center mb-6 animate-spring-in">
-        <div className="flex justify-center mb-3">
-          <Fox pose="celebrating" size="lg" aria-label="Scene complete!" />
+    <div className="flex flex-col flex-1 min-h-0 pt-2">
+      {/* Hero celebration band — compact so the CTAs stay above the fold on mobile */}
+      <div className="relative text-center mb-3 animate-spring-in">
+        <div className="flex justify-center mb-2">
+          <Fox pose="celebrating" size="md" aria-label="Scene complete!" />
         </div>
         <Celebration active variant="scene-complete" />
-        <p className="text-[10.5px] font-extrabold tracking-[0.18em] uppercase text-[color:var(--accent-indonesian)] mb-2">
-          {sceneNumber && totalScenes
-            ? `Scene ${sceneNumber} of ${totalScenes}`
-            : 'Scene'}
+        <p className="text-[10.5px] font-extrabold tracking-[0.18em] uppercase text-[color:var(--accent-indonesian)] mb-1">
+          {sceneNumber && totalScenes ? `Scene ${sceneNumber} of ${totalScenes} complete` : 'Scene complete!'}
         </p>
-        <h2 className="text-[22px] font-extrabold tracking-tight text-[color:var(--foreground)] leading-tight">
-          Scene complete!
+        <h2 className="text-lg font-extrabold tracking-tight text-[color:var(--foreground)] leading-tight">
+          {sceneTitle}
         </h2>
-        <p className="text-[13px] font-semibold text-[color:var(--text-secondary)] mt-1">{sceneTitle}</p>
-        {sceneDescription && (
-          <p className="text-xs text-[color:var(--text-secondary)] mt-1 font-semibold">{sceneDescription}</p>
-        )}
         {sessionEarned > 0 && (
-          <p className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[color:var(--color-fox-soft)] text-[color:var(--color-fox-deep)] dark:text-[color:var(--color-fox-primary)] text-[13px] font-extrabold">
+          <p className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[color:var(--color-fox-soft)] text-[color:var(--color-fox-deep)] dark:text-[color:var(--color-fox-primary)] text-[12px] font-extrabold">
             <span aria-hidden>✨</span>
-            +{sessionEarned} XP earned
+            +{sessionEarned} XP
           </p>
         )}
       </div>
 
-      <Card className="mb-6">
-        <div className="text-[11px] font-extrabold tracking-[0.14em] uppercase text-[color:var(--text-secondary)] mb-3">
+      <Card className="mb-3 py-3">
+        <div className="text-[11px] font-extrabold tracking-[0.14em] uppercase text-[color:var(--text-secondary)] mb-2">
           {words.length} {words.length === 1 ? 'word' : 'words'} learned
         </div>
         <div className="flex flex-wrap gap-1.5">
@@ -171,7 +164,7 @@ export function SceneSummary({
       <div className="flex-1" />
 
       {wordsLearnedToday > 0 && (
-        <div className="mb-4">
+        <div className="mb-2">
           <PacingNudge
             wordsLearnedToday={wordsLearnedToday}
             scenesCompletedToday={scenesCompletedToday}
@@ -180,7 +173,7 @@ export function SceneSummary({
       )}
 
       {/* CTAs */}
-      <div className="flex flex-col gap-3 pb-4">
+      <div className="flex flex-col gap-2 pb-3">
         {isEarlyScene ? (
           <>
             <Link href={nextSceneHref} className="block">

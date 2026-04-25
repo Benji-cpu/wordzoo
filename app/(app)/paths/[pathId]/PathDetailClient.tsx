@@ -7,6 +7,7 @@ import { EmptyStateCard } from '@/components/ui/EmptyStateCard';
 import { PathJourneyMap } from '@/components/learn/PathJourneyMap';
 import { isSceneComplete } from '@/lib/utils/scene-progress';
 import { habitatFromLanguageCode } from '@/lib/utils/language-habitat';
+import { displayPathTitle } from '@/lib/utils/path-display';
 import type { Path } from '@/types/database';
 import type { SceneMasteryRow, PathWordStats } from '@/lib/db/queries';
 
@@ -79,7 +80,7 @@ export function PathDetailClient({
       {/* Language-themed hero */}
       <HeroCard
         label={languageName}
-        title={path.title}
+        title={displayPathTitle(path.title)}
         subtitle={subtitle}
         progress={wordProgress}
         ctaText={ctaText}
@@ -95,7 +96,7 @@ export function PathDetailClient({
           title="Path complete!"
           subtitle={
             <>
-              You&apos;ve finished <b>{path.title}</b> — {wordStats.words_learned} words mastered
+              You&apos;ve finished <b>{displayPathTitle(path.title)}</b> — {wordStats.words_learned} words mastered
               across {totalScenes} scenes.
             </>
           }

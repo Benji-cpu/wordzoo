@@ -110,9 +110,9 @@ export function QuizOptions({
         ) : null}
       </div>
 
-      {/* Answer options — always stacked, full-width on mobile;
-          two-column on md+ for dense vocab quizzes */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pb-2">
+      {/* Answer options — 2×2 grid that fills the available space so tiles
+          feel finger-sized on mobile. */}
+      <div className="grid grid-cols-2 grid-rows-2 gap-3 pb-2 flex-[0_0_auto] min-h-[220px]">
         {options.map((option) => {
           const isSelectedCorrect = selected === option && isCorrect;
           const isSelectedWrong = selected === option && isCorrect === false;
@@ -138,7 +138,7 @@ export function QuizOptions({
               haptic={false}
               sound={false}
               disabled={selected !== null && !isSelectedCorrect && !isSelectedWrong && !isRevealedCorrect}
-              className={extra}
+              className={`${extra} h-full min-h-[100px] whitespace-normal text-base leading-snug flex items-center justify-center text-center line-clamp-3 py-3`}
               onClick={() => handleSelect(option)}
             >
               {option}

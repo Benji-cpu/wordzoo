@@ -310,6 +310,27 @@ export async function upsertUserPath(
   status: 'active' | 'completed' | 'abandoned'
 ): Promise<UserPath> {
   const completedAt = status === 'completed' ? new Date().toISOString() : null;
+
+  if (status === 'active') {
+    const [, rows] = await sql.transaction([
+      sql`
+        UPDATE user_paths
+        SET status = 'abandoned'
+        WHERE user_id = ${userId}
+          AND path_id <> ${pathId}
+          AND status = 'active'
+      `,
+      sql`
+        INSERT INTO user_paths (user_id, path_id, status, completed_at)
+        VALUES (${userId}, ${pathId}, 'active', NULL)
+        ON CONFLICT (user_id, path_id)
+        DO UPDATE SET status = 'active', completed_at = NULL, started_at = NOW()
+        RETURNING *
+      `,
+    ]);
+    return (rows as UserPath[])[0];
+  }
+
   const rows = await sql`
     INSERT INTO user_paths (user_id, path_id, status, completed_at)
     VALUES (${userId}, ${pathId}, ${status}, ${completedAt})

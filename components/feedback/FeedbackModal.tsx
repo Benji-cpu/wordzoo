@@ -80,46 +80,51 @@ export function FeedbackModal({ isOpen, onClose, context, screenshotBlob }: Feed
 
   async function handleSubmit() {
     if (!message.trim() || !context) return;
-    setState('sending');
 
-    try {
-      // Upload screenshot if available
-      let screenshotUrl: string | undefined;
-      if (screenshotBlob) {
-        const formData = new FormData();
-        formData.append('screenshot', screenshotBlob, 'screenshot.jpg');
-        const uploadRes = await fetch('/api/feedback/screenshot', {
-          method: 'POST',
-          body: formData,
-        });
-        if (uploadRes.ok) {
-          const uploadData = await uploadRes.json();
-          screenshotUrl = uploadData.data?.url;
+    // Optimistic UX: the user doesn't need to watch the upload. Snapshot
+    // the payload, clear the draft, flash a success, and close — then do the
+    // network work in the background. If it fails we stash the draft back
+    // into sessionStorage so they don't lose it.
+    const payload = {
+      message: message.trim(),
+      pageUrl: context.pageUrl,
+      pageTitle: context.pageTitle,
+      routeParams: context.routeParams,
+      viewportWidth: context.viewportWidth,
+      viewportHeight: context.viewportHeight,
+      userAgent: context.userAgent,
+    };
+    const blob = screenshotBlob;
+    clearDraft();
+    setState('success');
+
+    void (async () => {
+      try {
+        let screenshotUrl: string | undefined;
+        if (blob) {
+          const formData = new FormData();
+          formData.append('screenshot', blob, 'screenshot.jpg');
+          const uploadRes = await fetch('/api/feedback/screenshot', {
+            method: 'POST',
+            body: formData,
+          });
+          if (uploadRes.ok) {
+            const uploadData = await uploadRes.json();
+            screenshotUrl = uploadData.data?.url;
+          }
         }
+
+        const res = await fetch('/api/feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...payload, screenshotUrl }),
+        });
+        if (!res.ok) throw new Error('Failed to submit');
+      } catch {
+        // Background failure: restore draft so user can retry.
+        sessionStorage.setItem(DRAFT_KEY, payload.message);
       }
-
-      // Submit feedback
-      const res = await fetch('/api/feedback', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: message.trim(),
-          pageUrl: context.pageUrl,
-          pageTitle: context.pageTitle,
-          routeParams: context.routeParams,
-          screenshotUrl,
-          viewportWidth: context.viewportWidth,
-          viewportHeight: context.viewportHeight,
-          userAgent: context.userAgent,
-        }),
-      });
-
-      if (!res.ok) throw new Error('Failed to submit');
-      clearDraft();
-      setState('success');
-    } catch {
-      setState('error');
-    }
+    })();
   }
 
   if (!mounted) return null;
@@ -161,7 +166,7 @@ export function FeedbackModal({ isOpen, onClose, context, screenshotBlob }: Feed
               <div className="w-10 h-1 rounded-full bg-card-border" />
             </div>
 
-            <div className="px-5 pb-6 safe-area-bottom">
+            <div className="px-5 pb-8 pt-1" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 2rem)' }}>
               {confirmDiscard ? (
                 <div className="py-6 flex flex-col gap-4">
                   <p className="text-foreground text-base font-medium">

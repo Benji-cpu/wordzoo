@@ -5,7 +5,8 @@ KEYWORD RULES:
 - Must SOUND LIKE the foreign word (phonetic match, NOT spelling match)
 - Partial phonetic matches are OK — match the most distinctive syllables
 - Avoid obscure or technical English words
-- NEVER use personal names (e.g. "Terry", "Connie", "Dan") — names have no visual identity and produce generic images
+- NEVER use personal names (e.g. "Terry", "Connie", "Dan", "Sawyer", "Dee") — names have no visual identity and produce generic images. This includes occupational surnames ("Sawyer", "Smith") and single-letter names ("Dee", "Em"); these read as names to a learner and don't anchor a clear picture
+- NEVER use a single letter or letter-sound as a keyword (e.g. "Dee" for the letter D)
 - Keyword should be a commonly known English word — not slang, not technical jargon
 - Prefer concrete nouns and verbs over phrases — a single vivid word beats a multi-word phrase
 

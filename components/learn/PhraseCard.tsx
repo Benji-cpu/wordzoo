@@ -2,8 +2,20 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { Card } from '@/components/ui/Card';
+import { MnemonicImage } from '@/components/shared/MnemonicImage';
 import { stopPlayback, isAudioUnlocked } from '@/lib/audio';
 import type { ScenePhrase } from '@/types/database';
+
+function renderBridgeSentence(sentence: string) {
+  const parts = sentence.split(/\b([A-Z]{2,}(?:\s+[A-Z]{2,})*)\b/);
+  return parts.map((part, i) =>
+    /^[A-Z]{2,}(?:\s+[A-Z]{2,})*$/.test(part) ? (
+      <span key={i} className="font-bold text-accent-id not-italic">{part}</span>
+    ) : (
+      <span key={i}>{part}</span>
+    )
+  );
+}
 
 interface PhraseCardProps {
   phrase: ScenePhrase;
@@ -71,6 +83,27 @@ export function PhraseCard({ phrase, onContinue }: PhraseCardProps) {
       <p className="text-xs text-text-secondary uppercase tracking-wider mb-4">Key Phrase</p>
       <h2 className="text-3xl font-bold text-accent-id mb-2">{phrase.text_target}</h2>
       <p className="text-lg text-foreground mb-2">{phrase.text_en}</p>
+
+      <div className="my-4 px-2" onClick={(e) => e.stopPropagation()}>
+        <MnemonicImage
+          src={phrase.composite_image_url}
+          alt={phrase.text_en}
+          variant="phrase-word"
+          className="max-h-[200px]"
+          fallback={
+            <div className="rounded-lg bg-gradient-to-br from-accent-id/15 to-surface-inset py-6 px-4 mx-auto max-w-sm">
+              <p className="text-lg font-bold text-accent-id">{phrase.text_target}</p>
+              <p className="text-sm text-foreground mt-1">{phrase.text_en}</p>
+              <p className="text-xs text-text-secondary mt-3">Visual coming soon</p>
+            </div>
+          }
+        />
+      </div>
+      {phrase.phrase_bridge_sentence && (
+        <p className="text-sm text-foreground italic px-4 mb-2" onClick={(e) => e.stopPropagation()}>
+          {renderBridgeSentence(phrase.phrase_bridge_sentence)}
+        </p>
+      )}
 
       {phrase.audio_url && (
         <div className="flex items-center justify-center gap-2 mb-3" onClick={(e) => e.stopPropagation()}>
