@@ -129,7 +129,7 @@ export function ImageCoverageClient({ stats }: { stats: ImageCoverageStats }) {
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-8">
         <StatCard
           label="Words w/ mnemonic"
           total={stats.orphanWords.total}
@@ -158,6 +158,15 @@ export function ImageCoverageClient({ stats }: { stats: ImageCoverageStats }) {
           bgFn={coverageBg}
         />
         <StatCard
+          label="Phrase audio"
+          total={stats.phraseAudio.total}
+          filled={stats.phraseAudio.withAudio}
+          missing={stats.phraseAudio.missing}
+          pct={stats.phraseAudio.coveragePercent}
+          colorFn={coverageColor}
+          bgFn={coverageBg}
+        />
+        <StatCard
           label="Scene anchors"
           total={stats.scenes.total}
           filled={stats.scenes.withAnchorImage}
@@ -182,6 +191,9 @@ export function ImageCoverageClient({ stats }: { stats: ImageCoverageStats }) {
         </code>
         <code className="text-xs text-emerald-400 block mt-1">
           npm run db:backfill-images   # composes all three with generous limits
+        </code>
+        <code className="text-xs text-emerald-400 block mt-1">
+          npm run db:seed-audio -- --mode=phrases   # backfill missing phrase audio
         </code>
       </div>
 

@@ -29,6 +29,10 @@ export function useSpeechInput(langCode: string) {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [audioLevel, setAudioLevel] = useState(0);
+  const [error, setError] = useState<string | null>(null);
+  const supported =
+    typeof window !== 'undefined' &&
+    !!(window.SpeechRecognition || window.webkitSpeechRecognition);
 
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -78,7 +82,21 @@ export function useSpeechInput(langCode: string) {
 
   const startListening = useCallback(async () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) return;
+    if (!SpeechRecognition) {
+      // Brave disables Web Speech API by default. Surface a clear hint instead of
+      // failing silently — most users won't know to flip the brave://settings flag.
+      const ua = navigator.userAgent;
+      const isBrave = !!(navigator as unknown as { brave?: { isBrave?: () => Promise<boolean> } }).brave;
+      setError(
+        isBrave
+          ? 'Brave blocks speech recognition by default. Enable it at brave://settings/privacy → "Use Google services for push messaging" or use Chrome.'
+          : ua.includes('Firefox')
+            ? 'Firefox does not support speech recognition. Please use Chrome, Edge, or Safari.'
+            : 'Speech recognition is not available in this browser.'
+      );
+      return;
+    }
+    setError(null);
 
     // Request mic access for audio visualization
     try {
@@ -137,5 +155,5 @@ export function useSpeechInput(langCode: string) {
     stopAudio();
   }, []);
 
-  return { isListening, transcript, audioLevel, startListening, stopListening };
+  return { isListening, transcript, audioLevel, startListening, stopListening, supported, error };
 }

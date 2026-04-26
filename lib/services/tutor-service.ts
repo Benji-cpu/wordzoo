@@ -12,6 +12,8 @@ import {
   getScenePhrases,
   updateTutorSessionLearnerContext,
 } from '@/lib/db';
+import { getUserProfile } from '@/lib/db/queries';
+import { l1NameFromCode } from '@/lib/ai/tutor-prompts';
 
 const MAX_GUIDED_TURNS = 6;
 const MAX_FREE_TURNS = 10;
@@ -56,11 +58,13 @@ export async function startSession(
   const language = await getLanguageById(languageId);
   if (!language) throw new Error('Language not found');
 
-  const [knownWords, dueWords, { contextString: adaptiveCtx, proficiencyTier }] = await Promise.all([
+  const [knownWords, dueWords, { contextString: adaptiveCtx, proficiencyTier }, userProfile] = await Promise.all([
     getUserKnownWords(userId, languageId),
     getUserDueWords(userId, languageId),
     buildAdaptiveContext(userId, languageId),
+    getUserProfile(userId),
   ]);
+  const l1Name = l1NameFromCode(userProfile?.native_language);
 
   let systemPrompt: string;
 
@@ -75,6 +79,7 @@ export async function startSession(
     systemPrompt = buildTutorSystemPrompt({
       languageName: language.name,
       languageCode: language.code,
+      l1Name,
       mode,
       scenario,
       knownWords,
@@ -117,15 +122,17 @@ export async function startGuidedSession(
   const language = await getLanguageById(languageId);
   if (!language) throw new Error('Language not found');
 
-  const [dialogues, phrases, { contextString: adaptiveCtx, proficiencyTier }] = await Promise.all([
+  const [dialogues, phrases, { contextString: adaptiveCtx, proficiencyTier }, userProfile] = await Promise.all([
     getSceneDialogues(sceneId),
     getScenePhrases(sceneId),
     buildAdaptiveContext(userId, languageId),
+    getUserProfile(userId),
   ]);
 
   const systemPrompt = buildGuidedConversationPrompt({
     languageName: language.name,
     languageCode: language.code,
+    l1Name: l1NameFromCode(userProfile?.native_language),
     sceneContext,
     dialogueLines: dialogues.map((d) => ({
       speaker: d.speaker,
@@ -181,7 +188,11 @@ export async function sendMessage(
   if (!language) throw new Error('Language not found');
 
   let systemPrompt: string;
-  const { contextString: adaptiveCtx, proficiencyTier } = await buildAdaptiveContext(userId, session.language_id);
+  const [{ contextString: adaptiveCtx, proficiencyTier }, userProfile] = await Promise.all([
+    buildAdaptiveContext(userId, session.language_id),
+    getUserProfile(userId),
+  ]);
+  const l1Name = l1NameFromCode(userProfile?.native_language);
 
   let isLastTurn = false;
   if (session.mode === 'guided_conversation' && session.scene_id) {
@@ -195,6 +206,7 @@ export async function sendMessage(
     systemPrompt = buildGuidedConversationPrompt({
       languageName: language.name,
       languageCode: language.code,
+      l1Name,
       sceneContext: session.scenario ?? '',
       dialogueLines: dialogues.map((d) => ({
         speaker: d.speaker,
@@ -273,6 +285,7 @@ export async function sendMessage(
     systemPrompt = buildTutorSystemPrompt({
       languageName: language.name,
       languageCode: language.code,
+      l1Name,
       mode: session.mode,
       scenario: session.scenario,
       knownWords,

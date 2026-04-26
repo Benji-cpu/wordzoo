@@ -412,6 +412,7 @@ export async function updateAppFeedbackStatus(
 export interface ImageCoverageStats {
   mnemonics: { total: number; withImage: number; missing: number; coveragePercent: number };
   phrases: { total: number; withImage: number; missing: number; coveragePercent: number };
+  phraseAudio: { total: number; withAudio: number; missing: number; coveragePercent: number };
   scenes: { total: number; withAnchorImage: number; missingAnchor: number; coveragePercent: number };
   orphanWords: { total: number; withMnemonic: number; missing: number; coveragePercent: number };
 }
@@ -423,6 +424,7 @@ export async function getImageCoverageStats(): Promise<ImageCoverageStats> {
       (SELECT COUNT(*)::int FROM mnemonics WHERE user_id IS NULL AND image_url IS NOT NULL) AS mn_with_image,
       (SELECT COUNT(*)::int FROM scene_phrases) AS ph_total,
       (SELECT COUNT(*)::int FROM scene_phrases WHERE composite_image_url IS NOT NULL) AS ph_with_image,
+      (SELECT COUNT(*)::int FROM scene_phrases WHERE audio_url IS NOT NULL) AS ph_with_audio,
       (SELECT COUNT(*)::int FROM scenes) AS sc_total,
       (SELECT COUNT(*)::int FROM scenes WHERE anchor_image_url IS NOT NULL) AS sc_with_anchor,
       (SELECT COUNT(DISTINCT w.id)::int FROM words w JOIN scene_words sw ON sw.word_id = w.id) AS ow_total,
@@ -430,7 +432,7 @@ export async function getImageCoverageStats(): Promise<ImageCoverageStats> {
   `;
   const r = rows[0] as {
     mn_total: number; mn_with_image: number;
-    ph_total: number; ph_with_image: number;
+    ph_total: number; ph_with_image: number; ph_with_audio: number;
     sc_total: number; sc_with_anchor: number;
     ow_total: number; ow_with_mn: number;
   };
@@ -446,6 +448,12 @@ export async function getImageCoverageStats(): Promise<ImageCoverageStats> {
       withImage: r.ph_with_image,
       missing: r.ph_total - r.ph_with_image,
       coveragePercent: r.ph_total > 0 ? Math.round((r.ph_with_image / r.ph_total) * 100) : 0,
+    },
+    phraseAudio: {
+      total: r.ph_total,
+      withAudio: r.ph_with_audio,
+      missing: r.ph_total - r.ph_with_audio,
+      coveragePercent: r.ph_total > 0 ? Math.round((r.ph_with_audio / r.ph_total) * 100) : 0,
     },
     scenes: {
       total: r.sc_total,

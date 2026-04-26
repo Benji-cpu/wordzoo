@@ -122,7 +122,13 @@ export function TutorChat({
   });
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const speechLangCode = mapLanguageCode(langCode);
-  const { isListening, transcript, audioLevel, startListening, stopListening } = useSpeechInput(speechLangCode);
+  const { isListening, transcript, audioLevel, startListening, stopListening, error: speechError } = useSpeechInput(speechLangCode);
+
+  useEffect(() => {
+    if (speechError) {
+      import('sonner').then(({ toast }) => toast.error(speechError, { duration: 8000 }));
+    }
+  }, [speechError]);
 
   // Derive view state from props
   const view: ViewState = summaryData ? 'summary' : sessionId ? 'chatting' : 'mode_select';

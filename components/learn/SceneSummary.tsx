@@ -116,7 +116,7 @@ export function SceneSummary({
         <div className="text-[11px] font-extrabold tracking-[0.14em] uppercase text-[color:var(--text-secondary)] mb-2">
           {words.length} {words.length === 1 ? 'word' : 'words'} learned
         </div>
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-1.5 max-h-[28vh] overflow-y-auto pr-1">
           {words.map(({ word }) => {
             const isExpanded = expandedWordId === word.id;
             return (

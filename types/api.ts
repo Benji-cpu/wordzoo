@@ -269,7 +269,7 @@ export type StudioSuggestionsInput = z.infer<typeof StudioSuggestionsSchema>;
 // --- App Feedback ---
 
 export const SubmitAppFeedbackSchema = z.object({
-  message: z.string().min(1).max(1000),
+  message: z.string().min(1).max(8000),
   pageUrl: z.string().min(1).max(2000),
   pageTitle: z.string().max(200).optional(),
   routeParams: z.record(z.string(), z.string()).optional(),

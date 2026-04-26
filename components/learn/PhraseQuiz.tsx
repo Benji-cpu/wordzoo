@@ -108,8 +108,11 @@ export function PhraseQuiz({
             Continue →
           </button>
         </div>
-      ) : (
-        <div className="flex flex-col gap-3 pb-2">
+      ) : (() => {
+        const longest = options.reduce((m, o) => Math.max(m, o.length), 0);
+        const useGrid = longest <= 16;
+        return (
+        <div className={useGrid ? 'grid grid-cols-2 gap-3 pb-2' : 'flex flex-col gap-3 pb-2'}>
           {options.map((option) => {
             const isSelectedCorrect = selected === option && isCorrect;
             const isSelectedWrong = selected === option && isCorrect === false;
@@ -144,7 +147,7 @@ export function PhraseQuiz({
           })}
 
           {selected && isCorrect && (
-            <div className="flex flex-col gap-2 mt-2 animate-fade-in">
+            <div className={`flex flex-col gap-2 mt-2 animate-fade-in ${useGrid ? 'col-span-2' : ''}`}>
               <button
                 type="button"
                 onClick={onCorrect}
@@ -164,7 +167,8 @@ export function PhraseQuiz({
             </div>
           )}
         </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

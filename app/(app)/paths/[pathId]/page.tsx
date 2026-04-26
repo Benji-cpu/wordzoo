@@ -6,6 +6,7 @@ import {
   getSceneMasteryForPath,
   getPathWordStats,
   getLanguageById,
+  upsertUserPath,
 } from '@/lib/db/queries';
 import { PathDetailClient } from './PathDetailClient';
 
@@ -25,6 +26,10 @@ export default async function PathDetailPage({ params }: PageProps) {
 
   const hasAccess = await verifyPathAccess(pathId, userId);
   if (!hasAccess) return notFound();
+
+  // Visiting a path's detail page is an explicit selection — mark it active so
+  // the dashboard and other surfaces reflect the user's intent. Fire-and-forget.
+  upsertUserPath(userId, pathId, 'active').catch(() => {});
 
   const [sceneMastery, wordStats, language] = await Promise.all([
     getSceneMasteryForPath(userId, pathId),

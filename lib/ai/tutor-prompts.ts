@@ -2,6 +2,20 @@ import type { KnownWordRow } from '@/lib/db/queries';
 import type { ProficiencyTier } from '@/lib/services/learner-profile-service';
 import { getLanguageConfig } from '@/lib/config/language-config';
 
+// Maps a user's native-language code (BCP-47-ish) to a display name used in
+// prompts. The student's L1 is the language WordZoo will scaffold *with* — it
+// is NOT the target language. Defaults to English when unknown so prompts
+// never break.
+const L1_NAME_BY_CODE: Record<string, string> = {
+  en: 'English', es: 'Spanish', id: 'Indonesian', fr: 'French', de: 'German',
+  pt: 'Portuguese', it: 'Italian', ja: 'Japanese', ko: 'Korean', zh: 'Chinese',
+  ru: 'Russian', ar: 'Arabic', hi: 'Hindi', th: 'Thai', vi: 'Vietnamese',
+};
+export function l1NameFromCode(code: string | null | undefined): string {
+  if (!code) return 'English';
+  return L1_NAME_BY_CODE[code] ?? 'English';
+}
+
 // --- Phase Types ---
 
 export type GuidedPhase = 'open' | 'practice' | 'stretch' | 'close';
@@ -33,25 +47,25 @@ const FREE_CHAT_PHASE_INSTRUCTIONS: Record<FreeChatPhase, string> = {
   close: `## Current Phase: Closing\nWrap up warmly. Summarize 1-2 things done well. Suggest next step (review flashcards, try next scene). Do NOT ask questions.`,
 };
 
-function getLanguagePolicy(tier: ProficiencyTier, lang: string, langCode?: string): string {
+function getLanguagePolicy(tier: ProficiencyTier, lang: string, langCode?: string, l1Name: string = 'English'): string {
   const config = langCode ? getLanguageConfig(langCode) : undefined;
   const registerBlock = config?.registerAwareness[tier] ?? '';
 
   const policyByTier: Record<ProficiencyTier, string> = {
     beginner:
       `## Language Policy\n` +
-      `Speak primarily in English. Embed individual ${lang} words and short phrases (2-3 words max) within English sentences.\n` +
+      `Speak primarily in ${l1Name} (the student's native language). Embed individual ${lang} words and short phrases (2-3 words max) within ${l1Name} sentences.\n` +
       `NEVER write full sentences in ${lang}. The student cannot parse ${lang} grammar yet.\n` +
       (registerBlock ? `\n${registerBlock}` : ''),
     intermediate:
       `## Language Policy\n` +
-      `Use a mix of ${lang} and English. Write simple ${lang} sentences (4-6 words) with immediate English support.\n` +
-      `Use English for corrections and explanations. The student can handle simple ${lang} sentences but not complex ones.\n` +
+      `Use a mix of ${lang} and ${l1Name}. Write simple ${lang} sentences (4-6 words) with immediate ${l1Name} support.\n` +
+      `Use ${l1Name} for corrections and explanations. The student can handle simple ${lang} sentences but not complex ones.\n` +
       (registerBlock ? `\n${registerBlock}` : ''),
     advanced:
       `## Language Policy\n` +
-      `Speak mostly in ${lang}. Use English only for nuanced corrections or complex explanations.\n` +
-      `The student is comfortable with ${lang} grammar and vocabulary.\n` +
+      `Speak entirely in ${lang}. Only use ${l1Name} for nuanced corrections or unavoidable explanations of subtle concepts — and even then, prefer ${lang}.\n` +
+      `The student is comfortable with ${lang} grammar and vocabulary. Do not pad responses with ${l1Name} translations.\n` +
       (registerBlock ? `\n${registerBlock}` : ''),
   };
 
@@ -61,6 +75,8 @@ function getLanguagePolicy(tier: ProficiencyTier, lang: string, langCode?: strin
 interface TutorPromptOptions {
   languageName: string;
   languageCode?: string;
+  /** Display name of the user's native language (defaults to English). */
+  l1Name?: string;
   mode: string;
   scenario?: string | null;
   knownWords: KnownWordRow[];
@@ -99,7 +115,7 @@ export function buildTutorSystemPrompt(opts: TutorPromptOptions): string {
 
   // Language policy based on proficiency
   const tier = opts.proficiencyTier ?? 'beginner';
-  blocks.push(getLanguagePolicy(tier, opts.languageName, opts.languageCode));
+  blocks.push(getLanguagePolicy(tier, opts.languageName, opts.languageCode, opts.l1Name ?? 'English'));
 
   // Student name
   if (opts.userName) {
@@ -204,12 +220,12 @@ export function buildTutorSystemPrompt(opts: TutorPromptOptions): string {
     `- Keep responses ${tier === 'beginner' && opts.knownWords.length < 20 ? '1-2' : '2-4'} sentences long\n` +
     `- When introducing a new word, always include the meaning in parentheses\n` +
     `- ${correctionFormat}\n` +
-    `- After your main response, add a full English translation on its own line:\n` +
-    `  [EN: Full English translation of your response]\n` +
+    `- After your main response, add a full translation in the student's native language (${opts.l1Name ?? 'English'}) on its own line:\n` +
+    `  [EN: Full ${opts.l1Name ?? 'English'} translation of your response]\n` +
     `  Only translate the conversational content — not corrections, grammar notes, or suggestions.\n` +
     `- After your response, suggest 2-3 things the student could say next:\n` +
-    `  [SUGGEST: target text :: english meaning | target text :: english meaning | target text :: english meaning]\n` +
-    `  Each suggestion has the target-language text, then :: followed by the English meaning.\n` +
+    `  [SUGGEST: target text :: ${opts.l1Name ?? 'English'} meaning | target text :: ${opts.l1Name ?? 'English'} meaning | target text :: ${opts.l1Name ?? 'English'} meaning]\n` +
+    `  Each suggestion has the target-language text, then :: followed by the ${opts.l1Name ?? 'English'} meaning.\n` +
     `  Do NOT use square brackets inside suggestion text (e.g. avoid [your name] — just write the actual text).\n` +
     `  Make suggestions natural and at the student's level.\n` +
     `  Only include suggestions when the student might benefit from guidance.\n` +
@@ -225,6 +241,7 @@ export function buildTutorSystemPrompt(opts: TutorPromptOptions): string {
 interface GuidedConversationOptions {
   languageName: string;
   languageCode?: string;
+  l1Name?: string;
   sceneContext: string;
   dialogueLines: { speaker: string; text_target: string; text_en: string }[];
   phrases: { text_target: string; text_en: string }[];
@@ -248,7 +265,7 @@ export function buildGuidedConversationPrompt(opts: GuidedConversationOptions): 
   );
 
   // Language policy based on proficiency
-  blocks.push(getLanguagePolicy(guidedTier, opts.languageName, opts.languageCode));
+  blocks.push(getLanguagePolicy(guidedTier, opts.languageName, opts.languageCode, opts.l1Name ?? 'English'));
 
   // Student name
   if (opts.userName) {

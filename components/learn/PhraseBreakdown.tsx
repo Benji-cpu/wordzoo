@@ -146,7 +146,6 @@ export function PhraseBreakdown({ phrase, onContinue, embedded = false }: Phrase
         </p>
       )}
 
-      {!embedded && <p className="text-sm text-text-secondary mt-6">Tap to continue</p>}
     </>
   );
 
@@ -159,8 +158,17 @@ export function PhraseBreakdown({ phrase, onContinue, embedded = false }: Phrase
   }
 
   return (
-    <Card className="text-center py-8 animate-slide-up" onClick={onContinue}>
+    <Card className="text-center py-8 animate-slide-up">
       {inner}
+      {onContinue && (
+        <button
+          type="button"
+          onClick={onContinue}
+          className="mt-6 w-full rounded-2xl bg-[color:var(--accent-indonesian)] text-white font-extrabold py-3.5 shadow-[0_4px_12px_color-mix(in_srgb,var(--accent-indonesian)_35%,transparent)] active:scale-[0.97] transition-transform"
+        >
+          Continue →
+        </button>
+      )}
     </Card>
   );
 }
