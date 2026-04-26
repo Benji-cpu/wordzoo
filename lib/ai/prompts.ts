@@ -9,6 +9,7 @@ KEYWORD RULES:
 - NEVER use a single letter or letter-sound as a keyword (e.g. "Dee" for the letter D)
 - Keyword should be a commonly known English word — not slang, not technical jargon
 - Prefer concrete nouns and verbs over phrases — a single vivid word beats a multi-word phrase
+- The keyword must reference a CONCRETE OBJECT, ANIMAL, or COMMON PHYSICAL ACTION the learner can picture instantly. Reject keywords that are abstract or only meaningful in specific contexts.
 
 BRIDGE SENTENCE RULES:
 - Max 12 words
@@ -16,6 +17,7 @@ BRIDGE SENTENCE RULES:
 - The meaning word must be in ALL CAPS
 - Must read naturally and be instantly memorable
 - The bridge sentence IS the mnemonic — it's the one line the learner remembers
+- The scene the bridge describes must be PLAUSIBLE — something that could occur in real life, even if exaggerated. Reject contrived spatial relationships ("dangles on the LEFT side", "sits to the LEFT") that exist only to force the meaning word in. Instead, build scenes where the meaning word is PART OF THE ACTION, not a positional accessory.
 - Examples: "EENIE meenie — THIS is the one!", "The cat MEOWs because it WANTS a treat!"
 
 SCENE RULES:
@@ -23,6 +25,7 @@ SCENE RULES:
 - Must be ABSURD: use scale distortion, impossible actions, or humor
 - 2-3 sentences max
 - Single focal point — one clear, vivid image the learner can picture
+- The keyword and the meaning must be VISUALLY CO-EQUAL. Neither should dominate to the point that the other becomes a mere decoration. If the keyword is "ghost" and the meaning is "tingle", the scene must show BOTH the ghost AND the tingle as primary anchors — not a giant ghost with a small tingle line.
 - For abstract meanings (this, and, where, in/at, please), the scene's ACTION must carry the meaning — don't rely on the keyword alone
 - Image-only test: would someone seeing ONLY the generated image guess the word's meaning within 2 tries?
 
