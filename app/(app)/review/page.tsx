@@ -1,7 +1,7 @@
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { getDueWords, getDuePhrases } from '@/lib/srs/engine';
-import { getAllLearnedWordsForPractice, getWordFamilies } from '@/lib/db/queries';
+import { getAllLearnedWordsForPractice, getWordFamilies, getUserActivePath } from '@/lib/db/queries';
 import { getPhraseWordsWithMnemonics } from '@/lib/db/scene-flow-queries';
 import { getInsightState } from '@/lib/db/insight-queries';
 import { ReviewClient } from '@/components/learn/ReviewClient';
@@ -12,10 +12,16 @@ export default async function ReviewPage() {
   const session = await auth();
   if (!session?.user?.id) redirect('/login');
 
+  // Scope review to the user's active path's language so they aren't reviewing
+  // words from a path they're not currently working on. If no active path,
+  // fall back to all-language review.
+  const activePath = await getUserActivePath(session.user.id);
+  const languageId = activePath?.path_language_id ?? null;
+
   const [dueWords, duePhrases, practiceWords, insightState] = await Promise.all([
-    getDueWords(session.user.id),
-    getDuePhrases(session.user.id),
-    getAllLearnedWordsForPractice(session.user.id),
+    getDueWords(session.user.id, undefined, undefined, languageId),
+    getDuePhrases(session.user.id, undefined, languageId),
+    getAllLearnedWordsForPractice(session.user.id, undefined, languageId),
     getInsightState(session.user.id),
   ]);
 

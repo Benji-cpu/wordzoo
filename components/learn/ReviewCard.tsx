@@ -97,8 +97,10 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, w
     transition: 'none',
   } : {};
 
+  // Image is capped to ~32vh so revealed state + rating + bridge fit in
+  // one mobile viewport without scrolling.
   const mnemonicImage = mnemonic.image_url && (
-    <div className="relative w-full rounded-xl overflow-hidden mb-1 bg-surface-inset">
+    <div className="relative w-full rounded-xl overflow-hidden mb-1 bg-surface-inset max-h-[32vh]">
       <MnemonicImage
         src={mnemonic.image_url}
         alt={mnemonic.keyword_text ? `Mnemonic illustration: ${mnemonic.keyword_text}` : 'Mnemonic illustration'}
@@ -111,21 +113,6 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, w
           <FeedbackButtons mnemonicId={mnemonic.id} context="review" compact overlay />
         </div>
       )}
-    </div>
-  );
-
-  // Pre-reveal teaser — a heavily-blurred strip of the mnemonic image hinting
-  // that there's a visual waiting. Gives the brain a retrieval cue without
-  // spoiling the answer.
-  const teaser = !revealed && mnemonic.image_url && (
-    <div className="w-full h-10 rounded-lg overflow-hidden mb-3 opacity-60">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={mnemonic.image_url}
-        alt=""
-        aria-hidden
-        className="w-full h-full object-cover scale-125 blur-2xl"
-      />
     </div>
   );
 
@@ -160,8 +147,7 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, w
                 revealed ? 'max-h-0 opacity-0' : 'max-h-[300px] opacity-100'
               }`}
             >
-              {teaser}
-              <p className="text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-[color:var(--text-secondary)] mb-3">
+<p className="text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-[color:var(--text-secondary)] mb-3">
                 What does this mean?
               </p>
               <h2
@@ -232,8 +218,7 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, w
                 revealed ? 'max-h-0 opacity-0' : 'max-h-[140px] opacity-100'
               }`}
             >
-              {teaser}
-              <p className="text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-[color:var(--text-secondary)] mb-3">
+<p className="text-[10.5px] font-extrabold uppercase tracking-[0.18em] text-[color:var(--text-secondary)] mb-3">
                 How do you say...
               </p>
               <h2 className="text-[22px] font-extrabold tracking-tight text-[color:var(--foreground)] mb-3 leading-tight">{word.meaning_en}</h2>

@@ -23,9 +23,10 @@ function calculateStatus(intervalDays: number): 'learning' | 'reviewing' | 'mast
 export async function getDueWords(
   userId: string,
   limit?: number,
-  _context?: string
+  _context?: string,
+  languageId?: string | null
 ): Promise<DueWordForReview[]> {
-  return getDueWordsForReview(userId, limit ?? 20);
+  return getDueWordsForReview(userId, limit ?? 20, languageId);
 }
 
 export async function recordReview(
@@ -90,9 +91,10 @@ export async function recordReview(
 
 export async function getDuePhrases(
   userId: string,
-  limit?: number
+  limit?: number,
+  languageId?: string | null
 ): Promise<DuePhraseForReview[]> {
-  return getDuePhrasesForReview(userId, limit ?? 20);
+  return getDuePhrasesForReview(userId, limit ?? 20, languageId);
 }
 
 export async function recordPhraseReview(

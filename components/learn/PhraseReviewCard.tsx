@@ -155,7 +155,7 @@ export function PhraseReviewCard({
                   </p>
                 )}
                 {compositeImageUrl ? (
-                  <div className="relative w-full rounded-xl overflow-hidden mb-3 bg-surface-inset">
+                  <div className="relative w-full rounded-xl overflow-hidden mb-3 bg-surface-inset max-h-[32vh]">
                     <MnemonicImage src={compositeImageUrl} alt={`Illustration for phrase: ${textEn}`} variant="phrase-composite" />
                   </div>
                 ) : !phraseBridgeSentence ? (
@@ -173,23 +173,14 @@ export function PhraseReviewCard({
           </>
         ) : (
           <>
+            {/* Production mode: prompt shows ONLY the meaning. Image, target text,
+                and literal translation are answer-side surfaces and must stay
+                hidden until reveal — otherwise the question gives itself away. */}
             <p className="text-xs text-text-secondary uppercase tracking-wider mb-1">Phrase</p>
             <p className="text-xs text-text-secondary uppercase tracking-wider mb-4">
               How do you say...
             </p>
             <h2 className="text-[22px] font-extrabold tracking-tight text-[color:var(--foreground)] mb-3 leading-tight">{textEn}</h2>
-            <div className="mb-3">
-              <MnemonicImage
-                src={compositeImageUrl}
-                alt={`Illustration for phrase: ${textEn}`}
-                variant="phrase-composite"
-                fallback={
-                  <div className="rounded-xl bg-gradient-to-br from-accent-id/15 to-surface-inset py-6 px-4">
-                    <p className="text-xs text-text-secondary">Visual coming soon</p>
-                  </div>
-                }
-              />
-            </div>
 
             {revealed && (
               <div className="mt-3 pt-3 border-t border-card-border animate-slide-up">
@@ -204,6 +195,15 @@ export function PhraseReviewCard({
                     {renderBridgeSentence(phraseBridgeSentence)}
                   </p>
                 )}
+                {compositeImageUrl ? (
+                  <div className="relative w-full rounded-xl overflow-hidden mb-3 bg-surface-inset max-h-[32vh]">
+                    <MnemonicImage src={compositeImageUrl} alt={`Illustration for phrase: ${textEn}`} variant="phrase-composite" />
+                  </div>
+                ) : !phraseBridgeSentence ? (
+                  <div className="rounded-xl bg-gradient-to-br from-accent-id/15 to-surface-inset py-6 px-4 mb-3">
+                    <p className="text-xs text-text-secondary">Visual coming soon</p>
+                  </div>
+                ) : null}
                 {wordBreakdown}
               </div>
             )}

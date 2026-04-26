@@ -200,7 +200,8 @@ export interface DuePhraseForReview {
 
 export async function getDuePhrasesForReview(
   userId: string,
-  limit: number = 20
+  limit: number = 20,
+  languageId?: string | null
 ): Promise<DuePhraseForReview[]> {
   const rows = await sql`
     SELECT
@@ -211,9 +212,12 @@ export async function getDuePhrasesForReview(
       up.interval_days, up.times_reviewed, up.times_correct
     FROM user_phrases up
     JOIN scene_phrases sp ON sp.id = up.phrase_id
+    JOIN scenes s ON s.id = sp.scene_id
+    JOIN paths p ON p.id = s.path_id
     WHERE up.user_id = ${userId}
       AND up.next_review_at <= NOW()
       AND up.status != 'new'
+      AND (${languageId ?? null}::uuid IS NULL OR p.language_id = ${languageId ?? null}::uuid)
     ORDER BY up.next_review_at ASC
     LIMIT ${limit}
   `;

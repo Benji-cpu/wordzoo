@@ -1209,7 +1209,8 @@ export interface DueWordForReview {
 
 export async function getDueWordsForReview(
   userId: string,
-  limit: number = 20
+  limit: number = 20,
+  languageId?: string | null
 ): Promise<DueWordForReview[]> {
   const rows = await sql`
     SELECT
@@ -1234,6 +1235,7 @@ export async function getDueWordsForReview(
     WHERE uw.user_id = ${userId}
       AND uw.next_review_at <= NOW()
       AND uw.status != 'new'
+      AND (${languageId ?? null}::uuid IS NULL OR w.language_id = ${languageId ?? null}::uuid)
     ORDER BY uw.next_review_at ASC
     LIMIT ${limit}
   `;
@@ -1242,7 +1244,8 @@ export async function getDueWordsForReview(
 
 export async function getAllLearnedWordsForPractice(
   userId: string,
-  limit: number = 50
+  limit: number = 50,
+  languageId?: string | null
 ): Promise<DueWordForReview[]> {
   const rows = await sql`
     SELECT
@@ -1266,6 +1269,7 @@ export async function getAllLearnedWordsForPractice(
     ) m ON true
     WHERE uw.user_id = ${userId}
       AND uw.status != 'new'
+      AND (${languageId ?? null}::uuid IS NULL OR w.language_id = ${languageId ?? null}::uuid)
     ORDER BY uw.last_reviewed_at ASC NULLS FIRST
     LIMIT ${limit}
   `;
