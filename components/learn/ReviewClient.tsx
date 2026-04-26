@@ -7,6 +7,7 @@ import { PhraseReviewCard } from '@/components/learn/PhraseReviewCard';
 import { RatingButtons } from '@/components/learn/RatingButtons';
 import { ReviewComplete } from '@/components/learn/ReviewComplete';
 import { MnemonicCard } from '@/components/learn/MnemonicCard';
+import { preloadAudioUrls } from '@/lib/audio';
 import { Button } from '@/components/ui/Button';
 import { ThumbButton } from '@/components/ui/ThumbButton';
 import { Fox } from '@/components/mascot/Fox';
@@ -149,6 +150,19 @@ export function ReviewClient({ dueWords, duePhrases, practiceWords = [], wordFam
   }
 
   const current = items[currentIndex];
+
+  // Preload audio for the next 3 items so playback is instant on reveal.
+  // Browser HTTP cache is the only cache we rely on — pronunciation.ts will
+  // hit it transparently when it constructs the actual playing <audio>.
+  useEffect(() => {
+    const next = items.slice(currentIndex, currentIndex + 4);
+    const urls: Array<string | null | undefined> = [];
+    for (const it of next) {
+      if (it.type === 'word') urls.push(it.data.pronunciation_audio_url);
+      else urls.push(it.data.audio_url);
+    }
+    preloadAudioUrls(urls);
+  }, [currentIndex, items]);
 
   const wordMode = 'production' as 'recognition' | 'production';
   const phraseMode = 'production' as 'recognition' | 'production';

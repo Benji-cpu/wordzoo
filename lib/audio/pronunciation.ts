@@ -208,5 +208,32 @@ export function stopPlayback(): void {
   }
 }
 
+/**
+ * Preload audio URLs so they're warm in the browser HTTP cache by the time
+ * the user actually triggers playback. Designed for the review queue —
+ * call with the next N upcoming items' audio URLs and the audio element
+ * for the active card will play instantly instead of waiting for a fresh
+ * network round-trip.
+ *
+ * No-op on the server. Silently ignores invalid URLs.
+ */
+const _preloaded = new Set<string>();
+export function preloadAudioUrls(urls: Array<string | null | undefined>): void {
+  if (typeof window === 'undefined') return;
+  for (const url of urls) {
+    if (!url || _preloaded.has(url)) continue;
+    _preloaded.add(url);
+    try {
+      const a = new Audio();
+      a.preload = 'auto';
+      a.src = url;
+      // Triggers the fetch into HTTP cache; we don't keep the element.
+      a.load();
+    } catch {
+      // ignore — preload is best-effort
+    }
+  }
+}
+
 // Expose cache for other modules (hands-free, scoring)
 export { fetchWord };
