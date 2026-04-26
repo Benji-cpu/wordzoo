@@ -528,6 +528,30 @@ export async function getMissingPhraseImages(): Promise<MissingPhraseImage[]> {
   return rows as MissingPhraseImage[];
 }
 
+export interface MissingPhraseAudio {
+  id: string;
+  text_target: string;
+  text_en: string;
+  scene_title: string;
+  scene_id: string;
+  path_title: string;
+  path_id: string;
+}
+
+export async function getMissingPhraseAudio(): Promise<MissingPhraseAudio[]> {
+  const rows = await sql`
+    SELECT sp.id, sp.text_target, sp.text_en,
+      s.title AS scene_title, s.id AS scene_id,
+      p.title AS path_title, p.id AS path_id
+    FROM scene_phrases sp
+    JOIN scenes s ON s.id = sp.scene_id
+    JOIN paths p ON p.id = s.path_id
+    WHERE sp.audio_url IS NULL
+    ORDER BY p.title, s.sort_order
+  `;
+  return rows as MissingPhraseAudio[];
+}
+
 export interface MissingSceneAnchor {
   id: string;
   title: string;

@@ -4,10 +4,12 @@ import { auth } from '@/lib/auth';
 import {
   getMissingMnemonicImages,
   getMissingPhraseImages,
+  getMissingPhraseAudio,
   getMissingSceneAnchors,
   getOrphanWords,
   type MissingMnemonicImage,
   type MissingPhraseImage,
+  type MissingPhraseAudio,
   type MissingSceneAnchor,
   type OrphanWord,
 } from '@/lib/db/admin-queries';
@@ -15,10 +17,11 @@ import {
 type MissingImagesResponse =
   | { type: 'mnemonics'; items: MissingMnemonicImage[] }
   | { type: 'phrases'; items: MissingPhraseImage[] }
+  | { type: 'phrase_audio'; items: MissingPhraseAudio[] }
   | { type: 'scenes'; items: MissingSceneAnchor[] }
   | { type: 'orphans'; items: OrphanWord[] };
 
-const VALID_TYPES = ['mnemonics', 'phrases', 'scenes', 'orphans'] as const;
+const VALID_TYPES = ['mnemonics', 'phrases', 'phrase_audio', 'scenes', 'orphans'] as const;
 
 export async function GET(request: NextRequest) {
   const session = await auth();
@@ -54,6 +57,9 @@ export async function GET(request: NextRequest) {
         break;
       case 'phrases':
         result = { type: 'phrases', items: await getMissingPhraseImages() };
+        break;
+      case 'phrase_audio':
+        result = { type: 'phrase_audio', items: await getMissingPhraseAudio() };
         break;
       case 'scenes':
         result = { type: 'scenes', items: await getMissingSceneAnchors() };

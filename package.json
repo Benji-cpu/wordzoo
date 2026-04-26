@@ -21,7 +21,8 @@
     "db:seed-scene-anchors": "npx tsx lib/db/seed-scene-anchors.ts",
     "db:recompress-blob-images": "npx tsx lib/db/recompress-blob-images.ts",
     "db:cleanup-orphan-blobs": "npx tsx lib/db/cleanup-orphan-blobs.ts",
-    "db:backfill-images": "npm run db:seed-orphan-mnemonics -- --limit=500 && npm run db:seed-missing-images -- --type=all --limit=500 && npm run db:seed-scene-anchors -- --limit=100"
+    "db:backfill-images": "npm run db:seed-orphan-mnemonics -- --limit=500 && npm run db:seed-missing-images -- --type=all --limit=500 && npm run db:seed-scene-anchors -- --limit=100",
+    "db:audit-mnemonics": "npx tsx scripts/audit-mnemonics.ts"
   },
   "dependencies": {
     "@auth/neon-adapter": "^1.11.1",

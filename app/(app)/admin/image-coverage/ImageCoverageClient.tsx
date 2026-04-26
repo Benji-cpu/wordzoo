@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import type { ImageCoverageStats } from '@/lib/db/admin-queries';
 
-type Tab = 'mnemonics' | 'phrases' | 'scenes' | 'orphans';
+type Tab = 'mnemonics' | 'phrases' | 'phrase_audio' | 'scenes' | 'orphans';
 
 interface MissingMnemonicItem {
   id: string;
@@ -39,6 +39,16 @@ interface MissingSceneItem {
   path_id: string;
 }
 
+interface MissingPhraseAudioItem {
+  id: string;
+  text_target: string;
+  text_en: string;
+  scene_title: string;
+  scene_id: string;
+  path_title: string;
+  path_id: string;
+}
+
 interface OrphanWordItem {
   word_id: string;
   word_text: string;
@@ -54,6 +64,7 @@ export function ImageCoverageClient({ stats }: { stats: ImageCoverageStats }) {
   const [activeTab, setActiveTab] = useState<Tab>('mnemonics');
   const [mnemonics, setMnemonics] = useState<MissingMnemonicItem[] | null>(null);
   const [phrases, setPhrases] = useState<MissingPhraseItem[] | null>(null);
+  const [phraseAudio, setPhraseAudio] = useState<MissingPhraseAudioItem[] | null>(null);
   const [scenes, setScenes] = useState<MissingSceneItem[] | null>(null);
   const [orphans, setOrphans] = useState<OrphanWordItem[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -64,6 +75,7 @@ export function ImageCoverageClient({ stats }: { stats: ImageCoverageStats }) {
     // Check if already loaded
     if (tab === 'mnemonics' && mnemonics) return;
     if (tab === 'phrases' && phrases) return;
+    if (tab === 'phrase_audio' && phraseAudio) return;
     if (tab === 'scenes' && scenes) return;
     if (tab === 'orphans' && orphans) return;
 
@@ -74,6 +86,7 @@ export function ImageCoverageClient({ stats }: { stats: ImageCoverageStats }) {
       if (json.data) {
         if (tab === 'mnemonics') setMnemonics(json.data.items);
         if (tab === 'phrases') setPhrases(json.data.items);
+        if (tab === 'phrase_audio') setPhraseAudio(json.data.items);
         if (tab === 'scenes') setScenes(json.data.items);
         if (tab === 'orphans') setOrphans(json.data.items);
       }
@@ -199,7 +212,7 @@ export function ImageCoverageClient({ stats }: { stats: ImageCoverageStats }) {
 
       {/* Tabs */}
       <div className="flex gap-2 mb-6 flex-wrap">
-        {(['orphans', 'mnemonics', 'phrases', 'scenes'] as Tab[]).map((tab) => (
+        {(['orphans', 'mnemonics', 'phrases', 'phrase_audio', 'scenes'] as Tab[]).map((tab) => (
           <button
             key={tab}
             onClick={() => loadMissing(tab)}
@@ -213,15 +226,19 @@ export function ImageCoverageClient({ stats }: { stats: ImageCoverageStats }) {
               ? 'Orphan Words'
               : tab === 'scenes'
                 ? 'Scene Anchors'
-                : tab.charAt(0).toUpperCase() + tab.slice(1)}
+                : tab === 'phrase_audio'
+                  ? 'Phrase Audio'
+                  : tab.charAt(0).toUpperCase() + tab.slice(1)}
             <span className="ml-2 text-xs opacity-60">
               ({tab === 'mnemonics'
                 ? stats.mnemonics.missing
                 : tab === 'phrases'
                   ? stats.phrases.missing
-                  : tab === 'scenes'
-                    ? stats.scenes.missingAnchor
-                    : stats.orphanWords.missing} missing)
+                  : tab === 'phrase_audio'
+                    ? stats.phraseAudio.missing
+                    : tab === 'scenes'
+                      ? stats.scenes.missingAnchor
+                      : stats.orphanWords.missing} missing)
             </span>
           </button>
         ))}
@@ -240,6 +257,10 @@ export function ImageCoverageClient({ stats }: { stats: ImageCoverageStats }) {
         <PhrasesList items={phrases} groupByPath={groupByPath} />
       )}
 
+      {!loading && activeTab === 'phrase_audio' && phraseAudio && (
+        <PhraseAudioList items={phraseAudio} groupByPath={groupByPath} />
+      )}
+
       {!loading && activeTab === 'scenes' && scenes && (
         <ScenesList items={scenes} groupByPath={groupByPath} />
       )}
@@ -253,6 +274,9 @@ export function ImageCoverageClient({ stats }: { stats: ImageCoverageStats }) {
       )}
       {!loading && !phrases && activeTab === 'phrases' && (
         <EmptyPrompt tab="phrases" onLoad={() => loadMissing('phrases')} />
+      )}
+      {!loading && !phraseAudio && activeTab === 'phrase_audio' && (
+        <EmptyPrompt tab="phrase audio" onLoad={() => loadMissing('phrase_audio')} />
       )}
       {!loading && !scenes && activeTab === 'scenes' && (
         <EmptyPrompt tab="scenes" onLoad={() => loadMissing('scenes')} />
@@ -419,6 +443,38 @@ function PhrasesList({
                   {p.phrase_bridge_sentence && (
                     <span className="text-emerald-500"> (has mnemonic text)</span>
                   )}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function PhraseAudioList({
+  items,
+  groupByPath,
+}: {
+  items: MissingPhraseAudioItem[];
+  groupByPath: <T extends { path_title: string | null; path_id: string | null }>(items: T[]) => Map<string, T[]>;
+}) {
+  if (items.length === 0) {
+    return <p className="text-center text-green-400 py-8">All phrases have audio!</p>;
+  }
+  const groups = groupByPath(items);
+  return (
+    <div className="space-y-6">
+      {Array.from(groups.entries()).map(([pathTitle, groupItems]) => (
+        <div key={pathTitle}>
+          <h3 className="text-sm font-semibold text-zinc-300 mb-2">{pathTitle} <span className="text-zinc-500 font-normal">({groupItems.length})</span></h3>
+          <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg divide-y divide-zinc-800">
+            {groupItems.map((p) => (
+              <div key={p.id} className="px-4 py-3">
+                <p className="text-white font-medium">{p.text_target}</p>
+                <p className="text-xs text-zinc-400 mt-0.5">
+                  {p.text_en} &middot; {p.scene_title}
                 </p>
               </div>
             ))}
