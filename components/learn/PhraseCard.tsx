@@ -79,17 +79,17 @@ export function PhraseCard({ phrase, onContinue }: PhraseCardProps) {
   }, [handleReplay]);
 
   return (
-    <Card className="text-center py-8 animate-slide-up" onClick={onContinue}>
-      <p className="text-xs text-text-secondary uppercase tracking-wider mb-4">Key Phrase</p>
+    <Card className="text-center py-5 animate-slide-up" onClick={onContinue}>
+      <p className="text-xs text-text-secondary uppercase tracking-wider mb-3">Key Phrase</p>
       <h2 className="text-3xl font-bold text-accent-id mb-2">{phrase.text_target}</h2>
       <p className="text-lg text-foreground mb-2">{phrase.text_en}</p>
 
-      <div className="my-4 px-2" onClick={(e) => e.stopPropagation()}>
+      <div className="my-3 px-2" onClick={(e) => e.stopPropagation()}>
         <MnemonicImage
           src={phrase.composite_image_url}
           alt={phrase.text_en}
           variant="phrase-word"
-          className="max-h-[200px]"
+          className="max-h-[28vh]"
           fallback={
             <div className="rounded-lg bg-gradient-to-br from-accent-id/15 to-surface-inset py-6 px-4 mx-auto max-w-sm">
               <p className="text-lg font-bold text-accent-id">{phrase.text_target}</p>
@@ -149,7 +149,7 @@ export function PhraseCard({ phrase, onContinue }: PhraseCardProps) {
           <p className="text-sm text-text-secondary">{phrase.usage_note}</p>
         </div>
       )}
-      <p className="text-sm text-text-secondary mt-6">Tap to continue</p>
+      <p className="text-sm text-text-secondary mt-4">Tap to continue</p>
     </Card>
   );
 }

@@ -4,7 +4,6 @@ import { useState, useCallback } from 'react';
 import { ThumbButton } from '@/components/ui/ThumbButton';
 import { Celebration } from '@/components/ui/Celebration';
 import { Fox } from '@/components/mascot/Fox';
-import { PhraseBreakdown } from '@/components/learn/PhraseBreakdown';
 import { useSound } from '@/lib/hooks/useSound';
 import { useHaptic } from '@/lib/hooks/useHaptic';
 import { useXP, XP_AMOUNTS } from '@/lib/hooks/useXP';
@@ -15,8 +14,9 @@ interface PhraseQuizProps {
   correctAnswer: string;
   distractors: string[];
   onCorrect: () => void;
-  /** If provided and the phrase has at least one word with a mnemonic, an inline
-   *  "Break it down" affordance is offered after a correct answer. */
+  /** Reserved for future use — quiz no longer surfaces a post-quiz breakdown
+   *  affordance because users found it fleeting and redundant with the
+   *  pre-quiz PhraseCard. Left in the prop interface for callers. */
   phrase?: ScenePhraseWithMnemonics;
 }
 
@@ -25,18 +25,14 @@ export function PhraseQuiz({
   correctAnswer,
   distractors,
   onCorrect,
-  phrase,
 }: PhraseQuizProps) {
   const [selected, setSelected] = useState<string | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [celebrate, setCelebrate] = useState(false);
   const [xpPopped, setXpPopped] = useState(false);
-  const [showBreakdown, setShowBreakdown] = useState(false);
   const { play } = useSound();
   const { award } = useXP();
   const { trigger } = useHaptic();
-
-  const breakdownAvailable = !!phrase && phrase.words.some((w) => w.keyword_text !== null);
 
   const options = useShuffled(correctAnswer, distractors, promptText);
 
@@ -67,10 +63,6 @@ export function PhraseQuiz({
     [selected, correctAnswer, play, trigger, award],
   );
 
-  const handleExpandBreakdown = useCallback(() => {
-    setShowBreakdown(true);
-  }, []);
-
   return (
     <div className="flex flex-col flex-1 min-h-0">
       <div className="flex-1 flex flex-col items-center justify-center py-6 relative">
@@ -97,18 +89,7 @@ export function PhraseQuiz({
         ) : null}
       </div>
 
-      {showBreakdown && phrase ? (
-        <div className="pb-2">
-          <PhraseBreakdown phrase={phrase} embedded />
-          <button
-            type="button"
-            onClick={onCorrect}
-            className="mt-4 w-full rounded-2xl bg-[color:var(--accent-indonesian)] text-white font-extrabold py-3.5 shadow-[0_4px_12px_color-mix(in_srgb,var(--accent-indonesian)_35%,transparent)] active:scale-[0.97] transition-transform"
-          >
-            Continue →
-          </button>
-        </div>
-      ) : (() => {
+      {(() => {
         const longest = options.reduce((m, o) => Math.max(m, o.length), 0);
         const useGrid = longest <= 16;
         return (
@@ -155,15 +136,6 @@ export function PhraseQuiz({
               >
                 Continue →
               </button>
-              {breakdownAvailable && (
-                <button
-                  type="button"
-                  onClick={handleExpandBreakdown}
-                  className="mx-auto text-sm font-semibold text-[color:var(--accent-indonesian)] underline underline-offset-4 py-1"
-                >
-                  Break it down
-                </button>
-              )}
             </div>
           )}
         </div>
