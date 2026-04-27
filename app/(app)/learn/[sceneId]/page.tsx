@@ -87,14 +87,23 @@ export default async function LearnPage({ params }: PageProps) {
     const sceneMastery = await getSceneMasteryForPath(userId, scene.path_id);
     const currentRow = sceneMastery.find(s => s.id === sceneId);
     if (currentRow) {
-      const isComplete = currentRow.scene_type === 'dialogue'
-        ? currentRow.scene_completed
-        : currentRow.mastered_words >= currentRow.total_words;
-      if (isComplete) {
-        const nextIncomplete = sceneMastery.find(s => {
-          if (s.sort_order <= currentRow.sort_order) return false;
-          return s.scene_type === 'dialogue' ? !s.scene_completed : s.mastered_words < s.total_words;
-        });
+      const sceneIsComplete = (s: typeof currentRow) =>
+        s.scene_type === 'dialogue' ? s.scene_completed : s.mastered_words >= s.total_words;
+
+      // Sequential gate: an earlier scene in the path is incomplete, so the
+      // user can't skip ahead. Bounce them to the earliest incomplete scene.
+      // Mirrors the lock state shown in PathJourneyMap on the client.
+      const earlierIncomplete = sceneMastery.find(s =>
+        s.sort_order < currentRow.sort_order && !sceneIsComplete(s),
+      );
+      if (earlierIncomplete) {
+        redirect(`/learn/${earlierIncomplete.id}`);
+      }
+
+      if (sceneIsComplete(currentRow)) {
+        const nextIncomplete = sceneMastery.find(s =>
+          s.sort_order > currentRow.sort_order && !sceneIsComplete(s),
+        );
         if (nextIncomplete) {
           redirect(`/learn/${nextIncomplete.id}`);
         } else {
