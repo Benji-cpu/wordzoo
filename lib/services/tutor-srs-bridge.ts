@@ -220,7 +220,8 @@ Return ONLY a JSON object:
   try {
     const { data: result } = await generateChatJSON<SessionEvaluation>(
       [{ role: 'user', content: prompt }],
-      'You are a supportive language learning evaluator. Return only valid JSON.'
+      'You are a supportive language learning evaluator. Return only valid JSON.',
+      { maxOutputTokens: 4096 },
     );
 
     // Validate shape

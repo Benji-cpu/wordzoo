@@ -300,7 +300,10 @@ export async function sendMessage(
     });
   }
 
-  const { stream, tokensPromise } = await generateChatStream(chatMessages, systemPrompt);
+  // Bumped from default 1024 → 4096. User reported tutor responses being
+  // cut off mid-sentence; replies often include the main turn, an
+  // [EN: ...] translation line, and a [SUGGEST: ...] line, which adds up.
+  const { stream, tokensPromise } = await generateChatStream(chatMessages, systemPrompt, { maxOutputTokens: 4096 });
 
   let fullResponse = '';
   const [clientStream, saveStream] = stream.tee();
