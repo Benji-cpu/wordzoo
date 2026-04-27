@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ThumbButton } from '@/components/ui/ThumbButton';
 import type { FeedbackContext } from '@/lib/utils/capture-feedback-context';
+import { getActivityTrail } from '@/lib/feedback/activity-trail';
 
 interface FeedbackModalProps {
   isOpen: boolean;
@@ -79,6 +80,7 @@ export function FeedbackModal({ isOpen, onClose, context, screenshotBlob }: Feed
       viewportWidth: context.viewportWidth,
       viewportHeight: context.viewportHeight,
       userAgent: context.userAgent,
+      activityTrail: getActivityTrail(),
     };
     const blob = screenshotBlob;
     clearDraft();

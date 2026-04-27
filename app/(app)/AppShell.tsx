@@ -1,16 +1,23 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { BottomNav } from './BottomNav';
 import { SideNav } from './SideNav';
 import { FeedbackModal } from '@/components/feedback/FeedbackModal';
 import { captureFeedbackContext, type FeedbackContext } from '@/lib/utils/capture-feedback-context';
 import { captureScreenshot } from '@/lib/utils/capture-screenshot';
+import { installActivityTrail } from '@/lib/feedback/activity-trail';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [feedbackContext, setFeedbackContext] = useState<FeedbackContext | null>(null);
   const [screenshotBlob, setScreenshotBlob] = useState<Blob | null>(null);
+
+  // Start capturing recent route/click/fetch/error events on every page so
+  // the trail is ready when feedback is submitted.
+  useEffect(() => {
+    installActivityTrail();
+  }, []);
 
   const handleFeedbackTap = useCallback(async () => {
     // Capture context + screenshot BEFORE opening modal

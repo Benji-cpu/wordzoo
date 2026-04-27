@@ -277,6 +277,11 @@ export const SubmitAppFeedbackSchema = z.object({
   viewportWidth: z.number().int().positive().optional(),
   viewportHeight: z.number().int().positive().optional(),
   userAgent: z.string().max(500).optional(),
+  activityTrail: z.array(z.object({
+    t: z.number(),
+    kind: z.enum(['route', 'click', 'fetch', 'error']),
+    detail: z.string().max(300),
+  })).max(80).optional(),
 });
 
 export const UpdateAppFeedbackSchema = z.object({

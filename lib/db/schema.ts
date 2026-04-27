@@ -633,10 +633,15 @@ CREATE TABLE IF NOT EXISTS app_feedback (
   viewport_width INTEGER,
   viewport_height INTEGER,
   user_agent TEXT,
+  -- Ring buffer of the last ~50 user-visible events captured client-side
+  -- (route changes, button taps with data-event, failed fetches, console
+  -- errors). Lets the admin reproduce a bug from the feedback row.
+  activity_trail JSONB,
   status TEXT NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'reviewed', 'actioned', 'dismissed')),
   admin_notes TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+ALTER TABLE app_feedback ADD COLUMN IF NOT EXISTS activity_trail JSONB;
 CREATE INDEX IF NOT EXISTS idx_app_feedback_status ON app_feedback(status, created_at DESC);
 
 -- User Insights (progressive education system — drip-fed learning science)

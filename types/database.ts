@@ -510,6 +510,12 @@ export interface StudioIntakeProgress {
 
 export type InfoByteDifficulty = 'easy' | 'medium' | 'hard';
 
+export interface ActivityTrailEvent {
+  t: number;
+  kind: 'route' | 'click' | 'fetch' | 'error';
+  detail: string;
+}
+
 export interface AppFeedback {
   id: string;
   user_id: string;
@@ -521,6 +527,7 @@ export interface AppFeedback {
   viewport_width: number | null;
   viewport_height: number | null;
   user_agent: string | null;
+  activity_trail: ActivityTrailEvent[] | null;
   status: 'new' | 'reviewed' | 'actioned' | 'dismissed';
   admin_notes: string | null;
   created_at: Date;

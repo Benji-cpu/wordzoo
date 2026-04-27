@@ -9,7 +9,8 @@ export async function insertAppFeedback(
   const rows = await sql`
     INSERT INTO app_feedback (
       user_id, message, page_url, page_title, route_params,
-      screenshot_url, viewport_width, viewport_height, user_agent
+      screenshot_url, viewport_width, viewport_height, user_agent,
+      activity_trail
     ) VALUES (
       ${userId},
       ${input.message},
@@ -19,7 +20,8 @@ export async function insertAppFeedback(
       ${input.screenshotUrl ?? null},
       ${input.viewportWidth ?? null},
       ${input.viewportHeight ?? null},
-      ${input.userAgent ?? null}
+      ${input.userAgent ?? null},
+      ${input.activityTrail ? JSON.stringify(input.activityTrail) : null}
     )
     RETURNING *
   `;

@@ -43,6 +43,7 @@ export function AdminAppFeedbackClient({ initialStats, initialItems }: Props) {
   const [activeTab, setActiveTab] = useState<string>('all');
   const [loading, setLoading] = useState(false);
   const [expandedScreenshot, setExpandedScreenshot] = useState<string | null>(null);
+  const [expandedTrail, setExpandedTrail] = useState<string | null>(null);
 
   async function fetchFiltered(status: string) {
     setActiveTab(status);
@@ -166,6 +167,42 @@ export function AdminAppFeedbackClient({ initialStats, initialItems }: Props) {
                       alt="Feedback screenshot"
                       className="mt-2 rounded-lg border border-card-border max-w-full max-h-80 object-contain"
                     />
+                  )}
+                </div>
+              )}
+
+              {/* Activity trail — last ~50 client events leading to this feedback */}
+              {Array.isArray(item.activity_trail) && item.activity_trail.length > 0 && (
+                <div>
+                  <button
+                    onClick={() => setExpandedTrail(
+                      expandedTrail === item.id ? null : item.id
+                    )}
+                    className="text-xs text-accent-id hover:underline"
+                  >
+                    {expandedTrail === item.id ? 'Hide activity trail' : `Activity trail (${item.activity_trail.length})`}
+                  </button>
+                  {expandedTrail === item.id && (
+                    <div className="mt-2 rounded-lg border border-card-border bg-surface-inset px-3 py-2 max-h-60 overflow-y-auto">
+                      <ul className="space-y-0.5 text-[11px] font-mono">
+                        {item.activity_trail.map((ev, i) => (
+                          <li key={i} className="flex gap-2">
+                            <span className="text-text-secondary tabular-nums shrink-0 w-12">{ev.t.toFixed(1)}s</span>
+                            <span
+                              className={`shrink-0 w-12 ${
+                                ev.kind === 'error' ? 'text-red-400' :
+                                ev.kind === 'fetch' ? 'text-yellow-400' :
+                                ev.kind === 'route' ? 'text-blue-400' :
+                                'text-text-secondary'
+                              }`}
+                            >
+                              {ev.kind}
+                            </span>
+                            <span className="text-foreground break-all">{ev.detail}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   )}
                 </div>
               )}
