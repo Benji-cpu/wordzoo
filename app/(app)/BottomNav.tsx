@@ -45,11 +45,11 @@ export function BottomNav({ onFeedbackTap }: BottomNavProps) {
             (pathname === tab.href || pathname.startsWith(tab.href + '/'));
 
           const content = (
-            <div className="relative flex flex-col items-center justify-center gap-0.5 py-1.5 px-2 rounded-full transition-all">
+            <div className="relative flex flex-col items-center justify-center gap-0.5 py-1.5 px-2 rounded-2xl transition-all">
               {isActive && (
                 <span
                   aria-hidden
-                  className="absolute inset-0 rounded-full"
+                  className="absolute inset-0 rounded-2xl"
                   style={{ background: 'var(--nav-active-soft)' }}
                 />
               )}
@@ -69,7 +69,7 @@ export function BottomNav({ onFeedbackTap }: BottomNavProps) {
           );
 
           const sharedClass =
-            'flex-1 min-w-0 flex justify-center items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nav-active)] rounded-full';
+            'flex-1 min-w-0 flex justify-center items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nav-active)] rounded-2xl';
 
           if (tab.kind === 'link') {
             return (
