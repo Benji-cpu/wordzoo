@@ -407,6 +407,34 @@ export async function updateAppFeedbackStatus(
   return (rows[0] as AppFeedback) ?? null;
 }
 
+export async function getNewAppFeedback(
+  sinceDays: number
+): Promise<AppFeedbackWithUser[]> {
+  const rows = await sql`
+    SELECT af.*, u.email AS user_email
+    FROM app_feedback af
+    JOIN users u ON u.id = af.user_id
+    WHERE af.status = 'new'
+      AND af.created_at > NOW() - (${sinceDays}::int * INTERVAL '1 day')
+    ORDER BY af.created_at DESC
+  `;
+  return rows as AppFeedbackWithUser[];
+}
+
+export async function bulkDismissAppFeedback(
+  ids: string[],
+  note: string
+): Promise<number> {
+  if (ids.length === 0) return 0;
+  const rows = await sql`
+    UPDATE app_feedback
+    SET status = 'dismissed', admin_notes = ${note}
+    WHERE id = ANY(${ids}::uuid[])
+    RETURNING id
+  `;
+  return rows.length;
+}
+
 // --- Image Coverage Stats ---
 
 export interface ImageCoverageStats {
