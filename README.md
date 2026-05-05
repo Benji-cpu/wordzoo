@@ -37,25 +37,15 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 ## Operations
 
-### Vercel cron jobs (`vercel.json`)
+WordZoo runs three Vercel Crons (project-specific, sub-daily) and one GitHub Actions nightly job (cross-project standardised digest). All cron routes require `Authorization: Bearer ${CRON_SECRET}`.
 
-| Path | Schedule (UTC) | Bali (UTC+8) | Purpose |
-|------|----------------|--------------|---------|
-| `/api/cron/reset-usage` | `0 0 * * *` | 08:00 | Reset daily free-tier quotas |
-| `/api/cron/generate-info-byte` | `0 1 * * *` | 09:00 | Generate daily info byte content |
-| `/api/cron/check-subscriptions` | `0 3 * * *` | 11:00 | Reconcile Stripe subscription state |
+| Job | Backend | Schedule (UTC) | Bali (WITA) | Endpoint |
+|-----|---------|----------------|-------------|----------|
+| `reset-usage` | Vercel Cron | `0 0 * * *` | 08:00 | `/api/cron/reset-usage` |
+| `generate-info-byte` | Vercel Cron | `0 1 * * *` | 09:00 | `/api/cron/generate-info-byte` |
+| `check-subscriptions` | Vercel Cron | `0 3 * * *` | 11:00 | `/api/cron/check-subscriptions` |
+| `nightly-routine` | GitHub Actions | `32 19 * * *` | 03:32 | `/api/cron/nightly-routine` |
 
-All Vercel crons require the `Authorization: Bearer ${CRON_SECRET}` header. Vercel injects this automatically.
+The nightly routine returns a JSON digest of feedback counts, new feedback in the last 24h, stuck mnemonics missing audio (>72h old), and overdue SRS reviews. The GitHub Actions workflow at `.github/workflows/nightly-routine.yml` calls the endpoint with `CRON_SECRET` and dumps the JSON into the workflow step summary. Resend isn't wired up yet — once it is, the workflow can append `?digest=true` to email the summary to `ADMIN_EMAIL`.
 
-### Daily feedback triage agent
-
-`.claude/agents/daily-feedback-triage.md` defines a Claude Code remote agent scheduled at **18:00 UTC (02:00 Bali)** that:
-
-1. Reads `app_feedback` (last 7 days, status=new) and `mnemonic_feedback` from prod Postgres
-2. Tags items by sender (`admin`/`power_user`/`student`) and category
-3. Auto-actions safe items: regenerate up to 5 worst mnemonics/day, dismiss obvious noise
-4. Opens **one PR/day** with a `feedback-log/YYYY-MM-DD.md` summary for everything that needs human review
-
-The agent runs on Anthropic infrastructure, not locally — your machine can be off. You review the PR on GitHub like any other.
-
-To disable: delete the trigger via the `schedule` skill, or rename `.claude/agents/daily-feedback-triage.md`.
+To run the nightly digest manually: GitHub → Actions → `nightly-routine` → "Run workflow".
