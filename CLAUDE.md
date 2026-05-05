@@ -30,10 +30,11 @@ Language learning SaaS with AI-generated keyword mnemonics, spaced repetition, a
 - **Platform**: Vercel
 - **Project**: `wordzoo`
 - **Production URL**: https://wordzoo.vercel.app
+- **Shipping mode**: direct-to-production for everything — interactive sessions AND scheduled routines. Commit on `main`, push, Vercel auto-deploys. No PRs. See master `Code/CLAUDE.md` "Shipping Standard."
 
 ## Cron Jobs
 
-Mixed scheduling: project-specific sub-daily jobs run via Vercel Cron (`vercel.json`); the cross-project nightly routine runs via a **Claude Code remote agent** (registered through claude.ai) so it can do real work — read feedback, cluster, open draft PRs — instead of just dumping a JSON digest. All HTTP cron routes verify `Authorization: Bearer ${CRON_SECRET}` and return 401 without it.
+Mixed scheduling: project-specific sub-daily jobs run via Vercel Cron (`vercel.json`); the cross-project nightly routine runs via a **Claude Code remote agent** (registered through claude.ai) so it can do real work — read feedback, cluster, commit a triage report and any low-risk fix directly to `main` — instead of just dumping a JSON digest. All HTTP cron routes verify `Authorization: Bearer ${CRON_SECRET}` and return 401 without it.
 
 | Job | Backend | Schedule (UTC) | Endpoint / file |
 |-----|---------|----------------|-----------------|

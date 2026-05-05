@@ -528,6 +528,7 @@ export interface AppFeedback {
   viewport_height: number | null;
   user_agent: string | null;
   activity_trail: ActivityTrailEvent[] | null;
+  domain_context: unknown | null;
   status: 'new' | 'reviewed' | 'actioned' | 'dismissed';
   admin_notes: string | null;
   created_at: Date;

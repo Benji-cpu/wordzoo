@@ -3,7 +3,7 @@ import { auth } from '@/lib/auth';
 import { SubmitAppFeedbackSchema } from '@/types/api';
 import type { ApiResponse } from '@/types/api';
 import type { AppFeedback } from '@/types/database';
-import { insertAppFeedback } from '@/lib/services/app-feedback-service';
+import { insertAppFeedback, FeedbackRateLimitError } from '@/lib/services/app-feedback-service';
 
 export async function POST(request: NextRequest) {
   const session = await auth();
@@ -32,6 +32,16 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // Honeypot: any non-empty `website` value means it's a bot. Pretend success
+  // so they don't retry, but skip the insert. Log for observability.
+  if (parsed.data.website && parsed.data.website.length > 0) {
+    console.warn('[feedback] honeypot triggered', {
+      userId: session.user.id,
+      pageUrl: parsed.data.pageUrl,
+    });
+    return NextResponse.json<ApiResponse<null>>({ data: null, error: null });
+  }
+
   try {
     const feedback = await insertAppFeedback(session.user.id, parsed.data);
     return NextResponse.json<ApiResponse<AppFeedback>>({
@@ -39,6 +49,12 @@ export async function POST(request: NextRequest) {
       error: null,
     });
   } catch (error) {
+    if (error instanceof FeedbackRateLimitError) {
+      return NextResponse.json<ApiResponse<null>>(
+        { data: null, error: 'Rate limit exceeded — try again later.' },
+        { status: 429 }
+      );
+    }
     const message = error instanceof Error ? error.message : 'Failed to submit feedback';
     return NextResponse.json<ApiResponse<null>>(
       { data: null, error: message },

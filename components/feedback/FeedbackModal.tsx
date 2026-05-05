@@ -12,17 +12,19 @@ interface FeedbackModalProps {
   onClose: () => void;
   context: FeedbackContext | null;
   screenshotBlob: Blob | null;
+  domainSnapshot: unknown | null;
 }
 
 type ModalState = 'idle' | 'sending' | 'success' | 'error';
 
 const DRAFT_KEY = 'feedback_draft';
 
-export function FeedbackModal({ isOpen, onClose, context, screenshotBlob }: FeedbackModalProps) {
+export function FeedbackModal({ isOpen, onClose, context, screenshotBlob, domainSnapshot }: FeedbackModalProps) {
   const [message, setMessage] = useState(() => {
     if (typeof window === 'undefined') return '';
     return sessionStorage.getItem(DRAFT_KEY) ?? '';
   });
+  const [website, setWebsite] = useState(''); // honeypot — bots fill this, humans never see it
   const [state, setState] = useState<ModalState>('idle');
   const [mounted, setMounted] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -81,6 +83,8 @@ export function FeedbackModal({ isOpen, onClose, context, screenshotBlob }: Feed
       viewportHeight: context.viewportHeight,
       userAgent: context.userAgent,
       activityTrail: getActivityTrail(),
+      domainContext: domainSnapshot ?? undefined,
+      website,
     };
     const blob = screenshotBlob;
     clearDraft();
@@ -171,6 +175,18 @@ export function FeedbackModal({ isOpen, onClose, context, screenshotBlob }: Feed
                       )}
                     </p>
                   )}
+
+                  {/* Honeypot — never visible to humans, off-screen, no autofill, no a11y */}
+                  <input
+                    type="text"
+                    name="website"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    aria-hidden="true"
+                    value={website}
+                    onChange={(e) => setWebsite(e.target.value)}
+                    style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, opacity: 0 }}
+                  />
 
                   {/* Textarea */}
                   <textarea
