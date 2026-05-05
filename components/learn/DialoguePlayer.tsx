@@ -6,7 +6,7 @@ import { TappableWord } from '@/components/learn/TappableWord';
 import { tokenizeDialogueLine } from '@/lib/utils/dialogue-tokenizer';
 import { stopPlayback, isAudioUnlocked } from '@/lib/audio';
 import type { SceneDialogue } from '@/types/database';
-import type { LearnWord } from '@/components/learn/LearnClient';
+import type { LearnWord } from '@/types/learn';
 
 interface DialoguePlayerProps {
   dialogues: SceneDialogue[];

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { ProductionTyping } from '@/components/learn/ProductionTyping';
 import { Fox } from '@/components/mascot/Fox';
-import type { LearnWord } from '@/components/learn/LearnClient';
+import type { LearnWord } from '@/types/learn';
 import type { SupportedLanguageCode } from '@/types/audio';
 import { fireTelemetry } from '@/lib/pedagogy/telemetry';
 import { useXP, XP_AMOUNTS } from '@/lib/hooks/useXP';

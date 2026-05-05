@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import type { LearnWord } from '@/components/learn/LearnClient';
+import type { LearnWord } from '@/types/learn';
 import { PronunciationButton } from '@/components/audio/SpeakerButton';
 
 interface TappableWordProps {

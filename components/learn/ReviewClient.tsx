@@ -17,7 +17,7 @@ import { getEligibleInsight } from '@/lib/insights/engine';
 import type { InsightDefinition } from '@/lib/insights/data';
 import type { DueWordForReview } from '@/lib/db/queries';
 import type { DuePhraseForReview } from '@/lib/db/scene-flow-queries';
-import type { LearnWordFamily } from '@/components/learn/LearnClient';
+import type { LearnWordFamily } from '@/types/learn';
 import type { Word, Mnemonic, PhraseWordMnemonic } from '@/types/database';
 
 type Rating = 'instant' | 'got_it' | 'hard' | 'forgot';

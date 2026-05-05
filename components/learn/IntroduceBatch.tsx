@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { WordCard } from '@/components/learn/WordCard';
 import { MnemonicCard } from '@/components/learn/MnemonicCard';
 import { CollapsibleWordFamily } from '@/components/learn/WordFamilyCard';
-import type { LearnWord } from '@/components/learn/LearnClient';
+import type { LearnWord } from '@/types/learn';
 import type { SupportedLanguageCode } from '@/types/audio';
 
 interface IntroduceBatchProps {

@@ -1,4 +1,4 @@
-import type { LearnWord } from '@/components/learn/LearnClient';
+import type { LearnWord } from '@/types/learn';
 
 export interface DialogueSegment {
   type: 'word' | 'text';

@@ -5,7 +5,7 @@ import { QuizOptions } from '@/components/learn/QuizOptions';
 import { ProductionTyping } from '@/components/learn/ProductionTyping';
 import { Cloze } from '@/components/learn/Cloze';
 import { ConfidenceButtons } from '@/components/learn/ConfidenceButtons';
-import type { LearnWord } from '@/components/learn/LearnClient';
+import type { LearnWord } from '@/types/learn';
 import type { SupportedLanguageCode } from '@/types/audio';
 import {
   buildQueue,

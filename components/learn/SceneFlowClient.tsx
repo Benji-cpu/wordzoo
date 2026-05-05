@@ -12,12 +12,14 @@ import { MnemonicCard } from '@/components/learn/MnemonicCard';
 import { QuizOptions } from '@/components/learn/QuizOptions';
 import { CollapsibleWordFamily } from '@/components/learn/WordFamilyCard';
 import { SceneSummary } from '@/components/learn/SceneSummary';
+import { VocabularyBlock } from '@/components/learn/VocabularyBlock';
 import { InsightCard } from '@/components/insights/InsightCard';
 import { getEligibleInsight, type InsightUserState } from '@/lib/insights/engine';
 import type { InsightDefinition, TriggerContext } from '@/lib/insights/data';
 import type { SceneDialogue, ScenePhraseWithMnemonics, UserSceneProgress } from '@/types/database';
-import type { LearnWord } from '@/components/learn/LearnClient';
+import type { LearnWord } from '@/types/learn';
 import type { SupportedLanguageCode } from '@/types/audio';
+import type { PedagogyFlags } from '@/lib/pedagogy/flags';
 
 interface SceneFlowClientProps {
   sceneId: string;
@@ -36,6 +38,9 @@ interface SceneFlowClientProps {
   sceneNumber?: number;
   totalScenes?: number;
   insightState?: { seenIds: string[]; shownToday: number } | null;
+  /** Pedagogy v2 flag bundle. When `restructure` is true, the vocabulary
+   * phase swaps to batched-intro + drill + checkpoint via VocabularyBlock. */
+  pedagogyFlags?: PedagogyFlags;
 }
 
 type FlowState =
@@ -163,8 +168,10 @@ export function SceneFlowClient({
   sceneNumber,
   totalScenes,
   insightState,
+  pedagogyFlags,
 }: SceneFlowClientProps) {
   const hasAnchorImage = !!anchorImageUrl;
+  const useV2Vocab = pedagogyFlags?.restructure === true;
 
   // Filter out already-learned words so users don't re-learn duplicates across scenes
   const [learnedWordIds, setLearnedWordIds] = useState<Set<string> | null>(null);
@@ -569,8 +576,33 @@ export function SceneFlowClient({
         )
       )}
 
-      {/* Vocabulary Phase */}
-      {state.phase === 'vocabulary' && words[state.wordIndex] && (
+      {/* Vocabulary Phase — Pedagogy v2 (batched intros + retrieval drill + checkpoint) */}
+      {state.phase === 'vocabulary' && useV2Vocab && (
+        <VocabularyBlock
+          words={words}
+          languageName={languageName}
+          languageCode={languageCode}
+          flags={pedagogyFlags!}
+          onItemAnswered={(wordId, correct, direction) => {
+            fetch('/api/reviews/record', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                wordId,
+                direction,
+                rating: correct ? 'got_it' : 'forgot',
+              }),
+            }).catch(() => {});
+          }}
+          onComplete={() => {
+            saveProgress('summary', 0, 'vocabulary');
+            setState({ phase: 'summary' });
+          }}
+        />
+      )}
+
+      {/* Vocabulary Phase — legacy linear word/mnemonic/quiz loop */}
+      {state.phase === 'vocabulary' && !useV2Vocab && words[state.wordIndex] && (
         <>
           {state.step === 'word' && (
             <WordCard

@@ -11,7 +11,7 @@ import {
 } from '@/lib/db/queries';
 import { getSceneFlowData, getOrCreateSceneProgress } from '@/lib/db/scene-flow-queries';
 import { auth } from '@/lib/auth';
-import { LearnClient, type LearnWord } from '@/components/learn/LearnClient';
+import type { LearnWord } from '@/types/learn';
 import { SceneFlowClient } from '@/components/learn/SceneFlowClient';
 import { getInsightState } from '@/lib/db/insight-queries';
 import { resolvePedagogyFlags } from '@/lib/pedagogy/flags';
@@ -136,31 +136,8 @@ export default async function LearnPage({ params, searchParams }: PageProps) {
   // Fetch next scene for navigation
   const nextScene = await getNextSceneInPath(scene.path_id, scene.sort_order);
 
-  // Legacy scenes use the original LearnClient
-  if (scene.scene_type === 'legacy') {
-    const [words, legacyInsightState] = await Promise.all([
-      buildWordsArray(sceneId, scene.language_id, userId, pedagogyFlags.cloze),
-      userId ? getInsightState(userId) : null,
-    ]);
-    return (
-      <LearnClient
-        sceneId={sceneId}
-        sceneTitle={scene.scene_title}
-        sceneDescription={scene.scene_description}
-        languageName={scene.language_name}
-        languageCode={scene.language_code as SupportedLanguageCode}
-        words={words}
-        nextScene={nextScene}
-        pathId={scene.path_id}
-        sceneNumber={sceneNumber}
-        totalScenes={totalScenes}
-        insightState={legacyInsightState ? { seenIds: Array.from(legacyInsightState.seenIds), shownToday: legacyInsightState.shownToday } : null}
-        pedagogyFlags={pedagogyFlags}
-      />
-    );
-  }
-
-  // Dialogue scenes use the new SceneFlowClient
+  // All scenes render through SceneFlowClient. The 6 legacy scenes were
+  // dropped as part of the Pedagogy v2 cutover.
   const [flowData, words, progress, insightState] = await Promise.all([
     getSceneFlowData(sceneId, userId),
     buildWordsArray(sceneId, scene.language_id, userId, pedagogyFlags.cloze),
@@ -203,6 +180,7 @@ export default async function LearnPage({ params, searchParams }: PageProps) {
       sceneNumber={sceneNumber}
       totalScenes={totalScenes}
       insightState={insightState ? { seenIds: Array.from(insightState.seenIds), shownToday: insightState.shownToday } : null}
+      pedagogyFlags={pedagogyFlags}
     />
   );
 }

@@ -5,7 +5,7 @@ import { getAllLearnedWordsForPractice, getWordFamilies, getUserActivePath } fro
 import { getPhraseWordsWithMnemonics } from '@/lib/db/scene-flow-queries';
 import { getInsightState } from '@/lib/db/insight-queries';
 import { ReviewClient } from '@/components/learn/ReviewClient';
-import type { LearnWordFamily } from '@/components/learn/LearnClient';
+import type { LearnWordFamily } from '@/types/learn';
 import type { PhraseWordMnemonic } from '@/types/database';
 
 export default async function ReviewPage() {
