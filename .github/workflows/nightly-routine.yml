@@ -1,0 +1,57 @@
+# Nightly call to /api/cron/nightly-routine.
+#
+# Runs at 19:32 UTC daily (≈03:32 Bali, WITA UTC+8). Staggered +5min from
+# Programme's 03:27 so cross-project digests arrive separately.
+#
+# WordZoo's existing 3 Vercel Crons (reset-usage, check-subscriptions,
+# generate-info-byte) stay in vercel.json — those are project-specific,
+# sub-daily, and benefit from Vercel's tighter integration. The cross-project
+# nightly digest runs via GitHub Actions instead so we don't burn another
+# Vercel cron slot and we get manual `workflow_dispatch` for testing.
+#
+# Setup: Add CRON_SECRET as a repo secret (matching the same value Vercel
+# already has). Currently the route returns JSON only; once Resend is wired
+# up for WordZoo, the workflow can append `?digest=true` to email it.
+
+name: nightly-routine
+
+on:
+  schedule:
+    - cron: "32 19 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  call-nightly-routine:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Hit /api/cron/nightly-routine
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "::error::CRON_SECRET secret is not set on this repository"
+            exit 1
+          fi
+
+          response=$(mktemp)
+          status=$(curl -sS -w "%{http_code}" -o "$response" \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "https://wordzoo.vercel.app/api/cron/nightly-routine")
+
+          echo "HTTP $status"
+          cat "$response"
+          echo
+
+          if [ "$status" != "200" ]; then
+            echo "::error::Nightly routine endpoint returned $status"
+            exit 1
+          fi
+
+          {
+            echo "## Nightly routine"
+            echo "\`\`\`json"
+            cat "$response" | head -c 4000
+            echo
+            echo "\`\`\`"
+          } >> "$GITHUB_STEP_SUMMARY"

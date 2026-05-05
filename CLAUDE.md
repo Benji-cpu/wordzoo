@@ -31,6 +31,25 @@ Language learning SaaS with AI-generated keyword mnemonics, spaced repetition, a
 - **Project**: `wordzoo`
 - **Production URL**: https://wordzoo.vercel.app
 
+## Cron Jobs
+
+Mixed scheduling: project-specific sub-daily jobs run via Vercel Cron (`vercel.json`); the cross-project nightly digest runs via GitHub Actions (`.github/workflows/nightly-routine.yml`) so it doesn't consume a Vercel cron slot. All cron routes verify `Authorization: Bearer ${CRON_SECRET}` and return 401 without it.
+
+| Job | Backend | Schedule (UTC) | Endpoint |
+|-----|---------|----------------|----------|
+| `reset-usage` | Vercel Cron | `0 0 * * *` | `/api/cron/reset-usage` |
+| `generate-info-byte` | Vercel Cron | `0 1 * * *` | `/api/cron/generate-info-byte` |
+| `check-subscriptions` | Vercel Cron | `0 3 * * *` | `/api/cron/check-subscriptions` |
+| `nightly-routine` | GitHub Actions | `32 19 * * *` (≈03:32 Bali) | `/api/cron/nightly-routine` |
+
+The nightly route runs feedback digest + project health (stuck mnemonics missing TTS audio, overdue SRS reviews) and surfaces the JSON in the GitHub Actions step summary. Resend is not yet wired up — once it is, the workflow will append `?digest=true` to email the summary to `ADMIN_EMAIL`.
+
+## Feedback Module
+
+- `app_feedback` table — status enum: `'new' | 'reviewed' | 'actioned' | 'dismissed'` (close to the cross-project standard `new | reviewed | resolved | dismissed`; "actioned" diverges — see MEMORY.md)
+- API: `POST /api/feedback` (auth required, screenshot via `/api/feedback/screenshot`)
+- Admin: `/api/admin/app-feedback/*` routes plus admin UI for triage
+
 ## Architecture
 
 - **Route groups**: `(app)/` (authed pages), `(auth)/` (login/signup), `try/` (public demo)
@@ -78,7 +97,9 @@ Stripe handles subscriptions (monthly/yearly) and one-time travel pack purchases
 
 ## Environment Variables
 
-`DATABASE_URL`, `AUTH_SECRET`, `AUTH_URL`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`, `GOOGLE_GEMINI_API_KEY`, `GOOGLE_CLOUD_TTS_API_KEY`, `STABILITY_AI_API_KEY`, `BLOB_READ_WRITE_TOKEN`, `STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_PRICE_MONTHLY`, `STRIPE_PRICE_YEARLY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_APP_URL`, `CRON_SECRET`, `ADMIN_EMAILS`
+`DATABASE_URL`, `AUTH_SECRET`, `AUTH_URL`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`, `GOOGLE_GEMINI_API_KEY`, `GOOGLE_CLOUD_TTS_API_KEY`, `STABILITY_AI_API_KEY`, `BLOB_READ_WRITE_TOKEN`, `STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_PRICE_MONTHLY`, `STRIPE_PRICE_YEARLY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_APP_URL`, `CRON_SECRET` (also set as GitHub repo secret), `ADMIN_EMAILS`
+
+**Optional (future):** `RESEND_API_KEY`, `ADMIN_EMAIL` — required if/when the nightly digest is wired up to email the summary.
 
 **`ADMIN_EMAILS`** is comma-separated and gates `/admin/*` pages and `/api/admin/*` routes via `app/(app)/admin/layout.tsx`. If unset, admin pages refuse all users. Must include both `b.hemsonstruthers@gmail.com` and `profbanjo@gmail.com` (Benji's two power-user accounts).
 
