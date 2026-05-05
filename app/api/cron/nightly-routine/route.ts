@@ -66,8 +66,7 @@ export async function GET(request: NextRequest) {
     const rows = (await sql`
       SELECT COUNT(*)::int AS count
       FROM user_words
-      WHERE next_review_date IS NOT NULL
-        AND next_review_date < now() - interval '2 days'
+      WHERE next_review_at < now() - interval '2 days'
     `) as Array<{ count: number }>;
     return rows[0]?.count ?? 0;
   });
