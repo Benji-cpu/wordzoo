@@ -49,6 +49,11 @@ export function PhraseQuiz({
         play('correct');
         trigger('success');
         void award('phrase_complete');
+        // Auto-advance after the celebration so users who don't tap Continue
+        // aren't stranded — Continue button stays visible for those who do.
+        setTimeout(() => {
+          onCorrect();
+        }, 1100);
       } else {
         play('incorrect');
         trigger('error');
@@ -60,7 +65,7 @@ export function PhraseQuiz({
         }, 900);
       }
     },
-    [selected, correctAnswer, play, trigger, award],
+    [selected, correctAnswer, play, trigger, award, onCorrect],
   );
 
   return (

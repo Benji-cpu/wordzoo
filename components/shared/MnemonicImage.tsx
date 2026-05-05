@@ -177,6 +177,8 @@ export function MnemonicImage({
       <img
         src={src}
         alt={alt}
+        loading="lazy"
+        decoding="async"
         className={`${imgClass} transition-opacity duration-300 ${loaded ? 'opacity-100' : skeleton ? 'opacity-0 h-0' : 'opacity-100'} ${isZoomable ? 'cursor-zoom-in' : ''}`}
         onLoad={() => {
           setLoaded(true);

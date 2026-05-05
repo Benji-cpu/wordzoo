@@ -204,11 +204,11 @@ Transcript:
 ${transcript}
 
 Provide a JSON evaluation with:
-- "strengths": ${isShortSession ? '1 thing' : '1-3 things'} the student did well. Be specific — cite examples from the conversation.
-- "improvements": ${isShortSession ? '1 thing' : '1-3 things'} the student can improve. Be specific — cite examples.
-- "tip": One specific, actionable tip for their next session.
+- "strengths": ${isShortSession ? '1-2 things' : '2-4 things'} the student did well. Be specific — cite examples from the conversation.
+- "improvements": ${isShortSession ? '1-2 things' : '2-4 things'} the student can improve. Be specific — cite examples.
+- "tip": One specific, actionable tip for their next session — feel free to write 2-4 sentences if it helps the student.
 
-Keep each point to 1-2 sentences. Be encouraging but honest.${mode === 'role_play' ? ' Comment on how well the student stayed in character.' : ''}${mode === 'pronunciation_coach' ? ' Comment on pronunciation attempts.' : ''}${mode === 'guided_conversation' ? ' Comment on how well the student followed the dialogue flow.' : ''}
+Each strength/improvement can be 1-3 sentences when there's something rich to say. Don't artificially shorten when the conversation gives you material — the user has asked for more thorough feedback. Be encouraging but honest.${mode === 'role_play' ? ' Comment on how well the student stayed in character.' : ''}${mode === 'pronunciation_coach' ? ' Comment on pronunciation attempts.' : ''}${mode === 'guided_conversation' ? ' Comment on how well the student followed the dialogue flow.' : ''}
 
 Return ONLY a JSON object:
 {
@@ -234,9 +234,9 @@ Return ONLY a JSON object:
       return null;
     }
 
-    // Enforce limits
-    result.strengths = result.strengths.slice(0, 3);
-    result.improvements = result.improvements.slice(0, 3);
+    // Allow richer evaluations now — slice generously rather than tightly.
+    result.strengths = result.strengths.slice(0, 5);
+    result.improvements = result.improvements.slice(0, 5);
 
     return result;
   } catch (error) {

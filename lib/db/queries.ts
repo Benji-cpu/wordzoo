@@ -266,6 +266,8 @@ export interface SceneMasteryRow {
   total_words: number;
   mastered_words: number;
   current_phase: string | null;
+  /** Index within the current phase (e.g. word index in vocab phase). */
+  phase_index: number | null;
   scene_completed: boolean;
 }
 
@@ -278,13 +280,14 @@ export async function getSceneMasteryForPath(
       COUNT(DISTINCT sw.word_id)::int AS total_words,
       COUNT(DISTINCT CASE WHEN uw.status IN ('reviewing', 'mastered') THEN sw.word_id END)::int AS mastered_words,
       usp.current_phase,
+      usp.phase_index,
       COALESCE(usp.completed_at IS NOT NULL, false) AS scene_completed
     FROM scenes s
     LEFT JOIN scene_words sw ON sw.scene_id = s.id
     LEFT JOIN user_words uw ON uw.word_id = sw.word_id AND uw.user_id = ${userId}
     LEFT JOIN user_scene_progress usp ON usp.scene_id = s.id AND usp.user_id = ${userId}
     WHERE s.path_id = ${pathId}
-    GROUP BY s.id, s.sort_order, s.title, s.description, s.scene_type, s.anchor_image_url, usp.current_phase, usp.completed_at
+    GROUP BY s.id, s.sort_order, s.title, s.description, s.scene_type, s.anchor_image_url, usp.current_phase, usp.phase_index, usp.completed_at
     ORDER BY s.sort_order
   `;
   return rows as SceneMasteryRow[];
