@@ -11,6 +11,7 @@ import { getEligibleInsight } from '@/lib/insights/engine';
 import { INSIGHTS } from '@/lib/insights/data';
 import type { InsightDefinition } from '@/lib/insights/data';
 import type { TutorRecommendation } from '@/app/api/tutor/recommendation/route';
+import { registerFeedbackContext } from '@/lib/feedback/domain-snapshot';
 
 export default function TutorPage() {
   const searchParams = useSearchParams();
@@ -56,6 +57,27 @@ export default function TutorPage() {
   }, [sessionId]);
 
   const { messages, isStreaming, error, limitReached, sendMessage, addGreeting, loadMessages } = useTutorChat(sessionId, handleEndSession);
+
+  // Register the last few tutor turns as feedback domain context so
+  // submissions from this page carry conversational state for triage.
+  useEffect(() => {
+    const lastTurns = messages.slice(-6).map((m) => ({
+      role: m.role === 'model' ? 'assistant' : 'user',
+      text: m.content.slice(0, 500),
+    }));
+    registerFeedbackContext({
+      domain: 'tutor',
+      data: {
+        sessionId,
+        languageId,
+        langCode,
+        activeMode,
+        sceneIdParam,
+        turns: lastTurns,
+      },
+    });
+    return () => registerFeedbackContext(null);
+  }, [messages, sessionId, languageId, langCode, activeMode, sceneIdParam]);
 
   // When limit is reached, auto-end the session to show summary
   useEffect(() => {

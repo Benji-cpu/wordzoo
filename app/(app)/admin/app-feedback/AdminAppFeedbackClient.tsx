@@ -44,6 +44,7 @@ export function AdminAppFeedbackClient({ initialStats, initialItems }: Props) {
   const [loading, setLoading] = useState(false);
   const [expandedScreenshot, setExpandedScreenshot] = useState<string | null>(null);
   const [expandedTrail, setExpandedTrail] = useState<string | null>(null);
+  const [expandedDomain, setExpandedDomain] = useState<string | null>(null);
 
   async function fetchFiltered(status: string) {
     setActiveTab(status);
@@ -203,6 +204,25 @@ export function AdminAppFeedbackClient({ initialStats, initialItems }: Props) {
                         ))}
                       </ul>
                     </div>
+                  )}
+                </div>
+              )}
+
+              {/* Domain context — page-specific state (tutor turns, scene id, etc.) */}
+              {item.domain_context != null && (
+                <div>
+                  <button
+                    onClick={() => setExpandedDomain(
+                      expandedDomain === item.id ? null : item.id
+                    )}
+                    className="text-xs text-accent-id hover:underline"
+                  >
+                    {expandedDomain === item.id ? 'Hide domain context' : 'Domain context'}
+                  </button>
+                  {expandedDomain === item.id && (
+                    <pre className="mt-2 rounded-lg border border-card-border bg-surface-inset px-3 py-2 max-h-60 overflow-auto text-[11px] font-mono text-foreground whitespace-pre-wrap break-all">
+                      {JSON.stringify(item.domain_context, null, 2)}
+                    </pre>
                   )}
                 </div>
               )}

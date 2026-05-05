@@ -7,11 +7,13 @@ import { FeedbackModal } from '@/components/feedback/FeedbackModal';
 import { captureFeedbackContext, type FeedbackContext } from '@/lib/utils/capture-feedback-context';
 import { captureScreenshot } from '@/lib/utils/capture-screenshot';
 import { installActivityTrail } from '@/lib/feedback/activity-trail';
+import { captureDomainSnapshot, type DomainSnapshot } from '@/lib/feedback/domain-snapshot';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [feedbackContext, setFeedbackContext] = useState<FeedbackContext | null>(null);
   const [screenshotBlob, setScreenshotBlob] = useState<Blob | null>(null);
+  const [domainSnapshot, setDomainSnapshot] = useState<DomainSnapshot | null>(null);
 
   // Start capturing recent route/click/fetch/error events on every page so
   // the trail is ready when feedback is submitted.
@@ -20,11 +22,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }, []);
 
   const handleFeedbackTap = useCallback(async () => {
-    // Capture context + screenshot BEFORE opening modal
+    // Capture context + domain snapshot + screenshot BEFORE opening modal.
+    // Domain snapshot is synchronous (reads window.__wordzooFeedbackContext);
+    // capture it now while page state is fresh, before any nav can clear it.
     const ctx = captureFeedbackContext();
     setFeedbackContext(ctx);
+    setDomainSnapshot(captureDomainSnapshot());
 
-    // Capture screenshot silently (don't block modal opening)
     const blob = await captureScreenshot();
     setScreenshotBlob(blob);
 
@@ -35,6 +39,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     setFeedbackOpen(false);
     setFeedbackContext(null);
     setScreenshotBlob(null);
+    setDomainSnapshot(null);
   }, []);
 
   return (
@@ -49,6 +54,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         onClose={handleFeedbackClose}
         context={feedbackContext}
         screenshotBlob={screenshotBlob}
+        domainSnapshot={domainSnapshot}
       />
     </>
   );

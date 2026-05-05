@@ -282,6 +282,10 @@ export const SubmitAppFeedbackSchema = z.object({
     kind: z.enum(['route', 'click', 'fetch', 'error']),
     detail: z.string().max(300),
   })).max(80).optional(),
+  domainContext: z.unknown().optional(),
+  // Honeypot: legitimate users never fill this. Bots that auto-fill any
+  // visible-looking field will. Server silently drops on non-empty.
+  website: z.string().optional(),
 });
 
 export const UpdateAppFeedbackSchema = z.object({
