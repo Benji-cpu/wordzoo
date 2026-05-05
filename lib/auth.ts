@@ -21,6 +21,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   session: {
     strategy: 'database',
+    // Persist mobile sessions for 60 days. The cookie maxAge mirrors the
+    // session row's expiry, so users stop having to log in every visit.
+    maxAge: 60 * 24 * 60 * 60, // 60 days
+    updateAge: 24 * 60 * 60, // refresh expiry on activity once per day
+  },
+  cookies: {
+    sessionToken: {
+      name: 'authjs.session-token',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+      },
+    },
   },
   callbacks: {
     session({ session, user }) {

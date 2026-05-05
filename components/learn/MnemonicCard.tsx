@@ -129,7 +129,7 @@ export function MnemonicCard({
         </p>
       )}
 
-      <div className="flex items-baseline gap-2 flex-wrap mb-2">
+      <div className="flex items-baseline gap-2 flex-wrap mb-1.5">
         <span
           className="font-display text-[color:var(--color-fox-primary)] leading-none"
           style={{ fontSize: 'clamp(1.35rem, 5.5vw, 1.75rem)' }}
@@ -155,6 +155,13 @@ export function MnemonicCard({
           </>
         )}
       </div>
+
+      {meaningEn && (
+        <div className="mb-2 flex items-baseline gap-1.5">
+          <span className="text-[11px] uppercase tracking-wider font-semibold text-[color:var(--text-secondary)]">means</span>
+          <span className="text-[15px] font-bold text-[color:var(--foreground)]">{meaningEn}</span>
+        </div>
+      )}
 
       {bridgeSentence && (
         <p className="text-[14px] sm:text-[15px] italic text-[color:var(--foreground)] mb-3 leading-snug whitespace-nowrap overflow-hidden text-ellipsis">
