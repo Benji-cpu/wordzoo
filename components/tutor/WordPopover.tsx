@@ -17,10 +17,12 @@ export interface PopoverData {
 interface WordPopoverProps {
   data: PopoverData;
   anchorRect: DOMRect | null;
+  /** Active path's language code, so TTS fallback can speak the word when no audioUrl is cached. */
+  languageCode?: string;
   onClose: () => void;
 }
 
-export function WordPopover({ data, anchorRect, onClose }: WordPopoverProps) {
+export function WordPopover({ data, anchorRect, languageCode, onClose }: WordPopoverProps) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -50,6 +52,7 @@ export function WordPopover({ data, anchorRect, onClose }: WordPopoverProps) {
           wordId={data.text}
           audioUrl={data.pronunciation_audio_url}
           text={data.text}
+          languageCode={languageCode}
           size={18}
           className="-my-1"
         />

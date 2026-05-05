@@ -168,7 +168,12 @@ export async function playAudioDirect(url: string): Promise<void> {
 
 function playAudioUrl(url: string, speed: PlaybackSpeed): Promise<void> {
   return new Promise((resolve, reject) => {
-    const audio = new Audio(url);
+    const audio = new Audio();
+    // Brave's Shields can block cross-origin blob fetches; explicitly opting
+    // into anonymous CORS lets the browser fetch the response with the same
+    // headers our blob storage already serves. Safe for same-origin URLs too.
+    audio.crossOrigin = 'anonymous';
+    audio.src = url;
     currentAudio = audio;
     audio.playbackRate = speed;
     audio.onended = () => {

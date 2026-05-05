@@ -401,6 +401,7 @@ export function TutorChat({
             <WordPopover
               data={popover.data}
               anchorRect={popover.rect}
+              languageCode={langCode}
               onClose={() => setPopover(null)}
             />
           )}

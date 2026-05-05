@@ -156,7 +156,12 @@ export function PhraseReviewCard({
                 )}
                 {compositeImageUrl ? (
                   <div className="relative w-full rounded-xl overflow-hidden mb-3 bg-surface-inset max-h-[32vh]">
-                    <MnemonicImage src={compositeImageUrl} alt={`Illustration for phrase: ${textEn}`} variant="phrase-composite" />
+                    <MnemonicImage
+                      src={compositeImageUrl}
+                      alt={`Illustration for phrase: ${textEn}`}
+                      variant="phrase-composite"
+                      zoomCaption={phraseBridgeSentence ?? literalTranslation ?? null}
+                    />
                   </div>
                 ) : !phraseBridgeSentence ? (
                   <div className="rounded-xl bg-gradient-to-br from-accent-id/15 to-surface-inset py-6 px-4 mb-3">
@@ -197,7 +202,12 @@ export function PhraseReviewCard({
                 )}
                 {compositeImageUrl ? (
                   <div className="relative w-full rounded-xl overflow-hidden mb-3 bg-surface-inset max-h-[32vh]">
-                    <MnemonicImage src={compositeImageUrl} alt={`Illustration for phrase: ${textEn}`} variant="phrase-composite" />
+                    <MnemonicImage
+                      src={compositeImageUrl}
+                      alt={`Illustration for phrase: ${textEn}`}
+                      variant="phrase-composite"
+                      zoomCaption={phraseBridgeSentence ?? literalTranslation ?? null}
+                    />
                   </div>
                 ) : !phraseBridgeSentence ? (
                   <div className="rounded-xl bg-gradient-to-br from-accent-id/15 to-surface-inset py-6 px-4 mb-3">
