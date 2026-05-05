@@ -328,7 +328,11 @@ export default function TutorPage() {
   }
 
   return (
-    <div className="max-w-lg mx-auto -mt-4 -mb-20 h-[calc(100dvh-3.5rem)] overflow-hidden">
+    // Tutor needs to fill the AppShell scroll body without leaking past the
+    // bottom nav. AppShell already adds pb-20; we only need to subtract the
+    // header height. overscroll-contain stops touch-scroll from rubber-banding
+    // the parent when the chat is at top/bottom.
+    <div className="max-w-lg mx-auto -mt-4 h-[calc(100dvh-3.5rem-5rem)] lg:h-[calc(100dvh-3.5rem)] overflow-hidden flex flex-col overscroll-contain">
       {guidedError && !sessionId && (
         <div className="px-4 pt-2 pb-2">
           <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-red-500/10 border border-red-500/20">

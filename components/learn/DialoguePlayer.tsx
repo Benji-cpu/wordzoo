@@ -156,6 +156,19 @@ export function DialoguePlayer({ dialogues, onComplete, onLineAdvance, vocabWord
     };
   }, []);
 
+  // Scroll the latest revealed line into view so the user doesn't have to
+  // chase the dialogue as it grows past the viewport. Skips initial mount.
+  const dialogueEndRef = useRef<HTMLDivElement>(null);
+  const prevVisibleRef = useRef(visibleCount);
+  useEffect(() => {
+    if (visibleCount !== prevVisibleRef.current) {
+      prevVisibleRef.current = visibleCount;
+      requestAnimationFrame(() => {
+        dialogueEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      });
+    }
+  }, [visibleCount]);
+
   return (
     <div className="animate-slide-up" onClick={handleTap}>
       <div className="flex items-center justify-center gap-3 mb-4">
@@ -249,6 +262,7 @@ export function DialoguePlayer({ dialogues, onComplete, onLineAdvance, vocabWord
           );
         })}
       </div>
+      <div ref={dialogueEndRef} />
       <p className="text-center text-sm text-text-secondary">
         {isPlayingAll ? 'Playing all lines...' : visibleCount < dialogues.length ? 'Tap to continue' : 'Tap to move on'}
       </p>

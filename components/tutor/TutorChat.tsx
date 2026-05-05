@@ -165,10 +165,11 @@ export function TutorChat({
     fetchVocab();
   }, [languageId]);
 
-  // Auto-scroll to bottom on new messages
+  // Auto-scroll to bottom on new messages, message length growth (streaming),
+  // and isStreaming toggle so suggestion chips don't end up below the fold.
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, isStreaming]);
 
   // Auto-scroll when keyboard opens/closes
   useEffect(() => {
@@ -278,7 +279,7 @@ export function TutorChat({
   }
 
   return (
-    <div className={`flex flex-col h-full ${compact ? '' : 'pb-16'} ${className ?? ''}`}>
+    <div className={`flex flex-col h-full min-h-0 ${className ?? ''}`}>
       {view === 'mode_select' && (
         showOnboarding ? (
           <TutorOnboarding onComplete={() => setShowOnboarding(false)} />
@@ -317,7 +318,7 @@ export function TutorChat({
           )}
 
           {/* Messages */}
-          <div className={`flex-1 overflow-y-auto ${compact ? 'px-3 py-2' : 'px-4 py-3'}`}>
+          <div className={`flex-1 min-h-0 overflow-y-auto overscroll-contain ${compact ? 'px-3 py-2' : 'px-4 py-3'}`}>
             {messages.map((msg, i) => (
               <div key={i}>
                 <ChatBubble
