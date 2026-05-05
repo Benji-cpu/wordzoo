@@ -56,7 +56,32 @@ export default function TutorPage() {
     }
   }, [sessionId]);
 
-  const { messages, isStreaming, error, limitReached, sendMessage, addGreeting, loadMessages } = useTutorChat(sessionId, handleEndSession);
+  const { messages, isStreaming, error, limitReached, messagesRemaining, sendMessage, addGreeting, loadMessages, setRemaining } = useTutorChat(sessionId, handleEndSession);
+
+  // Pre-fetch tutor message usage so the input can be gated BEFORE the user
+  // composes the next message — fixes "blocker fires after send" feedback.
+  useEffect(() => {
+    if (!sessionId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/billing/status');
+        if (!res.ok) return;
+        const json = await res.json();
+        const usage = json?.data?.usage?.tutor_messages;
+        const tier = json?.data?.subscription?.tier;
+        if (cancelled) return;
+        if (tier === 'premium' || !usage || typeof usage.limit !== 'number') {
+          setRemaining(null); // unlimited / unknown
+          return;
+        }
+        setRemaining(Math.max(0, usage.limit - (usage.current ?? 0)));
+      } catch {
+        // Non-critical; the post-send 403 path remains a fallback gate.
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [sessionId, setRemaining]);
 
   // Register the last few tutor turns as feedback domain context so
   // submissions from this page carry conversational state for triage.
@@ -346,6 +371,7 @@ export default function TutorPage() {
         onStartGuidedSession={handleStartGuidedSession}
         returnTo={returnTo}
         limitReached={limitReached}
+        messagesRemaining={messagesRemaining}
       />
     </div>
   );
