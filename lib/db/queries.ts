@@ -1799,3 +1799,73 @@ export async function insertInfoByte(data: {
   `;
   return (rows[0] as InfoByte) ?? null;
 }
+
+// ──────────────────────────────────────────────────────────────────
+// Pedagogy v2
+// ──────────────────────────────────────────────────────────────────
+
+export interface ClozePhraseForWord {
+  phrase_id: string;
+  text_target: string;
+  text_en: string;
+  word_text: string;
+  audio_url: string | null;
+}
+
+export async function getClozePhrasesForWord(
+  wordId: string,
+  limit: number = 3,
+): Promise<ClozePhraseForWord[]> {
+  const rows = await sql`
+    SELECT
+      sp.id AS phrase_id,
+      sp.text_target,
+      sp.text_en,
+      w.text AS word_text,
+      sp.audio_url
+    FROM scene_phrases sp
+    JOIN phrase_words pw ON pw.phrase_id = sp.id
+    JOIN words w ON w.id = pw.word_id
+    WHERE pw.word_id = ${wordId}
+    ORDER BY sp.created_at DESC
+    LIMIT ${limit}
+  `;
+  return rows as ClozePhraseForWord[];
+}
+
+/**
+ * Pedagogy v2 introduce gate: record that a user has met a word for the
+ * first time. Inserts the `user_words` row if missing and bumps
+ * `daily_usage.words_learned` only on the first introduction. Idempotent.
+ *
+ * Caller MUST have passed `checkAccess(userId, 'new_word')` first — this
+ * function does not enforce the daily limit.
+ */
+export async function recordIntroduction(
+  userId: string,
+  wordId: string,
+): Promise<{ alreadyIntroduced: boolean }> {
+  const existing = await sql`
+    SELECT id FROM user_words
+    WHERE user_id = ${userId} AND word_id = ${wordId}
+    LIMIT 1
+  `;
+  if (existing.length > 0) {
+    return { alreadyIntroduced: true };
+  }
+
+  await sql`
+    INSERT INTO user_words (user_id, word_id, status)
+    VALUES (${userId}, ${wordId}, 'learning')
+    ON CONFLICT (user_id, word_id) DO NOTHING
+  `;
+
+  await sql`
+    INSERT INTO daily_usage (user_id, date, words_learned)
+    VALUES (${userId}, CURRENT_DATE, 1)
+    ON CONFLICT (user_id, date) DO UPDATE
+      SET words_learned = daily_usage.words_learned + 1
+  `;
+
+  return { alreadyIntroduced: false };
+}

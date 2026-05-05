@@ -282,11 +282,18 @@ DO $$
 DECLARE
   _conname TEXT;
 BEGIN
-  SELECT conname INTO _conname FROM pg_constraint
-  WHERE conrelid = 'tutor_sessions'::regclass AND contype = 'c' AND pg_get_constraintdef(oid) LIKE '%mode%';
-  IF _conname IS NOT NULL THEN
+  -- Drop ALL existing CHECK constraints touching the mode column (handles legacy
+  -- renames and the case where multiple matched rows previously broke SELECT INTO).
+  FOR _conname IN
+    SELECT conname FROM pg_constraint
+    WHERE conrelid = 'tutor_sessions'::regclass
+      AND contype = 'c'
+      AND pg_get_constraintdef(oid) LIKE '%mode%'
+  LOOP
     EXECUTE format('ALTER TABLE tutor_sessions DROP CONSTRAINT %I', _conname);
-  END IF;
+  END LOOP;
+  -- Belt-and-braces: drop the canonical name in case it slipped through above.
+  ALTER TABLE tutor_sessions DROP CONSTRAINT IF EXISTS tutor_sessions_mode_check;
   ALTER TABLE tutor_sessions ADD CONSTRAINT tutor_sessions_mode_check
     CHECK (mode IN ('free_chat','role_play','word_review','grammar_glimpse','pronunciation_coach','guided_conversation'));
 END $$;
@@ -483,12 +490,15 @@ CREATE INDEX IF NOT EXISTS idx_path_builder_drafts_session
 DO $$
 DECLARE _conname TEXT;
 BEGIN
-  SELECT conname INTO _conname FROM pg_constraint
-  WHERE conrelid = 'tutor_sessions'::regclass AND contype = 'c'
-    AND pg_get_constraintdef(oid) LIKE '%mode%';
-  IF _conname IS NOT NULL THEN
+  FOR _conname IN
+    SELECT conname FROM pg_constraint
+    WHERE conrelid = 'tutor_sessions'::regclass
+      AND contype = 'c'
+      AND pg_get_constraintdef(oid) LIKE '%mode%'
+  LOOP
     EXECUTE format('ALTER TABLE tutor_sessions DROP CONSTRAINT %I', _conname);
-  END IF;
+  END LOOP;
+  ALTER TABLE tutor_sessions DROP CONSTRAINT IF EXISTS tutor_sessions_mode_check;
   ALTER TABLE tutor_sessions ADD CONSTRAINT tutor_sessions_mode_check
     CHECK (mode IN (
       'free_chat','role_play','word_review','grammar_glimpse',
@@ -642,7 +652,11 @@ CREATE TABLE IF NOT EXISTS app_feedback (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 ALTER TABLE app_feedback ADD COLUMN IF NOT EXISTS activity_trail JSONB;
+ALTER TABLE app_feedback ADD COLUMN IF NOT EXISTS domain_context JSONB;
 CREATE INDEX IF NOT EXISTS idx_app_feedback_status ON app_feedback(status, created_at DESC);
+-- For rate-limit lookups (last N submissions per user in window)
+CREATE INDEX IF NOT EXISTS idx_app_feedback_user_created
+  ON app_feedback(user_id, created_at DESC);
 
 -- User Insights (progressive education system — drip-fed learning science)
 CREATE TABLE IF NOT EXISTS user_insights (
@@ -693,4 +707,32 @@ CREATE TABLE IF NOT EXISTS user_xp_events (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_user_xp_events_user ON user_xp_events(user_id, created_at DESC);
+
+-- Pedagogy v2: per-scene autobiographical conversation prompts (seeded by Gemini)
+CREATE TABLE IF NOT EXISTS scene_conversation_prompts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  scene_id UUID NOT NULL REFERENCES scenes(id) ON DELETE CASCADE,
+  prompt_text TEXT NOT NULL,
+  prompt_en TEXT NOT NULL,
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  source TEXT NOT NULL DEFAULT 'gemini',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_scene_conversation_prompts_scene
+  ON scene_conversation_prompts(scene_id, sort_order);
+
+-- Pedagogy v2: telemetry sink for drill/cloze/checkpoint events. Fire-and-
+-- forget; failures must not break the learner's flow. Used by admins to
+-- verify the pedagogy v2 rollout.
+CREATE TABLE IF NOT EXISTS pedagogy_events (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  event TEXT NOT NULL,
+  payload JSONB NOT NULL DEFAULT '{}'::jsonb,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_pedagogy_events_user_created
+  ON pedagogy_events(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_pedagogy_events_event_created
+  ON pedagogy_events(event, created_at DESC);
 `;
