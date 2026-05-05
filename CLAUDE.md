@@ -101,7 +101,7 @@ Stripe handles subscriptions (monthly/yearly) and one-time travel pack purchases
 
 **Optional (future):** `RESEND_API_KEY`, `ADMIN_EMAIL` — required if/when the nightly digest is wired up to email the summary.
 
-**`ADMIN_EMAILS`** is comma-separated and gates `/admin/*` pages and `/api/admin/*` routes via `app/(app)/admin/layout.tsx`. If unset, admin pages refuse all users. Must include both `b.hemsonstruthers@gmail.com` and `profbanjo@gmail.com` (Benji's two power-user accounts).
+**`ADMIN_EMAILS`** is comma-separated and gates `/admin/*` pages and `/api/admin/*` routes via `app/(app)/admin/layout.tsx`. If unset, admin pages refuse all users. Must include both `b.hemsonstruthers@gmail.com` and `profbenjo@gmail.com` (Benji's two power-user accounts).
 
 ## Post-Change Verification
 
