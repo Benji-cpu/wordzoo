@@ -33,16 +33,16 @@ Language learning SaaS with AI-generated keyword mnemonics, spaced repetition, a
 
 ## Cron Jobs
 
-Mixed scheduling: project-specific sub-daily jobs run via Vercel Cron (`vercel.json`); the cross-project nightly digest runs via GitHub Actions (`.github/workflows/nightly-routine.yml`) so it doesn't consume a Vercel cron slot. All cron routes verify `Authorization: Bearer ${CRON_SECRET}` and return 401 without it.
+Mixed scheduling: project-specific sub-daily jobs run via Vercel Cron (`vercel.json`); the cross-project nightly routine runs via a **Claude Code remote agent** (registered through claude.ai) so it can do real work — read feedback, cluster, open draft PRs — instead of just dumping a JSON digest. All HTTP cron routes verify `Authorization: Bearer ${CRON_SECRET}` and return 401 without it.
 
-| Job | Backend | Schedule (UTC) | Endpoint |
-|-----|---------|----------------|----------|
+| Job | Backend | Schedule (UTC) | Endpoint / file |
+|-----|---------|----------------|-----------------|
 | `reset-usage` | Vercel Cron | `0 0 * * *` | `/api/cron/reset-usage` |
 | `generate-info-byte` | Vercel Cron | `0 1 * * *` | `/api/cron/generate-info-byte` |
 | `check-subscriptions` | Vercel Cron | `0 3 * * *` | `/api/cron/check-subscriptions` |
-| `nightly-routine` | GitHub Actions | `32 19 * * *` (≈03:32 Bali) | `/api/cron/nightly-routine` |
+| `nightly-routine` | Claude Code remote agent | `32 19 * * *` (≈03:32 Bali) | `.claude/agents/nightly-routine.md` |
 
-The nightly route runs feedback digest + project health (stuck mnemonics missing TTS audio, overdue SRS reviews) and surfaces the JSON in the GitHub Actions step summary. Resend is not yet wired up — once it is, the workflow will append `?digest=true` to email the summary to `ADMIN_EMAIL`.
+The remote agent fetches the digest via `/api/cron/nightly-routine` and the pending feedback list via `/api/admin/feedback/pending`, then opens a draft PR with `feedback-log/YYYY-MM-DD.md` containing a triage report (priority/standard/noise buckets + clustering) and an optional single-file low-risk fix. Trigger registered in claude.ai (https://claude.ai/code/scheduled).
 
 ## Feedback Module
 
