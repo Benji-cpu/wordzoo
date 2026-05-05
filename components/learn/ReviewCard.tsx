@@ -6,10 +6,11 @@ import { FeedbackButtons } from '@/components/learn/FeedbackButtons';
 import { RatingButtons } from '@/components/learn/RatingButtons';
 import { PronunciationButton } from '@/components/audio/SpeakerButton';
 import { MnemonicImage } from '@/components/shared/MnemonicImage';
+import { ShareButton } from '@/components/shared/ShareButton';
 import { playWordPronunciation, isAudioUnlocked } from '@/lib/audio/pronunciation';
 import { SwipeIndicators, getSwipeBorderStyle } from '@/components/learn/SwipeIndicators';
 import { CollapsibleWordFamily } from '@/components/learn/WordFamilyCard';
-import type { LearnWordFamily } from '@/components/learn/LearnClient';
+import type { LearnWordFamily } from '@/types/learn';
 import type { Word, Mnemonic } from '@/types/database';
 
 type Rating = 'instant' | 'got_it' | 'hard' | 'forgot';
@@ -106,11 +107,17 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, w
         alt={mnemonic.keyword_text ? `Mnemonic illustration: ${mnemonic.keyword_text}` : 'Mnemonic illustration'}
         variant="review"
         keyword={mnemonic.keyword_text ?? undefined}
+        zoomCaption={mnemonic.bridge_sentence ?? mnemonic.scene_description}
         onLoad={() => setImageLoaded(true)}
       />
       {imageLoaded && (
-        <div className="absolute bottom-2 right-2 bg-black/60 rounded-lg p-1" onClick={(e) => e.stopPropagation()}>
+        <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-black/60 backdrop-blur rounded-full px-1 py-0.5" onClick={(e) => e.stopPropagation()}>
           <FeedbackButtons mnemonicId={mnemonic.id} context="review" compact overlay />
+          <ShareButton
+            title={`${word.text} — WordZoo`}
+            text={`I learned "${word.text}" — it means "${word.meaning_en}". Try this memory trick on WordZoo.`}
+            url={typeof window !== 'undefined' ? `${window.location.origin}/word/${word.id}` : `/word/${word.id}`}
+          />
         </div>
       )}
     </div>

@@ -52,13 +52,15 @@ export function ReviewComplete({
 
       {sessionEarned > 0 && (
         <p className="self-center inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[color:var(--color-fox-soft)] text-[color:var(--color-fox-deep)] dark:text-[color:var(--color-fox-primary)] text-[13px] font-extrabold">
-          <span aria-hidden>✨</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <path d="m12 3 1.9 5.6L20 11l-6.1 2.4L12 19l-1.9-5.6L4 11l6.1-2.4Z" />
+          </svg>
           +{sessionEarned} XP earned
         </p>
       )}
 
       <ActionCardRow>
-        <ActionCard icon="🔁" value={totalReviewed} label="Reviewed" tone="cream" />
+        <ActionCard icon="↻" value={totalReviewed} label="Reviewed" tone="cream" />
         <ActionCard icon="✓" value={correctCount} label="Remembered" tone="warm" />
       </ActionCardRow>
 
