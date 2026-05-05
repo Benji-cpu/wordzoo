@@ -18,6 +18,7 @@ interface FeedbackModalProps {
 type ModalState = 'idle' | 'sending' | 'success' | 'error';
 
 const DRAFT_KEY = 'feedback_draft';
+const FIRST_SEND_KEY = 'feedback_first_send_done';
 
 export function FeedbackModal({ isOpen, onClose, context, screenshotBlob, domainSnapshot }: FeedbackModalProps) {
   const [message, setMessage] = useState(() => {
@@ -88,7 +89,20 @@ export function FeedbackModal({ isOpen, onClose, context, screenshotBlob, domain
     };
     const blob = screenshotBlob;
     clearDraft();
-    setState('success');
+    // First feedback ever: show the celebration so the user knows it worked.
+    // Every subsequent send: just close — power users send rapidly and don't
+    // need a Thanks screen each time. Failures still restore the draft.
+    let firstSendDone = false;
+    try {
+      firstSendDone = localStorage.getItem(FIRST_SEND_KEY) === '1';
+    } catch { /* ignore */ }
+    if (firstSendDone) {
+      setState('idle');
+      onClose();
+    } else {
+      try { localStorage.setItem(FIRST_SEND_KEY, '1'); } catch { /* ignore */ }
+      setState('success');
+    }
 
     void (async () => {
       try {
@@ -204,11 +218,7 @@ export function FeedbackModal({ isOpen, onClose, context, screenshotBlob, domain
                     disabled={state === 'sending'}
                   />
 
-                  <div className="flex items-center justify-between mt-3">
-                    <span className="text-xs text-text-secondary">
-                      {message.length}/8000
-                    </span>
-
+                  <div className="flex items-center justify-end mt-3">
                     <div className="flex gap-2 items-center">
                       <button
                         onClick={handleClose}
