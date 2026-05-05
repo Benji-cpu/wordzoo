@@ -235,8 +235,21 @@ export function ReviewClient({ dueWords, duePhrases, practiceWords = [], wordFam
 
   const handleRevisionRate = useCallback((rating: Rating) => {
     if (rating === 'forgot') {
-      // Loop back to mnemonic (or reset quiz if no mnemonic)
-      if (missedItems[revisionIndex]?.mnemonic_id) {
+      // Move the failed item to the end of the revision queue so the user
+      // doesn't see it again immediately — gives them a chance to recall it
+      // after some distractor cards. Then re-show the mnemonic for context.
+      setMissedItems((prev) => {
+        if (prev.length <= 1) return prev; // nothing to rotate against
+        const updated = [...prev];
+        const [failed] = updated.splice(revisionIndex, 1);
+        updated.push(failed);
+        return updated;
+      });
+      // After rotation, the same revisionIndex now points to the NEXT card.
+      // Re-show its mnemonic if available so the user enters fresh.
+      if (missedItems.length > 1 && missedItems[(revisionIndex + 1) % missedItems.length]?.mnemonic_id) {
+        setRevisionStep('mnemonic');
+      } else if (missedItems[revisionIndex]?.mnemonic_id) {
         setRevisionStep('mnemonic');
       }
       setRevealed(false);

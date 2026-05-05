@@ -165,11 +165,20 @@ export async function startGuidedSession(
   return { sessionId: session.id, greeting: response.text };
 }
 
+// Map the user-facing easy/medium/hard control to the prompt tier. Hard
+// is the strongest pure-target-language signal; easy keeps L1 scaffolding.
+const CHALLENGE_TIER_MAP = {
+  easy: 'beginner',
+  medium: 'intermediate',
+  hard: 'advanced',
+} as const;
+
 export async function sendMessage(
   sessionId: string,
   userId: string,
   userMessage: string,
-  userName?: string | null
+  userName?: string | null,
+  challengeMode?: 'easy' | 'medium' | 'hard'
 ): Promise<{ stream: ReadableStream<string>; completePromise: Promise<void>; isLastTurn: boolean }> {
   const session = await getTutorSessionById(sessionId);
   if (!session) throw new Error('Session not found');
@@ -193,6 +202,9 @@ export async function sendMessage(
     getUserProfile(userId),
   ]);
   const l1Name = l1NameFromCode(userProfile?.native_language);
+
+  // User's UI-selected difficulty wins over the inferred tier when present.
+  const effectiveTier = challengeMode ? CHALLENGE_TIER_MAP[challengeMode] : proficiencyTier;
 
   let isLastTurn = false;
   if (session.mode === 'guided_conversation' && session.scene_id) {
@@ -221,7 +233,7 @@ export async function sendMessage(
       userName,
       currentUserTurn: userTurnCount,
       isLastTurn,
-      proficiencyTier,
+      proficiencyTier: effectiveTier,
       phase,
     });
   } else if (session.mode === 'path_builder') {
@@ -292,7 +304,7 @@ export async function sendMessage(
       dueWords,
       adaptiveContext: adaptiveCtx,
       userName,
-      proficiencyTier,
+      proficiencyTier: effectiveTier,
       newWordsIntroduced: newWordsUsed,
       maxNewWords,
       phase,

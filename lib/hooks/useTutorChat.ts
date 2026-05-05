@@ -1,6 +1,16 @@
 'use client';
 
 import { useState, useCallback, useRef } from 'react';
+import { CHALLENGE_MODE_KEY } from '@/lib/tutor/modes';
+
+function readChallengeMode(): 'easy' | 'medium' | 'hard' | undefined {
+  if (typeof window === 'undefined') return undefined;
+  try {
+    const v = localStorage.getItem(CHALLENGE_MODE_KEY);
+    if (v === 'easy' || v === 'medium' || v === 'hard') return v;
+  } catch { /* ignore */ }
+  return undefined;
+}
 
 interface ChatMessage {
   role: 'user' | 'model';
@@ -47,7 +57,7 @@ export function useTutorChat(sessionId: string | null, onAutoEnd?: () => void) {
         const response = await fetch('/api/tutor/message', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sessionId, message: text }),
+          body: JSON.stringify({ sessionId, message: text, challengeMode: readChallengeMode() }),
           signal: abortRef.current.signal,
         });
 
