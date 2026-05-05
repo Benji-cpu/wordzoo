@@ -43,7 +43,7 @@ Mixed scheduling: project-specific sub-daily jobs run via Vercel Cron (`vercel.j
 | `check-subscriptions` | Vercel Cron | `0 3 * * *` | `/api/cron/check-subscriptions` |
 | `nightly-routine` | Claude Code remote agent | `32 19 * * *` (≈03:32 Bali) | `.claude/agents/nightly-routine.md` |
 
-The remote agent fetches the digest via `/api/cron/nightly-routine` and the pending feedback list via `/api/admin/feedback/pending`, then opens a draft PR with `feedback-log/YYYY-MM-DD.md` containing a triage report (priority/standard/noise buckets + clustering) and an optional single-file low-risk fix. Trigger registered in claude.ai (https://claude.ai/code/scheduled).
+The remote agent fetches the digest via `/api/cron/nightly-routine` and the pending feedback list via `/api/admin/feedback/pending`, then commits `feedback-log/YYYY-MM-DD.md` directly to `main` containing a triage report (priority/standard/noise buckets + clustering) and an optional single-file low-risk fix in the same commit (Vercel auto-deploys on push). Trigger registered in claude.ai (https://claude.ai/code/scheduled).
 
 ## Feedback Module
 
