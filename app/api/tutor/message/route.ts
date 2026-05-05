@@ -43,8 +43,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { sessionId, message } = parsed.data;
-    const { stream, completePromise, isLastTurn } = await sendMessage(sessionId, session.user.id, message, session.user.name);
+    const { sessionId, message, challengeMode } = parsed.data;
+    const { stream, completePromise, isLastTurn } = await sendMessage(sessionId, session.user.id, message, session.user.name, challengeMode);
 
     // Increment usage after sending
     await incrementUsage(session.user.id, 'tutor_message');

@@ -65,6 +65,10 @@ export const TutorEndSessionSchema = z.object({
 export const TutorMessageSchema = z.object({
   sessionId: z.string().uuid(),
   message: z.string().min(1).max(2000),
+  // UI-selected difficulty. Maps to a tier override in the prompt:
+  // easy→beginner, medium→intermediate, hard→advanced. Falls back to
+  // proficiency-based tier when omitted.
+  challengeMode: z.enum(['easy', 'medium', 'hard']).optional(),
 });
 
 // Words
