@@ -64,6 +64,8 @@ interface TutorChatProps {
   onStartGuidedSession?: (sceneId: string) => void;
   returnTo?: string | null;
   limitReached?: boolean;
+  // null = unlimited / unknown; number = remaining tutor messages today
+  messagesRemaining?: number | null;
 }
 
 function mapLanguageCode(code: string): string {
@@ -100,6 +102,7 @@ export function TutorChat({
   onStartGuidedSession,
   returnTo,
   limitReached,
+  messagesRemaining,
 }: TutorChatProps) {
   const [popover, setPopover] = useState<{ data: PopoverData; rect: DOMRect } | null>(null);
   const [vocabMap, setVocabMap] = useState(() => new Map<string, PopoverData>());
@@ -354,23 +357,43 @@ export function TutorChat({
 
           {/* Bottom pinned section: chips + input */}
           <div className="shrink-0 overflow-hidden">
-            {suggestionOptions.length > 0 ? (
-              <SuggestionChips options={suggestionOptions} onSelect={onSendMessage} challengeMode={challengeMode} />
+            {limitReached ? (
+              <div className="px-4 py-3 border-t border-card-border bg-card-surface text-center">
+                <p className="text-sm text-foreground font-medium">You&apos;ve used all your free tutor messages today.</p>
+                <p className="text-xs text-text-secondary mt-1 mb-2">Upgrade for unlimited conversations, or come back tomorrow.</p>
+                <button
+                  onClick={onEndSession}
+                  className="px-4 py-2 rounded-lg bg-accent-default text-white text-sm font-medium"
+                >
+                  See session summary
+                </button>
+              </div>
             ) : (
-              !isStreaming && messages.length > 0 && messages[messages.length - 1].role === 'model' && challengeMode !== 'hard' && (
-                <div className="px-4 py-2">
-                  <p className="text-xs text-text-secondary text-center">Try responding in the language you&apos;re learning, or type in English!</p>
-                </div>
-              )
+              <>
+                {messagesRemaining !== null && messagesRemaining !== undefined && messagesRemaining <= 2 && (
+                  <div className="px-4 py-1.5 text-center text-xs text-text-secondary border-t border-card-border bg-card-surface/50">
+                    {messagesRemaining === 1 ? '1 free message left today' : `${messagesRemaining} free messages left today`}
+                  </div>
+                )}
+                {suggestionOptions.length > 0 ? (
+                  <SuggestionChips options={suggestionOptions} onSelect={onSendMessage} challengeMode={challengeMode} />
+                ) : (
+                  !isStreaming && messages.length > 0 && messages[messages.length - 1].role === 'model' && challengeMode !== 'hard' && (
+                    <div className="px-4 py-2">
+                      <p className="text-xs text-text-secondary text-center">Try responding in the language you&apos;re learning, or type in English!</p>
+                    </div>
+                  )
+                )}
+                <ChatInput
+                  onSend={onSendMessage}
+                  disabled={isStreaming || !!limitReached}
+                  isListening={isListening}
+                  transcript={transcript}
+                  audioLevel={audioLevel}
+                  onMicToggle={handleMicToggle}
+                />
+              </>
             )}
-            <ChatInput
-              onSend={onSendMessage}
-              disabled={isStreaming}
-              isListening={isListening}
-              transcript={transcript}
-              audioLevel={audioLevel}
-              onMicToggle={handleMicToggle}
-            />
           </div>
 
           {/* Word popover */}

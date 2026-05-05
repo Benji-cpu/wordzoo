@@ -12,8 +12,16 @@ export function useTutorChat(sessionId: string | null, onAutoEnd?: () => void) {
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [limitReached, setLimitReached] = useState(false);
+  // null = unknown/unlimited; number = remaining tutor messages today
+  const [messagesRemaining, setMessagesRemaining] = useState<number | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const autoEndRef = useRef(false);
+
+  // Allow callers (e.g. the page) to seed the remaining count from billing/status.
+  const setRemaining = useCallback((next: number | null) => {
+    setMessagesRemaining(next);
+    if (next !== null && next <= 0) setLimitReached(true);
+  }, []);
 
   const addGreeting = useCallback((greeting: string) => {
     setMessages([{ role: 'model', content: greeting }]);
@@ -49,6 +57,7 @@ export function useTutorChat(sessionId: string | null, onAutoEnd?: () => void) {
             // Limit reached — remove the optimistic user message + empty model placeholder
             setMessages((prev) => prev.slice(0, -2));
             setLimitReached(true);
+            setMessagesRemaining(0);
             setIsStreaming(false);
             abortRef.current = null;
             return;
@@ -57,6 +66,17 @@ export function useTutorChat(sessionId: string | null, onAutoEnd?: () => void) {
         }
 
         autoEndRef.current = response.headers.get('X-Session-Auto-End') === 'true';
+
+        const remainingHeader = response.headers.get('X-Tutor-Messages-Remaining');
+        if (remainingHeader === 'unlimited') {
+          setMessagesRemaining(null);
+        } else if (remainingHeader !== null) {
+          const n = Number(remainingHeader);
+          if (!Number.isNaN(n)) {
+            setMessagesRemaining(n);
+            if (n <= 0) setLimitReached(true);
+          }
+        }
 
         const reader = response.body?.getReader();
         if (!reader) throw new Error('No response stream');
@@ -99,5 +119,5 @@ export function useTutorChat(sessionId: string | null, onAutoEnd?: () => void) {
     [sessionId, isStreaming, onAutoEnd]
   );
 
-  return { messages, isStreaming, error, limitReached, sendMessage, addGreeting, loadMessages };
+  return { messages, isStreaming, error, limitReached, messagesRemaining, sendMessage, addGreeting, loadMessages, setRemaining };
 }

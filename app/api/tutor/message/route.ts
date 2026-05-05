@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     if (!access.allowed) {
       return NextResponse.json<ApiResponse<null>>(
         { data: null, error: access.upgradeMessage ?? 'Daily limit reached' },
-        { status: 403 }
+        { status: 403, headers: { 'X-Tutor-Messages-Remaining': '0' } }
       );
     }
 
@@ -48,6 +48,11 @@ export async function POST(request: NextRequest) {
 
     // Increment usage after sending
     await incrementUsage(session.user.id, 'tutor_message');
+
+    // Compute remaining tutor messages for the client. Admin/premium have null limit → unlimited.
+    const remainingHeader = access.limit === null
+      ? 'unlimited'
+      : String(Math.max(0, access.limit - ((access.currentUsage ?? 0) + 1)));
 
     // Fire and forget: save model message after stream completes
     completePromise.catch((err) => console.error('Failed to save tutor message:', err));
@@ -59,6 +64,7 @@ export async function POST(request: NextRequest) {
         'Cache-Control': 'no-cache',
         'Transfer-Encoding': 'chunked',
         'X-Session-Auto-End': isLastTurn ? 'true' : 'false',
+        'X-Tutor-Messages-Remaining': remainingHeader,
       },
     });
   } catch (error) {
