@@ -9,9 +9,12 @@ import { CollapsibleWordFamily } from '@/components/learn/WordFamilyCard';
 import { QuizOptions } from '@/components/learn/QuizOptions';
 import { SceneSummary } from '@/components/learn/SceneSummary';
 import { InsightCard } from '@/components/insights/InsightCard';
+import { PedagogyV2Flow } from '@/components/learn/PedagogyV2Flow';
 import { getEligibleInsight, type InsightUserState } from '@/lib/insights/engine';
 import type { InsightDefinition, TriggerContext } from '@/lib/insights/data';
 import type { SupportedLanguageCode } from '@/types/audio';
+import type { ClozePhraseForWord } from '@/lib/db/queries';
+import type { PedagogyFlags } from '@/lib/pedagogy/flags';
 
 export interface LearnWordFamily {
   affix_type: string;
@@ -41,6 +44,9 @@ export interface LearnWord {
   distractors: string[];
   userWordStatus: string | null;
   wordFamilies?: LearnWordFamily[];
+  /** Cloze candidates for Pedagogy v2 — populated only when the cloze
+   * slice is enabled. Keeping it optional preserves the legacy quiz path. */
+  clozePhrases?: ClozePhraseForWord[];
 }
 
 interface LearnClientProps {
@@ -55,13 +61,39 @@ interface LearnClientProps {
   sceneNumber?: number;
   totalScenes?: number;
   insightState?: { seenIds: string[]; shownToday: number } | null;
+  /** Pedagogy v2 flag bundle resolved on the server (env + admin allowlist
+   * + URL override). When `restructure` is true, the legacy linear flow is
+   * replaced by `PedagogyV2Flow` (batch-intro → drill → checkpoint). */
+  pedagogyFlags?: PedagogyFlags;
 }
 
 type SceneState =
   | { phase: 'word_learning'; wordIndex: number; step: 'word' | 'mnemonic' | 'quiz' }
   | { phase: 'scene_complete' };
 
-export function LearnClient({ sceneId, sceneTitle, sceneDescription, languageName, languageCode, words, nextScene, pathId, sceneNumber, totalScenes, insightState }: LearnClientProps) {
+export function LearnClient({ sceneId, sceneTitle, sceneDescription, languageName, languageCode, words, nextScene, pathId, sceneNumber, totalScenes, insightState, pedagogyFlags }: LearnClientProps) {
+  // Pedagogy v2 swap-in. When the `restructure` slice is enabled (env var,
+  // admin allowlist, or `?p2=1`), use the batch-intro + drill orchestrator
+  // instead of the legacy `word → mnemonic → quiz` per-word loop. Legacy
+  // path below is preserved unchanged so the flag-off behavior is identical
+  // to today.
+  if (pedagogyFlags?.restructure) {
+    return (
+      <PedagogyV2Flow
+        sceneId={sceneId}
+        sceneTitle={sceneTitle}
+        sceneDescription={sceneDescription ?? null}
+        languageName={languageName}
+        languageCode={languageCode}
+        words={words}
+        nextScene={nextScene ?? null}
+        pathId={pathId}
+        sceneNumber={sceneNumber}
+        totalScenes={totalScenes}
+        flags={pedagogyFlags}
+      />
+    );
+  }
   const [state, setState] = useState<SceneState>(
     { phase: 'word_learning', wordIndex: 0, step: 'word' }
   );

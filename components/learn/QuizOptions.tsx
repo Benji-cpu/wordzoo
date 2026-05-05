@@ -16,6 +16,9 @@ interface QuizOptionsProps {
   distractors: string[];
   onCorrect: () => void;
   onAnswer?: (correct: boolean) => void;
+  /** Pedagogy v2: delay (ms) before the right answer is auto-revealed
+   * after a wrong tap. Defaults to 900ms (current legacy behavior). */
+  revealMaskMs?: number;
 }
 
 export function QuizOptions({
@@ -25,6 +28,7 @@ export function QuizOptions({
   distractors,
   onCorrect,
   onAnswer,
+  revealMaskMs = 900,
 }: QuizOptionsProps) {
   const [selected, setSelected] = useState<string | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
@@ -60,10 +64,10 @@ export function QuizOptions({
           setCelebrate(true);
           play('reveal');
           setTimeout(onCorrect, 1300);
-        }, 900);
+        }, revealMaskMs);
       }
     },
-    [selected, correctAnswer, onCorrect, onAnswer, play, trigger, award],
+    [selected, correctAnswer, onCorrect, onAnswer, play, trigger, award, revealMaskMs],
   );
 
   return (

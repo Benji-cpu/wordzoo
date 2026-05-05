@@ -7,29 +7,34 @@ import {
   getSceneMasteryForPath,
   upsertUserPath,
   getWordFamilies,
+  getClozePhrasesForWord,
 } from '@/lib/db/queries';
 import { getSceneFlowData, getOrCreateSceneProgress } from '@/lib/db/scene-flow-queries';
 import { auth } from '@/lib/auth';
 import { LearnClient, type LearnWord } from '@/components/learn/LearnClient';
 import { SceneFlowClient } from '@/components/learn/SceneFlowClient';
 import { getInsightState } from '@/lib/db/insight-queries';
+import { resolvePedagogyFlags } from '@/lib/pedagogy/flags';
 import type { SupportedLanguageCode } from '@/types/audio';
 
 interface PageProps {
   params: Promise<{ sceneId: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }
 
 async function buildWordsArray(
   sceneId: string,
   languageId: string,
-  userId: string | null
+  userId: string | null,
+  includeClozePhrases: boolean,
 ): Promise<LearnWord[]> {
   const sceneWords = await getSceneWordsForLearning(sceneId, userId);
   return Promise.all(
     sceneWords.map(async (sw) => {
-      const [distractors, families] = await Promise.all([
+      const [distractors, families, clozePhrases] = await Promise.all([
         getDistractorsForWord(sw.word_id, languageId, sw.meaning_en, 3),
         getWordFamilies(sw.word_id),
+        includeClozePhrases ? getClozePhrasesForWord(sw.word_id, 3) : Promise.resolve([]),
       ]);
       return {
         word: {
@@ -61,19 +66,29 @@ async function buildWordsArray(
               meaning_shift: f.meaning_shift ?? '',
             }))
           : undefined,
+        clozePhrases: clozePhrases.length > 0 ? clozePhrases : undefined,
       };
     })
   );
 }
 
-export default async function LearnPage({ params }: PageProps) {
+export default async function LearnPage({ params, searchParams }: PageProps) {
   const { sceneId } = await params;
+  const resolvedSearchParams = (await searchParams) ?? {};
 
   const scene = await getSceneWithLanguage(sceneId);
   if (!scene) return notFound();
 
   const session = await auth();
   const userId = session?.user?.id ?? null;
+  const userEmail = session?.user?.email ?? null;
+
+  // Resolve Pedagogy v2 flags. Off in prod by default; admins on via the
+  // ADMIN_EMAILS allowlist; URL `?p2=1` is the dev-time override.
+  const pedagogyFlags = resolvePedagogyFlags({
+    searchParams: resolvedSearchParams,
+    userEmail,
+  });
 
   // Scene position in path (computed if logged in)
   let sceneNumber: number | undefined;
@@ -124,7 +139,7 @@ export default async function LearnPage({ params }: PageProps) {
   // Legacy scenes use the original LearnClient
   if (scene.scene_type === 'legacy') {
     const [words, legacyInsightState] = await Promise.all([
-      buildWordsArray(sceneId, scene.language_id, userId),
+      buildWordsArray(sceneId, scene.language_id, userId, pedagogyFlags.cloze),
       userId ? getInsightState(userId) : null,
     ]);
     return (
@@ -140,6 +155,7 @@ export default async function LearnPage({ params }: PageProps) {
         sceneNumber={sceneNumber}
         totalScenes={totalScenes}
         insightState={legacyInsightState ? { seenIds: Array.from(legacyInsightState.seenIds), shownToday: legacyInsightState.shownToday } : null}
+        pedagogyFlags={pedagogyFlags}
       />
     );
   }
@@ -147,7 +163,7 @@ export default async function LearnPage({ params }: PageProps) {
   // Dialogue scenes use the new SceneFlowClient
   const [flowData, words, progress, insightState] = await Promise.all([
     getSceneFlowData(sceneId, userId),
-    buildWordsArray(sceneId, scene.language_id, userId),
+    buildWordsArray(sceneId, scene.language_id, userId, pedagogyFlags.cloze),
     userId ? getOrCreateSceneProgress(userId, sceneId) : null,
     userId ? getInsightState(userId) : null,
   ]);

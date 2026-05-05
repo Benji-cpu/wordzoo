@@ -8,7 +8,12 @@ export type XpReason =
   | 'word_learned'
   | 'scene_complete'
   | 'review_session'
-  | 'streak_milestone';
+  | 'streak_milestone'
+  // Pedagogy v2 reasons (cloze drill, production typing, end-of-scene
+  // retrieval check). Awarded by the new touchpoint components.
+  | 'cloze_correct'
+  | 'production_correct'
+  | 'checkpoint_passed';
 
 export const XP_AMOUNTS: Record<XpReason, number> = {
   correct_answer: 2,
@@ -17,6 +22,9 @@ export const XP_AMOUNTS: Record<XpReason, number> = {
   scene_complete: 25,
   review_session: 15,
   streak_milestone: 20,
+  cloze_correct: 3,
+  production_correct: 4,
+  checkpoint_passed: 15,
 };
 
 type XpState = {

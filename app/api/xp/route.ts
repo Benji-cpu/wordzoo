@@ -13,6 +13,9 @@ const AddXpSchema = z.object({
     'scene_complete',
     'review_session',
     'streak_milestone',
+    'cloze_correct',
+    'production_correct',
+    'checkpoint_passed',
   ]),
 });
 
