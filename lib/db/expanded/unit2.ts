@@ -215,10 +215,10 @@ const scene2_2b: DialogueSceneData = {
     {
       id: 'f1000000-0034-4000-8000-000000000004',
       text_target: 'Taksi atau ojek?',
-      text_en: 'Taxi or ojek?',
-      literal_translation: 'Taxi or ojek?',
+      text_en: 'Taxi or motorbike taxi (ojek)?',
+      literal_translation: 'Taxi or motorbike-taxi?',
       usage_note:
-        '"Atau" means "or". "Tapi" means "but". These two conjunctions appear constantly in conversation.',
+        '"Ojek" is a motorbike taxi — the cheap, fast way to beat traffic in Bali. Booked through Gojek or Grab. "Atau" means "or"; "tapi" means "but" — both conjunctions appear constantly.',
       wordTexts: ['taksi', 'atau'],
     },
   ],
@@ -273,8 +273,8 @@ const scene2_2b: DialogueSceneData = {
 
 const scene2_3a: DialogueSceneData = {
   id: 'd1000000-0001-4000-8000-000000000015',
-  title: 'Pesan Ojek (Ordering an Ojek)',
-  description: 'Ordering a Grab or Gojek and confirming the pickup',
+  title: 'Pesan Ojek (Order a Motorbike Taxi)',
+  description: 'An ojek is a motorbike taxi — usually booked through the Gojek or Grab app.',
   scene_context:
     'You order a Grab motorbike on your phone. The driver calls and you confirm your pickup spot. Practice waiting, confirming readiness, and motorbike vocabulary.',
   sort_order: 9,
