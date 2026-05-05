@@ -190,7 +190,9 @@ export async function regenerateMnemonicFromFeedback(
 
   const response = await generateText(prompt, {
     temperature: 0.9,
-    maxOutputTokens: 2048,
+    // 2048 was clipping mid-string when scene_description + imagePrompt got
+    // verbose; bump to 8192 so feedback-driven regenerations complete cleanly.
+    maxOutputTokens: 8192,
   });
 
   const candidates = parseCandidates(response.text);
