@@ -57,7 +57,10 @@ export function WordPopover({ data, anchorRect, onClose }: WordPopoverProps) {
       {data.romanization && (
         <div className="text-sm text-text-secondary">{data.romanization}</div>
       )}
-      <div className="text-sm text-accent-default mt-1">{data.meaning_en}</div>
+      <div className="mt-1.5 rounded-md bg-surface-inset px-2 py-1.5">
+        <div className="text-[10px] uppercase tracking-wider text-text-secondary">Means</div>
+        <div className="text-sm font-medium text-foreground">{data.meaning_en}</div>
+      </div>
       {data.keyword_text && (
         <div className="mt-2 pt-2 border-t border-card-border">
           <div className="text-xs text-text-secondary">Mnemonic</div>

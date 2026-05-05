@@ -183,7 +183,7 @@ export function SceneSummary({
             </Link>
             <Link
               href={tutorHref}
-              className="block text-center text-sm text-text-secondary hover:text-foreground transition-colors"
+              className="mt-0.5 block text-center text-sm font-semibold text-text-secondary hover:text-foreground transition-colors py-2"
             >
               Or practice with Tutor →
             </Link>
@@ -197,7 +197,7 @@ export function SceneSummary({
             </Link>
             <Link
               href={nextSceneHref}
-              className="block text-center text-sm text-text-secondary hover:text-foreground transition-colors"
+              className="mt-0.5 block text-center text-sm font-semibold text-text-secondary hover:text-foreground transition-colors py-2"
             >
               Skip — {nextLabel} →
             </Link>
