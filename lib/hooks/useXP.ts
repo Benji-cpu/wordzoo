@@ -13,7 +13,11 @@ export type XpReason =
   // retrieval check). Awarded by the new touchpoint components.
   | 'cloze_correct'
   | 'production_correct'
-  | 'checkpoint_passed';
+  | 'checkpoint_passed'
+  // Pedagogy v2 phrase-side analogues (round 3).
+  | 'phrase_drill_correct'
+  | 'phrase_production_correct'
+  | 'phrase_checkpoint_passed';
 
 export const XP_AMOUNTS: Record<XpReason, number> = {
   correct_answer: 2,
@@ -25,6 +29,9 @@ export const XP_AMOUNTS: Record<XpReason, number> = {
   cloze_correct: 3,
   production_correct: 4,
   checkpoint_passed: 15,
+  phrase_drill_correct: 3,
+  phrase_production_correct: 4,
+  phrase_checkpoint_passed: 15,
 };
 
 type XpState = {

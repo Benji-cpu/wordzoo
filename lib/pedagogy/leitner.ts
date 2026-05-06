@@ -13,8 +13,8 @@
 export type CueType = 'recognition' | 'production' | 'cloze' | 'listening' | 'pattern';
 
 export interface DrillItem {
-  itemId: string;                  // wordId or scene_pattern_exercise.id
-  itemType: 'word' | 'pattern';
+  itemId: string;                  // wordId, phraseId, or scene_pattern_exercise.id
+  itemType: 'word' | 'phrase' | 'pattern';
   refId: string;                   // mirror of itemId — kept for forward-compat
   tries: number;
   cueTypesPassed: CueType[];

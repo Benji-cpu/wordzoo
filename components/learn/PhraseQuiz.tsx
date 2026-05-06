@@ -14,6 +14,10 @@ interface PhraseQuizProps {
   correctAnswer: string;
   distractors: string[];
   onCorrect: () => void;
+  /** Fired on every selection so callers (e.g. PhraseDrillBlock) can
+   * record wrong-answer signal before the auto-reveal fires onCorrect.
+   * Optional — legacy callers ignore it. */
+  onAnswer?: (correct: boolean) => void;
   /** Reserved for future use — quiz no longer surfaces a post-quiz breakdown
    *  affordance because users found it fleeting and redundant with the
    *  pre-quiz PhraseCard. Left in the prop interface for callers. */
@@ -25,6 +29,7 @@ export function PhraseQuiz({
   correctAnswer,
   distractors,
   onCorrect,
+  onAnswer,
 }: PhraseQuizProps) {
   const [selected, setSelected] = useState<string | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
@@ -42,6 +47,7 @@ export function PhraseQuiz({
       setSelected(option);
       const correct = option === correctAnswer;
       setIsCorrect(correct);
+      onAnswer?.(correct);
 
       if (correct) {
         setCelebrate(true);
@@ -65,7 +71,7 @@ export function PhraseQuiz({
         }, 900);
       }
     },
-    [selected, correctAnswer, play, trigger, award, onCorrect],
+    [selected, correctAnswer, play, trigger, award, onCorrect, onAnswer],
   );
 
   return (

@@ -21,6 +21,10 @@ interface ProductionTypingProps {
   wordId: string;
   /** Optional pre-generated pronunciation; played on correct answer. */
   audioUrl?: string | null;
+  /** Fuzzy-match tolerance (Levenshtein edit distance). Default 2.
+   * Phrase-level callers pass a length-scaled value because longer text
+   * tolerates more typos before the answer is "wrong". */
+  maxEdits?: number;
   onCorrect: () => void;
   /**
    * Fired on every submission (not just final). `attempts` counts how many
@@ -30,16 +34,16 @@ interface ProductionTypingProps {
   onAnswer?: (correct: boolean, attempts: number, accuracy?: 'exact' | 'close') => void;
 }
 
-const ALLOWED_EDITS = 2;
-
 export function ProductionTyping({
   promptEn,
   correctTarget,
   wordId,
   audioUrl,
+  maxEdits = 2,
   onCorrect,
   onAnswer,
 }: ProductionTypingProps) {
+  const ALLOWED_EDITS = maxEdits;
   const [typed, setTyped] = useState('');
   const [attempts, setAttempts] = useState(0);
   const [hint, setHint] = useState<string | null>(null);

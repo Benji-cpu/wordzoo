@@ -20,7 +20,20 @@ export type PedagogyEvent =
   | 'introduction_recorded'
   | 'introduction_blocked_daily_limit'
   | 'distractor_tier_used'
-  | 'reveal_mask_dismissed';
+  | 'reveal_mask_dismissed'
+  // Phrase-side analogues (round 3).
+  | 'phrase_drill_correct'
+  | 'phrase_drill_wrong'
+  | 'phrase_production_attempt'
+  | 'phrase_production_correct'
+  | 'phrase_production_wrong'
+  | 'phrase_cloze_attempt'
+  | 'phrase_cloze_correct'
+  | 'phrase_cloze_wrong'
+  | 'phrase_checkpoint_started'
+  | 'phrase_checkpoint_passed'
+  | 'phrase_checkpoint_failed'
+  | 'phrase_remediation_loop_started';
 
 interface FireOptions {
   event: PedagogyEvent;

@@ -16,6 +16,9 @@ const AddXpSchema = z.object({
     'cloze_correct',
     'production_correct',
     'checkpoint_passed',
+    'phrase_drill_correct',
+    'phrase_production_correct',
+    'phrase_checkpoint_passed',
   ]),
 });
 

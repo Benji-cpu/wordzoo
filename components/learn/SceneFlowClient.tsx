@@ -13,6 +13,7 @@ import { QuizOptions } from '@/components/learn/QuizOptions';
 import { CollapsibleWordFamily } from '@/components/learn/WordFamilyCard';
 import { SceneSummary } from '@/components/learn/SceneSummary';
 import { VocabularyBlock } from '@/components/learn/VocabularyBlock';
+import { PhraseBlock } from '@/components/learn/PhraseBlock';
 import { InsightCard } from '@/components/insights/InsightCard';
 import { getEligibleInsight, type InsightUserState } from '@/lib/insights/engine';
 import type { InsightDefinition, TriggerContext } from '@/lib/insights/data';
@@ -557,8 +558,33 @@ export function SceneFlowClient({
         />
       )}
 
-      {/* Phrases Phase */}
-      {state.phase === 'phrases' && phrases[state.phraseIndex] && (
+      {/* Phrases Phase — Pedagogy v2 (batched intros + breakdown + drill + checkpoint) */}
+      {state.phase === 'phrases' && useV2Vocab && phrases.length > 0 && (
+        <PhraseBlock
+          phrases={phrases}
+          languageCode={languageCode}
+          flags={pedagogyFlags!}
+          onItemAnswered={(phraseId, correct) => {
+            fetch('/api/reviews/record-phrase', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ phraseId, rating: correct ? 'got_it' : 'forgot' }),
+            }).catch(() => {});
+          }}
+          onComplete={() => {
+            if (words.length > 0) {
+              saveProgress('vocabulary', 0, 'phrases');
+              setState({ phase: 'vocabulary', wordIndex: 0, step: 'word' });
+            } else {
+              saveProgress('summary', 0, 'phrases');
+              setState({ phase: 'summary' });
+            }
+          }}
+        />
+      )}
+
+      {/* Phrases Phase — legacy linear show → quiz */}
+      {state.phase === 'phrases' && !useV2Vocab && phrases[state.phraseIndex] && (
         state.step === 'show' ? (
           <PhraseCard
             phrase={phrases[state.phraseIndex]}
