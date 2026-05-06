@@ -117,6 +117,11 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, w
             title={`${word.text} — WordZoo`}
             text={`I learned "${word.text}" — it means "${word.meaning_en}". Try this memory trick on WordZoo.`}
             url={typeof window !== 'undefined' ? `${window.location.origin}/word/${word.id}` : `/word/${word.id}`}
+            mnemonicId={mnemonic.id}
+            wordId={word.id}
+            wordText={word.text}
+            meaningEn={word.meaning_en}
+            languageName="WordZoo"
           />
         </div>
       )}

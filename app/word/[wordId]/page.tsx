@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { getPublicWordData } from '@/lib/db/public-queries';
 import { trackReferralClick } from '@/lib/services/share-service';
+import { ShareButton } from '@/components/shared/ShareButton';
 
 interface Props {
   params: Promise<{ wordId: string }>;
@@ -110,15 +111,27 @@ export default async function PublicWordPage({ params, searchParams }: Props) {
 
         {/* Mnemonic */}
         {data.mnemonic_id && (
-          <div className="glass-card p-4 mb-8">
+          <div className="glass-card p-4 mb-8 relative">
             {data.image_url && (
-              <div className="w-full aspect-[4/3] rounded-xl overflow-hidden mb-4 bg-surface-inset">
+              <div className="w-full aspect-[4/3] rounded-xl overflow-hidden mb-4 bg-surface-inset relative">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={data.image_url}
                   alt={data.scene_description ?? ''}
                   className="w-full h-full object-cover"
                 />
+                <div className="absolute top-2 right-2 bg-black/55 backdrop-blur rounded-full">
+                  <ShareButton
+                    title={`${data.word_text} — WordZoo`}
+                    text={`I learned "${data.word_text}" in ${data.language_name} — it means "${data.meaning_en}". Try this memory trick on WordZoo.`}
+                    url={`/word/${data.word_id}`}
+                    mnemonicId={data.mnemonic_id}
+                    wordId={data.word_id}
+                    wordText={data.word_text}
+                    meaningEn={data.meaning_en}
+                    languageName={data.language_name}
+                  />
+                </div>
               </div>
             )}
 
