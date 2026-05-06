@@ -10,13 +10,22 @@ const errorMessages: Record<string, string> = {
   OAuthAccountNotLinked: 'There was a problem with Google sign-in. Please try again.',
 };
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+const ALLOWED_RETURN = ['/dashboard', '/paths', '/trip', '/trip/commit'];
+
+function safeReturn(input: string | undefined): string {
+  if (!input || !input.startsWith('/')) return '/dashboard';
+  const ok = ALLOWED_RETURN.some((p) => input === p || input.startsWith(`${p}/`) || input.startsWith(`${p}?`));
+  return ok ? input : '/dashboard';
+}
+
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string; return?: string }> }) {
+  const { error, return: returnTo } = await searchParams;
+  const redirectTo = safeReturn(returnTo);
   const session = await auth();
   if (session?.user) {
-    redirect('/dashboard');
+    redirect(redirectTo);
   }
 
-  const { error } = await searchParams;
   const errorMessage = error ? (errorMessages[error] ?? 'Something went wrong. Please try again.') : null;
 
   return (
@@ -36,7 +45,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
       <form
         action={async () => {
           'use server';
-          await signIn('google', { redirectTo: '/dashboard' });
+          await signIn('google', { redirectTo });
         }}
       >
         <button

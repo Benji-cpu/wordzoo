@@ -168,8 +168,12 @@ CREATE TABLE IF NOT EXISTS user_paths (
   status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'completed', 'abandoned')),
   started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   completed_at TIMESTAMPTZ,
+  trip_start_date DATE,
+  daily_word_count INTEGER,
   UNIQUE(user_id, path_id)
 );
+ALTER TABLE user_paths ADD COLUMN IF NOT EXISTS trip_start_date DATE;
+ALTER TABLE user_paths ADD COLUMN IF NOT EXISTS daily_word_count INTEGER;
 
 -- Tutor Sessions
 CREATE TABLE IF NOT EXISTS tutor_sessions (
@@ -735,4 +739,24 @@ CREATE INDEX IF NOT EXISTS idx_pedagogy_events_user_created
   ON pedagogy_events(user_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_pedagogy_events_event_created
   ON pedagogy_events(event, created_at DESC);
+
+-- Trip-locked goals: optional destination + date that orient the dashboard
+-- around a deadline. Conversion lever — gentle, never gates anything.
+ALTER TABLE users ADD COLUMN IF NOT EXISTS trip_destination TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS trip_country_code TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS trip_date DATE;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS trip_target_word_count INTEGER NOT NULL DEFAULT 200;
+
+-- Shareable mnemonics: per-share telemetry so we can surface viral mnemonics
+-- and reward referrers. user_id nullable — public /word/[id] page can share too.
+CREATE TABLE IF NOT EXISTS mnemonic_shares (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  mnemonic_id UUID NOT NULL REFERENCES mnemonics(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  format TEXT NOT NULL CHECK (format IN ('square', 'story', 'video', 'link')),
+  channel TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_mnemonic_shares_mnemonic ON mnemonic_shares(mnemonic_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_mnemonic_shares_user ON mnemonic_shares(user_id, created_at DESC);
 `;

@@ -24,6 +24,7 @@ export async function generateText(
     config: {
       temperature: options.temperature ?? 0.7,
       maxOutputTokens: options.maxOutputTokens ?? 1024,
+      ...(options.responseMimeType ? { responseMimeType: options.responseMimeType } : {}),
     },
   });
 

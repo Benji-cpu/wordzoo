@@ -73,6 +73,13 @@ export async function getLanguageById(languageId: string): Promise<Language | nu
   return (rows[0] as Language) ?? null;
 }
 
+export async function getLanguageByCode(code: string): Promise<Language | null> {
+  const rows = await sql`
+    SELECT * FROM languages WHERE code = ${code} LIMIT 1
+  `;
+  return (rows[0] as Language) ?? null;
+}
+
 export async function getPathsByLanguage(
   languageId: string,
   userId: string
@@ -342,6 +349,54 @@ export async function upsertUserPath(
     RETURNING *
   `;
   return rows[0] as UserPath;
+}
+
+export async function upsertUserPathWithTrip(
+  userId: string,
+  pathId: string,
+  tripStartDate: string,
+  dailyWordCount: number
+): Promise<UserPath> {
+  const [, rows] = await sql.transaction([
+    sql`
+      UPDATE user_paths
+      SET status = 'abandoned'
+      WHERE user_id = ${userId}
+        AND path_id <> ${pathId}
+        AND status = 'active'
+    `,
+    sql`
+      INSERT INTO user_paths (user_id, path_id, status, completed_at, trip_start_date, daily_word_count)
+      VALUES (${userId}, ${pathId}, 'active', NULL, ${tripStartDate}, ${dailyWordCount})
+      ON CONFLICT (user_id, path_id)
+      DO UPDATE SET
+        status = 'active',
+        completed_at = NULL,
+        started_at = NOW(),
+        trip_start_date = ${tripStartDate},
+        daily_word_count = ${dailyWordCount}
+      RETURNING *
+    `,
+  ]);
+  return (rows as UserPath[])[0];
+}
+
+export async function getUserPathRow(userId: string, pathId: string): Promise<UserPath | null> {
+  const rows = await sql`
+    SELECT * FROM user_paths
+    WHERE user_id = ${userId} AND path_id = ${pathId}
+    LIMIT 1
+  `;
+  return (rows[0] as UserPath) ?? null;
+}
+
+export async function getPurchaseForPath(userId: string, pathId: string): Promise<{ id: string } | null> {
+  const rows = await sql`
+    SELECT id FROM purchases
+    WHERE user_id = ${userId} AND pack_id = ${pathId}
+    LIMIT 1
+  `;
+  return (rows[0] as { id: string }) ?? null;
 }
 
 export interface OverdueWordRow {
@@ -796,6 +851,60 @@ export async function updateUserPreferences(
 export async function deleteUserCascade(userId: string): Promise<void> {
   // All related tables use ON DELETE CASCADE, so a single delete removes everything.
   await sql`DELETE FROM users WHERE id = ${userId}`;
+}
+
+export interface UserTrip {
+  trip_destination: string | null;
+  trip_country_code: string | null;
+  trip_date: string | null;
+  trip_target_word_count: number;
+}
+
+export async function getUserTrip(userId: string): Promise<UserTrip | null> {
+  const rows = await sql`
+    SELECT
+      trip_destination,
+      trip_country_code,
+      to_char(trip_date, 'YYYY-MM-DD') AS trip_date,
+      trip_target_word_count
+    FROM users WHERE id = ${userId}
+  `;
+  if (!rows[0]) return null;
+  const r = rows[0] as { trip_destination: string | null; trip_country_code: string | null; trip_date: string | null; trip_target_word_count: number };
+  return {
+    trip_destination: r.trip_destination,
+    trip_country_code: r.trip_country_code,
+    trip_date: r.trip_date,
+    trip_target_word_count: r.trip_target_word_count ?? 200,
+  };
+}
+
+export async function setUserTrip(userId: string, data: {
+  destination: string;
+  countryCode?: string | null;
+  date: string;
+  targetWordCount?: number;
+}): Promise<void> {
+  await sql`
+    UPDATE users SET
+      trip_destination = ${data.destination},
+      trip_country_code = ${data.countryCode ?? null},
+      trip_date = ${data.date}::date,
+      trip_target_word_count = ${data.targetWordCount ?? 200},
+      updated_at = NOW()
+    WHERE id = ${userId}
+  `;
+}
+
+export async function clearUserTrip(userId: string): Promise<void> {
+  await sql`
+    UPDATE users SET
+      trip_destination = NULL,
+      trip_country_code = NULL,
+      trip_date = NULL,
+      updated_at = NOW()
+    WHERE id = ${userId}
+  `;
 }
 
 export async function getSubscriptionByUserId(userId: string): Promise<Subscription | null> {

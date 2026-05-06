@@ -133,13 +133,64 @@ export async function generateTravelPack(
   userId: string,
   destination: string,
   duration: string,
-  languageId: string
+  languageId: string,
+  useCases: string[] = [],
+  tripDays?: number,
 ): Promise<Path> {
   const language = await getLanguageById(languageId);
   if (!language) {
     throw new Error('Language not found');
   }
 
-  const prompt = buildTravelPackPrompt(destination, duration, language.name);
+  const prompt = buildTravelPackPrompt(
+    destination,
+    duration,
+    language.name,
+    useCases,
+    tripDays ?? 14,
+  );
   return buildPath(userId, languageId, 'travel', prompt);
+}
+
+export async function previewTravelPack(
+  destination: string,
+  duration: string,
+  languageId: string,
+  useCases: string[],
+  tripDays: number,
+): Promise<{
+  pathTitle: string;
+  pathDescription: string;
+  scenes: Array<{
+    title: string;
+    narrative: string;
+    words: Array<{
+      text: string;
+      romanization: string | null;
+      meaning: string;
+      part_of_speech: string;
+    }>;
+  }>;
+}> {
+  const language = await getLanguageById(languageId);
+  if (!language) {
+    throw new Error('Language not found');
+  }
+
+  const prompt = buildTravelPackPrompt(
+    destination,
+    duration,
+    language.name,
+    useCases,
+    tripDays,
+  );
+  const fullPrompt = `${CUSTOM_PATH_SYSTEM_PROMPT}\n\n${prompt}`;
+
+  const response = await generateText(fullPrompt, {
+    temperature: 0.8,
+    maxOutputTokens: 8192,
+    responseMimeType: 'application/json',
+  });
+
+  return parsePathResponse(response.text);
 }

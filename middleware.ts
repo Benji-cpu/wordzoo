@@ -39,6 +39,11 @@ export default auth((req) => {
     return NextResponse.next();
   }
 
+  // Allow anonymous trip preview (no auth, IP-rate-limited inside the route)
+  if (pathname === '/api/trip/preview') {
+    return NextResponse.next();
+  }
+
   // For unauthenticated requests:
   if (!req.auth) {
     // API routes → return 401 JSON

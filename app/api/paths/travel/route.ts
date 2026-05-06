@@ -34,13 +34,22 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { destination, duration, languageId } = parsed.data;
+    const { destination, duration, languageId, useCases, tripDays, tripStartDate } = parsed.data;
     const path = await generateTravelPack(
       session.user.id,
       destination,
       duration,
-      languageId
+      languageId,
+      useCases ?? [],
+      tripDays,
     );
+
+    if (tripStartDate || tripDays) {
+      const { upsertUserPathWithTrip } = await import('@/lib/db/queries');
+      const startDate = tripStartDate ?? new Date().toISOString().slice(0, 10);
+      // Average words per scene; the dashboard divides scenes across trip days.
+      await upsertUserPathWithTrip(session.user.id, path.id, startDate, 6);
+    }
 
     return NextResponse.json<ApiResponse<Path>>({
       data: path,

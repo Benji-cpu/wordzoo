@@ -3,10 +3,25 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { ImportOnboardingAfterAuth } from './import-onboarding';
 
-export default async function SignupPage() {
+const ALLOWED_RETURN = ['/dashboard', '/paths', '/trip', '/trip/commit'];
+
+function safeReturn(input: string | undefined): string {
+  if (!input || !input.startsWith('/')) return '/dashboard';
+  const ok = ALLOWED_RETURN.some((p) => input === p || input.startsWith(`${p}/`) || input.startsWith(`${p}?`));
+  return ok ? input : '/dashboard';
+}
+
+export default async function SignupPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ return?: string }>;
+}) {
   const session = await auth();
+  const params = await searchParams;
+  const redirectTo = safeReturn(params.return);
+
   if (session?.user) {
-    redirect('/dashboard');
+    redirect(redirectTo);
   }
 
   return (
@@ -30,7 +45,7 @@ export default async function SignupPage() {
       <form
         action={async () => {
           'use server';
-          await signIn('google', { redirectTo: '/dashboard' });
+          await signIn('google', { redirectTo });
         }}
       >
         <button

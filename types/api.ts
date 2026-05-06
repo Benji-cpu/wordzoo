@@ -35,6 +35,14 @@ export const CustomPathSchema = z.object({
   userInput: z.string().min(1).max(500),
 });
 
+// Trip-locked goals
+export const SetTripSchema = z.object({
+  destination: z.string().trim().min(1).max(120),
+  countryCode: z.string().trim().min(2).max(8).optional(),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Expected YYYY-MM-DD'),
+  targetWordCount: z.number().int().min(20).max(2000).optional(),
+});
+
 // Reviews
 export const ReviewDirectionEnum = z.enum(['recognition', 'production']);
 export const ReviewRatingEnum = z.enum(['instant', 'got_it', 'hard', 'forgot']);
@@ -90,7 +98,20 @@ export const TravelPackSchema = z.object({
   destination: z.string().min(1).max(200),
   duration: z.string().min(1).max(100),
   languageId: z.string().uuid(),
+  useCases: z.array(z.string().min(1).max(80)).max(12).optional(),
+  tripDays: z.number().int().min(1).max(60).optional(),
+  tripStartDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
 });
+
+// Trip prototype (anonymous preview)
+export const TripPreviewSchema = z.object({
+  destination: z.string().min(1).max(200).default('Bali'),
+  tripDays: z.number().int().min(1).max(60),
+  useCases: z.array(z.string().min(1).max(80)).min(1).max(12),
+  languageId: z.string().uuid().optional(),
+});
+
+export type TripPreviewInput = z.infer<typeof TripPreviewSchema>;
 
 // Graduation
 export const GraduatePathSchema = z.object({

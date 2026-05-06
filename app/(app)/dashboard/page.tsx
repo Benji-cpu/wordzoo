@@ -30,6 +30,8 @@ import { DashboardUpgradeBanner } from './DashboardUpgradeBanner';
 import { getInsightState } from '@/lib/db/insight-queries';
 import { getEligibleInsight } from '@/lib/insights/engine';
 import { DashboardInsight } from './DashboardInsight';
+import { getTripContext } from '@/lib/services/trip-service';
+import { TripHero } from '@/components/dashboard/TripHero';
 
 function pickGreeting(): string {
   const hour = new Date().getHours();
@@ -80,6 +82,7 @@ export default async function DashboardPage() {
     yesterdayStats,
     todayStats,
     insightState,
+    tripContext,
   ] = await Promise.all([
     getSceneMasteryForPath(userId, pathId),
     getPathWordStats(userId, pathId),
@@ -93,6 +96,7 @@ export default async function DashboardPage() {
     getDailyLearningStats(userId, yesterdayStr),
     getDailyLearningStats(userId, todayStr),
     getInsightState(userId),
+    getTripContext(userId),
   ]);
 
   const firstName = session.user.name?.split(/\s+/)[0] ?? null;
@@ -159,6 +163,12 @@ export default async function DashboardPage() {
           }
           primary={{ label: 'Meet 3 new words →', href: '/paths' }}
           secondary={{ label: 'Chat about yesterday', href: '/tutor' }}
+        />
+      ) : tripContext.hasTrip && hasNextScene ? (
+        <TripHero
+          trip={tripContext}
+          ctaHref={`/learn/${nextScene!.id}`}
+          ctaLabel="Resume session"
         />
       ) : hasNextScene ? (
         <HeroCard

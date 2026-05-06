@@ -124,6 +124,8 @@ export interface UserPath {
   status: 'active' | 'completed' | 'abandoned';
   started_at: Date;
   completed_at: Date | null;
+  trip_start_date: string | null;
+  daily_word_count: number | null;
 }
 
 export interface TutorSession {

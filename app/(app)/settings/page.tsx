@@ -5,6 +5,7 @@ import { getAllPremadePaths, getUserActivePath, getLanguageById, getAllLanguages
 import { SubscriptionSection } from './SubscriptionSection';
 import { ProfileSection } from './ProfileSection';
 import { LanguageSection } from './LanguageSection';
+import { TripSection } from './TripSection';
 import { FeedbackSection } from './FeedbackSection';
 import { DangerSection } from './DangerSection';
 
@@ -53,6 +54,7 @@ export default async function SettingsPage() {
         targetOptions={targetOptions}
         initialTargetLanguageCode={activeLanguage?.code ?? null}
       />
+      <TripSection targetLanguageCode={activeLanguage?.code ?? null} />
       <FeedbackSection />
       {profile && <DangerSection userEmail={profile.email} />}
     </div>

@@ -3,6 +3,7 @@ export interface GeminiTextOptions {
   temperature?: number;
   maxOutputTokens?: number;
   model?: string;
+  responseMimeType?: string;
 }
 
 export interface GeminiChatMessage {

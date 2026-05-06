@@ -94,7 +94,8 @@ export async function createCheckoutSession(
 
 export async function createTravelPackCheckout(
   userId: string,
-  packId: string
+  packId: string,
+  options?: { successUrl?: string; cancelUrl?: string }
 ): Promise<string> {
   const path = await getPathById(packId);
   if (!path || path.type !== 'travel') throw new Error('Travel pack not found');
@@ -115,8 +116,8 @@ export async function createTravelPackCheckout(
       },
       quantity: 1,
     }],
-    success_url: `${APP_URL}/paths?purchased=true`,
-    cancel_url: `${APP_URL}/paths?canceled=true`,
+    success_url: options?.successUrl ?? `${APP_URL}/paths?purchased=true`,
+    cancel_url: options?.cancelUrl ?? `${APP_URL}/paths?canceled=true`,
     metadata: { userId, packId, type: 'travel_pack' },
   });
 
