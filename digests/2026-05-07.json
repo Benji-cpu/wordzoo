@@ -1,0 +1,1271 @@
+{
+  "project": "wordzoo",
+  "today": "2026-05-07",
+  "startedAt": "2026-05-06T23:48:53.833Z",
+  "finishedAt": "2026-05-06T23:48:54.884Z",
+  "feedback": {
+    "byStatus": {
+      "actioned": 111,
+      "new": 10,
+      "dismissed": 1
+    },
+    "newLast24h": 10,
+    "pendingRows": [
+      {
+        "id": "a397e28f-3e9e-4fec-acc6-83e7a7ee2419",
+        "user_id": "b16a9e8f-1bd8-4de1-8fab-c4622da01d57",
+        "message": "So I'm unable to scroll up and down on that previous page which was the kind of complete page",
+        "page_url": "https://wordzoo.vercel.app/tutor?mode=guided_conversation&sceneId=d1000000-0001-4000-8000-000000000016&returnTo=%2Flearn%2Fd1000000-0001-4000-8000-000000000036",
+        "page_title": "WordZoo",
+        "viewport_width": 384,
+        "viewport_height": 647,
+        "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36",
+        "activity_trail": [
+          {
+            "t": 0,
+            "kind": "route",
+            "detail": "/learn/d1000000-0001-4000-8000-000000000016"
+          },
+          {
+            "t": 7.7,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 33.1,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 36.1,
+            "kind": "click",
+            "detail": "button: Practice with Tutor"
+          },
+          {
+            "t": 38,
+            "kind": "route",
+            "detail": "/tutor"
+          },
+          {
+            "t": 49.7,
+            "kind": "click",
+            "detail": "button: Med"
+          },
+          {
+            "t": 50.5,
+            "kind": "click",
+            "detail": "button: Hard"
+          },
+          {
+            "t": 51.5,
+            "kind": "click",
+            "detail": "button: Easy"
+          },
+          {
+            "t": 70.2,
+            "kind": "click",
+            "detail": "button: Med"
+          },
+          {
+            "t": 70.8,
+            "kind": "click",
+            "detail": "button: Hard"
+          },
+          {
+            "t": 88.3,
+            "kind": "click",
+            "detail": "button: Med"
+          },
+          {
+            "t": 89,
+            "kind": "click",
+            "detail": "button: Easy"
+          },
+          {
+            "t": 116.6,
+            "kind": "click",
+            "detail": "button: Ada restoran di dekat sini?Is there a re"
+          },
+          {
+            "t": 232.5,
+            "kind": "click",
+            "detail": "button: Dekat toko sayaNear my shop"
+          },
+          {
+            "t": 280.4,
+            "kind": "click",
+            "detail": "button: Dekat masjid dan gerejaNear the mosque a"
+          },
+          {
+            "t": 304.6,
+            "kind": "click",
+            "detail": "button: Ada bank di dekat sini?Is there a bank n"
+          },
+          {
+            "t": 338.2,
+            "kind": "click",
+            "detail": "button: Hard"
+          },
+          {
+            "t": 426.6,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 531.9,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 559.3,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 678.3,
+            "kind": "click",
+            "detail": "button: Easy"
+          },
+          {
+            "t": 694.4,
+            "kind": "click",
+            "detail": "button: Ada pantai di dekat sini?Is there a beac"
+          },
+          {
+            "t": 699.1,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 718.1,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 849.9,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 863.3,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 919.9,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 941,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 944.5,
+            "kind": "route",
+            "detail": "/learn/d1000000-0001-4000-8000-000000000036"
+          },
+          {
+            "t": 945.8,
+            "kind": "route",
+            "detail": "/learn/d1000000-0001-4000-8000-000000000016"
+          },
+          {
+            "t": 953.8,
+            "kind": "click",
+            "detail": "button: Send"
+          }
+        ],
+        "status": "new",
+        "created_at": "2026-05-06T09:12:17.680Z",
+        "user_email": "profbenjo@gmail.com",
+        "user_name": "Ben Hemson-Struthers"
+      },
+      {
+        "id": "4ccc9c9d-a80c-4244-98cd-fe4d4ffe2977",
+        "user_id": "b16a9e8f-1bd8-4de1-8fab-c4622da01d57",
+        "message": "It would be great if the trunks if the tutor also spoke in the spoke so there was audio during this experience I think that would add a lot of value",
+        "page_url": "https://wordzoo.vercel.app/tutor?mode=guided_conversation&sceneId=d1000000-0001-4000-8000-000000000016&returnTo=%2Flearn%2Fd1000000-0001-4000-8000-000000000036",
+        "page_title": "WordZoo",
+        "viewport_width": 384,
+        "viewport_height": 647,
+        "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36",
+        "activity_trail": [
+          {
+            "t": 0,
+            "kind": "route",
+            "detail": "/learn/d1000000-0001-4000-8000-000000000016"
+          },
+          {
+            "t": 7.7,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 33.1,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 36.1,
+            "kind": "click",
+            "detail": "button: Practice with Tutor"
+          },
+          {
+            "t": 38,
+            "kind": "route",
+            "detail": "/tutor"
+          },
+          {
+            "t": 49.7,
+            "kind": "click",
+            "detail": "button: Med"
+          },
+          {
+            "t": 50.5,
+            "kind": "click",
+            "detail": "button: Hard"
+          },
+          {
+            "t": 51.5,
+            "kind": "click",
+            "detail": "button: Easy"
+          },
+          {
+            "t": 70.2,
+            "kind": "click",
+            "detail": "button: Med"
+          },
+          {
+            "t": 70.8,
+            "kind": "click",
+            "detail": "button: Hard"
+          },
+          {
+            "t": 88.3,
+            "kind": "click",
+            "detail": "button: Med"
+          },
+          {
+            "t": 89,
+            "kind": "click",
+            "detail": "button: Easy"
+          },
+          {
+            "t": 116.6,
+            "kind": "click",
+            "detail": "button: Ada restoran di dekat sini?Is there a re"
+          },
+          {
+            "t": 232.5,
+            "kind": "click",
+            "detail": "button: Dekat toko sayaNear my shop"
+          },
+          {
+            "t": 280.4,
+            "kind": "click",
+            "detail": "button: Dekat masjid dan gerejaNear the mosque a"
+          },
+          {
+            "t": 304.6,
+            "kind": "click",
+            "detail": "button: Ada bank di dekat sini?Is there a bank n"
+          },
+          {
+            "t": 338.2,
+            "kind": "click",
+            "detail": "button: Hard"
+          },
+          {
+            "t": 426.6,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 531.9,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 559.3,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 678.3,
+            "kind": "click",
+            "detail": "button: Easy"
+          },
+          {
+            "t": 694.4,
+            "kind": "click",
+            "detail": "button: Ada pantai di dekat sini?Is there a beac"
+          },
+          {
+            "t": 699.1,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 718.1,
+            "kind": "click",
+            "detail": "button: Send"
+          }
+        ],
+        "status": "new",
+        "created_at": "2026-05-06T09:08:21.213Z",
+        "user_email": "profbenjo@gmail.com",
+        "user_name": "Ben Hemson-Struthers"
+      },
+      {
+        "id": "46f492e0-3a23-4857-bd3c-c3a1c1ad2ac1",
+        "user_id": "b16a9e8f-1bd8-4de1-8fab-c4622da01d57",
+        "message": "So when I click into the keyboard line it's a shifts everything up and away where it doesn't look so good this Sunday a big empty negative space sitting between the keyboard and the input field so it's kind of not resizing correctly for the mobile keyboard",
+        "page_url": "https://wordzoo.vercel.app/tutor?mode=guided_conversation&sceneId=d1000000-0001-4000-8000-000000000016&returnTo=%2Flearn%2Fd1000000-0001-4000-8000-000000000036",
+        "page_title": "WordZoo",
+        "viewport_width": 384,
+        "viewport_height": 647,
+        "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36",
+        "activity_trail": [
+          {
+            "t": 0,
+            "kind": "route",
+            "detail": "/learn/d1000000-0001-4000-8000-000000000016"
+          },
+          {
+            "t": 7.7,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 33.1,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 36.1,
+            "kind": "click",
+            "detail": "button: Practice with Tutor"
+          },
+          {
+            "t": 38,
+            "kind": "route",
+            "detail": "/tutor"
+          },
+          {
+            "t": 49.7,
+            "kind": "click",
+            "detail": "button: Med"
+          },
+          {
+            "t": 50.5,
+            "kind": "click",
+            "detail": "button: Hard"
+          },
+          {
+            "t": 51.5,
+            "kind": "click",
+            "detail": "button: Easy"
+          },
+          {
+            "t": 70.2,
+            "kind": "click",
+            "detail": "button: Med"
+          },
+          {
+            "t": 70.8,
+            "kind": "click",
+            "detail": "button: Hard"
+          },
+          {
+            "t": 88.3,
+            "kind": "click",
+            "detail": "button: Med"
+          },
+          {
+            "t": 89,
+            "kind": "click",
+            "detail": "button: Easy"
+          },
+          {
+            "t": 116.6,
+            "kind": "click",
+            "detail": "button: Ada restoran di dekat sini?Is there a re"
+          },
+          {
+            "t": 232.5,
+            "kind": "click",
+            "detail": "button: Dekat toko sayaNear my shop"
+          },
+          {
+            "t": 280.4,
+            "kind": "click",
+            "detail": "button: Dekat masjid dan gerejaNear the mosque a"
+          },
+          {
+            "t": 304.6,
+            "kind": "click",
+            "detail": "button: Ada bank di dekat sini?Is there a bank n"
+          },
+          {
+            "t": 338.2,
+            "kind": "click",
+            "detail": "button: Hard"
+          },
+          {
+            "t": 426.6,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 531.9,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 559.3,
+            "kind": "click",
+            "detail": "button: Send"
+          }
+        ],
+        "status": "new",
+        "created_at": "2026-05-06T09:05:42.967Z",
+        "user_email": "profbenjo@gmail.com",
+        "user_name": "Ben Hemson-Struthers"
+      },
+      {
+        "id": "834100c6-b2d8-4f1c-8dde-49177d8e1f84",
+        "user_id": "b16a9e8f-1bd8-4de1-8fab-c4622da01d57",
+        "message": "I noticed the little pop up that said you've learned x amount of words in this case the eight words pushes the screen out of the device height and breaking the nice pure mobile device height and meaning that you have to scroll down to press continue it's annoying",
+        "page_url": "https://wordzoo.vercel.app/learn/d1000000-0001-4000-8000-000000000016",
+        "page_title": "WordZoo",
+        "viewport_width": 384,
+        "viewport_height": 647,
+        "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36",
+        "activity_trail": [
+          {
+            "t": 0,
+            "kind": "route",
+            "detail": "/learn/d1000000-0001-4000-8000-000000000016"
+          },
+          {
+            "t": 7.7,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 33.1,
+            "kind": "click",
+            "detail": "button: Send"
+          }
+        ],
+        "status": "new",
+        "created_at": "2026-05-06T08:56:56.193Z",
+        "user_email": "profbenjo@gmail.com",
+        "user_name": "Ben Hemson-Struthers"
+      },
+      {
+        "id": "ac17e1c3-40c8-47d1-aadf-c6e65a6a611d",
+        "user_id": "b16a9e8f-1bd8-4de1-8fab-c4622da01d57",
+        "message": "For some reason I can scroll left and right along the horizontal row and there's no need for that",
+        "page_url": "https://wordzoo.vercel.app/learn/d1000000-0001-4000-8000-000000000016",
+        "page_title": "WordZoo",
+        "viewport_width": 384,
+        "viewport_height": 647,
+        "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36",
+        "activity_trail": [
+          {
+            "t": 0,
+            "kind": "route",
+            "detail": "/dashboard"
+          },
+          {
+            "t": 12.6,
+            "kind": "click",
+            "detail": "a: ContinueTempat di Kota (Places in Town)I"
+          },
+          {
+            "t": 14.3,
+            "kind": "route",
+            "detail": "/learn/d1000000-0001-4000-8000-000000000016"
+          },
+          {
+            "t": 30.2,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 38.8,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 40.9,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 48.4,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 51,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 78.2,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 87.9,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 97.7,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 122.1,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 148,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 177.1,
+            "kind": "click",
+            "detail": "button: Drill these 3 words →"
+          },
+          {
+            "t": 182.2,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 217.4,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 230.7,
+            "kind": "click",
+            "detail": "button: Check"
+          },
+          {
+            "t": 247.2,
+            "kind": "click",
+            "detail": "button: I knew it"
+          },
+          {
+            "t": 254.8,
+            "kind": "click",
+            "detail": "button: Check"
+          },
+          {
+            "t": 257.3,
+            "kind": "click",
+            "detail": "button: I knew it"
+          },
+          {
+            "t": 287.7,
+            "kind": "click",
+            "detail": "button: Check"
+          },
+          {
+            "t": 316.9,
+            "kind": "click",
+            "detail": "button: Check"
+          },
+          {
+            "t": 327.8,
+            "kind": "click",
+            "detail": "button: Check"
+          },
+          {
+            "t": 336,
+            "kind": "click",
+            "detail": "button: church"
+          },
+          {
+            "t": 338.7,
+            "kind": "click",
+            "detail": "button: bank"
+          },
+          {
+            "t": 343.3,
+            "kind": "click",
+            "detail": "button: Check"
+          },
+          {
+            "t": 360.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 363.5,
+            "kind": "click",
+            "detail": "button: Drill these 1 words →"
+          },
+          {
+            "t": 368.5,
+            "kind": "click",
+            "detail": "button: to look for / search"
+          },
+          {
+            "t": 371.4,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 410.1,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 413.3,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 426.1,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 446.9,
+            "kind": "click",
+            "detail": "button: I knew it"
+          },
+          {
+            "t": 448.6,
+            "kind": "click",
+            "detail": "button: to look for / search"
+          },
+          {
+            "t": 451.2,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 461.9,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 474.1,
+            "kind": "click",
+            "detail": "button: Send"
+          }
+        ],
+        "status": "new",
+        "created_at": "2026-05-06T08:56:18.192Z",
+        "user_email": "profbenjo@gmail.com",
+        "user_name": "Ben Hemson-Struthers"
+      },
+      {
+        "id": "cb849665-e502-4e60-b963-509022840599",
+        "user_id": "b16a9e8f-1bd8-4de1-8fab-c4622da01d57",
+        "message": "I noticed that the I guessed it and I knew it is obstructed by the grid items",
+        "page_url": "https://wordzoo.vercel.app/learn/d1000000-0001-4000-8000-000000000016",
+        "page_title": "WordZoo",
+        "viewport_width": 384,
+        "viewport_height": 647,
+        "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36",
+        "activity_trail": [
+          {
+            "t": 0,
+            "kind": "route",
+            "detail": "/dashboard"
+          },
+          {
+            "t": 12.6,
+            "kind": "click",
+            "detail": "a: ContinueTempat di Kota (Places in Town)I"
+          },
+          {
+            "t": 14.3,
+            "kind": "route",
+            "detail": "/learn/d1000000-0001-4000-8000-000000000016"
+          },
+          {
+            "t": 30.2,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 38.8,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 40.9,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 48.4,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 51,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 78.2,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 87.9,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 97.7,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 122.1,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 148,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 177.1,
+            "kind": "click",
+            "detail": "button: Drill these 3 words →"
+          },
+          {
+            "t": 182.2,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 217.4,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 230.7,
+            "kind": "click",
+            "detail": "button: Check"
+          },
+          {
+            "t": 247.2,
+            "kind": "click",
+            "detail": "button: I knew it"
+          },
+          {
+            "t": 254.8,
+            "kind": "click",
+            "detail": "button: Check"
+          },
+          {
+            "t": 257.3,
+            "kind": "click",
+            "detail": "button: I knew it"
+          },
+          {
+            "t": 287.7,
+            "kind": "click",
+            "detail": "button: Check"
+          },
+          {
+            "t": 316.9,
+            "kind": "click",
+            "detail": "button: Check"
+          },
+          {
+            "t": 327.8,
+            "kind": "click",
+            "detail": "button: Check"
+          },
+          {
+            "t": 336,
+            "kind": "click",
+            "detail": "button: church"
+          },
+          {
+            "t": 338.7,
+            "kind": "click",
+            "detail": "button: bank"
+          },
+          {
+            "t": 343.3,
+            "kind": "click",
+            "detail": "button: Check"
+          },
+          {
+            "t": 360.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 363.5,
+            "kind": "click",
+            "detail": "button: Drill these 1 words →"
+          },
+          {
+            "t": 368.5,
+            "kind": "click",
+            "detail": "button: to look for / search"
+          },
+          {
+            "t": 371.4,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 410.1,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 413.3,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 426.1,
+            "kind": "click",
+            "detail": "button: Send"
+          }
+        ],
+        "status": "new",
+        "created_at": "2026-05-06T08:55:30.915Z",
+        "user_email": "profbenjo@gmail.com",
+        "user_name": "Ben Hemson-Struthers"
+      },
+      {
+        "id": "4648c3d8-e69c-4a2b-bca9-0fa8558f953e",
+        "user_id": "b16a9e8f-1bd8-4de1-8fab-c4622da01d57",
+        "message": "So it doesn't make so much sense to have there was this kind of secondary review where you kind of fill in the word but it only had one word it was a bit like shorts to to have it like that I think if there's only like five words or something you can have them all in conjunction and then if it's six words you can split it up into three and if it's seven you can split it up to four and three or whatever but only split it if it's like more than I don't know five or six or more",
+        "page_url": "https://wordzoo.vercel.app/learn/d1000000-0001-4000-8000-000000000016",
+        "page_title": "WordZoo",
+        "viewport_width": 384,
+        "viewport_height": 647,
+        "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36",
+        "activity_trail": [
+          {
+            "t": 0,
+            "kind": "route",
+            "detail": "/dashboard"
+          },
+          {
+            "t": 12.6,
+            "kind": "click",
+            "detail": "a: ContinueTempat di Kota (Places in Town)I"
+          },
+          {
+            "t": 14.3,
+            "kind": "route",
+            "detail": "/learn/d1000000-0001-4000-8000-000000000016"
+          },
+          {
+            "t": 30.2,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 38.8,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 40.9,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 48.4,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 51,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 78.2,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 87.9,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 97.7,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 122.1,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 148,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 177.1,
+            "kind": "click",
+            "detail": "button: Drill these 3 words →"
+          },
+          {
+            "t": 182.2,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 217.4,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 230.7,
+            "kind": "click",
+            "detail": "button: Check"
+          },
+          {
+            "t": 247.2,
+            "kind": "click",
+            "detail": "button: I knew it"
+          },
+          {
+            "t": 254.8,
+            "kind": "click",
+            "detail": "button: Check"
+          },
+          {
+            "t": 257.3,
+            "kind": "click",
+            "detail": "button: I knew it"
+          },
+          {
+            "t": 287.7,
+            "kind": "click",
+            "detail": "button: Check"
+          },
+          {
+            "t": 316.9,
+            "kind": "click",
+            "detail": "button: Check"
+          },
+          {
+            "t": 327.8,
+            "kind": "click",
+            "detail": "button: Check"
+          },
+          {
+            "t": 336,
+            "kind": "click",
+            "detail": "button: church"
+          },
+          {
+            "t": 338.7,
+            "kind": "click",
+            "detail": "button: bank"
+          },
+          {
+            "t": 343.3,
+            "kind": "click",
+            "detail": "button: Check"
+          },
+          {
+            "t": 360.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 363.5,
+            "kind": "click",
+            "detail": "button: Drill these 1 words →"
+          },
+          {
+            "t": 368.5,
+            "kind": "click",
+            "detail": "button: to look for / search"
+          },
+          {
+            "t": 371.4,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 410.1,
+            "kind": "click",
+            "detail": "button: Send"
+          }
+        ],
+        "status": "new",
+        "created_at": "2026-05-06T08:55:14.354Z",
+        "user_email": "profbenjo@gmail.com",
+        "user_name": "Ben Hemson-Struthers"
+      },
+      {
+        "id": "724a2ed2-50a9-49ee-94e0-3a5c2b7c9378",
+        "user_id": "b16a9e8f-1bd8-4de1-8fab-c4622da01d57",
+        "message": "So this page is not designed well it doesn't look great it's not mobile friendly it kind of just breaks the previous style and should be designed better we're in this kind of fill in the blank word a lot of the issues that when the keyboard opens on mobile it's just kind of pushes everything away and it's hard to see",
+        "page_url": "https://wordzoo.vercel.app/learn/d1000000-0001-4000-8000-000000000016",
+        "page_title": "WordZoo",
+        "viewport_width": 384,
+        "viewport_height": 647,
+        "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36",
+        "activity_trail": [
+          {
+            "t": 0,
+            "kind": "route",
+            "detail": "/dashboard"
+          },
+          {
+            "t": 12.6,
+            "kind": "click",
+            "detail": "a: ContinueTempat di Kota (Places in Town)I"
+          },
+          {
+            "t": 14.3,
+            "kind": "route",
+            "detail": "/learn/d1000000-0001-4000-8000-000000000016"
+          },
+          {
+            "t": 30.2,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 38.8,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 40.9,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 48.4,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 51,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 78.2,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 87.9,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 97.7,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 122.1,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 148,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 177.1,
+            "kind": "click",
+            "detail": "button: Drill these 3 words →"
+          },
+          {
+            "t": 182.2,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 217.4,
+            "kind": "click",
+            "detail": "button: Send"
+          }
+        ],
+        "status": "new",
+        "created_at": "2026-05-06T08:52:01.402Z",
+        "user_email": "profbenjo@gmail.com",
+        "user_name": "Ben Hemson-Struthers"
+      },
+      {
+        "id": "91c56466-accc-456f-b809-136edb114bfa",
+        "user_id": "b16a9e8f-1bd8-4de1-8fab-c4622da01d57",
+        "message": "I would love it if you could set feedback to automatically start recording audio when you open the feedback and when you click enter or send then it stops the audio sends it from the recording so it was more or less completely automated",
+        "page_url": "https://wordzoo.vercel.app/learn/d1000000-0001-4000-8000-000000000016",
+        "page_title": "WordZoo",
+        "viewport_width": 384,
+        "viewport_height": 647,
+        "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36",
+        "activity_trail": [
+          {
+            "t": 0,
+            "kind": "route",
+            "detail": "/dashboard"
+          },
+          {
+            "t": 12.6,
+            "kind": "click",
+            "detail": "a: ContinueTempat di Kota (Places in Town)I"
+          },
+          {
+            "t": 14.3,
+            "kind": "route",
+            "detail": "/learn/d1000000-0001-4000-8000-000000000016"
+          },
+          {
+            "t": 30.2,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 38.8,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 40.9,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 48.4,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 51,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 78.2,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 87.9,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 97.7,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 122.1,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 148,
+            "kind": "click",
+            "detail": "button: Send"
+          }
+        ],
+        "status": "new",
+        "created_at": "2026-05-06T08:50:52.911Z",
+        "user_email": "profbenjo@gmail.com",
+        "user_name": "Ben Hemson-Struthers"
+      },
+      {
+        "id": "a1d20e93-f4bc-46cb-94df-af3a047f24e8",
+        "user_id": "b16a9e8f-1bd8-4de1-8fab-c4622da01d57",
+        "message": "So the fact that the if you click on the image that it expands that should only be for phrases where the image is very small it shouldn't be full images otherwise it's just annoying cuz images of a perfectly large and you click on them and then it's opens up another modal",
+        "page_url": "https://wordzoo.vercel.app/learn/d1000000-0001-4000-8000-000000000016",
+        "page_title": "WordZoo",
+        "viewport_width": 384,
+        "viewport_height": 647,
+        "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36",
+        "activity_trail": [
+          {
+            "t": 0,
+            "kind": "route",
+            "detail": "/dashboard"
+          },
+          {
+            "t": 12.6,
+            "kind": "click",
+            "detail": "a: ContinueTempat di Kota (Places in Town)I"
+          },
+          {
+            "t": 14.3,
+            "kind": "route",
+            "detail": "/learn/d1000000-0001-4000-8000-000000000016"
+          },
+          {
+            "t": 30.2,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 38.8,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 40.9,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 48.4,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 51,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 78.2,
+            "kind": "click",
+            "detail": "button: Send"
+          }
+        ],
+        "status": "new",
+        "created_at": "2026-05-06T08:49:42.068Z",
+        "user_email": "profbenjo@gmail.com",
+        "user_name": "Ben Hemson-Struthers"
+      }
+    ]
+  },
+  "health": {
+    "stuckMnemonicsLast72h": 492,
+    "overdueReviews": 64
+  },
+  "errors": []
+}
