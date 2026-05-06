@@ -1,6 +1,7 @@
 import { auth, signIn } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import { Logo } from '@/components/brand/Logo';
 
 const errorMessages: Record<string, string> = {
   Configuration: 'Something went wrong. Please try again.',
@@ -26,15 +27,8 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         </div>
       )}
       <div className="text-center">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-[14px] bg-[color:var(--accent-indonesian-soft)] text-[color:var(--accent-indonesian)] mb-3">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" className="w-8 h-8">
-            <path d="M12 10 L16 18 L20 12 Z" fill="currentColor"/>
-            <path d="M36 10 L32 18 L28 12 Z" fill="currentColor"/>
-            <circle cx="19.5" cy="24" r="2" fill="currentColor"/>
-            <circle cx="28.5" cy="24" r="2" fill="currentColor"/>
-            <path d="M22.5 28.5 L24 30.5 L25.5 28.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M20.5 32 Q24 35 27.5 32" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
-          </svg>
+        <div className="inline-flex mb-3">
+          <Logo size={56} className="rounded-2xl" />
         </div>
         <h2 className="text-[26px] font-extrabold tracking-tight text-[color:var(--foreground)]">Sign in to WordZoo</h2>
         <p className="text-sm font-semibold text-[color:var(--text-secondary)] mt-1">Welcome back — let&apos;s keep learning.</p>

@@ -7,16 +7,16 @@ export default function manifest(): MetadataRoute.Manifest {
     description: 'Learn languages with memorable mnemonics',
     start_url: '/dashboard',
     display: 'standalone',
-    background_color: '#0a1628',
-    theme_color: '#0a1628',
+    background_color: '#FDF8EE',
+    theme_color: '#FF8A3D',
     icons: [
       {
-        src: '/icons/icon-192x192.png',
+        src: '/brand/logo-192.png',
         sizes: '192x192',
         type: 'image/png',
       },
       {
-        src: '/icons/icon-512x512.png',
+        src: '/brand/logo-512.png',
         sizes: '512x512',
         type: 'image/png',
       },

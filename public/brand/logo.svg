@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <rect width="1024" height="1024" rx="225.28" ry="225.28" fill="#FF8A3D"/>
+  <text x="512" y="687.7184"
+        font-family="Fraunces, 'EB Garamond', Georgia, 'Times New Roman', serif"
+        font-style="italic"
+        font-weight="500"
+        font-size="798.72"
+        fill="#FDF8EE"
+        text-anchor="middle">w</text>
+  <path d="M 798.72 348.16 Q 942.08 225.28 880.64 163.84"
+        stroke="#FDF8EE" stroke-width="22.528" stroke-linecap="round" fill="none" opacity="0.9"/>
+</svg>

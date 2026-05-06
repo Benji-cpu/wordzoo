@@ -43,6 +43,13 @@ MEMORY.md
 # screenshots
 *.png
 
+# brand assets — keep these tracked despite the global *.png ignore above
+!public/brand/*.png
+!public/icons/*.png
+!app/icon.png
+!app/apple-icon.png
+!app/opengraph-image.png
+
 # vercel
 .vercel
 

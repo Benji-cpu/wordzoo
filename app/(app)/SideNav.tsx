@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { Logo } from '@/components/brand/Logo';
 import { NavIcon, type NavIconName } from './NavIcons';
 
 type Tab =
@@ -31,6 +32,15 @@ export function SideNav({ onFeedbackTap }: SideNavProps) {
         borderRight: '1px solid var(--border-subtle)',
       }}
     >
+      <Link href="/dashboard" className="flex items-center gap-2 px-3 py-2 mb-2">
+        <Logo size={32} className="rounded-lg" />
+        <span
+          className="text-base font-extrabold italic"
+          style={{ color: 'var(--foreground)', fontFamily: 'var(--font-fraunces)' }}
+        >
+          WordZoo
+        </span>
+      </Link>
       {tabs.map((tab, i) => {
         const isActive =
           tab.kind === 'link' &&
