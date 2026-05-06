@@ -186,11 +186,12 @@ export default async function DashboardPage() {
         />
       ) : null}
 
-      {/* Action row — due / new */}
+      {/* Action row — due / new / speak */}
       {!caughtUp && (
         <ActionCardRow>
           <ActionCard icon="⏱️" value={totalDueCount} label="Due now" tone="warm" href="/review" />
           <ActionCard icon="✨" value={newWordsToday} label="New today" tone="cream" />
+          <ActionCard icon="🎙️" value="Say" label="Speak it" tone="neutral" href="/practice/speak" />
         </ActionCardRow>
       )}
 
