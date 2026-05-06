@@ -76,6 +76,23 @@ Bucket each row in `feedback.pendingRows`:
 - **Standard** — everyone else. Cluster aggressively; one quote per cluster is enough.
 - **Noise/unclear** — too vague to act on (empty, "test", single emoji, "it's broken" with no surface). Acknowledge but don't over-invest.
 
+## Step 1.5 — Ingest Vercel deployment events
+
+Before clustering feedback, attempt to backfill the last 24h of failed/canceled deploys into the WordZoo DB so the dashboard at `/admin/deployments` and future sessions can see what broke. The endpoint is admin-gated (NextAuth + ADMIN_EMAILS), so this curl will only succeed when the sandbox has a valid session cookie — which it usually doesn't. **Run it anyway and degrade gracefully** — this same pattern works in interactive sessions where the cookie is available, and is a no-op in the sandbox today.
+
+```bash
+INGEST=$(curl -s -X POST -H "Content-Type: application/json" \
+  https://wordzoo.vercel.app/api/admin/deployments \
+  -d '{"action":"ingest","sinceHours":24}' || echo '{"error":"unreachable"}')
+echo "$INGEST"
+```
+
+The expected success shape is `{ data: { fetched, inserted, skipped, wrong_author_count, wrong_authors } }`. Then:
+
+- If `wrong_author_count > 0`, today's report MUST include a `## Pipeline health` section listing the offending author(s). The git-identity bug we patched in this very agent file (forcing `profbenjo@gmail.com`) means any wrong-author rows that appear AFTER today are a regression — call them out as P0.
+- If `data.fetched > 0` but all authors are `profbenjo@gmail.com`, those are non-author build errors (TypeScript, env, migration). Summarise them under Pipeline health with a one-liner per failure (`error_code` + first 100 chars of `error_message`).
+- If the call returns `{"error":"unreachable"}` or any non-2xx (sandbox egress, 401/403/5xx), skip the section entirely and add a one-line note in the report body: `_deployment ingest unreachable from sandbox_`. Do not retry.
+
 ## Clustering
 
 Group by `page_url` prefix and message keywords. Common WordZoo clusters:
@@ -98,11 +115,11 @@ git pull --ff-only origin main
 mkdir -p feedback-log
 ```
 
-Configure git identity so Vercel's GitHub integration accepts the push:
+Configure git identity so Vercel's GitHub integration accepts the push. **Use `profbenjo@gmail.com` — `b.hemsonstruthers@gmail.com` is not on the Vercel team and gets rejected with "Failed deployment from b.hemsonstruthers@gmail.com":**
 
 ```bash
-git config user.name "Benji-cpu"
-git config user.email "b.hemsonstruthers@gmail.com"
+git config user.name "Benji"
+git config user.email "profbenjo@gmail.com"
 ```
 
 Write the report to `feedback-log/${TODAY}.md`. Structure:
