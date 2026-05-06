@@ -45,6 +45,21 @@ Mixed scheduling: project-specific sub-daily jobs run via Vercel Cron (`vercel.j
 
 The remote agent fetches the digest via `/api/cron/nightly-routine` and the pending feedback list via `/api/admin/feedback/pending`, then commits `feedback-log/YYYY-MM-DD.md` directly to `main` containing a triage report (priority/standard/noise buckets + clustering) and an optional single-file low-risk fix in the same commit (Vercel auto-deploys on push). Trigger registered in claude.ai (https://claude.ai/code/scheduled).
 
+## Trigger Maintenance
+
+Two scheduling backbones, two ownership models — keep them straight:
+
+**(a) Claude Code remote trigger** (the nightly-routine agent). Managed from this CLI via the `schedule` skill + `RemoteTrigger` tool — `list`, `get`, `update`, `run` all work in-session (no curl, no OAuth juggling). Cannot delete from CLI; for deletion go to https://claude.ai/code/scheduled. Current trigger: `trig_01Dnx4XZjFoduw1SEfio9vPy` (cron `32 19 * * *`). The trigger prompt MUST stay a thin shim that points at `.claude/agents/nightly-routine.md` and supplies only secrets — every behaviour change belongs in the agent file, not the prompt. After editing the agent file, re-read the trigger prompt and update it if the two have drifted.
+
+**(b) Vercel Cron jobs** (`reset-usage`, `generate-info-byte`, `check-subscriptions`). Managed in `vercel.json` and deployed on push to `main`. No CLI surface — schedule changes ship via a normal commit. Health is verifiable from anywhere with `curl -o /dev/null -w "%{http_code}" https://wordzoo.vercel.app/api/cron/<name>` — a deployed, middleware-protected route returns 401 without auth, which is the green signal.
+
+Failure playbook for the Claude trigger (in run logs / committed report):
+
+- **401 from `/api/cron/*` or `/api/admin/feedback/pending`** — `CRON_SECRET` in the trigger prompt no longer matches Vercel. Pull the current value from Vercel envs, then `RemoteTrigger update` the prompt.
+- **403 "Host not in allowlist" against `wordzoo.vercel.app`** — sandbox egress block. Agent should follow its stub-commit-on-failure recipe; long-term fix is to add a custom domain (other projects use this pattern with `theubudian.life` / `theprogramme.fit`).
+- **5xx from the digest endpoint** — Neon or app crash. Agent commits a partial report; investigate via `/api/cron/nightly-routine` directly with the bearer token, then check Vercel runtime logs.
+- **Sandbox can't push to GitHub** — git identity wasn't configured (the trigger prompt sets `user.name` / `user.email` before commit; if the prompt was recently rewritten, verify those `git config` lines are still present).
+
 ## Feedback Module
 
 - `app_feedback` table — status enum: `'new' | 'reviewed' | 'actioned' | 'dismissed'` (close to the cross-project standard `new | reviewed | resolved | dismissed`; "actioned" diverges — see MEMORY.md)
