@@ -34,31 +34,33 @@ Language learning SaaS with AI-generated keyword mnemonics, spaced repetition, a
 
 ## Cron Jobs
 
-Mixed scheduling: project-specific sub-daily jobs run via Vercel Cron (`vercel.json`); the cross-project nightly routine runs via a **Claude Code remote agent** (registered through claude.ai) so it can do real work — read feedback, cluster, commit a triage report and any low-risk fix directly to `main` — instead of just dumping a JSON digest. All HTTP cron routes verify `Authorization: Bearer ${CRON_SECRET}` and return 401 without it.
+The nightly feedback triage runs as a **two-stage pipeline** with `digests/YYYY-MM-DD.json` in the repo as the message bus between Vercel and the Claude trigger sandbox. Vercel cron does all DB / network work; the Claude trigger only synthesizes from the JSON. This is forced by the Anthropic sandbox proxy, which blocks every host except `github.com` (custom domains too — verified against The Programme's `theprogramme.fit`). All HTTP cron routes verify `Authorization: Bearer ${CRON_SECRET}` and return 401 without it.
 
 | Job | Backend | Schedule (UTC) | Endpoint / file |
 |-----|---------|----------------|-----------------|
 | `reset-usage` | Vercel Cron | `0 0 * * *` | `/api/cron/reset-usage` |
 | `generate-info-byte` | Vercel Cron | `0 1 * * *` | `/api/cron/generate-info-byte` |
 | `check-subscriptions` | Vercel Cron | `0 3 * * *` | `/api/cron/check-subscriptions` |
-| `nightly-routine` | Claude Code remote agent | `32 19 * * *` (≈03:32 Bali) | `.claude/agents/nightly-routine.md` |
+| `nightly-routine` (prepare) | Vercel Cron | `27 19 * * *` (≈03:27 Bali) | `/api/cron/nightly-routine` |
+| `nightly-routine` (synth) | Claude Code remote agent | `32 19 * * *` (≈03:32 Bali) | `.claude/agents/nightly-routine.md` |
 
-The remote agent fetches the digest via `/api/cron/nightly-routine` and the pending feedback list via `/api/admin/feedback/pending`, then commits `feedback-log/YYYY-MM-DD.md` directly to `main` containing a triage report (priority/standard/noise buckets + clustering) and an optional single-file low-risk fix in the same commit (Vercel auto-deploys on push). Trigger registered in claude.ai (https://claude.ai/code/scheduled).
+The Vercel prepare step queries Neon, builds the digest payload (status counts + last-24h count + full pending feedback rows + health metrics), and writes it to `digests/YYYY-MM-DD.json` on `main` via the GitHub Contents API. It also marks the bundled rows as `status='reviewed'` so they don't recur. The Claude trigger fires 5 min later, clones the repo, reads today's JSON, synthesizes a markdown triage report (priority/standard/noise buckets + clustering), and commits `feedback-log/YYYY-MM-DD.md` plus an optional single-file low-risk fix directly to `main`. Vercel auto-deploys on push. Trigger registered in claude.ai (https://claude.ai/code/scheduled).
 
 ## Trigger Maintenance
 
 Two scheduling backbones, two ownership models — keep them straight:
 
-**(a) Claude Code remote trigger** (the nightly-routine agent). Managed from this CLI via the `schedule` skill + `RemoteTrigger` tool — `list`, `get`, `update`, `run` all work in-session (no curl, no OAuth juggling). Cannot delete from CLI; for deletion go to https://claude.ai/code/scheduled. Current trigger: `trig_01Dnx4XZjFoduw1SEfio9vPy` (cron `32 19 * * *`). The trigger prompt MUST stay a thin shim that points at `.claude/agents/nightly-routine.md` and supplies only secrets — every behaviour change belongs in the agent file, not the prompt. After editing the agent file, re-read the trigger prompt and update it if the two have drifted.
+**(a) Claude Code remote trigger** (the nightly-routine synth step). Managed from this CLI via the `schedule` skill + `RemoteTrigger` tool — `list`, `get`, `update`, `run` all work in-session (no curl, no OAuth juggling). Cannot delete from CLI; for deletion go to https://claude.ai/code/scheduled. Current trigger: `trig_01Dnx4XZjFoduw1SEfio9vPy` (cron `32 19 * * *`). The trigger prompt MUST stay a thin shim that points at `.claude/agents/nightly-routine.md` — every behaviour change belongs in the agent file, not the prompt. After editing the agent file, re-read the trigger prompt and update it if the two have drifted. The trigger no longer needs `CRON_SECRET`; it never makes HTTPS calls except `git push origin main`.
 
-**(b) Vercel Cron jobs** (`reset-usage`, `generate-info-byte`, `check-subscriptions`). Managed in `vercel.json` and deployed on push to `main`. No CLI surface — schedule changes ship via a normal commit. Health is verifiable from anywhere with `curl -o /dev/null -w "%{http_code}" https://wordzoo.vercel.app/api/cron/<name>` — a deployed, middleware-protected route returns 401 without auth, which is the green signal.
+**(b) Vercel Cron jobs** (`reset-usage`, `generate-info-byte`, `check-subscriptions`, `nightly-routine` prepare). Managed in `vercel.json` and deployed on push to `main`. No CLI surface — schedule changes ship via a normal commit. Health is verifiable from anywhere with `curl -o /dev/null -w "%{http_code}" https://wordzoo.vercel.app/api/cron/<name>` — a deployed, middleware-protected route returns 401 without auth, which is the green signal. The `nightly-routine` route additionally requires `GITHUB_PAT_REPO_WRITE` in Vercel env (fine-grained PAT scoped to `Benji-cpu/wordzoo` with Contents: write).
 
-Failure playbook for the Claude trigger (in run logs / committed report):
+Failure playbook (look in `feedback-log/*.md` and Vercel runtime logs):
 
-- **401 from `/api/cron/*` or `/api/admin/feedback/pending`** — `CRON_SECRET` in the trigger prompt no longer matches Vercel. Pull the current value from Vercel envs, then `RemoteTrigger update` the prompt.
-- **403 "Host not in allowlist" against `wordzoo.vercel.app`** — sandbox egress block. Agent should follow its stub-commit-on-failure recipe; long-term fix is to add a custom domain (other projects use this pattern with `theubudian.life` / `theprogramme.fit`).
-- **5xx from the digest endpoint** — Neon or app crash. Agent commits a partial report; investigate via `/api/cron/nightly-routine` directly with the bearer token, then check Vercel runtime logs.
-- **Sandbox can't push to GitHub** — git identity wasn't configured (the trigger prompt sets `user.name` / `user.email` before commit; if the prompt was recently rewritten, verify those `git config` lines are still present).
+- **Sandbox egress is permanent** — github.com is the only reachable host from the trigger sandbox. The architecture is git-as-bus: Vercel writes `digests/*.json`, the trigger reads it. Anthropic GH issues #41565 / #50146 / #52982 track the underlying limitation; until they ship configurable allowlists, do NOT bring back curl-from-the-trigger — it will return `403 host_not_allowed`.
+- **`triage: missing digest` stub commit** — Vercel-side `/api/cron/nightly-routine` didn't run or errored. Curl the route from your Mac with `Authorization: Bearer $CRON_SECRET`; inspect `errors[]` and `digestWritten` in the response. Most common cause: `GITHUB_PAT_REPO_WRITE` missing/expired/wrong scope in Vercel envs.
+- **401 from `/api/cron/*`** — `CRON_SECRET` mismatch between Vercel envs and (for the prepare route) the Vercel cron caller — Vercel auto-supplies its own header for crons it owns, so this only matters for manual curls.
+- **5xx from the prepare route** — Neon down or query change broke. The route uses `safe()` wrappers; partial failures return 200 with non-empty `errors[]`. Hard 500 means a top-level throw — check Vercel logs.
+- **Sandbox can't push to GitHub** — git identity wasn't configured (the trigger prompt and agent file both set `user.name` / `user.email` before commit; verify those `git config` lines are still present after edits).
 
 ## Feedback Module
 
@@ -113,7 +115,7 @@ Stripe handles subscriptions (monthly/yearly) and one-time travel pack purchases
 
 ## Environment Variables
 
-`DATABASE_URL`, `AUTH_SECRET`, `AUTH_URL`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`, `GOOGLE_GEMINI_API_KEY`, `GOOGLE_CLOUD_TTS_API_KEY`, `STABILITY_AI_API_KEY`, `BLOB_READ_WRITE_TOKEN`, `STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_PRICE_MONTHLY`, `STRIPE_PRICE_YEARLY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_APP_URL`, `CRON_SECRET` (also set as GitHub repo secret), `ADMIN_EMAILS`
+`DATABASE_URL`, `AUTH_SECRET`, `AUTH_URL`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`, `GOOGLE_GEMINI_API_KEY`, `GOOGLE_CLOUD_TTS_API_KEY`, `STABILITY_AI_API_KEY`, `BLOB_READ_WRITE_TOKEN`, `STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_PRICE_MONTHLY`, `STRIPE_PRICE_YEARLY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_APP_URL`, `CRON_SECRET` (also set as GitHub repo secret), `ADMIN_EMAILS`, `GITHUB_PAT_REPO_WRITE` (fine-grained PAT scoped to `Benji-cpu/wordzoo` with `Contents: write` — used by `/api/cron/nightly-routine` to write `digests/YYYY-MM-DD.json`)
 
 **Optional (future):** `RESEND_API_KEY`, `ADMIN_EMAIL` — required if/when the nightly digest is wired up to email the summary.
 

@@ -1,44 +1,76 @@
 ---
 name: nightly-routine
-description: WordZoo's daily Claude Code remote agent. Reads pending in-app feedback, clusters and segments by sender priority, commits a triage report directly to main. Replaces the GH Actions nightly-routine.yml workflow that previously called /api/cron/nightly-routine.
-tools: Bash, Read, Grep, Glob, Edit, Write, WebFetch
+description: WordZoo's daily Claude Code remote agent. Reads the Vercel-prepared digest from digests/YYYY-MM-DD.json, clusters and segments by sender priority, commits a triage report directly to main. The Vercel /api/cron/nightly-routine route does all DB / network work 5 min earlier; this agent only synthesizes.
+tools: Bash, Read, Grep, Glob, Edit, Write
 ---
 
 You are WordZoo's daily nightly-routine agent — a personal language-learning SaaS at `https://wordzoo.vercel.app`.
 
-Your job: every day, fetch new in-app feedback, segment by sender priority, cluster by surface area, write a triage report, and commit it directly to `main`. If exactly one item meets the safety bar for an automated fix, include the fix in the same commit (Vercel auto-deploys on push). Otherwise the commit is report-only. **No PRs.** This project ships direct-to-production for both interactive sessions and scheduled routines (see `CLAUDE.md` and master `Code/CLAUDE.md` "Shipping Standard").
+Your job: every day, read the digest JSON that Vercel cron prepared at 03:27 Bali, segment the included pending feedback by sender priority, cluster by surface area, write a triage report, and commit it directly to `main`. If exactly one item meets the safety bar for an automated fix, include the fix in the same commit (Vercel auto-deploys on push). Otherwise the commit is report-only. **No PRs.** This project ships direct-to-production for both interactive sessions and scheduled routines (see `CLAUDE.md` and master `Code/CLAUDE.md` "Shipping Standard").
 
-This file is the single source of truth — the trigger prompt should say "read .claude/agents/nightly-routine.md and follow it exactly," then supply only secrets and the date.
+**You cannot reach `wordzoo.vercel.app` or any non-github.com host.** The Anthropic-managed sandbox proxy blocks outbound HTTPS to everything except `github.com` (custom domains too — confirmed by The Programme's identical setup also being blocked). The Vercel-side cron route writes today's digest into the repo so you never need to make a network call. Do **not** add `curl`, `fetch`, or `wget` to this workflow against any host other than github via `git push`. They will fail with `403 host_not_allowed`.
 
-## Inputs to gather
+This file is the single source of truth — the trigger prompt should say "read .claude/agents/nightly-routine.md and follow it exactly."
 
-1. **Digest stats** — call:
+## Inputs
 
-   ```bash
-   curl -sf -H "Authorization: Bearer $CRON_SECRET" \
-     https://wordzoo.vercel.app/api/cron/nightly-routine
-   ```
+Today's date in Bali time:
 
-   Returns: feedback counts by status, new feedback in last 24h, stuck mnemonics > 72h missing audio, overdue SRS reviews. Use these as headline numbers in the report.
+```bash
+TODAY=$(TZ=Asia/Makassar date +%F)
+```
 
-2. **Pending feedback rows** — call:
+Read the prepared digest from the cloned repo:
 
-   ```bash
-   curl -sf -H "Authorization: Bearer $CRON_SECRET" \
-     https://wordzoo.vercel.app/api/admin/feedback/pending
-   ```
+```bash
+cat "digests/${TODAY}.json"
+```
 
-   Returns `{ data: Array<{ id, user_id, message, page_url, page_title, user_email, user_name, created_at, ... }> }`. These are status='new' rows.
+The JSON shape is:
 
-3. **Power-user allowlist** — priority regardless of role:
-   - `b.hemsonstruthers@gmail.com` (Benji, founder)
-   - `profbenjo@gmail.com` (Benji's secondary account)
+```jsonc
+{
+  "project": "wordzoo",
+  "today": "YYYY-MM-DD",
+  "feedback": {
+    "byStatus": { "new": 0, "reviewed": 0, "actioned": 0, "dismissed": 0 },
+    "newLast24h": 0,
+    "pendingRows": [
+      {
+        "id": "uuid",
+        "user_id": "uuid",
+        "user_email": "...",
+        "user_name": "...",
+        "message": "...",
+        "page_url": "...",
+        "page_title": "...",
+        "created_at": "..."
+      }
+    ]
+  },
+  "health": {
+    "stuckMnemonicsLast72h": 0,
+    "overdueReviews": 0
+  },
+  "errors": []
+}
+```
 
-4. **Recent code context** — `git log --oneline -20 origin/main` so you know what shipped recently. A complaint about behaviour just changed yesterday is different from one about a long-standing issue.
+Power-user allowlist (priority regardless of role):
+- `b.hemsonstruthers@gmail.com` (Benji, founder)
+- `profbenjo@gmail.com` (Benji's secondary account)
+
+Recent code context — `git log --oneline -20 origin/main` so you know what shipped recently. A complaint about behaviour just changed yesterday is different from one about a long-standing issue.
+
+## Failure modes
+
+- **Digest file missing** (`digests/${TODAY}.json` doesn't exist): the Vercel-side cron route hadn't fired yet, or its run errored. Commit a stub `feedback-log/${TODAY}.md` with header `triage: missing digest — Vercel prepare step failed YYYY-MM-DD` and a one-line note that the Vercel logs should be checked. Do **not** retry via curl — you can't reach Vercel.
+- **`errors` array non-empty in JSON**: include them as a "Vercel-side errors" section in the report. Continue with whatever data IS present.
+- **Pending list empty + all health counts 0**: skip the commit per the empty-day rule. Output a single-line completion signal and exit.
 
 ## Segmentation
 
-Bucket each feedback row:
+Bucket each row in `feedback.pendingRows`:
 
 - **Priority** — sender in the power-user allowlist. Read each carefully, never auto-dismiss.
 - **Standard** — everyone else. Cluster aggressively; one quote per cluster is enough.
@@ -58,18 +90,19 @@ A cluster with 3+ standard complaints is a stronger signal than a single priorit
 
 ## Output: commit triage report directly to main
 
-Today's date in Bali time:
-
-```bash
-TODAY=$(TZ=Asia/Makassar date +%F)
-```
-
-Make sure you're on `main` and up to date, and create the report directory:
+Make sure you're on `main` and up to date:
 
 ```bash
 git checkout main
 git pull --ff-only origin main
 mkdir -p feedback-log
+```
+
+Configure git identity so Vercel's GitHub integration accepts the push:
+
+```bash
+git config user.name "Benji-cpu"
+git config user.email "b.hemsonstruthers@gmail.com"
 ```
 
 Write the report to `feedback-log/${TODAY}.md`. Structure:
@@ -112,6 +145,8 @@ git push origin main
 
 Do **NOT** open a PR. The commit on `main` is the audit trail and Vercel auto-deploys any included fix immediately.
 
+The Vercel-side cron route already marked the bundled rows as `status='reviewed'` when it wrote the digest. You do **not** need to make any DB-mutating calls.
+
 ## Code fix policy (conservative — production is real users)
 
 Attempt a code fix ONLY when ALL of these are true:
@@ -133,27 +168,6 @@ Examples that pass: copy fix, button label change, z-index bump, missing safe-ar
 Examples that FAIL the bar: state machine changes, anything affecting word progress / SRS / billing, new dependencies.
 
 If no item passes, the commit is report-only (just the markdown). That is fine and expected most days.
-
-## Marking feedback as triaged
-
-After committing the report, mark the rows you addressed:
-
-```bash
-curl -sf -X POST \
-  -H "Authorization: Bearer $CRON_SECRET" \
-  -H "Content-Type: application/json" \
-  -d "$(jq -n --argjson ids "$IDS_JSON" '{ids:$ids}')" \
-  https://wordzoo.vercel.app/api/admin/feedback/pending
-```
-
-This sets `status = 'reviewed'` so the same items don't reappear tomorrow. `'actioned'` is reserved for "fix shipped to prod and the user confirms."
-
-## Failure modes
-
-- Endpoint returns 401 → `CRON_SECRET` is wrong; abort, do not retry.
-- Endpoint returns 5xx → log it, write a partial report explaining what was reachable, still commit it to `main` with the warning header.
-- Both production hosts blocked by sandbox egress → commit a stub `feedback-log/${TODAY}.md` titled `triage: blocked — sandbox egress YYYY-MM-DD` with the response codes to `main` and exit.
-- Do NOT echo, log, or include `CRON_SECRET` in any committed file or commit message.
 
 ## Completion signal (end of run)
 
