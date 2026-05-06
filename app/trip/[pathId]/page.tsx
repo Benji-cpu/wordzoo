@@ -35,15 +35,26 @@ export default async function TripDashboardPage({ params, searchParams }: PagePr
   ]);
 
   const tripStartDate = userPath?.trip_start_date ?? null;
-  const tripDays = sceneRows.length || 1;
+  const studyDays = Math.max(1, sceneRows.length);
   const todayIso = new Date().toISOString().slice(0, 10);
 
+  // Day-N math is anchored to when the plan was created (user_paths.started_at):
+  // Day 1 the day you buy, Day 2 the next day, capped at the number of scenes.
+  const planStartIso = userPath?.started_at
+    ? new Date(userPath.started_at).toISOString().slice(0, 10)
+    : todayIso;
+  const daysSinceStart = Math.max(0, daysBetween(planStartIso, todayIso));
+  const todayDayIndex = Math.min(studyDays - 1, daysSinceStart);
+
+  // Trip status: if a trip date is set, compute days until and whether the trip is over.
   let daysUntilTrip: number | null = null;
-  let todayLabel = '';
+  let tripIsOver = false;
+  let tripLabel = '';
   if (tripStartDate) {
     const diff = daysBetween(todayIso, tripStartDate);
-    daysUntilTrip = diff < 0 ? 0 : diff;
-    todayLabel = new Date(`${tripStartDate}T00:00:00`).toLocaleDateString('en-US', {
+    daysUntilTrip = Math.max(0, diff);
+    tripIsOver = diff < 0;
+    tripLabel = new Date(`${tripStartDate}T00:00:00`).toLocaleDateString('en-US', {
       weekday: 'short',
       month: 'short',
       day: 'numeric',
@@ -64,11 +75,13 @@ export default async function TripDashboardPage({ params, searchParams }: PagePr
         pathId={path.id}
         pathTitle={path.title}
         tripStartDate={tripStartDate}
-        tripDays={tripDays}
+        tripLabel={tripLabel}
+        daysUntilTrip={daysUntilTrip}
+        tripIsOver={tripIsOver}
+        studyDays={studyDays}
+        todayDayIndex={todayDayIndex}
         scenes={scenes}
         purchased={Boolean(purchase)}
-        todayLabel={todayLabel}
-        daysUntilTrip={daysUntilTrip}
         showPurchaseToast={purchasedParam === 'true'}
         showCanceledToast={canceledParam === 'true'}
       />

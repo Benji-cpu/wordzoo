@@ -383,7 +383,11 @@ export async function upsertUserPathWithTrip(
 
 export async function getUserPathRow(userId: string, pathId: string): Promise<UserPath | null> {
   const rows = await sql`
-    SELECT * FROM user_paths
+    SELECT
+      id, user_id, path_id, status, started_at, completed_at,
+      to_char(trip_start_date, 'YYYY-MM-DD') AS trip_start_date,
+      daily_word_count
+    FROM user_paths
     WHERE user_id = ${userId} AND path_id = ${pathId}
     LIMIT 1
   `;

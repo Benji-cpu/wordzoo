@@ -62,7 +62,8 @@ async function buildPath(
 
   const response = await generateText(fullPrompt, {
     temperature: 0.8,
-    maxOutputTokens: 4096,
+    maxOutputTokens: 8192,
+    responseMimeType: 'application/json',
   });
 
   const generated = parsePathResponse(response.text);
