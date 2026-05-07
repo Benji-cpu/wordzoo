@@ -24,7 +24,7 @@ const VARIANT_SKELETON_CLASS: Record<Variant, string> = {
   community: 'w-full h-full',
 };
 
-const ZOOMABLE_VARIANTS: ReadonlySet<Variant> = new Set(['card', 'review', 'phrase-composite']);
+const ZOOMABLE_VARIANTS: ReadonlySet<Variant> = new Set(['phrase-composite', 'phrase-word']);
 
 interface MnemonicImageProps {
   src: string | null | undefined;
