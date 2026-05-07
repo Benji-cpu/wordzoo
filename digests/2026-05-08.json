@@ -1,0 +1,374 @@
+{
+  "project": "wordzoo",
+  "today": "2026-05-08",
+  "startedAt": "2026-05-07T19:31:19.637Z",
+  "finishedAt": "2026-05-07T19:31:20.978Z",
+  "feedback": {
+    "byStatus": {
+      "actioned": 118,
+      "reviewed": 3,
+      "new": 2,
+      "dismissed": 1
+    },
+    "newLast24h": 2,
+    "pendingRows": [
+      {
+        "id": "33e8819f-863d-4b95-ae26-5e7f1f78397b",
+        "user_id": "b16a9e8f-1bd8-4de1-8fab-c4622da01d57",
+        "message": "We seem to have hit an era where the learning stopped.",
+        "page_url": "https://wordzoo.vercel.app/learn/d1000000-0001-4000-8000-000000000016",
+        "page_title": "WordZoo",
+        "viewport_width": 500,
+        "viewport_height": 808,
+        "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+        "activity_trail": [
+          {
+            "t": 35.4,
+            "kind": "click",
+            "detail": "a: Home"
+          },
+          {
+            "t": 37,
+            "kind": "route",
+            "detail": "/dashboard"
+          },
+          {
+            "t": 38.7,
+            "kind": "click",
+            "detail": "a: ContinueTempat di Kota (Places in Town)I"
+          },
+          {
+            "t": 40.8,
+            "kind": "route",
+            "detail": "/learn/d1000000-0001-4000-8000-000000000016"
+          },
+          {
+            "t": 3906.3,
+            "kind": "click",
+            "detail": "button: ada"
+          },
+          {
+            "t": 3908.2,
+            "kind": "click",
+            "detail": "button: restoran"
+          },
+          {
+            "t": 3911.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 3911.9,
+            "kind": "click",
+            "detail": "button: dekat"
+          },
+          {
+            "t": 3914.7,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 3916.4,
+            "kind": "click",
+            "detail": "button: di sini"
+          },
+          {
+            "t": 3917.4,
+            "kind": "click",
+            "detail": "button: ada"
+          },
+          {
+            "t": 3920.7,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 3921.4,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 3949.4,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 3951.6,
+            "kind": "click",
+            "detail": "button: Continue →"
+          },
+          {
+            "t": 3962.2,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 3968,
+            "kind": "click",
+            "detail": "button: Continue →"
+          },
+          {
+            "t": 4008.2,
+            "kind": "click",
+            "detail": "button: dekat"
+          },
+          {
+            "t": 4008.8,
+            "kind": "click",
+            "detail": "button: toko"
+          },
+          {
+            "t": 4009.7,
+            "kind": "click",
+            "detail": "button: saya"
+          },
+          {
+            "t": 4010.2,
+            "kind": "click",
+            "detail": "button: dekat"
+          },
+          {
+            "t": 4020.9,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 4815.1,
+            "kind": "click",
+            "detail": "button: Continue →"
+          },
+          {
+            "t": 4818,
+            "kind": "click",
+            "detail": "button: Drill these 2 phrases →"
+          },
+          {
+            "t": 4825.2,
+            "kind": "click",
+            "detail": "button: Ada restoran di dekat sini?"
+          },
+          {
+            "t": 4828.2,
+            "kind": "click",
+            "detail": "button: I knew it"
+          },
+          {
+            "t": 4834,
+            "kind": "click",
+            "detail": "button: Dekat toko saya"
+          },
+          {
+            "t": 4835.2,
+            "kind": "click",
+            "detail": "button: I guessed"
+          },
+          {
+            "t": 4836.1,
+            "kind": "click",
+            "detail": "button: Continue →"
+          },
+          {
+            "t": 4842.5,
+            "kind": "click",
+            "detail": "button: Check"
+          },
+          {
+            "t": 4851.9,
+            "kind": "click",
+            "detail": "button: Check"
+          },
+          {
+            "t": 4864.7,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 4870.9,
+            "kind": "click",
+            "detail": "button: Continue →"
+          },
+          {
+            "t": 4912.1,
+            "kind": "click",
+            "detail": "button: Continue →"
+          },
+          {
+            "t": 4916.9,
+            "kind": "click",
+            "detail": "button: Drill these 2 phrases →"
+          },
+          {
+            "t": 4924.2,
+            "kind": "click",
+            "detail": "button: Saya cari bank"
+          },
+          {
+            "t": 4925,
+            "kind": "click",
+            "detail": "button: Continue →"
+          },
+          {
+            "t": 4926.1,
+            "kind": "click",
+            "detail": "button: I guessed"
+          },
+          {
+            "t": 4942.9,
+            "kind": "click",
+            "detail": "button: Dekat masjid dan gereja"
+          },
+          {
+            "t": 4945.6,
+            "kind": "click",
+            "detail": "button: I knew it"
+          },
+          {
+            "t": 4952.7,
+            "kind": "click",
+            "detail": "button: Check"
+          },
+          {
+            "t": 4958,
+            "kind": "click",
+            "detail": "button: Check"
+          },
+          {
+            "t": 4967.2,
+            "kind": "click",
+            "detail": "button: Saya cari bank"
+          },
+          {
+            "t": 4968.3,
+            "kind": "click",
+            "detail": "button: Continue →"
+          },
+          {
+            "t": 4980.1,
+            "kind": "click",
+            "detail": "button: Ada restoran di dekat sini?"
+          },
+          {
+            "t": 4981.1,
+            "kind": "click",
+            "detail": "button: Continue →"
+          },
+          {
+            "t": 4992.6,
+            "kind": "click",
+            "detail": "button: Saya cari bank"
+          },
+          {
+            "t": 4993.4,
+            "kind": "click",
+            "detail": "button: Continue →"
+          },
+          {
+            "t": 4998,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 5006.2,
+            "kind": "click",
+            "detail": "button: Send"
+          }
+        ],
+        "status": "new",
+        "created_at": "2026-05-07T02:20:03.600Z",
+        "user_email": "profbenjo@gmail.com",
+        "user_name": "Ben Hemson-Struthers"
+      },
+      {
+        "id": "0fb81da4-6757-4793-9e62-1d79ee0ac29c",
+        "user_id": "b16a9e8f-1bd8-4de1-8fab-c4622da01d57",
+        "message": "when this page is expanded to show the smaller sub items the continue btn is hidden behind the bottom nav that hsouldnt ever happen",
+        "page_url": "https://wordzoo.vercel.app/learn/d1000000-0001-4000-8000-000000000016",
+        "page_title": "WordZoo",
+        "viewport_width": 500,
+        "viewport_height": 808,
+        "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+        "activity_trail": [
+          {
+            "t": 0,
+            "kind": "route",
+            "detail": "/review"
+          },
+          {
+            "t": 35.4,
+            "kind": "click",
+            "detail": "a: Home"
+          },
+          {
+            "t": 37,
+            "kind": "route",
+            "detail": "/dashboard"
+          },
+          {
+            "t": 38.7,
+            "kind": "click",
+            "detail": "a: ContinueTempat di Kota (Places in Town)I"
+          },
+          {
+            "t": 40.8,
+            "kind": "route",
+            "detail": "/learn/d1000000-0001-4000-8000-000000000016"
+          },
+          {
+            "t": 3906.3,
+            "kind": "click",
+            "detail": "button: ada"
+          },
+          {
+            "t": 3908.2,
+            "kind": "click",
+            "detail": "button: restoran"
+          },
+          {
+            "t": 3911.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 3911.9,
+            "kind": "click",
+            "detail": "button: dekat"
+          },
+          {
+            "t": 3914.7,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 3916.4,
+            "kind": "click",
+            "detail": "button: di sini"
+          },
+          {
+            "t": 3917.4,
+            "kind": "click",
+            "detail": "button: ada"
+          },
+          {
+            "t": 3920.7,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 3921.4,
+            "kind": "click",
+            "detail": "button: Feedback"
+          }
+        ],
+        "status": "new",
+        "created_at": "2026-05-07T02:02:21.560Z",
+        "user_email": "profbenjo@gmail.com",
+        "user_name": "Ben Hemson-Struthers"
+      }
+    ]
+  },
+  "health": {
+    "stuckMnemonicsLast72h": 492,
+    "overdueReviews": 92
+  },
+  "errors": []
+}
