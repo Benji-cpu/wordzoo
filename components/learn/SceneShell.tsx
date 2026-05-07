@@ -37,7 +37,7 @@ export function SceneShell({
       style={background ? { background } : undefined}
     >
       {top ? <div className="shrink-0 pb-2">{top}</div> : null}
-      <div className="flex-1 min-h-0 flex flex-col">{children}</div>
+      <div className="flex-1 min-h-0 flex flex-col pb-20 lg:pb-0">{children}</div>
       {bottom ? (
         <div className="shrink-0 pt-3 thumb-zone">{bottom}</div>
       ) : null}
