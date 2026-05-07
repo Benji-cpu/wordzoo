@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { QuizOptions } from '@/components/learn/QuizOptions';
 import { ProductionTyping } from '@/components/learn/ProductionTyping';
 import { Cloze } from '@/components/learn/Cloze';
-import { ConfidenceButtons } from '@/components/learn/ConfidenceButtons';
 import type { LearnWord } from '@/types/learn';
 import type { SupportedLanguageCode } from '@/types/audio';
 import {
@@ -18,6 +17,8 @@ import {
 } from '@/lib/pedagogy/leitner';
 import { pickCueType, eligibleCueTypes, type PickerEligibility } from '@/lib/pedagogy/exercise-picker';
 import { fireTelemetry } from '@/lib/pedagogy/telemetry';
+import { emitDiag } from '@/lib/feedback/diag';
+import { Fox } from '@/components/mascot/Fox';
 
 interface DrillBlockProps {
   /** Words being drilled this block. Order is the introduce order. */
@@ -31,10 +32,8 @@ interface DrillBlockProps {
   initialQueue?: DrillQueue | null;
   /** Fired on every queue change so the parent can persist drill_state. */
   onQueueChange?: (queue: DrillQueue) => void;
-  /** Records SRS reviews as the drill progresses. `confidence==='guessed'` downgrades the SRS rating. */
-  onItemAnswered?: (wordId: string, cueType: CueType, correct: boolean, confidence?: 'knew_it' | 'guessed') => void;
-  /** Show "I knew it / I guessed" buttons after first-attempt correct. */
-  showConfidence?: boolean;
+  /** Records SRS reviews as the drill progresses. */
+  onItemAnswered?: (wordId: string, cueType: CueType, correct: boolean) => void;
   /** Fired when the queue empties. */
   onComplete: (queue: DrillQueue) => void;
 }
@@ -51,7 +50,6 @@ export function DrillBlock({
   initialQueue,
   onQueueChange,
   onItemAnswered,
-  showConfidence = false,
   onComplete,
 }: DrillBlockProps) {
   const eligibilityMap = useMemo<BatchEligibilityMap>(() => {
@@ -93,12 +91,6 @@ export function DrillBlock({
    * the auto-reveal `onCorrect` callback that QuizOptions fires after
    * showing the right answer. */
   const lastWrongRef = useRef(false);
-  /** Pending confidence pick: while non-null, the queue does NOT advance —
-   * we're waiting for the learner to tap "I knew it" or "I guessed". */
-  const [pendingConfidence, setPendingConfidence] = useState<{
-    cueType: CueType;
-    wordId: string;
-  } | null>(null);
 
   // Persist queue + handle completion. Empty queue → done.
   useEffect(() => {
@@ -117,30 +109,18 @@ export function DrillBlock({
     setActiveCueType(pickCueType(item, elig));
     setAttemptKey((k) => k + 1);
     lastWrongRef.current = false;
-    setPendingConfidence(null);
   }, [queue.cursor, queue.items.length, eligibilityMap]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const advanceCorrect = useCallback(
-    (confidence: 'knew_it' | 'guessed' | null) => {
-      const item = currentItem(queue);
-      if (!item) return;
-      onItemAnswered?.(item.itemId, activeCueType, true, confidence ?? undefined);
-      fireTelemetry({
-        event: 'drill_correct',
-        payload: { wordId: item.itemId, cueType: activeCueType, tries: item.tries + 1, confidence },
-      });
-      if (confidence === 'guessed') {
-        // Mark the cue type passed but ALSO push the item to the back so it
-        // resurfaces. Implemented as: applyCorrect (records cue type), then
-        // if the item didn't fully pass yet, the next pick will surface it.
-        // For lower priority we use applyWrong instead — re-queue with gap=3.
-        setQueue((q) => applyWrong(q, activeCueType, 3));
-        return;
-      }
-      setQueue((q) => applyCorrect(q, activeCueType, confidence));
-    },
-    [queue, activeCueType, onItemAnswered],
-  );
+  const advanceCorrect = useCallback(() => {
+    const item = currentItem(queue);
+    if (!item) return;
+    onItemAnswered?.(item.itemId, activeCueType, true);
+    fireTelemetry({
+      event: 'drill_correct',
+      payload: { wordId: item.itemId, cueType: activeCueType, tries: item.tries + 1 },
+    });
+    setQueue((q) => applyCorrect(q, activeCueType));
+  }, [queue, activeCueType, onItemAnswered]);
 
   const handleCorrect = useCallback(() => {
     // Suppress the auto-reveal onCorrect that QuizOptions fires after a
@@ -151,15 +131,8 @@ export function DrillBlock({
     }
     const item = currentItem(queue);
     if (!item) return;
-    if (showConfidence && item.tries === 0) {
-      // First-attempt correct — defer queue advance until learner picks
-      // confidence. The queue stays put; the exercise component already
-      // showed its celebration, so the buttons appear under it.
-      setPendingConfidence({ cueType: activeCueType, wordId: item.itemId });
-      return;
-    }
-    advanceCorrect(null);
-  }, [queue, activeCueType, showConfidence, advanceCorrect]);
+    advanceCorrect();
+  }, [queue, advanceCorrect]);
 
   const handleWrong = useCallback(() => {
     lastWrongRef.current = true;
@@ -173,22 +146,42 @@ export function DrillBlock({
     setQueue((q) => applyWrong(q, activeCueType, 2));
   }, [queue, activeCueType, onItemAnswered]);
 
-  const handleConfidencePick = useCallback(
-    (confidence: 'knew_it' | 'guessed') => {
-      setPendingConfidence(null);
-      advanceCorrect(confidence);
-    },
-    [advanceCorrect],
-  );
+  // Recovery: cursor past the end while items still exist (shouldn't happen,
+  // but if it does, snap back to a valid index in an effect — never call
+  // setState during render).
+  useEffect(() => {
+    if (queue.items.length > 0 && (queue.cursor < 0 || queue.cursor >= queue.items.length)) {
+      emitDiag(`DrillBlock cursor out of bounds: ${queue.cursor}/${queue.items.length}`);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setQueue((q) => ({ ...q, cursor: 0 }));
+    }
+  }, [queue.cursor, queue.items.length]);
+
+  // Recovery: queue references a word not in the batch — drop it from
+  // an effect, never during render.
+  useEffect(() => {
+    const it = currentItem(queue);
+    if (!it) return;
+    const w = words.find((wd) => wd.word.id === it.itemId);
+    if (!w) {
+      emitDiag(`DrillBlock missing word ${it.itemId} in batch of ${words.length}`);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setQueue((q) => applyCorrect(q, activeCueType));
+    }
+  }, [queue, words, activeCueType]);
 
   const item = currentItem(queue);
-  if (!item) return null;
+  const word = item ? words.find((w) => w.word.id === item.itemId) : null;
 
-  const word = words.find((w) => w.word.id === item.itemId);
-  if (!word) {
-    // Defensive: queue refers to a word not in the batch — drop it.
-    setQueue((q) => applyCorrect(q, activeCueType));
-    return null;
+  // Loading placeholder while between items / between batch transitions.
+  // Renders the fox so the user never sees a blank screen mid-flow.
+  if (!item || !word) {
+    return (
+      <div className="flex flex-col items-center justify-center flex-1 min-h-[40vh] py-12 animate-pulse">
+        <Fox pose="thinking" size="sm" aria-label="Loading next exercise" />
+        <p className="mt-3 text-xs text-[color:var(--text-secondary)]">Wrapping up…</p>
+      </div>
+    );
   }
 
   // Header strip: "1 of 3 left · production"
@@ -199,15 +192,6 @@ export function DrillBlock({
       </p>
     </div>
   );
-
-  const confidenceFooter = pendingConfidence ? (
-    <ConfidenceButtons
-      key={`conf-${pendingConfidence.wordId}-${pendingConfidence.cueType}`}
-      wordId={pendingConfidence.wordId}
-      cueType={pendingConfidence.cueType}
-      onPick={handleConfidencePick}
-    />
-  ) : null;
 
   if (activeCueType === 'cloze' && word.clozePhrases && word.clozePhrases.length > 0) {
     return (
@@ -230,7 +214,6 @@ export function DrillBlock({
             if (!correct) handleWrong();
           }}
         />
-        {confidenceFooter}
       </>
     );
   }
@@ -254,7 +237,6 @@ export function DrillBlock({
             if (!correct && attempts === 2) handleWrong();
           }}
         />
-        {confidenceFooter}
       </>
     );
   }
@@ -275,7 +257,6 @@ export function DrillBlock({
         }}
         revealMaskMs={1500}
       />
-      {confidenceFooter}
     </>
   );
 }

@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { PhraseQuiz } from '@/components/learn/PhraseQuiz';
 import { ProductionTyping } from '@/components/learn/ProductionTyping';
 import { Cloze } from '@/components/learn/Cloze';
-import { ConfidenceButtons } from '@/components/learn/ConfidenceButtons';
 import type { ScenePhraseWithMnemonics } from '@/types/database';
 import type { SupportedLanguageCode } from '@/types/audio';
 import {
@@ -23,6 +22,8 @@ import {
 } from '@/lib/pedagogy/phrase-exercise-picker';
 import { fireTelemetry } from '@/lib/pedagogy/telemetry';
 import { buildPhraseDistractors } from '@/lib/learn/phrase-distractors';
+import { emitDiag } from '@/lib/feedback/diag';
+import { Fox } from '@/components/mascot/Fox';
 
 interface PhraseDrillBlockProps {
   /** Phrases being drilled this block. Order is the introduce order. */
@@ -34,15 +35,14 @@ interface PhraseDrillBlockProps {
   enabledCueTypes?: CueType[];
   /** K — distinct cue types each item must pass before being removed. */
   requiredCueTypes?: number;
-  /** Show "I knew it / I guessed" buttons after first-attempt correct. */
-  showConfidence?: boolean;
   /** Records phrase-level reviews. `correct=false` → SRS rating 'forgot'. */
   onItemAnswered?: (
     phraseId: string,
     cueType: CueType,
     correct: boolean,
-    confidence?: 'knew_it' | 'guessed',
   ) => void;
+  /** Fired on every queue mutation so the parent can drive a progress bar. */
+  onQueueChange?: (queue: DrillQueue) => void;
   /** Fired when the queue empties. */
   onComplete: (queue: DrillQueue) => void;
 }
@@ -57,8 +57,8 @@ export function PhraseDrillBlock({
   languageCode,
   enabledCueTypes = ['recognition', 'production'],
   requiredCueTypes = 2,
-  showConfidence = false,
   onItemAnswered,
+  onQueueChange,
   onComplete,
 }: PhraseDrillBlockProps) {
   const eligibilityMap = useMemo<BatchEligibilityMap>(() => {
@@ -96,18 +96,15 @@ export function PhraseDrillBlock({
   const [attemptKey, setAttemptKey] = useState(0);
   const completedRef = useRef(false);
   const lastWrongRef = useRef(false);
-  const [pendingConfidence, setPendingConfidence] = useState<{
-    cueType: CueType;
-    phraseId: string;
-  } | null>(null);
 
-  // Completion check.
+  // Completion check + progress reporting.
   useEffect(() => {
+    onQueueChange?.(queue);
     if (queue.items.length === 0 && !completedRef.current) {
       completedRef.current = true;
       onComplete(queue);
     }
-  }, [queue, onComplete]);
+  }, [queue, onQueueChange, onComplete]);
 
   // Pick a cue type when the active item changes.
   useEffect(() => {
@@ -117,27 +114,18 @@ export function PhraseDrillBlock({
     setActiveCueType(pickPhraseCueType(item, elig, enabledCueTypes));
     setAttemptKey((k) => k + 1);
     lastWrongRef.current = false;
-    setPendingConfidence(null);
   }, [queue.cursor, queue.items.length, eligibilityMap, enabledCueTypes]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const advanceCorrect = useCallback(
-    (confidence: 'knew_it' | 'guessed' | null) => {
-      const item = currentItem(queue);
-      if (!item) return;
-      onItemAnswered?.(item.itemId, activeCueType, true, confidence ?? undefined);
-      fireTelemetry({
-        event: 'phrase_drill_correct',
-        payload: { phraseId: item.itemId, cueType: activeCueType, tries: item.tries + 1, confidence },
-      });
-      if (confidence === 'guessed') {
-        // Re-queue with gap so a guessed answer resurfaces shortly.
-        setQueue((q) => applyWrong(q, activeCueType, 3));
-        return;
-      }
-      setQueue((q) => applyCorrect(q, activeCueType, confidence));
-    },
-    [queue, activeCueType, onItemAnswered],
-  );
+  const advanceCorrect = useCallback(() => {
+    const item = currentItem(queue);
+    if (!item) return;
+    onItemAnswered?.(item.itemId, activeCueType, true);
+    fireTelemetry({
+      event: 'phrase_drill_correct',
+      payload: { phraseId: item.itemId, cueType: activeCueType, tries: item.tries + 1 },
+    });
+    setQueue((q) => applyCorrect(q, activeCueType));
+  }, [queue, activeCueType, onItemAnswered]);
 
   const handleCorrect = useCallback(() => {
     if (lastWrongRef.current) {
@@ -146,12 +134,8 @@ export function PhraseDrillBlock({
     }
     const item = currentItem(queue);
     if (!item) return;
-    if (showConfidence && item.tries === 0) {
-      setPendingConfidence({ cueType: activeCueType, phraseId: item.itemId });
-      return;
-    }
-    advanceCorrect(null);
-  }, [queue, activeCueType, showConfidence, advanceCorrect]);
+    advanceCorrect();
+  }, [queue, advanceCorrect]);
 
   const handleWrong = useCallback(() => {
     lastWrongRef.current = true;
@@ -165,22 +149,37 @@ export function PhraseDrillBlock({
     setQueue((q) => applyWrong(q, activeCueType, 2));
   }, [queue, activeCueType, onItemAnswered]);
 
-  const handleConfidencePick = useCallback(
-    (confidence: 'knew_it' | 'guessed') => {
-      setPendingConfidence(null);
-      advanceCorrect(confidence);
-    },
-    [advanceCorrect],
-  );
+  // Recovery: cursor past the end while items still exist.
+  useEffect(() => {
+    if (queue.items.length > 0 && (queue.cursor < 0 || queue.cursor >= queue.items.length)) {
+      emitDiag(`PhraseDrillBlock cursor out of bounds: ${queue.cursor}/${queue.items.length}`);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setQueue((q) => ({ ...q, cursor: 0 }));
+    }
+  }, [queue.cursor, queue.items.length]);
+
+  // Recovery: queue references a phrase not in the batch — drop it from
+  // an effect, never during render.
+  useEffect(() => {
+    const it = currentItem(queue);
+    if (!it) return;
+    if (!phraseById.has(it.itemId)) {
+      emitDiag(`PhraseDrillBlock missing phrase ${it.itemId} in batch of ${phraseById.size}`);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setQueue((q) => applyCorrect(q, activeCueType));
+    }
+  }, [queue, phraseById, activeCueType]);
 
   const item = currentItem(queue);
-  if (!item) return null;
+  const phrase = item ? phraseById.get(item.itemId) : null;
 
-  const phrase = phraseById.get(item.itemId);
-  if (!phrase) {
-    // Defensive: queue refers to a phrase not in the batch — drop it.
-    setQueue((q) => applyCorrect(q, activeCueType));
-    return null;
+  if (!item || !phrase) {
+    return (
+      <div className="flex flex-col items-center justify-center flex-1 min-h-[40vh] py-12 animate-pulse">
+        <Fox pose="thinking" size="sm" aria-label="Loading next exercise" />
+        <p className="mt-3 text-xs text-[color:var(--text-secondary)]">Wrapping up…</p>
+      </div>
+    );
   }
 
   const header = (
@@ -190,15 +189,6 @@ export function PhraseDrillBlock({
       </p>
     </div>
   );
-
-  const confidenceFooter = pendingConfidence ? (
-    <ConfidenceButtons
-      key={`pconf-${pendingConfidence.phraseId}-${pendingConfidence.cueType}`}
-      wordId={pendingConfidence.phraseId}
-      cueType={pendingConfidence.cueType}
-      onPick={handleConfidencePick}
-    />
-  ) : null;
 
   if (activeCueType === 'cloze') {
     const clozeWord = pickClozeWord(phrase);
@@ -225,7 +215,6 @@ export function PhraseDrillBlock({
               if (!correct) handleWrong();
             }}
           />
-          {confidenceFooter}
         </>
       );
     }
@@ -256,7 +245,6 @@ export function PhraseDrillBlock({
             if (!correct && attempts === 2) handleWrong();
           }}
         />
-        {confidenceFooter}
       </>
     );
   }
@@ -278,7 +266,6 @@ export function PhraseDrillBlock({
           if (!correct) handleWrong();
         }}
       />
-      {confidenceFooter}
     </>
   );
 }

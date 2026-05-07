@@ -1,14 +1,15 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PhraseCard } from '@/components/learn/PhraseCard';
 import { PhraseBreakdown } from '@/components/learn/PhraseBreakdown';
 import { PhraseDrillBlock } from '@/components/learn/PhraseDrillBlock';
 import { PhraseCheckpoint } from '@/components/learn/PhraseCheckpoint';
 import type { ScenePhraseWithMnemonics } from '@/types/database';
 import type { SupportedLanguageCode } from '@/types/audio';
-import type { CueType } from '@/lib/pedagogy/leitner';
+import type { CueType, DrillQueue } from '@/lib/pedagogy/leitner';
 import type { PedagogyFlags } from '@/lib/pedagogy/flags';
+import type { V2BlockProgress } from '@/components/learn/v2-progress';
 
 const BATCH_SIZE = 2;
 
@@ -18,6 +19,9 @@ interface PhraseBlockProps {
   flags: PedagogyFlags;
   /** Bridges drill answers back to /api/reviews/record-phrase. */
   onItemAnswered?: (phraseId: string, correct: boolean) => void;
+  /** Fired on every internal state change so the parent can drive its
+   * progress bar + intercept the back button. */
+  onProgress?: (progress: V2BlockProgress) => void;
   /** Fired after the end-of-phrases checkpoint resolves. */
   onComplete: () => void;
 }
@@ -45,6 +49,7 @@ export function PhraseBlock({
   languageCode,
   flags,
   onItemAnswered,
+  onProgress,
   onComplete,
 }: PhraseBlockProps) {
   const batches = useMemo(() => {
@@ -61,6 +66,9 @@ export function PhraseBlock({
       : { kind: 'checkpoint' },
   );
 
+  const [drillFraction, setDrillFraction] = useState(0);
+  const drillInitialSize = useRef(0);
+
   const enabledCueTypes = useMemo<CueType[]>(() => {
     const out: CueType[] = ['recognition'];
     if (flags.production) out.push('production');
@@ -72,6 +80,8 @@ export function PhraseBlock({
     setPhase((p) =>
       p.kind === 'intro' ? { kind: 'drill', batchIndex: p.batchIndex } : p,
     );
+    setDrillFraction(0);
+    drillInitialSize.current = 0;
   }, []);
 
   const advanceFromDrill = useCallback(() => {
@@ -84,6 +94,56 @@ export function PhraseBlock({
       return { kind: 'intro', batchIndex: next };
     });
   }, [batches.length]);
+
+  const handleDrillQueueChange = useCallback((queue: DrillQueue) => {
+    if (drillInitialSize.current === 0 && queue.items.length > 0) {
+      drillInitialSize.current = queue.items.length;
+    }
+    const initial = drillInitialSize.current || 1;
+    const remaining = queue.items.length;
+    setDrillFraction(Math.max(0, Math.min(1, 1 - remaining / initial)));
+  }, []);
+
+  const totalSlots = batches.length * 2 + 1;
+  const goBack = useCallback((): boolean => {
+    if (phase.kind === 'checkpoint') {
+      if (batches.length === 0) return false;
+      setPhase({ kind: 'drill', batchIndex: batches.length - 1 });
+      return true;
+    }
+    if (phase.kind === 'drill') {
+      setPhase({ kind: 'intro', batchIndex: phase.batchIndex });
+      setDrillFraction(0);
+      drillInitialSize.current = 0;
+      return true;
+    }
+    if (phase.batchIndex > 0) {
+      setPhase({ kind: 'drill', batchIndex: phase.batchIndex - 1 });
+      return true;
+    }
+    return false;
+  }, [phase, batches.length]);
+
+  const goBackRef = useRef(goBack);
+  useEffect(() => {
+    goBackRef.current = goBack;
+  }, [goBack]);
+
+  useEffect(() => {
+    if (!onProgress) return;
+    let fraction: number;
+    if (phase.kind === 'checkpoint') {
+      fraction = 1;
+    } else if (phase.kind === 'intro') {
+      fraction = (phase.batchIndex * 2) / totalSlots;
+    } else {
+      fraction = (phase.batchIndex * 2 + 1 + drillFraction) / totalSlots;
+    }
+    onProgress({
+      fraction: Math.max(0, Math.min(1, fraction)),
+      goBack: () => goBackRef.current(),
+    });
+  }, [phase, drillFraction, totalSlots, onProgress]);
 
   if (phrases.length === 0) {
     onComplete();
@@ -124,10 +184,10 @@ export function PhraseBlock({
       scenePhrases={phrases}
       languageCode={languageCode}
       enabledCueTypes={enabledCueTypes}
-      showConfidence={flags.cloze}
       onItemAnswered={(phraseId, _cueType, correct) => {
         onItemAnswered?.(phraseId, correct);
       }}
+      onQueueChange={handleDrillQueueChange}
       onComplete={advanceFromDrill}
     />
   );

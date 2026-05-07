@@ -21,6 +21,7 @@ import type { SceneDialogue, ScenePhraseWithMnemonics, UserSceneProgress } from 
 import type { LearnWord } from '@/types/learn';
 import type { SupportedLanguageCode } from '@/types/audio';
 import type { PedagogyFlags } from '@/lib/pedagogy/flags';
+import type { V2BlockProgress } from '@/components/learn/v2-progress';
 
 interface SceneFlowClientProps {
   sceneId: string;
@@ -272,6 +273,13 @@ export function SceneFlowClient({
   const router = useRouter();
   const [saveFailed, setSaveFailed] = useState(false);
 
+  // v2 blocks (VocabularyBlock / PhraseBlock) own their internal state.
+  // They report fraction + a goBack closure here so the parent can drive
+  // the progress bar smoothly and intercept the back button instead of
+  // skipping the entire phase. See components/learn/v2-progress.ts.
+  const [v2Vocab, setV2Vocab] = useState<V2BlockProgress | null>(null);
+  const [v2Phrases, setV2Phrases] = useState<V2BlockProgress | null>(null);
+
   const saveProgress = useCallback((phase: string, phaseIndex: number, phaseCompleted?: string) => {
     const body = JSON.stringify({ currentPhase: phase, phaseIndex, phaseCompleted });
     const doFetch = (retries: number) => {
@@ -302,6 +310,11 @@ export function SceneFlowClient({
 
   // --- Back Navigation ---
   const handleBack = useCallback(() => {
+    // In v2 mode, ask the active block to step back inside its own state
+    // first. If it returns false (already at the start of its block) fall
+    // through to the parent's phase-level computePreviousState.
+    if (state.phase === 'vocabulary' && useV2Vocab && v2Vocab?.goBack()) return;
+    if (state.phase === 'phrases' && useV2Vocab && v2Phrases?.goBack()) return;
     const ctx: FlowContext & { hasAnchorImage: boolean } = { dialogues, phrases, words, hasAnchorImage };
     const prev = computePreviousState(state, ctx);
     if (prev) {
@@ -309,7 +322,7 @@ export function SceneFlowClient({
     } else {
       router.push(pathId ? `/paths/${pathId}` : '/dashboard');
     }
-  }, [state, dialogues, phrases, words, hasAnchorImage, pathId, router]);
+  }, [state, dialogues, phrases, words, hasAnchorImage, pathId, router, useV2Vocab, v2Vocab, v2Phrases]);
 
   // --- Dialogue Phase ---
   const handleDialogueComplete = useCallback(() => {
@@ -493,9 +506,11 @@ export function SceneFlowClient({
       case 'dialogue':
         return dialogues.length > 1 ? state.lineIndex / (dialogues.length - 1) : 0;
       case 'phrases':
+        if (useV2Vocab && v2Phrases) return v2Phrases.fraction;
         if (phrases.length === 0) return 0;
         return (state.phraseIndex + substepFraction(state.step, ['show', 'quiz'])) / phrases.length;
       case 'vocabulary':
+        if (useV2Vocab && v2Vocab) return v2Vocab.fraction;
         if (words.length === 0) return 0;
         return (state.wordIndex + substepFraction(state.step, ['word', 'mnemonic', 'quiz'])) / words.length;
       case 'summary':
@@ -564,6 +579,7 @@ export function SceneFlowClient({
           phrases={phrases}
           languageCode={languageCode}
           flags={pedagogyFlags!}
+          onProgress={setV2Phrases}
           onItemAnswered={(phraseId, correct) => {
             fetch('/api/reviews/record-phrase', {
               method: 'POST',
@@ -609,6 +625,7 @@ export function SceneFlowClient({
           languageName={languageName}
           languageCode={languageCode}
           flags={pedagogyFlags!}
+          onProgress={setV2Vocab}
           onItemAnswered={(wordId, correct, direction) => {
             fetch('/api/reviews/record', {
               method: 'POST',

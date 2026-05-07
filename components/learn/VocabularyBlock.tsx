@@ -1,13 +1,14 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { IntroduceBatch } from '@/components/learn/IntroduceBatch';
 import { DrillBlock } from '@/components/learn/DrillBlock';
 import { SceneCheckpoint } from '@/components/learn/SceneCheckpoint';
 import type { LearnWord } from '@/types/learn';
 import type { SupportedLanguageCode } from '@/types/audio';
-import type { CueType } from '@/lib/pedagogy/leitner';
+import type { CueType, DrillQueue } from '@/lib/pedagogy/leitner';
 import type { PedagogyFlags } from '@/lib/pedagogy/flags';
+import type { V2BlockProgress } from '@/components/learn/v2-progress';
 
 const BATCH_SIZE = 3;
 
@@ -22,6 +23,9 @@ interface VocabularyBlockProps {
     correct: boolean,
     direction: 'recognition' | 'production',
   ) => void;
+  /** Fired on every internal state change so the parent can drive its
+   * progress bar + intercept the back button. */
+  onProgress?: (progress: V2BlockProgress) => void;
   /** Fired after the end-of-vocab checkpoint resolves. */
   onComplete: () => void;
 }
@@ -31,21 +35,13 @@ type Phase =
   | { kind: 'drill'; batchIndex: number }
   | { kind: 'checkpoint' };
 
-/**
- * Pedagogy v2 vocabulary phase: batched intros (N words at a time as
- * WordCard → MnemonicCard) → DrillBlock retrieval over the same batch
- * → next batch → end-of-vocab SceneCheckpoint → onComplete.
- *
- * Renders inline inside SceneFlowClient (no shell/header of its own —
- * the parent owns those). When `flags.restructure` is off, the parent
- * renders the legacy per-word loop instead.
- */
 export function VocabularyBlock({
   words,
   languageName,
   languageCode,
   flags,
   onItemAnswered,
+  onProgress,
   onComplete,
 }: VocabularyBlockProps) {
   const batches = useMemo(() => {
@@ -61,6 +57,9 @@ export function VocabularyBlock({
       ? { kind: 'intro', batchIndex: 0 }
       : { kind: 'checkpoint' },
   );
+
+  const [drillFraction, setDrillFraction] = useState(0);
+  const drillInitialSize = useRef(0);
 
   const enabledCueTypes = useMemo<CueType[]>(() => {
     const out: CueType[] = ['recognition'];
@@ -82,6 +81,8 @@ export function VocabularyBlock({
     setPhase((p) =>
       p.kind === 'intro' ? { kind: 'drill', batchIndex: p.batchIndex } : p,
     );
+    setDrillFraction(0);
+    drillInitialSize.current = 0;
   }, []);
 
   const advanceFromDrill = useCallback(() => {
@@ -94,6 +95,65 @@ export function VocabularyBlock({
       return { kind: 'intro', batchIndex: next };
     });
   }, [batches.length]);
+
+  const handleDrillQueueChange = useCallback((queue: DrillQueue) => {
+    if (drillInitialSize.current === 0 && queue.items.length > 0) {
+      drillInitialSize.current = queue.items.length;
+    }
+    const initial = drillInitialSize.current || 1;
+    const remaining = queue.items.length;
+    setDrillFraction(Math.max(0, Math.min(1, 1 - remaining / initial)));
+  }, []);
+
+  // Compute fraction + goBack on every state change and report up.
+  // Granularity: each batch contributes 2 slots (intro + drill); checkpoint
+  // is a 3rd-rail final slot. Within drill, drillFraction interpolates.
+  const totalSlots = batches.length * 2 + 1;
+  const goBack = useCallback((): boolean => {
+    if (phase.kind === 'checkpoint') {
+      if (batches.length === 0) return false;
+      setPhase({ kind: 'drill', batchIndex: batches.length - 1 });
+      return true;
+    }
+    if (phase.kind === 'drill') {
+      setPhase({ kind: 'intro', batchIndex: phase.batchIndex });
+      setDrillFraction(0);
+      drillInitialSize.current = 0;
+      return true;
+    }
+    // intro
+    if (phase.batchIndex > 0) {
+      setPhase({ kind: 'drill', batchIndex: phase.batchIndex - 1 });
+      return true;
+    }
+    return false;
+  }, [phase, batches.length]);
+
+  // Latest goBack closure — wrap in a ref so the callback we hand the parent
+  // always points at the current phase without forcing the parent to re-run
+  // its onProgress effect on every state change.
+  const goBackRef = useRef(goBack);
+  useEffect(() => {
+    goBackRef.current = goBack;
+  }, [goBack]);
+
+  useEffect(() => {
+    if (!onProgress) return;
+    let fraction: number;
+    if (phase.kind === 'checkpoint') {
+      fraction = 1;
+    } else if (phase.kind === 'intro') {
+      fraction = (phase.batchIndex * 2) / totalSlots;
+    } else {
+      // drill
+      fraction =
+        (phase.batchIndex * 2 + 1 + drillFraction) / totalSlots;
+    }
+    onProgress({
+      fraction: Math.max(0, Math.min(1, fraction)),
+      goBack: () => goBackRef.current(),
+    });
+  }, [phase, drillFraction, totalSlots, onProgress]);
 
   if (words.length === 0) {
     // No vocabulary in this scene — let the parent skip to summary.
@@ -140,7 +200,7 @@ export function VocabularyBlock({
       words={batch}
       languageCode={languageCode}
       enabledCueTypes={enabledCueTypes}
-      showConfidence={flags.cloze}
+      onQueueChange={handleDrillQueueChange}
       onItemAnswered={recordReview}
       onComplete={advanceFromDrill}
     />

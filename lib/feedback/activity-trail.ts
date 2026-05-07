@@ -112,4 +112,13 @@ export function installActivityTrail(): void {
     const reason = e.reason instanceof Error ? e.reason.message : String(e.reason ?? 'Unknown rejection');
     push('error', `unhandled: ${reason}`);
   });
+
+  // Diagnostic breadcrumbs — components dispatch `wordzoo:diag` for
+  // non-throwing failure modes (e.g. queue cursor out of bounds, missing
+  // batch member) so they ride along with feedback even though they never
+  // surfaced as a JS error.
+  window.addEventListener('wordzoo:diag', (e) => {
+    const detail = (e as CustomEvent<{ message?: string }>).detail;
+    push('error', `diag: ${detail?.message ?? 'unknown'}`);
+  });
 }
