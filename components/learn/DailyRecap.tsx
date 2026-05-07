@@ -5,11 +5,15 @@ import { Button } from '@/components/ui/Button';
 interface DailyRecapProps {
   yesterdayWords: number;
   yesterdayScenes: number;
-  dueReviewCount: number;
+  /** When provided and > 0, renders a "Start Review" CTA. Omit for the compact variant. */
+  dueReviewCount?: number;
+  variant?: 'full' | 'compact';
 }
 
-export function DailyRecap({ yesterdayWords, yesterdayScenes, dueReviewCount }: DailyRecapProps) {
+export function DailyRecap({ yesterdayWords, yesterdayScenes, dueReviewCount = 0, variant = 'full' }: DailyRecapProps) {
   if (yesterdayWords === 0 && yesterdayScenes === 0) return null;
+
+  const showCta = variant === 'full' && dueReviewCount > 0;
 
   return (
     <Card size="compact">
@@ -23,11 +27,11 @@ export function DailyRecap({ yesterdayWords, yesterdayScenes, dueReviewCount }: 
         <div className="flex-1 min-w-0">
           <p className="text-sm text-foreground">
             Yesterday: <span className="font-semibold">{yesterdayWords} word{yesterdayWords !== 1 ? 's' : ''}</span> across <span className="font-semibold">{yesterdayScenes} scene{yesterdayScenes !== 1 ? 's' : ''}</span>
-            {dueReviewCount > 0 && (
+            {showCta && (
               <span className="text-text-secondary">. {dueReviewCount} word{dueReviewCount !== 1 ? 's' : ''} due for review today.</span>
             )}
           </p>
-          {dueReviewCount > 0 && (
+          {showCta && (
             <Link href="/review" className="inline-block mt-2">
               <Button size="sm">Start Review</Button>
             </Link>

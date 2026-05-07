@@ -7,6 +7,8 @@ import type { SessionSummaryData } from '@/components/tutor/TutorChat';
 import { useTutorChat } from '@/lib/hooks/useTutorChat';
 import { InsightCard } from '@/components/insights/InsightCard';
 import { EmptyStateCard } from '@/components/ui/EmptyStateCard';
+import { TutorNudgeCard } from '@/components/tutor/TutorNudgeCard';
+import { TutorInsights } from '@/components/tutor/TutorInsights';
 import { getEligibleInsight } from '@/lib/insights/engine';
 import { INSIGHTS } from '@/lib/insights/data';
 import type { InsightDefinition } from '@/lib/insights/data';
@@ -353,6 +355,12 @@ export default function TutorPage() {
       {tutorInsight && !sessionId && !guidedError && (
         <div className="px-4 pt-2 pb-2">
           <InsightCard insight={tutorInsight} onDismiss={() => setTutorInsight(null)} />
+        </div>
+      )}
+      {!sessionId && !isStarting && languageId && (
+        <div className="px-4 pt-2 pb-2 space-y-3 shrink-0">
+          <TutorNudgeCard languageId={languageId} />
+          <TutorInsights languageId={languageId} />
         </div>
       )}
       <TutorChat

@@ -105,7 +105,7 @@ export function TripSection({ targetLanguageCode }: TripSectionProps) {
   }
 
   return (
-    <section>
+    <section id="trip" className="scroll-mt-20">
       <h2 className="text-sm font-medium text-text-secondary uppercase tracking-wider mb-3">
         Trip
       </h2>

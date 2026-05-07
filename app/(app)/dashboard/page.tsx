@@ -3,25 +3,18 @@ import { redirect } from 'next/navigation';
 import {
   getUserActivePath,
   getSceneMasteryForPath,
-  getPathWordStats,
   getUserDueWords,
   getLanguageById,
   getUserStreak,
-  getWordMasteryDistribution,
-  getWordsByMasteryStatus,
   getTodayInfoByte,
   getDailyLearningStats,
 } from '@/lib/db/queries';
 import { getDuePhrasesForReview } from '@/lib/db/scene-flow-queries';
 import { isSceneComplete, sceneProgress as getSceneProgress, findCurrentSceneIndex } from '@/lib/utils/scene-progress';
 import { habitatFromLanguageCode } from '@/lib/utils/language-habitat';
-import { ProgressChart } from '@/components/learn/ProgressChart';
 import { StreakFlame } from '@/components/ui/StreakFlame';
 import { Fox } from '@/components/mascot/Fox';
-import { TutorNudgeCard } from '@/components/tutor/TutorNudgeCard';
-import { TutorInsights } from '@/components/tutor/TutorInsights';
 import { HeroCard } from '@/components/ui/HeroCard';
-import { ActionCard, ActionCardRow } from '@/components/ui/ActionCard';
 import { EmptyStateCard } from '@/components/ui/EmptyStateCard';
 import Link from 'next/link';
 import { InfoByteCard } from '@/components/info-bytes/InfoByteCard';
@@ -32,6 +25,8 @@ import { getEligibleInsight } from '@/lib/insights/engine';
 import { DashboardInsight } from './DashboardInsight';
 import { getTripContext } from '@/lib/services/trip-service';
 import { TripHero } from '@/components/dashboard/TripHero';
+import { ReviewQueueCard } from '@/components/dashboard/ReviewQueueCard';
+import { GoalProgressCard } from '@/components/dashboard/GoalProgressCard';
 
 function pickGreeting(): string {
   const hour = new Date().getHours();
@@ -67,34 +62,25 @@ export default async function DashboardPage() {
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
   const yesterdayStr = yesterday.toISOString().split('T')[0];
-  const todayStr = new Date().toISOString().split('T')[0];
 
   const [
     sceneMastery,
-    wordStats,
     dueWords,
     duePhrases,
     language,
     streakData,
-    masteryDist,
-    wordsByStatus,
     todayInfoByte,
     yesterdayStats,
-    todayStats,
     insightState,
     tripContext,
   ] = await Promise.all([
     getSceneMasteryForPath(userId, pathId),
-    getPathWordStats(userId, pathId),
     getUserDueWords(userId, languageId),
     getDuePhrasesForReview(userId, 100),
     getLanguageById(languageId),
     getUserStreak(userId),
-    getWordMasteryDistribution(userId, pathId),
-    getWordsByMasteryStatus(userId, pathId),
     getTodayInfoByte(languageId),
     getDailyLearningStats(userId, yesterdayStr),
-    getDailyLearningStats(userId, todayStr),
     getInsightState(userId),
     getTripContext(userId),
   ]);
@@ -109,17 +95,15 @@ export default async function DashboardPage() {
   const currentSceneProgress = nextScene ? getSceneProgress(nextScene) : 0;
 
   const totalDueCount = dueWords.length + duePhrases.length;
-  const newWordsToday = wordStats.words_learned - (todayStats.words_learned ?? 0) >= 0
-    ? Math.max(0, todayStats.words_learned ?? 0)
-    : 0;
 
   const completedSceneCount = sceneMastery.filter(s => isSceneComplete(s)).length;
+  const totalWordsLearnedFromScenes = sceneMastery.reduce((sum, s) => sum + (s.mastered_words ?? 0), 0);
   const dashboardInsight = getEligibleInsight('dashboard', {
     seenInsightIds: insightState.seenIds,
     insightsShownToday: insightState.shownToday,
     totalMnemonicsViewed: 0,
     totalScenesCompleted: completedSceneCount,
-    totalWordsLearned: wordStats.words_learned,
+    totalWordsLearned: totalWordsLearnedFromScenes,
   });
 
   const streak = streakData.current_streak;
@@ -149,6 +133,11 @@ export default async function DashboardPage() {
         </div>
         <StreakFlame count={streak} size="sm" active={streak > 0} />
       </div>
+
+      {/* Review queue — top priority when reviews are due */}
+      {hasReviews && (
+        <ReviewQueueCard dueCount={totalDueCount} languageName={language?.name} />
+      )}
 
       {/* Hero / empty state */}
       {caughtUp ? (
@@ -186,17 +175,17 @@ export default async function DashboardPage() {
         />
       ) : null}
 
-      {/* Action row — due / new / speak */}
-      {!caughtUp && (
-        <ActionCardRow>
-          <ActionCard icon="⏱️" value={totalDueCount} label="Due now" tone="warm" href="/review" />
-          <ActionCard icon="✨" value={newWordsToday} label="New today" tone="cream" />
-          <ActionCard icon="🎙️" value="Say" label="Speak it" tone="neutral" href="/practice/speak" />
-        </ActionCardRow>
+      {/* Goal meter — suppressed when TripHero is the hero (would duplicate trip data) */}
+      {!(tripContext.hasTrip && hasNextScene) && (
+        <GoalProgressCard tripContext={tripContext} />
       )}
 
-      {/* Tutor Nudge (Insight archetype underneath) */}
-      <TutorNudgeCard languageId={languageId} />
+      {/* Yesterday's recap (compact — review CTA lives above) */}
+      <DailyRecap
+        yesterdayWords={yesterdayStats.words_learned}
+        yesterdayScenes={yesterdayStats.scenes_completed}
+        variant="compact"
+      />
 
       {/* Daily Info Byte */}
       {todayInfoByte && (
@@ -212,31 +201,8 @@ export default async function DashboardPage() {
         />
       )}
 
-      {/* Yesterday's recap */}
-      <DailyRecap
-        yesterdayWords={yesterdayStats.words_learned}
-        yesterdayScenes={yesterdayStats.scenes_completed}
-        dueReviewCount={totalDueCount}
-      />
-
       {/* Learning-loop insight */}
       {dashboardInsight && <DashboardInsight insight={dashboardInsight} />}
-
-      {/* Progress Stats */}
-      <section>
-        <h2 className="text-[10.5px] font-extrabold text-[color:var(--text-secondary)] uppercase tracking-[0.16em] mb-2 px-1">
-          Your progress
-        </h2>
-        <ProgressChart distribution={masteryDist} streak={streak} wordsByStatus={wordsByStatus} />
-      </section>
-
-      {/* Tutor Insights */}
-      <section>
-        <h2 className="text-[10.5px] font-extrabold text-[color:var(--text-secondary)] uppercase tracking-[0.16em] mb-2 px-1">
-          Tutor
-        </h2>
-        <TutorInsights languageId={languageId} />
-      </section>
 
       {/* Admin link */}
       {isAdmin && (
