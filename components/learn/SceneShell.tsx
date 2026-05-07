@@ -33,7 +33,7 @@ export function SceneShell({
 }: Props) {
   return (
     <div
-      className={`flex flex-col w-full h-full min-h-full ${className}`.trim()}
+      className={`flex flex-col w-full h-full min-h-full overflow-x-hidden ${className}`.trim()}
       style={background ? { background } : undefined}
     >
       {top ? <div className="shrink-0 pb-2">{top}</div> : null}

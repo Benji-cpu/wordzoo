@@ -17,6 +17,7 @@ import { TutorOnboarding, TUTOR_ONBOARDED_KEY } from '@/components/tutor/TutorOn
 import type { ChallengeMode } from '@/lib/tutor/modes';
 import { CHALLENGE_MODE_KEY } from '@/lib/tutor/modes';
 import { useSpeechInput } from '@/lib/hooks/useSpeechInput';
+import { useViewportInsets } from '@/lib/hooks/useKeyboardVisible';
 import type { TutorRecommendation } from '@/app/api/tutor/recommendation/route';
 
 export interface ChatMessage {
@@ -126,6 +127,7 @@ export function TutorChat({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const speechLangCode = mapLanguageCode(langCode);
   const { isListening, transcript, audioLevel, startListening, stopListening, error: speechError } = useSpeechInput(speechLangCode);
+  const { keyboardHeight } = useViewportInsets();
 
   useEffect(() => {
     if (speechError) {
@@ -356,8 +358,13 @@ export function TutorChat({
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Bottom pinned section: chips + input */}
-          <div className="shrink-0 overflow-hidden">
+          {/* Bottom pinned section: chips + input. paddingBottom tracks the
+              mobile keyboard top edge so the input bar isn't hidden behind it
+              and there's no negative-space gap on Android Chrome. */}
+          <div
+            className="shrink-0 overflow-hidden transition-[padding] duration-150"
+            style={keyboardHeight > 0 ? { paddingBottom: keyboardHeight } : undefined}
+          >
             {limitReached ? (
               <div className="px-4 py-3 border-t border-card-border bg-card-surface text-center">
                 <p className="text-sm text-foreground font-medium">You&apos;ve used all your free tutor messages today.</p>

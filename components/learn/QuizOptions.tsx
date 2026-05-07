@@ -115,8 +115,9 @@ export function QuizOptions({
       </div>
 
       {/* Answer options — 2×2 grid that fills the available space so tiles
-          feel finger-sized on mobile. */}
-      <div className="grid grid-cols-2 grid-rows-2 gap-3 pb-2 flex-[0_0_auto] min-h-[220px]">
+          feel finger-sized on mobile. min-h drops on short viewports so a
+          following ConfidenceButtons row stays visible without overlap. */}
+      <div className="grid grid-cols-2 grid-rows-2 gap-3 pb-2 flex-[0_0_auto] min-h-[180px]">
         {options.map((option) => {
           const isSelectedCorrect = selected === option && isCorrect;
           const isSelectedWrong = selected === option && isCorrect === false;

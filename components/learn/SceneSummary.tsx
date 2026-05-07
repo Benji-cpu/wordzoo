@@ -91,10 +91,10 @@ export function SceneSummary({
   const isEarlyScene = sceneNumber !== undefined && sceneNumber <= 3;
 
   return (
-    <div className="flex flex-col flex-1 min-h-0 pt-2">
+    <div className="flex flex-col flex-1 min-h-0 pt-1">
       {/* Hero celebration band — compact so the CTAs stay above the fold on mobile */}
-      <div className="relative text-center mb-3 animate-spring-in">
-        <div className="flex justify-center mb-2">
+      <div className="relative text-center mb-2 animate-spring-in">
+        <div className="flex justify-center mb-1.5">
           <Fox pose="celebrating" size="md" aria-label="Scene complete!" />
         </div>
         <Celebration active variant="scene-complete" />
@@ -112,11 +112,11 @@ export function SceneSummary({
         )}
       </div>
 
-      <Card className="mb-3 py-3">
-        <div className="text-[11px] font-extrabold tracking-[0.14em] uppercase text-[color:var(--text-secondary)] mb-2">
+      <Card className="mb-2 py-2.5">
+        <div className="text-[11px] font-extrabold tracking-[0.14em] uppercase text-[color:var(--text-secondary)] mb-1.5">
           {words.length} {words.length === 1 ? 'word' : 'words'} learned
         </div>
-        <div className="flex flex-wrap gap-1.5 max-h-[28vh] overflow-y-auto pr-1">
+        <div className="flex flex-wrap gap-1.5 max-h-[20vh] overflow-y-auto pr-1">
           {words.map(({ word }) => {
             const isExpanded = expandedWordId === word.id;
             return (

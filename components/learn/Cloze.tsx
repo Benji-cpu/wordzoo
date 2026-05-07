@@ -9,6 +9,7 @@ import { useHaptic } from '@/lib/hooks/useHaptic';
 import { useXP, XP_AMOUNTS } from '@/lib/hooks/useXP';
 import { fuzzyMatchAnswer } from '@/lib/pedagogy/normalize';
 import { fireTelemetry } from '@/lib/pedagogy/telemetry';
+import { useViewportInsets } from '@/lib/hooks/useKeyboardVisible';
 import type { ClozePhraseForWord } from '@/lib/db/queries';
 
 interface ClozeProps {
@@ -52,6 +53,7 @@ export function Cloze({
   const { play } = useSound();
   const { trigger } = useHaptic();
   const { award } = useXP();
+  const { keyboardHeight } = useViewportInsets();
 
   // Build the visible cloze: replace the target word in text_target with a blank
   // (case-insensitive, word-boundary aware where possible).
@@ -198,7 +200,8 @@ export function Cloze({
 
       <form
         onSubmit={handleSubmit}
-        className={`pb-2 flex flex-col gap-3 ${shake ? 'animate-shake' : ''}`}
+        className={`pb-2 flex flex-col gap-3 transition-[padding] duration-150 ${shake ? 'animate-shake' : ''}`}
+        style={keyboardHeight > 0 ? { paddingBottom: keyboardHeight } : undefined}
       >
         <input
           ref={inputRef}

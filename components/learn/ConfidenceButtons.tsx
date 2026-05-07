@@ -32,7 +32,10 @@ export function ConfidenceButtons({ wordId, cueType, onPick }: ConfidenceButtons
   }
 
   return (
-    <div className="mt-3 flex items-center justify-center gap-3">
+    // relative + z-10 + bg ensure these buttons render above the QuizOptions
+    // 2×2 grid when the scene's flex-column compresses on short viewports
+    // (reported feedback: "I knew it/I guessed obstructed by the grid items").
+    <div className="relative z-10 mt-3 pt-3 pb-1 flex items-center justify-center gap-3 bg-background">
       <button
         type="button"
         onClick={() => handle('knew_it')}

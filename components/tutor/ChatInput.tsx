@@ -57,7 +57,7 @@ export function ChatInput({ onSend, disabled, isListening, transcript, audioLeve
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex items-center gap-2 p-3 bg-background border-t border-card-border">
+    <form onSubmit={handleSubmit} className="flex items-center gap-2 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-background border-t border-card-border">
       {onMicToggle && (
         <button
           type="button"
