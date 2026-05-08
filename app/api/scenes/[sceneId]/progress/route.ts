@@ -67,7 +67,7 @@ export async function POST(
     );
   }
 
-  const { currentPhase, phaseIndex, phaseCompleted } = parsed.data;
+  const { currentPhase, phaseIndex, phaseCompleted, phaseStep, phaseBatch } = parsed.data;
 
   // Legacy 'patterns' / 'affixes' phases are forward-normalized to 'summary'
   // on the client before this route is called; accept both here defensively.
@@ -83,6 +83,8 @@ export async function POST(
     phaseIndex,
     phaseCompleted: completed as 'dialogue' | 'phrases' | 'vocabulary' | undefined,
     completedAt: phase === 'summary' ? new Date() : undefined,
+    phaseStep,
+    phaseBatch,
   });
 
   // Track scene completion for pacing system

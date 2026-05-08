@@ -123,13 +123,30 @@ export async function updateSceneProgress(
     phaseIndex?: number;
     phaseCompleted?: 'dialogue' | 'phrases' | 'vocabulary';
     completedAt?: Date;
+    /** Pedagogy v2 sub-state. `null` clears the column (legacy mode);
+     * `undefined` leaves it untouched. */
+    phaseStep?: 'intro' | 'drill' | 'checkpoint' | null;
+    phaseBatch?: number;
   }
 ): Promise<void> {
-  // Use a single comprehensive UPDATE that conditionally applies each field
+  // For phase_step we need a 3-way switch: leave-alone / clear / set.
+  // Encode the intent as ('leave' | 'clear' | 'set') with a payload string.
+  const stepIntent =
+    updates.phaseStep === undefined ? 'leave'
+    : updates.phaseStep === null ? 'clear'
+    : 'set';
+  const stepValue = updates.phaseStep ?? '';
+
   await sql`
     UPDATE user_scene_progress SET
       current_phase = COALESCE(${updates.currentPhase ?? null}, current_phase),
       phase_index = COALESCE(${updates.phaseIndex ?? null}, phase_index),
+      phase_step = CASE
+        WHEN ${stepIntent} = 'clear' THEN NULL
+        WHEN ${stepIntent} = 'set' THEN ${stepValue}
+        ELSE phase_step
+      END,
+      phase_batch = COALESCE(${updates.phaseBatch ?? null}, phase_batch),
       dialogue_completed = CASE WHEN ${updates.phaseCompleted ?? ''} = 'dialogue' THEN true ELSE dialogue_completed END,
       phrases_completed = CASE WHEN ${updates.phaseCompleted ?? ''} = 'phrases' THEN true ELSE phrases_completed END,
       vocabulary_completed = CASE WHEN ${updates.phaseCompleted ?? ''} = 'vocabulary' THEN true ELSE vocabulary_completed END,

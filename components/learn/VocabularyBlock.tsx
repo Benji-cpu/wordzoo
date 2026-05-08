@@ -8,7 +8,7 @@ import type { LearnWord } from '@/types/learn';
 import type { SupportedLanguageCode } from '@/types/audio';
 import type { CueType, DrillQueue } from '@/lib/pedagogy/leitner';
 import type { PedagogyFlags } from '@/lib/pedagogy/flags';
-import type { V2BlockProgress } from '@/components/learn/v2-progress';
+import type { V2BlockProgress, V2InitialState } from '@/components/learn/v2-progress';
 
 const BATCH_SIZE = 3;
 
@@ -26,6 +26,8 @@ interface VocabularyBlockProps {
   /** Fired on every internal state change so the parent can drive its
    * progress bar + intercept the back button. */
   onProgress?: (progress: V2BlockProgress) => void;
+  /** Restore prior sub-state when the user re-enters a scene mid-phase. */
+  initialState?: V2InitialState;
   /** Fired after the end-of-vocab checkpoint resolves. */
   onComplete: () => void;
 }
@@ -42,6 +44,7 @@ export function VocabularyBlock({
   flags,
   onItemAnswered,
   onProgress,
+  initialState,
   onComplete,
 }: VocabularyBlockProps) {
   const batches = useMemo(() => {
@@ -52,11 +55,15 @@ export function VocabularyBlock({
     return out;
   }, [words]);
 
-  const [phase, setPhase] = useState<Phase>(() =>
-    batches.length > 0
-      ? { kind: 'intro', batchIndex: 0 }
-      : { kind: 'checkpoint' },
-  );
+  const [phase, setPhase] = useState<Phase>(() => {
+    if (batches.length === 0) return { kind: 'checkpoint' };
+    if (initialState) {
+      if (initialState.kind === 'checkpoint') return { kind: 'checkpoint' };
+      const clamped = Math.max(0, Math.min(initialState.batchIndex, batches.length - 1));
+      return { kind: initialState.kind, batchIndex: clamped };
+    }
+    return { kind: 'intro', batchIndex: 0 };
+  });
 
   const [drillFraction, setDrillFraction] = useState(0);
   const drillInitialSize = useRef(0);
@@ -149,11 +156,14 @@ export function VocabularyBlock({
       fraction =
         (phase.batchIndex * 2 + 1 + drillFraction) / totalSlots;
     }
+    const batchIndex = phase.kind === 'checkpoint' ? batches.length : phase.batchIndex;
     onProgress({
       fraction: Math.max(0, Math.min(1, fraction)),
       goBack: () => goBackRef.current(),
+      kind: phase.kind,
+      batchIndex,
     });
-  }, [phase, drillFraction, totalSlots, onProgress]);
+  }, [phase, drillFraction, totalSlots, onProgress, batches.length]);
 
   if (words.length === 0) {
     // No vocabulary in this scene — let the parent skip to summary.

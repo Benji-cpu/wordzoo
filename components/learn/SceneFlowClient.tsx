@@ -21,7 +21,7 @@ import type { SceneDialogue, ScenePhraseWithMnemonics, UserSceneProgress } from 
 import type { LearnWord } from '@/types/learn';
 import type { SupportedLanguageCode } from '@/types/audio';
 import type { PedagogyFlags } from '@/lib/pedagogy/flags';
-import type { V2BlockProgress } from '@/components/learn/v2-progress';
+import type { V2BlockProgress, V2InitialState, V2PhaseKind } from '@/components/learn/v2-progress';
 
 interface SceneFlowClientProps {
   sceneId: string;
@@ -51,6 +51,15 @@ type FlowState =
   | { phase: 'phrases'; phraseIndex: number; step: 'show' | 'quiz' }
   | { phase: 'vocabulary'; wordIndex: number; step: 'word' | 'mnemonic' | 'quiz' }
   | { phase: 'summary' };
+
+function v2InitialFromProgress(
+  p: UserSceneProgress,
+  phaseName: 'vocabulary' | 'phrases',
+): V2InitialState | undefined {
+  if (p.current_phase !== phaseName) return undefined;
+  if (!p.phase_step) return undefined;
+  return { kind: p.phase_step as V2PhaseKind, batchIndex: p.phase_batch ?? 0 };
+}
 
 function initialStateFromProgress(p: UserSceneProgress, totalDialogues: number, totalPhrases: number, totalWords: number, hasAnchorImage: boolean): FlowState {
   // Cast to string to handle legacy phases ('conversation' / 'patterns' / 'affixes')
@@ -280,8 +289,21 @@ export function SceneFlowClient({
   const [v2Vocab, setV2Vocab] = useState<V2BlockProgress | null>(null);
   const [v2Phrases, setV2Phrases] = useState<V2BlockProgress | null>(null);
 
-  const saveProgress = useCallback((phase: string, phaseIndex: number, phaseCompleted?: string) => {
-    const body = JSON.stringify({ currentPhase: phase, phaseIndex, phaseCompleted });
+  const saveProgress = useCallback((
+    phase: string,
+    phaseIndex: number,
+    phaseCompleted?: string,
+    phaseStep?: V2PhaseKind | null,
+    phaseBatch?: number,
+  ) => {
+    const body = JSON.stringify({
+      currentPhase: phase,
+      phaseIndex,
+      phaseCompleted,
+      // Only include if explicitly provided. `null` is meaningful (clear v2 state).
+      ...(phaseStep !== undefined ? { phaseStep } : {}),
+      ...(phaseBatch !== undefined ? { phaseBatch } : {}),
+    });
     const doFetch = (retries: number) => {
       fetch(`/api/scenes/${sceneId}/progress`, {
         method: 'POST',
@@ -297,6 +319,27 @@ export function SceneFlowClient({
     };
     doFetch(phase === 'summary' ? 2 : 0);
   }, [sceneId]);
+
+  // Dedup v2 saves: the drill's per-card `fraction` updates fire onProgress
+  // many times per second; we only persist when `kind` or `batchIndex` change.
+  const lastV2VocabKey = useRef<string>('');
+  const lastV2PhrasesKey = useRef<string>('');
+
+  const handleV2VocabProgress = useCallback((p: V2BlockProgress) => {
+    setV2Vocab(p);
+    const key = `${p.kind}:${p.batchIndex}`;
+    if (lastV2VocabKey.current === key) return;
+    lastV2VocabKey.current = key;
+    saveProgress('vocabulary', 0, undefined, p.kind, p.batchIndex);
+  }, [saveProgress]);
+
+  const handleV2PhrasesProgress = useCallback((p: V2BlockProgress) => {
+    setV2Phrases(p);
+    const key = `${p.kind}:${p.batchIndex}`;
+    if (lastV2PhrasesKey.current === key) return;
+    lastV2PhrasesKey.current = key;
+    saveProgress('phrases', 0, undefined, p.kind, p.batchIndex);
+  }, [saveProgress]);
 
   const retrySave = useCallback(() => {
     setSaveFailed(false);
@@ -579,7 +622,8 @@ export function SceneFlowClient({
           phrases={phrases}
           languageCode={languageCode}
           flags={pedagogyFlags!}
-          onProgress={setV2Phrases}
+          onProgress={handleV2PhrasesProgress}
+          initialState={v2InitialFromProgress(initialProgress, 'phrases')}
           onItemAnswered={(phraseId, correct) => {
             fetch('/api/reviews/record-phrase', {
               method: 'POST',
@@ -588,11 +632,12 @@ export function SceneFlowClient({
             }).catch(() => {});
           }}
           onComplete={() => {
+            // Leaving phrases — clear v2 sub-state for the next phase.
             if (words.length > 0) {
-              saveProgress('vocabulary', 0, 'phrases');
+              saveProgress('vocabulary', 0, 'phrases', null, 0);
               setState({ phase: 'vocabulary', wordIndex: 0, step: 'word' });
             } else {
-              saveProgress('summary', 0, 'phrases');
+              saveProgress('summary', 0, 'phrases', null, 0);
               setState({ phase: 'summary' });
             }
           }}
@@ -625,7 +670,8 @@ export function SceneFlowClient({
           languageName={languageName}
           languageCode={languageCode}
           flags={pedagogyFlags!}
-          onProgress={setV2Vocab}
+          onProgress={handleV2VocabProgress}
+          initialState={v2InitialFromProgress(initialProgress, 'vocabulary')}
           onItemAnswered={(wordId, correct, direction) => {
             fetch('/api/reviews/record', {
               method: 'POST',
@@ -638,7 +684,8 @@ export function SceneFlowClient({
             }).catch(() => {});
           }}
           onComplete={() => {
-            saveProgress('summary', 0, 'vocabulary');
+            // Leaving vocabulary for summary — clear v2 sub-state.
+            saveProgress('summary', 0, 'vocabulary', null, 0);
             setState({ phase: 'summary' });
           }}
         />

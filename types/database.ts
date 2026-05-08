@@ -356,6 +356,10 @@ export interface UserSceneProgress {
   scene_id: string;
   current_phase: SceneFlowPhase;
   phase_index: number;
+  /** Pedagogy v2 sub-state — null in legacy mode. */
+  phase_step: 'intro' | 'drill' | 'checkpoint' | null;
+  /** Pedagogy v2 batch index within the current phase. */
+  phase_batch: number;
   dialogue_completed: boolean;
   phrases_completed: boolean;
   vocabulary_completed: boolean;

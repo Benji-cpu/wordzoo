@@ -210,10 +210,17 @@ export type AdminMnemonicOverrideInput = z.infer<typeof AdminMnemonicOverrideSch
 // progress POSTs don't 400 — the route normalizes them forward to 'summary'.
 export const SceneFlowPhaseEnum = z.enum(['dialogue', 'phrases', 'vocabulary', 'patterns', 'affixes', 'conversation', 'summary']);
 
+export const V2PhaseStepEnum = z.enum(['intro', 'drill', 'checkpoint']);
+
 export const UpdateSceneProgressSchema = z.object({
   currentPhase: SceneFlowPhaseEnum,
   phaseIndex: z.number().int().min(0),
   phaseCompleted: z.string().optional(), // e.g. 'dialogue', 'phrases', etc.
+  // Pedagogy v2 sub-state. `phaseStep === null` clears the field
+  // (e.g. transitioning out of v2 vocabulary into summary).
+  // Omitted = leave existing DB value alone.
+  phaseStep: V2PhaseStepEnum.nullable().optional(),
+  phaseBatch: z.number().int().min(0).optional(),
 });
 
 export type UpdateSceneProgressInput = z.infer<typeof UpdateSceneProgressSchema>;

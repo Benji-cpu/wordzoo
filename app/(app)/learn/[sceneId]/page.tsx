@@ -151,6 +151,8 @@ export default async function LearnPage({ params, searchParams }: PageProps) {
     scene_id: sceneId,
     current_phase: 'dialogue' as const,
     phase_index: 0,
+    phase_step: null,
+    phase_batch: 0,
     dialogue_completed: false,
     phrases_completed: false,
     vocabulary_completed: false,
