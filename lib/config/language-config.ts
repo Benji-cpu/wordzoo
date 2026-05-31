@@ -86,6 +86,31 @@ const LANGUAGE_CONFIGS: Record<string, LanguageConfig> = {
     },
     sceneAnchorCulture: 'Japanese urban setting',
   },
+  pt: {
+    code: 'pt',
+    name: 'Portuguese',
+    nativeName: 'Português',
+    registerAwareness: {
+      beginner:
+        `## Register Awareness (Você vs Formal)\n` +
+        `Brazilian Portuguese uses "você" as the everyday word for "you" — it is friendly but takes third-person verb forms. Formal address uses "o senhor" / "a senhora".\n` +
+        `Key pairs: você/o senhor (you), Como vai?/Como vai o senhor? (How are you?), você tem/o senhor tem (you have), obrigado (man) / obrigada (woman).\n` +
+        `At beginner level: teach "você" as the default for everyday conversation. Mention "o senhor / a senhora" in parentheses for formal or older-stranger contexts.\n` +
+        `Note gendered agreement early (obrigado/obrigada). Only introduce regional "tu" (south/northeast) once "você" is solid.`,
+      intermediate:
+        `## Register Awareness (Você vs Formal)\n` +
+        `Brazilian Portuguese uses "você" everyday (third-person verbs); "o senhor"/"a senhora" is formal/respectful.\n` +
+        `Key pairs: você/o senhor (you), Como vai?/Tudo bem? (informal greetings), obrigado/obrigada (gendered thanks).\n` +
+        `At intermediate level: switch between você and o senhor/a senhora naturally by context. Explain gender agreement on adjectives and obrigado/obrigada.\n` +
+        `If the student uses the wrong register or gender agreement, mention it briefly.`,
+      advanced:
+        `## Register Awareness (Você vs Formal)\n` +
+        `Brazilian Portuguese uses "você" everyday; "o senhor"/"a senhora" is formal; regional "tu" appears in the south and northeast (often with você-style verbs colloquially).\n` +
+        `Key pairs: você/tu/o senhor (you), obrigado/obrigada, valeu (casual thanks).\n` +
+        `At advanced level: use natural register mixing. Point out regional variation (tu in Rio Grande do Sul / Nordeste, European Portuguese "tu" with second-person verbs) and colloquial contractions (tá, pra, cadê).`,
+    },
+    sceneAnchorCulture: 'Brazilian street scene',
+  },
 };
 
 export function getLanguageConfig(code: string): LanguageConfig | undefined {

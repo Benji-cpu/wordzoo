@@ -4,7 +4,7 @@
  * which re-uses the Indonesian warm gradient.
  */
 
-export type HabitatLanguage = 'indonesian' | 'spanish' | 'japanese' | 'default';
+export type HabitatLanguage = 'indonesian' | 'spanish' | 'japanese' | 'portuguese' | 'default';
 
 export function habitatFromLanguageCode(code?: string | null): HabitatLanguage {
   if (!code) return 'default';
@@ -18,6 +18,9 @@ export function habitatFromLanguageCode(code?: string | null): HabitatLanguage {
     case 'ja':
     case 'jpn':
       return 'japanese';
+    case 'pt':
+    case 'por':
+      return 'portuguese';
     default:
       return 'default';
   }

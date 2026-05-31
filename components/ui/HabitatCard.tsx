@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 
-type LanguageKey = 'indonesian' | 'spanish' | 'japanese' | 'default';
+type LanguageKey = 'indonesian' | 'spanish' | 'japanese' | 'portuguese' | 'default';
 
 interface HabitatCardProps {
   /** Emoji or small icon rendered in the left tile. */
@@ -24,6 +24,7 @@ const GRADIENT: Record<LanguageKey, string> = {
   indonesian: 'var(--habitat-indonesian)',
   spanish: 'var(--habitat-spanish)',
   japanese: 'var(--habitat-japanese)',
+  portuguese: 'var(--habitat-portuguese)',
 };
 
 export function HabitatCard({

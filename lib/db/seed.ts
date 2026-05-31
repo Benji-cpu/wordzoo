@@ -21,7 +21,8 @@ async function seed() {
       INSERT INTO languages (id, code, name, native_name) VALUES
         ('a1b2c3d4-0001-4000-8000-000000000001', 'id', 'Indonesian', 'Bahasa Indonesia'),
         ('a1b2c3d4-0001-4000-8000-000000000002', 'es', 'Spanish', 'Espa\u00f1ol'),
-        ('a1b2c3d4-0001-4000-8000-000000000003', 'ja', 'Japanese', '\u65E5\u672C\u8A9E')
+        ('a1b2c3d4-0001-4000-8000-000000000003', 'ja', 'Japanese', '\u65E5\u672C\u8A9E'),
+        ('a1b2c3d4-0001-4000-8000-000000000004', 'pt', 'Portuguese', 'Portugu\u00EAs')
       ON CONFLICT (code) DO NOTHING
     `;
 
@@ -29,6 +30,7 @@ async function seed() {
     const ID_LANG = `${LANG_ID}1`;
     const ES_LANG = `${LANG_ID}2`;
     const JA_LANG = `${LANG_ID}3`;
+    const PT_LANG = `${LANG_ID}4`;
 
     // --- Indonesian Words (20, frequency-ranked) ---
     console.log('Seeding Indonesian words...');
@@ -117,7 +119,8 @@ async function seed() {
       INSERT INTO paths (id, language_id, type, title, description) VALUES
         ('c1000000-0001-4000-8000-000000000001', ${ID_LANG}, 'premade', 'Belajar Bahasa Indonesia', 'Your journey to speaking Indonesian — from first words to real conversations'),
         ('c1000000-0001-4000-8000-000000000002', ${ES_LANG}, 'premade', 'Survival Spanish', 'Essential words and phrases for getting by in Spanish-speaking countries'),
-        ('c1000000-0001-4000-8000-000000000003', ${JA_LANG}, 'premade', 'Survival Japanese', 'Essential words and phrases for getting by in Japan')
+        ('c1000000-0001-4000-8000-000000000003', ${JA_LANG}, 'premade', 'Survival Japanese', 'Essential words and phrases for getting by in Japan'),
+        ('c1000000-0001-4000-8000-000000000004', ${PT_LANG}, 'premade', 'Português Essencial', 'Your first words to real conversations in Brazilian Portuguese')
       ON CONFLICT DO NOTHING
     `;
 

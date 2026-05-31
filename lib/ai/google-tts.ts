@@ -7,6 +7,7 @@ const VOICE_CONFIG: Record<string, { languageCode: string; name: string }> = {
   id: { languageCode: 'id-ID', name: 'id-ID-Wavenet-A' },
   es: { languageCode: 'es-US', name: 'es-US-Neural2-A' },
   ja: { languageCode: 'ja-JP', name: 'ja-JP-Neural2-B' },
+  pt: { languageCode: 'pt-BR', name: 'pt-BR-Neural2-A' },
   en: { languageCode: 'en-US', name: 'en-US-Neural2-C' },
 };
 

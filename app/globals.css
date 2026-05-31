@@ -34,12 +34,16 @@
   --accent-japanese: #854966;
   --accent-japanese-mid: #B97094;
   --accent-japanese-soft: #D6A0BA;
+  --accent-portuguese: #1E8A4C;
+  --accent-portuguese-mid: #5FBF6B;
+  --accent-portuguese-soft: #F2D27A;
   --accent-default: #3B82F6;
 
   /* Habitat gradients (language-themed card backgrounds) */
   --habitat-indonesian: linear-gradient(135deg, #D56F1F 0%, #F5A65B 55%, #FFCBA0 100%);
   --habitat-spanish: linear-gradient(135deg, #993D2C 0%, #C86B54 50%, #E49684 100%);
   --habitat-japanese: linear-gradient(135deg, #854966 0%, #B97094 50%, #D6A0BA 100%);
+  --habitat-portuguese: linear-gradient(135deg, #1E8A4C 0%, #5FBF6B 55%, #F2D27A 100%);
   --habitat-default: linear-gradient(135deg, #D56F1F 0%, #F5A65B 55%, #FFCBA0 100%);
 
   /* Semantic colors (Phase 2) */
@@ -152,6 +156,7 @@
   --color-accent-id: var(--accent-indonesian);
   --color-accent-es: var(--accent-spanish);
   --color-accent-ja: var(--accent-japanese);
+  --color-accent-pt: var(--accent-portuguese);
   --color-accent-default: var(--accent-default);
   --color-fox: var(--color-fox-primary);
   --color-fox-soft: var(--color-fox-soft);
@@ -223,6 +228,7 @@ body {
 .habitat-bg-id { background: var(--habitat-indonesian); }
 .habitat-bg-es { background: var(--habitat-spanish); }
 .habitat-bg-ja { background: var(--habitat-japanese); }
+.habitat-bg-pt { background: var(--habitat-portuguese); }
 .habitat-bg-default { background: var(--habitat-default); }
 
 /* Solid card surface — replaces glassmorphism (Phase 4) */

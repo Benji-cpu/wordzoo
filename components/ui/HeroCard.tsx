@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 
-type LanguageKey = 'indonesian' | 'spanish' | 'japanese' | 'default';
+type LanguageKey = 'indonesian' | 'spanish' | 'japanese' | 'portuguese' | 'default';
 
 interface HeroCardProps {
   /** Small uppercase eyebrow (e.g. "Continue"). */
@@ -27,6 +27,7 @@ const GRADIENT: Record<LanguageKey, string> = {
   indonesian: 'var(--habitat-indonesian)',
   spanish: 'var(--habitat-spanish)',
   japanese: 'var(--habitat-japanese)',
+  portuguese: 'var(--habitat-portuguese)',
 };
 
 const INK: Record<LanguageKey, string> = {
@@ -34,6 +35,7 @@ const INK: Record<LanguageKey, string> = {
   indonesian: 'var(--accent-indonesian)',
   spanish: 'var(--accent-spanish)',
   japanese: 'var(--accent-japanese)',
+  portuguese: 'var(--accent-portuguese)',
 };
 
 export function HeroCard({

@@ -12,6 +12,7 @@ const HABITAT_CSS: Record<HabitatLanguage, string> = {
   indonesian: 'var(--habitat-indonesian)',
   spanish: 'var(--habitat-spanish)',
   japanese: 'var(--habitat-japanese)',
+  portuguese: 'var(--habitat-portuguese)',
 };
 
 const ACCENT_CSS: Record<HabitatLanguage, string> = {
@@ -19,6 +20,7 @@ const ACCENT_CSS: Record<HabitatLanguage, string> = {
   indonesian: 'var(--accent-indonesian)',
   spanish: 'var(--accent-spanish)',
   japanese: 'var(--accent-japanese)',
+  portuguese: 'var(--accent-portuguese)',
 };
 
 interface SceneFlowHeaderProps {
