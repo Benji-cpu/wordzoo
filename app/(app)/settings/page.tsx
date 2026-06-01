@@ -5,6 +5,8 @@ import { getAllPremadePaths, getUserActivePath, getLanguageById, getAllLanguages
 import { SubscriptionSection } from './SubscriptionSection';
 import { ProfileSection } from './ProfileSection';
 import { LanguageSection } from './LanguageSection';
+import { PersonaSection } from './PersonaSection';
+import { firstNameOf } from '@/lib/learn/personalize';
 import { TripSection } from './TripSection';
 import { FeedbackSection } from './FeedbackSection';
 import { DangerSection } from './DangerSection';
@@ -21,6 +23,16 @@ export default async function SettingsPage() {
   ]);
 
   const activeLanguage = activePath ? await getLanguageById(activePath.path_language_id) : null;
+
+  const personaPrefs = (profile?.preferences ?? {}) as Record<string, unknown>;
+  const personaName =
+    (typeof personaPrefs.learner_name === 'string' && personaPrefs.learner_name.trim()
+      ? personaPrefs.learner_name.trim()
+      : firstNameOf(profile?.name)) ?? '';
+  const personaGender =
+    personaPrefs.learner_gender === 'male' || personaPrefs.learner_gender === 'female'
+      ? personaPrefs.learner_gender
+      : '';
 
   // One canonical premade path per language for the switcher; attach language code.
   const codeByLanguageId = new Map(allLanguages.map((l) => [l.id, l.code]));
@@ -54,6 +66,7 @@ export default async function SettingsPage() {
         targetOptions={targetOptions}
         initialTargetLanguageCode={activeLanguage?.code ?? null}
       />
+      <PersonaSection initialName={personaName} initialGender={personaGender} />
       <TripSection targetLanguageCode={activeLanguage?.code ?? null} />
       <FeedbackSection />
       {profile && <DangerSection userEmail={profile.email} />}

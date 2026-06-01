@@ -10,11 +10,19 @@ import {
   getClozePhrasesForWord,
 } from '@/lib/db/queries';
 import { getSceneFlowData, getOrCreateSceneProgress } from '@/lib/db/scene-flow-queries';
+import { getUserProfile } from '@/lib/db/queries';
 import { auth } from '@/lib/auth';
 import type { LearnWord } from '@/types/learn';
 import { SceneFlowClient } from '@/components/learn/SceneFlowClient';
+import { LessonPersonaPrompt } from '@/components/learn/LessonPersonaPrompt';
 import { getInsightState } from '@/lib/db/insight-queries';
 import { resolvePedagogyFlags } from '@/lib/pedagogy/flags';
+import {
+  personalizeSceneContent,
+  isPersonalizableLanguage,
+  firstNameOf,
+  type LearnerGender,
+} from '@/lib/learn/personalize';
 import type { SupportedLanguageCode } from '@/types/audio';
 
 interface PageProps {
@@ -138,12 +146,37 @@ export default async function LearnPage({ params, searchParams }: PageProps) {
 
   // All scenes render through SceneFlowClient. The 6 legacy scenes were
   // dropped as part of the Pedagogy v2 cutover.
-  const [flowData, words, progress, insightState] = await Promise.all([
+  const [flowData, words, progress, insightState, profile] = await Promise.all([
     getSceneFlowData(sceneId, userId),
     buildWordsArray(sceneId, scene.language_id, userId, pedagogyFlags.cloze),
     userId ? getOrCreateSceneProgress(userId, sceneId) : null,
     userId ? getInsightState(userId) : null,
+    userId ? getUserProfile(userId) : null,
   ]);
+
+  // Personalize learner-facing content (name + gender agreement). Falls back
+  // to the seed persona when the learner hasn't set a name/gender. See
+  // lib/learn/personalize.ts.
+  const prefs = (profile?.preferences ?? {}) as Record<string, unknown>;
+  const learnerName =
+    (typeof prefs.learner_name === 'string' && prefs.learner_name.trim()
+      ? prefs.learner_name.trim()
+      : firstNameOf(profile?.name)) ?? null;
+  const learnerGender =
+    prefs.learner_gender === 'male' || prefs.learner_gender === 'female'
+      ? (prefs.learner_gender as LearnerGender)
+      : null;
+  const { dialogues: personalizedDialogues, phrases: personalizedPhrases } =
+    personalizeSceneContent(flowData.dialogues, flowData.phrases, scene.language_code, {
+      firstName: learnerName,
+      gender: learnerGender,
+    });
+
+  // Prompt for name/gender once on a gendered language when it's still unset.
+  const needsPersona =
+    isPersonalizableLanguage(scene.language_code) &&
+    !learnerGender &&
+    prefs.persona_prompt_dismissed !== true;
 
   const defaultProgress = {
     id: '',
@@ -165,24 +198,32 @@ export default async function LearnPage({ params, searchParams }: PageProps) {
   };
 
   return (
-    <SceneFlowClient
-      sceneId={sceneId}
-      sceneTitle={scene.scene_title}
-      sceneDescription={scene.scene_description}
-      languageName={scene.language_name}
-      languageCode={scene.language_code as SupportedLanguageCode}
-      dialogues={flowData.dialogues}
-      phrases={flowData.phrases}
-      words={words}
-      initialProgress={progress ?? defaultProgress}
-      sceneContext={scene.scene_context}
-      anchorImageUrl={scene.anchor_image_url}
-      nextScene={nextScene}
-      pathId={scene.path_id}
-      sceneNumber={sceneNumber}
-      totalScenes={totalScenes}
-      insightState={insightState ? { seenIds: Array.from(insightState.seenIds), shownToday: insightState.shownToday } : null}
-      pedagogyFlags={pedagogyFlags}
-    />
+    <>
+      {needsPersona && (
+        <LessonPersonaPrompt
+          initialName={learnerName}
+          languageName={scene.language_name}
+        />
+      )}
+      <SceneFlowClient
+        sceneId={sceneId}
+        sceneTitle={scene.scene_title}
+        sceneDescription={scene.scene_description}
+        languageName={scene.language_name}
+        languageCode={scene.language_code as SupportedLanguageCode}
+        dialogues={personalizedDialogues}
+        phrases={personalizedPhrases}
+        words={words}
+        initialProgress={progress ?? defaultProgress}
+        sceneContext={scene.scene_context}
+        anchorImageUrl={scene.anchor_image_url}
+        nextScene={nextScene}
+        pathId={scene.path_id}
+        sceneNumber={sceneNumber}
+        totalScenes={totalScenes}
+        insightState={insightState ? { seenIds: Array.from(insightState.seenIds), shownToday: insightState.shownToday } : null}
+        pedagogyFlags={pedagogyFlags}
+      />
+    </>
   );
 }
