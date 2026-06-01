@@ -101,7 +101,19 @@ export function DrillBlock({
     }
   }, [queue, onQueueChange, onComplete]);
 
-  // When the active item changes, pick a new cue type for it.
+  // Signal that changes whenever a fresh exercise should be presented:
+  // either a different item rotates to the cursor, or the same item is
+  // re-presented after an answer (applyCorrect/applyWrong always bump
+  // `tries`). Keying the effect on cursor/items.length alone strands the
+  // learner on single-item drills — a lone word in the final odd-sized
+  // batch re-queues at the same cursor, so neither dep changes, the cue
+  // type never advances, and clicking the answer never continues.
+  const stepItem = currentItem(queue);
+  const drillStep = stepItem
+    ? `${stepItem.itemId}#${stepItem.tries}`
+    : `done#${queue.items.length}`;
+
+  // When the active item (or its attempt count) changes, pick a new cue type.
   useEffect(() => {
     const item = currentItem(queue);
     if (!item) return;
@@ -109,7 +121,7 @@ export function DrillBlock({
     setActiveCueType(pickCueType(item, elig));
     setAttemptKey((k) => k + 1);
     lastWrongRef.current = false;
-  }, [queue.cursor, queue.items.length, eligibilityMap]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [drillStep, eligibilityMap]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const advanceCorrect = useCallback(() => {
     const item = currentItem(queue);

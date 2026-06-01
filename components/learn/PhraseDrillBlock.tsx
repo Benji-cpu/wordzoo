@@ -106,7 +106,20 @@ export function PhraseDrillBlock({
     }
   }, [queue, onQueueChange, onComplete]);
 
-  // Pick a cue type when the active item changes.
+  // Signal that changes whenever a fresh exercise should be presented:
+  // either a different item rotates to the cursor, or the same item is
+  // re-presented after an answer (applyCorrect/applyWrong always bump
+  // `tries`). Keying the effect on cursor/items.length alone strands the
+  // learner on single-item drills — the final odd-sized batch (e.g. a lone
+  // phrase like "Sim ou não?") re-queues the same item at the same cursor,
+  // so neither dep changes, the cue type never advances, and clicking the
+  // answer never continues. See feedback-log: "blocked at the yes or no".
+  const stepItem = currentItem(queue);
+  const drillStep = stepItem
+    ? `${stepItem.itemId}#${stepItem.tries}`
+    : `done#${queue.items.length}`;
+
+  // Pick a cue type when the active item (or its attempt count) changes.
   useEffect(() => {
     const item = currentItem(queue);
     if (!item) return;
@@ -114,7 +127,7 @@ export function PhraseDrillBlock({
     setActiveCueType(pickPhraseCueType(item, elig, enabledCueTypes));
     setAttemptKey((k) => k + 1);
     lastWrongRef.current = false;
-  }, [queue.cursor, queue.items.length, eligibilityMap, enabledCueTypes]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [drillStep, eligibilityMap, enabledCueTypes]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const advanceCorrect = useCallback(() => {
     const item = currentItem(queue);
