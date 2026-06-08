@@ -104,7 +104,7 @@ export function PhraseQuiz({
         const longest = options.reduce((m, o) => Math.max(m, o.length), 0);
         const useGrid = longest <= 16;
         return (
-        <div className={useGrid ? 'grid grid-cols-2 gap-3 pb-2' : 'flex flex-col gap-3 pb-2'}>
+        <div className={useGrid ? 'grid grid-cols-2 gap-3' : 'flex flex-col gap-3'}>
           {options.map((option) => {
             const isSelectedCorrect = selected === option && isCorrect;
             const isSelectedWrong = selected === option && isCorrect === false;
@@ -137,21 +137,28 @@ export function PhraseQuiz({
               </ThumbButton>
             );
           })}
-
-          {selected && isCorrect && (
-            <div className={`flex flex-col gap-2 mt-2 animate-fade-in ${useGrid ? 'col-span-2' : ''}`}>
-              <button
-                type="button"
-                onClick={onCorrect}
-                className="w-full rounded-2xl bg-[color:var(--accent-indonesian)] text-white font-extrabold py-3.5 shadow-[0_4px_12px_color-mix(in_srgb,var(--accent-indonesian)_35%,transparent)] active:scale-[0.97] transition-transform"
-              >
-                Continue →
-              </button>
-            </div>
-          )}
         </div>
         );
       })()}
+
+      {/* Always-reserved sticky action bar. The Continue button lives here
+          from the first render (invisible until the answer is correct) so
+          revealing it never shifts the options, and `sticky bottom-0` keeps
+          it pinned above the bottom nav instead of sliding below the fold —
+          the exact mobile bug users reported on the phrase quiz. */}
+      <div className="sticky bottom-0 mt-3 pt-2 bg-[var(--background)] thumb-zone">
+        <button
+          type="button"
+          onClick={onCorrect}
+          aria-hidden={!(selected && isCorrect)}
+          tabIndex={selected && isCorrect ? 0 : -1}
+          className={`w-full rounded-2xl bg-[color:var(--accent-indonesian)] text-white font-extrabold py-3.5 shadow-[0_4px_12px_color-mix(in_srgb,var(--accent-indonesian)_35%,transparent)] active:scale-[0.97] transition-opacity duration-200 ${
+            selected && isCorrect ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`}
+        >
+          Continue →
+        </button>
+      </div>
     </div>
   );
 }

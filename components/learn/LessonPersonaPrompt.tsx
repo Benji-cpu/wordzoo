@@ -69,12 +69,12 @@ export function LessonPersonaPrompt({ initialName, languageName }: LessonPersona
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in"
+      className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center overflow-y-auto bg-black/50 backdrop-blur-sm p-4 animate-fade-in"
       role="dialog"
       aria-modal="true"
       aria-labelledby="persona-title"
     >
-      <div className="w-full max-w-md rounded-3xl bg-[color:var(--background)] border border-[color:var(--card-border)] shadow-2xl p-6 animate-slide-up">
+      <div className="w-full max-w-md max-h-[90dvh] overflow-y-auto rounded-3xl bg-[color:var(--background)] border border-[color:var(--card-border)] shadow-2xl p-6 pb-[max(env(safe-area-inset-bottom),1.5rem)] animate-slide-up">
         <h2 id="persona-title" className="text-xl font-bold text-foreground">
           Make {languageName} yours
         </h2>

@@ -79,9 +79,9 @@ export async function POST(
     : phaseCompleted;
 
   await updateSceneProgress(session.user.id, sceneId, {
-    currentPhase: phase as 'dialogue' | 'phrases' | 'vocabulary' | 'summary',
+    currentPhase: phase as 'dialogue' | 'phrases' | 'vocabulary' | 'conversation' | 'summary',
     phaseIndex,
-    phaseCompleted: completed as 'dialogue' | 'phrases' | 'vocabulary' | undefined,
+    phaseCompleted: completed as 'dialogue' | 'phrases' | 'vocabulary' | 'conversation' | undefined,
     completedAt: phase === 'summary' ? new Date() : undefined,
     phaseStep,
     phaseBatch,

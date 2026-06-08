@@ -14,6 +14,8 @@ import { CollapsibleWordFamily } from '@/components/learn/WordFamilyCard';
 import { SceneSummary } from '@/components/learn/SceneSummary';
 import { VocabularyBlock } from '@/components/learn/VocabularyBlock';
 import { PhraseBlock } from '@/components/learn/PhraseBlock';
+import { ConversationBlock } from '@/components/learn/ConversationBlock';
+import { getSceneConversation } from '@/lib/learn/conversation-data';
 import { InsightCard } from '@/components/insights/InsightCard';
 import { getEligibleInsight, type InsightUserState } from '@/lib/insights/engine';
 import type { InsightDefinition, TriggerContext } from '@/lib/insights/data';
@@ -43,6 +45,8 @@ interface SceneFlowClientProps {
   /** Pedagogy v2 flag bundle. When `restructure` is true, the vocabulary
    * phase swaps to batched-intro + drill + checkpoint via VocabularyBlock. */
   pedagogyFlags?: PedagogyFlags;
+  /** Learner's name for in-scene conversation personalization (`[name]`). */
+  learnerName?: string | null;
 }
 
 type FlowState =
@@ -50,6 +54,7 @@ type FlowState =
   | { phase: 'dialogue'; lineIndex: number }
   | { phase: 'phrases'; phraseIndex: number; step: 'show' | 'quiz' }
   | { phase: 'vocabulary'; wordIndex: number; step: 'word' | 'mnemonic' | 'quiz' }
+  | { phase: 'conversation'; exchangeIndex: number }
   | { phase: 'summary' };
 
 function v2InitialFromProgress(
@@ -61,9 +66,9 @@ function v2InitialFromProgress(
   return { kind: p.phase_step as V2PhaseKind, batchIndex: p.phase_batch ?? 0 };
 }
 
-function initialStateFromProgress(p: UserSceneProgress, totalDialogues: number, totalPhrases: number, totalWords: number, hasAnchorImage: boolean): FlowState {
-  // Cast to string to handle legacy phases ('conversation' / 'patterns' / 'affixes')
-  // from existing DB rows — these flow-stages were removed in Phase 0.
+function initialStateFromProgress(p: UserSceneProgress, totalDialogues: number, totalPhrases: number, totalWords: number, hasAnchorImage: boolean, conversationExchangeCount: number): FlowState {
+  // Cast to string to handle legacy phases ('patterns' / 'affixes') from
+  // existing DB rows — those flow-stages were removed in Phase 0.
   const phase = p.current_phase as string;
   switch (phase) {
     case 'dialogue':
@@ -81,10 +86,16 @@ function initialStateFromProgress(p: UserSceneProgress, totalDialogues: number, 
       return { phase: 'phrases', phraseIndex: Math.min(p.phase_index, totalPhrases - 1), step: 'show' };
     case 'vocabulary':
       return { phase: 'vocabulary', wordIndex: Math.min(p.phase_index, totalWords - 1), step: 'word' };
+    case 'conversation':
+      // Resume in-scene conversation if this scene has authored content;
+      // otherwise (legacy 'conversation' rows) fall through to summary.
+      if (conversationExchangeCount > 0) {
+        return { phase: 'conversation', exchangeIndex: Math.min(p.phase_batch ?? 0, conversationExchangeCount - 1) };
+      }
+      return { phase: 'summary' };
     // Legacy phases — forward-normalize to summary (content was already consumed).
     case 'patterns':
     case 'affixes':
-    case 'conversation':
     case 'summary':
       return { phase: 'summary' };
     default:
@@ -96,6 +107,19 @@ interface FlowContext {
   dialogues: SceneDialogue[];
   phrases: ScenePhraseWithMnemonics[];
   words: LearnWord[];
+  conversationExchangeCount: number;
+}
+
+/** The last learning state before summary (conversation if present, else
+ * vocab/phrases/dialogue). Shared by the back button and the summary case. */
+function lastLearningState(ctx: FlowContext): FlowState | null {
+  if (ctx.conversationExchangeCount > 0) {
+    return { phase: 'conversation', exchangeIndex: ctx.conversationExchangeCount - 1 };
+  }
+  if (ctx.words.length > 0) return { phase: 'vocabulary', wordIndex: ctx.words.length - 1, step: 'word' };
+  if (ctx.phrases.length > 0) return { phase: 'phrases', phraseIndex: ctx.phrases.length - 1, step: 'show' };
+  if (ctx.dialogues.length > 0) return { phase: 'dialogue', lineIndex: ctx.dialogues.length - 1 };
+  return null;
 }
 
 /** Returns the previous FlowState, or null to exit the scene. */
@@ -147,7 +171,8 @@ function computePreviousState(current: FlowState, ctx: FlowContext & { hasAnchor
       return null;
     }
 
-    case 'summary': {
+    case 'conversation': {
+      // Back out of conversation → last vocab/phrase/dialogue state.
       if (ctx.words.length > 0) {
         return { phase: 'vocabulary', wordIndex: ctx.words.length - 1, step: 'word' };
       }
@@ -159,6 +184,9 @@ function computePreviousState(current: FlowState, ctx: FlowContext & { hasAnchor
       }
       return null;
     }
+
+    case 'summary':
+      return lastLearningState(ctx);
   }
 }
 
@@ -180,9 +208,17 @@ export function SceneFlowClient({
   totalScenes,
   insightState,
   pedagogyFlags,
+  learnerName,
 }: SceneFlowClientProps) {
   const hasAnchorImage = !!anchorImageUrl;
   const useV2Vocab = pedagogyFlags?.restructure === true;
+
+  // In-scene conversation practice: gated by the 'conversation' flag AND an
+  // authored allowlist (a scene with no content simply skips the phase).
+  const conversationExchanges =
+    pedagogyFlags?.conversation === true ? getSceneConversation(sceneId) : null;
+  const conversationCount = conversationExchanges?.length ?? 0;
+  const hasConversation = conversationCount > 0;
 
   // Filter out already-learned words so users don't re-learn duplicates across scenes
   const [learnedWordIds, setLearnedWordIds] = useState<Set<string> | null>(null);
@@ -191,7 +227,7 @@ export function SceneFlowClient({
     : allWords;
 
   const [state, setState] = useState<FlowState>(() =>
-    initialStateFromProgress(initialProgress, dialogues.length, phrases.length, allWords.length, hasAnchorImage)
+    initialStateFromProgress(initialProgress, dialogues.length, phrases.length, allWords.length, hasAnchorImage, conversationCount)
   );
   const [dailyStats, setDailyStats] = useState<{ words_learned: number; scenes_completed: number }>({ words_learned: 0, scenes_completed: 0 });
   const statsFetched = useRef(false);
@@ -288,6 +324,8 @@ export function SceneFlowClient({
   // skipping the entire phase. See components/learn/v2-progress.ts.
   const [v2Vocab, setV2Vocab] = useState<V2BlockProgress | null>(null);
   const [v2Phrases, setV2Phrases] = useState<V2BlockProgress | null>(null);
+  // In-scene conversation reports a simple fraction + exchange index.
+  const [conversationFraction, setConversationFraction] = useState(0);
 
   const saveProgress = useCallback((
     phase: string,
@@ -346,6 +384,35 @@ export function SceneFlowClient({
     saveProgress('summary', 0);
   }, [saveProgress]);
 
+  // --- Post-vocabulary handoff: route into the in-scene conversation phase
+  // when the scene has authored content, else straight to summary. Called
+  // from every path that previously went directly to summary. ---
+  const goToConversationOrSummary = useCallback((fromPhase: 'dialogue' | 'phrases' | 'vocabulary') => {
+    if (hasConversation) {
+      saveProgress('conversation', 0, fromPhase, null, 0);
+      setState({ phase: 'conversation', exchangeIndex: 0 });
+    } else {
+      saveProgress('summary', 0, fromPhase, null, 0);
+      setState({ phase: 'summary' });
+    }
+  }, [hasConversation, saveProgress]);
+
+  // --- Conversation Phase ---
+  const convGoBackRef = useRef<() => boolean>(() => false);
+  const lastConvExchangeRef = useRef<number>(-1);
+  const handleConversationProgress = useCallback((p: { fraction: number; goBack: () => boolean; exchangeIndex: number }) => {
+    setConversationFraction(p.fraction);
+    convGoBackRef.current = p.goBack;
+    if (lastConvExchangeRef.current === p.exchangeIndex) return;
+    lastConvExchangeRef.current = p.exchangeIndex;
+    saveProgress('conversation', 0, undefined, null, p.exchangeIndex);
+  }, [saveProgress]);
+
+  const handleConversationComplete = useCallback(() => {
+    saveProgress('summary', 0, 'conversation', null, 0);
+    setState({ phase: 'summary' });
+  }, [saveProgress]);
+
   // --- Scene Intro ---
   const handleSceneIntroContinue = useCallback(() => {
     setState({ phase: 'dialogue', lineIndex: 0 });
@@ -358,14 +425,15 @@ export function SceneFlowClient({
     // through to the parent's phase-level computePreviousState.
     if (state.phase === 'vocabulary' && useV2Vocab && v2Vocab?.goBack()) return;
     if (state.phase === 'phrases' && useV2Vocab && v2Phrases?.goBack()) return;
-    const ctx: FlowContext & { hasAnchorImage: boolean } = { dialogues, phrases, words, hasAnchorImage };
+    if (state.phase === 'conversation' && convGoBackRef.current()) return;
+    const ctx: FlowContext & { hasAnchorImage: boolean } = { dialogues, phrases, words, conversationExchangeCount: conversationCount, hasAnchorImage };
     const prev = computePreviousState(state, ctx);
     if (prev) {
       setState(prev);
     } else {
       router.push(pathId ? `/paths/${pathId}` : '/dashboard');
     }
-  }, [state, dialogues, phrases, words, hasAnchorImage, pathId, router, useV2Vocab, v2Vocab, v2Phrases]);
+  }, [state, dialogues, phrases, words, conversationCount, hasAnchorImage, pathId, router, useV2Vocab, v2Vocab, v2Phrases]);
 
   // --- Dialogue Phase ---
   const handleDialogueComplete = useCallback(() => {
@@ -376,10 +444,9 @@ export function SceneFlowClient({
       saveProgress('vocabulary', 0, 'dialogue');
       setState({ phase: 'vocabulary', wordIndex: 0, step: 'word' });
     } else {
-      saveProgress('summary', 0, 'dialogue');
-      setState({ phase: 'summary' });
+      goToConversationOrSummary('dialogue');
     }
-  }, [saveProgress, phrases.length, words.length]);
+  }, [saveProgress, phrases.length, words.length, goToConversationOrSummary]);
 
   const handleDialogueLineAdvance = useCallback((lineIndex: number) => {
     saveProgress('dialogue', lineIndex);
@@ -412,10 +479,9 @@ export function SceneFlowClient({
       saveProgress('vocabulary', 0, 'phrases');
       setState({ phase: 'vocabulary', wordIndex: 0, step: 'word' });
     } else {
-      saveProgress('summary', 0, 'phrases');
-      setState({ phase: 'summary' });
+      goToConversationOrSummary('phrases');
     }
-  }, [state, phrases, words.length, saveProgress]);
+  }, [state, phrases, words.length, saveProgress, goToConversationOrSummary]);
 
   // --- Vocabulary Phase (reuses existing word/mnemonic/quiz components) ---
   const handleWordContinue = useCallback(() => {
@@ -466,10 +532,9 @@ export function SceneFlowClient({
       saveProgress('vocabulary', next);
       setState({ phase: 'vocabulary', wordIndex: next, step: 'word' });
     } else {
-      saveProgress('summary', 0, 'vocabulary');
-      setState({ phase: 'summary' });
+      goToConversationOrSummary('vocabulary');
     }
-  }, [state, words.length, saveProgress, firstQuizCorrect, activeInsight, checkInsight]);
+  }, [state, words.length, saveProgress, firstQuizCorrect, activeInsight, checkInsight, goToConversationOrSummary]);
 
   // Check for word_family insight when a word family is first displayed
   const wordFamilyInsightChecked = useRef(false);
@@ -556,6 +621,8 @@ export function SceneFlowClient({
         if (useV2Vocab && v2Vocab) return v2Vocab.fraction;
         if (words.length === 0) return 0;
         return (state.wordIndex + substepFraction(state.step, ['word', 'mnemonic', 'quiz'])) / words.length;
+      case 'conversation':
+        return conversationFraction;
       case 'summary':
         return 1;
     }
@@ -573,6 +640,7 @@ export function SceneFlowClient({
           sceneNumber={sceneNumber}
           totalScenes={totalScenes}
           languageCode={languageCode}
+          hasConversation={hasConversation}
         />
       }
       className="max-w-lg mx-auto"
@@ -637,8 +705,7 @@ export function SceneFlowClient({
               saveProgress('vocabulary', 0, 'phrases', null, 0);
               setState({ phase: 'vocabulary', wordIndex: 0, step: 'word' });
             } else {
-              saveProgress('summary', 0, 'phrases', null, 0);
-              setState({ phase: 'summary' });
+              goToConversationOrSummary('phrases');
             }
           }}
         />
@@ -684,9 +751,8 @@ export function SceneFlowClient({
             }).catch(() => {});
           }}
           onComplete={() => {
-            // Leaving vocabulary for summary — clear v2 sub-state.
-            saveProgress('summary', 0, 'vocabulary', null, 0);
-            setState({ phase: 'summary' });
+            // Leaving vocabulary — into conversation if present, else summary.
+            goToConversationOrSummary('vocabulary');
           }}
         />
       )}
@@ -761,6 +827,20 @@ export function SceneFlowClient({
             </>
           )}
         </>
+      )}
+
+      {/* Conversation Phase — in-scene progressive two-sided practice */}
+      {state.phase === 'conversation' && conversationExchanges && (
+        <ConversationBlock
+          exchanges={conversationExchanges}
+          learnerName={learnerName ?? null}
+          languageName={languageName}
+          languageCode={languageCode}
+          sceneId={sceneId}
+          initialExchangeIndex={state.exchangeIndex}
+          onProgress={handleConversationProgress}
+          onComplete={handleConversationComplete}
+        />
       )}
 
       {/* Summary Phase */}

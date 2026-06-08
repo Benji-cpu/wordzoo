@@ -762,6 +762,7 @@ export async function getUserDueWords(
     JOIN words w ON w.id = uw.word_id
     WHERE uw.user_id = ${userId} AND w.language_id = ${languageId}
       AND uw.next_review_at <= NOW()
+      AND uw.status != 'new'
     ORDER BY uw.next_review_at ASC
     LIMIT ${limit}
   `;

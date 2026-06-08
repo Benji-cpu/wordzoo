@@ -49,8 +49,12 @@ export function VocabularyBlock({
 }: VocabularyBlockProps) {
   const batches = useMemo(() => {
     const out: LearnWord[][] = [];
-    for (let i = 0; i < words.length; i += BATCH_SIZE) {
-      out.push(words.slice(i, i + BATCH_SIZE));
+    // Don't fragment small sets: 5 or fewer words stay in a single batch so
+    // the learner never hits a 1-item "mini drill" that feels pointless
+    // (user feedback). 6+ chunk into BATCH_SIZE groups as before.
+    const size = Math.max(1, words.length <= 5 ? words.length : BATCH_SIZE);
+    for (let i = 0; i < words.length; i += size) {
+      out.push(words.slice(i, i + size));
     }
     return out;
   }, [words]);

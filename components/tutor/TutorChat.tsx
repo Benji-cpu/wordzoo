@@ -80,6 +80,20 @@ function mapLanguageCode(code: string): string {
 
 type ViewState = 'mode_select' | 'chatting' | 'summary';
 
+const TUTOR_TTS_KEY = 'tutor_tts_on';
+
+/** Speak target-language text with the browser voice (matches the app's
+ * existing dynamic-text TTS path — tutor replies are generated, so there's no
+ * pre-rendered audio to play). */
+function speakTutorText(text: string, lang: string) {
+  if (typeof window === 'undefined' || !window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = lang;
+  u.rate = 0.92;
+  window.speechSynthesis.speak(u);
+}
+
 export function TutorChat({
   languageId,
   langCode,
@@ -124,7 +138,12 @@ export function TutorChat({
     } catch { /* ignore */ }
     return 'easy';
   });
+  const [ttsOn, setTtsOn] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    try { return localStorage.getItem(TUTOR_TTS_KEY) === '1'; } catch { return false; }
+  });
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const lastSpokenRef = useRef(-1);
   const speechLangCode = mapLanguageCode(langCode);
   const { isListening, transcript, audioLevel, startListening, stopListening, error: speechError } = useSpeechInput(speechLangCode);
   const { keyboardHeight } = useViewportInsets();
@@ -172,6 +191,37 @@ export function TutorChat({
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isStreaming]);
+
+  // Speak each completed tutor reply when "Speak" is on. Reads only the
+  // conversational text (markers like [EN:]/[SUGGEST:] are stripped).
+  useEffect(() => {
+    if (!ttsOn || isStreaming) return;
+    const lastIdx = messages.length - 1;
+    if (lastIdx < 0 || lastSpokenRef.current === lastIdx) return;
+    const m = messages[lastIdx];
+    if (m.role !== 'model' || !m.content) return;
+    lastSpokenRef.current = lastIdx;
+    const spoken = parseMessageContent(m.content)
+      .map((s) => (s.type === 'text' ? s.content : s.type === 'vocab_word' ? s.word : ''))
+      .join(' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (spoken) speakTutorText(spoken, speechLangCode);
+  }, [messages, isStreaming, ttsOn, speechLangCode]);
+
+  // Stop any speech when turning TTS off or leaving the chat.
+  useEffect(() => {
+    if (!ttsOn && typeof window !== 'undefined') window.speechSynthesis?.cancel();
+    return () => { if (typeof window !== 'undefined') window.speechSynthesis?.cancel(); };
+  }, [ttsOn]);
+
+  const toggleTts = useCallback(() => {
+    setTtsOn((prev) => {
+      const next = !prev;
+      try { localStorage.setItem(TUTOR_TTS_KEY, next ? '1' : '0'); } catch { /* ignore */ }
+      return next;
+    });
+  }, []);
 
   // Auto-scroll when keyboard opens/closes
   useEffect(() => {
@@ -307,13 +357,34 @@ export function TutorChat({
               <h2 className={`font-semibold text-foreground ${compact ? 'text-sm' : ''} shrink-0`}>Tutor</h2>
               <SessionProgressBar activeMode={activeMode ?? null} messages={messages} />
             </div>
-            <button
-              onClick={onEndSession}
-              disabled={isEnding || isStreaming}
-              className="text-sm text-red-400 hover:text-red-300 disabled:opacity-50 shrink-0"
-            >
-              {isEnding ? 'Ending...' : 'End Session'}
-            </button>
+            <div className="flex items-center gap-3 shrink-0">
+              <button
+                onClick={toggleTts}
+                aria-pressed={ttsOn}
+                aria-label={ttsOn ? 'Turn off tutor voice' : 'Turn on tutor voice'}
+                title={ttsOn ? 'Tutor voice on' : 'Tutor voice off'}
+                className={`p-1.5 rounded-lg transition-colors ${ttsOn ? 'text-accent-default bg-accent-default/10' : 'text-text-secondary hover:text-foreground'}`}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                  {ttsOn ? (
+                    <>
+                      <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                      <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+                    </>
+                  ) : (
+                    <line x1="23" y1="9" x2="17" y2="15" />
+                  )}
+                </svg>
+              </button>
+              <button
+                onClick={onEndSession}
+                disabled={isEnding || isStreaming}
+                className="text-sm text-red-400 hover:text-red-300 disabled:opacity-50"
+              >
+                {isEnding ? 'Ending...' : 'End Session'}
+              </button>
+            </div>
           </div>
           {activeMode !== 'path_builder' && (
             <ChallengeModeToggle mode={challengeMode} onChange={handleChallengeModeChange} />

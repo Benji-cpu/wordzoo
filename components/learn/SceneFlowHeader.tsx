@@ -3,9 +3,10 @@
 import { IconButton } from '@/components/ui/IconButton';
 import { habitatFromLanguageCode, type HabitatLanguage } from '@/lib/utils/language-habitat';
 
-// 5-phase flow post-Phase-0 (patterns / affixes were removed).
-const PHASE_LABELS = ['Intro', 'Dialogue', 'Phrases', 'Vocab', 'Summary'] as const;
-const PHASE_KEYS = ['scene-intro', 'dialogue', 'phrases', 'vocabulary', 'summary'] as const;
+// 5-phase flow post-Phase-0 (patterns / affixes were removed). Scenes with an
+// in-scene conversation insert a 6th 'Practice' pip before Summary.
+const BASE_LABELS = ['Intro', 'Dialogue', 'Phrases', 'Vocab', 'Summary'] as const;
+const BASE_KEYS = ['scene-intro', 'dialogue', 'phrases', 'vocabulary', 'summary'] as const;
 
 const HABITAT_CSS: Record<HabitatLanguage, string> = {
   default: 'var(--habitat-default)',
@@ -33,6 +34,8 @@ interface SceneFlowHeaderProps {
   totalScenes?: number;
   /** BCP-47 language code for the current scene — drives the accent band + pip colour. */
   languageCode?: string | null;
+  /** When true, show a 6th 'Practice' pip for the in-scene conversation phase. */
+  hasConversation?: boolean;
 }
 
 export function SceneFlowHeader({
@@ -44,13 +47,24 @@ export function SceneFlowHeader({
   sceneNumber,
   totalScenes,
   languageCode,
+  hasConversation = false,
 }: SceneFlowHeaderProps) {
-  // Legacy 'patterns' / 'affixes' rows forward-normalise to 'summary' (phase-0 invariant).
+  const PHASE_KEYS = hasConversation
+    ? (['scene-intro', 'dialogue', 'phrases', 'vocabulary', 'conversation', 'summary'] as const)
+    : BASE_KEYS;
+  const PHASE_LABELS = hasConversation
+    ? (['Intro', 'Dialogue', 'Phrases', 'Vocab', 'Practice', 'Summary'] as const)
+    : BASE_LABELS;
+  // Legacy 'patterns' / 'affixes' rows forward-normalise to 'summary' (phase-0
+  // invariant). 'conversation' is a real pip only when the scene has content;
+  // otherwise it also folds into 'summary'.
   const normalisedPhase =
-    currentPhase === 'patterns' || currentPhase === 'affixes' || currentPhase === 'conversation'
+    currentPhase === 'patterns' ||
+    currentPhase === 'affixes' ||
+    (currentPhase === 'conversation' && !hasConversation)
       ? 'summary'
       : currentPhase;
-  const currentIdx = PHASE_KEYS.indexOf(normalisedPhase as (typeof PHASE_KEYS)[number]);
+  const currentIdx = (PHASE_KEYS as readonly string[]).indexOf(normalisedPhase);
   const positionPrefix = sceneNumber && totalScenes ? `Scene ${sceneNumber}/${totalScenes}: ` : '';
 
   const habitat = habitatFromLanguageCode(languageCode);

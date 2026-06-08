@@ -18,7 +18,8 @@ export type PedagogySlice =
   | 'mastery'       // Phase 3: mastery_stage column + intro-time daily limit
   | 'restructure'   // Phase 4: introduce-batch / drill-block / checkpoint
   | 'cloze'         // Phase 5: cloze, pattern, listening drill, confidence
-  | 'tutor';        // Phase 6: no-reveal tutor + SRS auto-apply
+  | 'tutor'         // Phase 6: no-reveal tutor + SRS auto-apply
+  | 'conversation'; // Phase 7: in-scene progressive two-sided conversation
 
 export type PedagogyFlags = Record<PedagogySlice, boolean>;
 
@@ -29,6 +30,7 @@ const ALL_SLICES: readonly PedagogySlice[] = [
   'restructure',
   'cloze',
   'tutor',
+  'conversation',
 ];
 
 const OFF: PedagogyFlags = {
@@ -38,6 +40,7 @@ const OFF: PedagogyFlags = {
   restructure: false,
   cloze: false,
   tutor: false,
+  conversation: false,
 };
 
 const ON: PedagogyFlags = {
@@ -47,6 +50,7 @@ const ON: PedagogyFlags = {
   restructure: true,
   cloze: true,
   tutor: true,
+  conversation: true,
 };
 
 interface ResolveContext {

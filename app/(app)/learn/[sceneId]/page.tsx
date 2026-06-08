@@ -223,6 +223,7 @@ export default async function LearnPage({ params, searchParams }: PageProps) {
         totalScenes={totalScenes}
         insightState={insightState ? { seenIds: Array.from(insightState.seenIds), shownToday: insightState.shownToday } : null}
         pedagogyFlags={pedagogyFlags}
+        learnerName={learnerName}
       />
     </>
   );

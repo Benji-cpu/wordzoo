@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ThumbButton } from '@/components/ui/ThumbButton';
 import type { FeedbackContext } from '@/lib/utils/capture-feedback-context';
 import { getActivityTrail } from '@/lib/feedback/activity-trail';
+import { useSpeechInput } from '@/lib/hooks/useSpeechInput';
 
 interface FeedbackModalProps {
   isOpen: boolean;
@@ -30,6 +31,12 @@ export function FeedbackModal({ isOpen, onClose, context, screenshotBlob, domain
   const [mounted, setMounted] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // Voice feedback: auto-start dictation on open, fold speech into the message,
+  // stop on send/close (user request — "record on open, stop+send on enter").
+  const { isListening, transcript, startListening, stopListening, supported: voiceSupported } =
+    useSpeechInput('en-US');
+  const dictationBaseRef = useRef('');
+
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -40,9 +47,34 @@ export function FeedbackModal({ isOpen, onClose, context, screenshotBlob, domain
       const draft = sessionStorage.getItem(DRAFT_KEY);
       if (draft && !message) setMessage(draft);
       const t = setTimeout(() => textareaRef.current?.focus(), 200);
-      return () => clearTimeout(t);
+      // Auto-start dictation so feedback can be spoken hands-free.
+      if (voiceSupported) {
+        dictationBaseRef.current = draft || message || '';
+        startListening();
+      }
+      return () => {
+        clearTimeout(t);
+        stopListening();
+      };
     }
   }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Live-merge the running transcript into the message (preserving any draft).
+  useEffect(() => {
+    if (!isListening || !transcript) return;
+    const base = dictationBaseRef.current;
+    const sep = base && !base.endsWith(' ') ? ' ' : '';
+    setMessage((base + sep + transcript).slice(0, 8000));
+  }, [transcript, isListening]);
+
+  function toggleDictation() {
+    if (isListening) {
+      stopListening();
+    } else {
+      dictationBaseRef.current = message;
+      startListening();
+    }
+  }
 
   // Auto-dismiss after success
   useEffect(() => {
@@ -56,6 +88,7 @@ export function FeedbackModal({ isOpen, onClose, context, screenshotBlob, domain
   }, [state, onClose]);
 
   function handleClose() {
+    stopListening();
     if (message.trim()) {
       sessionStorage.setItem(DRAFT_KEY, message);
     }
@@ -70,6 +103,7 @@ export function FeedbackModal({ isOpen, onClose, context, screenshotBlob, domain
 
   async function handleSubmit() {
     if (!message.trim() || !context) return;
+    stopListening();
 
     // Optimistic UX: the user doesn't need to watch the upload. Snapshot
     // the payload, clear the draft, flash a success, and close — then do the
@@ -218,7 +252,26 @@ export function FeedbackModal({ isOpen, onClose, context, screenshotBlob, domain
                     disabled={state === 'sending'}
                   />
 
-                  <div className="flex items-center justify-end mt-3">
+                  <div className="flex items-center justify-between mt-3">
+                    {voiceSupported ? (
+                      <button
+                        type="button"
+                        onClick={toggleDictation}
+                        aria-pressed={isListening}
+                        aria-label={isListening ? 'Stop voice input' : 'Start voice input'}
+                        className={`inline-flex items-center gap-1.5 px-3 h-11 rounded-xl text-sm font-semibold transition-colors ${
+                          isListening
+                            ? 'bg-red-500/15 text-red-500 border border-red-500/30'
+                            : 'bg-surface-inset text-text-secondary border border-card-border hover:text-foreground'
+                        }`}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={isListening ? 'animate-pulse' : ''}>
+                          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                          <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4" />
+                        </svg>
+                        {isListening ? 'Listening…' : 'Speak'}
+                      </button>
+                    ) : <span />}
                     <div className="flex gap-2 items-center">
                       <button
                         onClick={handleClose}

@@ -121,7 +121,7 @@ export async function updateSceneProgress(
   updates: {
     currentPhase?: SceneFlowPhase;
     phaseIndex?: number;
-    phaseCompleted?: 'dialogue' | 'phrases' | 'vocabulary';
+    phaseCompleted?: 'dialogue' | 'phrases' | 'vocabulary' | 'conversation';
     completedAt?: Date;
     /** Pedagogy v2 sub-state. `null` clears the column (legacy mode);
      * `undefined` leaves it untouched. */
@@ -150,6 +150,7 @@ export async function updateSceneProgress(
       dialogue_completed = CASE WHEN ${updates.phaseCompleted ?? ''} = 'dialogue' THEN true ELSE dialogue_completed END,
       phrases_completed = CASE WHEN ${updates.phaseCompleted ?? ''} = 'phrases' THEN true ELSE phrases_completed END,
       vocabulary_completed = CASE WHEN ${updates.phaseCompleted ?? ''} = 'vocabulary' THEN true ELSE vocabulary_completed END,
+      conversation_completed = CASE WHEN ${updates.phaseCompleted ?? ''} = 'conversation' THEN true ELSE conversation_completed END,
       completed_at = COALESCE(${updates.completedAt?.toISOString() ?? null}, completed_at),
       updated_at = NOW()
     WHERE user_id = ${userId} AND scene_id = ${sceneId}

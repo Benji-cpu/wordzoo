@@ -57,8 +57,12 @@ export function PhraseBlock({
 }: PhraseBlockProps) {
   const batches = useMemo(() => {
     const out: ScenePhraseWithMnemonics[][] = [];
-    for (let i = 0; i < phrases.length; i += BATCH_SIZE) {
-      out.push(phrases.slice(i, i + BATCH_SIZE));
+    // Keep small phrase sets together (5 or fewer = one batch) so the drill
+    // never bottoms out on a lone phrase — matches the vocab batching rule
+    // and the user's "don't split unless there are more than ~5" feedback.
+    const size = Math.max(1, phrases.length <= 5 ? phrases.length : BATCH_SIZE);
+    for (let i = 0; i < phrases.length; i += size) {
+      out.push(phrases.slice(i, i + size));
     }
     return out;
   }, [phrases]);

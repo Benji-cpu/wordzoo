@@ -20,9 +20,14 @@ type Props = {
  * dead space. The bottom zone respects safe-area inset so the primary
  * action is always reachable by the thumb.
  *
- * Scrolling behavior: the middle zone scrolls; top and bottom stay
- * pinned. `min-h-0 flex-1` lets the middle shrink correctly inside a
- * flex column (prevents min-content overflow).
+ * Scrolling behavior: the middle zone is the ONLY scroll container —
+ * top and bottom stay pinned. `min-h-0 flex-1` lets the middle shrink
+ * correctly inside a flex column (prevents min-content overflow), and
+ * `overflow-y-auto` keeps tall content (long dialogue, expanded phrase
+ * breakdowns, recap) scrollable WITHIN the scene instead of pushing the
+ * page — so a primary action never slides below the fold or behind the
+ * bottom nav. Interactive steps that surface their own CTA pin it with
+ * `sticky bottom-0`; reading/chat content simply scrolls.
  */
 export function SceneShell({
   top,
@@ -37,7 +42,7 @@ export function SceneShell({
       style={background ? { background } : undefined}
     >
       {top ? <div className="shrink-0 pb-2">{top}</div> : null}
-      <div className="flex-1 min-h-0 flex flex-col pb-20 lg:pb-0">{children}</div>
+      <div className="flex-1 min-h-0 flex flex-col overflow-y-auto overscroll-contain pb-3">{children}</div>
       {bottom ? (
         <div className="shrink-0 pt-3 thumb-zone">{bottom}</div>
       ) : null}

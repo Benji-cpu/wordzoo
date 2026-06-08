@@ -113,6 +113,21 @@ function addText(segments: MessageSegment[], text: string) {
   }
 }
 
+/**
+ * Streaming can cut off mid-marker, leaving a trailing unclosed bracket
+ * like `…\n[` or `[EN: half a sentence` with no closing `]`. The marker
+ * regex can't match an unclosed marker, so the raw `[` (and any partial
+ * marker text) would otherwise render as a stray bracket in the bubble —
+ * the "random [ at the end" users reported. Drop everything from the last
+ * UNCLOSED `[` onward; a `[` that has a matching `]` after it is left alone.
+ */
+function stripDanglingMarker(text: string): string {
+  const lastOpen = text.lastIndexOf('[');
+  if (lastOpen === -1) return text;
+  if (text.slice(lastOpen).includes(']')) return text; // balanced — keep it
+  return text.slice(0, lastOpen).replace(/\s+$/, '');
+}
+
 export function parseMessageContent(raw: string): MessageSegment[] {
   const segments: MessageSegment[] = [];
   let lastIndex = 0;
@@ -153,10 +168,11 @@ export function parseMessageContent(raw: string): MessageSegment[] {
     lastIndex = match.index + match[0].length;
   }
 
-  // Remaining text
-  addText(segments, raw.slice(lastIndex));
+  // Remaining text — strip any trailing unclosed marker left by a
+  // truncated stream so a stray `[` never leaks into the rendered bubble.
+  addText(segments, stripDanglingMarker(raw.slice(lastIndex)));
 
-  return segments.length > 0 ? segments : [{ type: 'text', content: raw }];
+  return segments.length > 0 ? segments : [{ type: 'text', content: stripDanglingMarker(raw) }];
 }
 
 /** Extract suggestion options from parsed segments */
