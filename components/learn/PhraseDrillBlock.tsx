@@ -24,6 +24,7 @@ import { fireTelemetry } from '@/lib/pedagogy/telemetry';
 import { buildPhraseDistractors } from '@/lib/learn/phrase-distractors';
 import { emitDiag } from '@/lib/feedback/diag';
 import { Fox } from '@/components/mascot/Fox';
+import { DrillProgressHeader } from '@/components/learn/DrillProgressDots';
 
 interface PhraseDrillBlockProps {
   /** Phrases being drilled this block. Order is the introduce order. */
@@ -196,11 +197,7 @@ export function PhraseDrillBlock({
   }
 
   const header = (
-    <div className="text-center mb-2">
-      <p className="text-[10.5px] font-extrabold tracking-[0.18em] uppercase text-[color:var(--text-secondary)]">
-        {queue.items.length} left · {humanCueType(activeCueType)}
-      </p>
-    </div>
+    <DrillProgressHeader queue={queue} cueLabel={humanCueType(activeCueType)} />
   );
 
   if (activeCueType === 'cloze') {

@@ -19,6 +19,7 @@ import { pickCueType, eligibleCueTypes, type PickerEligibility } from '@/lib/ped
 import { fireTelemetry } from '@/lib/pedagogy/telemetry';
 import { emitDiag } from '@/lib/feedback/diag';
 import { Fox } from '@/components/mascot/Fox';
+import { DrillProgressHeader } from '@/components/learn/DrillProgressDots';
 
 interface DrillBlockProps {
   /** Words being drilled this block. Order is the introduce order. */
@@ -196,13 +197,9 @@ export function DrillBlock({
     );
   }
 
-  // Header strip: "1 of 3 left · production"
+  // Header strip: "2 of 3 locked in · production" + per-item mastery dots
   const header = (
-    <div className="text-center mb-2">
-      <p className="text-[10.5px] font-extrabold tracking-[0.18em] uppercase text-[color:var(--text-secondary)]">
-        {queue.items.length} left · {humanCueType(activeCueType)}
-      </p>
-    </div>
+    <DrillProgressHeader queue={queue} cueLabel={humanCueType(activeCueType)} />
   );
 
   if (activeCueType === 'cloze' && word.clozePhrases && word.clozePhrases.length > 0) {
