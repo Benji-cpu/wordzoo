@@ -6,6 +6,7 @@ import {
   getDueWordCount,
   getLanguageById,
   getUserStreak,
+  getUserXp,
   getTodayInfoByte,
   getDailyLearningStats,
 } from '@/lib/db/queries';
@@ -27,6 +28,7 @@ import { getTripContext } from '@/lib/services/trip-service';
 import { TripHero } from '@/components/dashboard/TripHero';
 import { ReviewQueueCard } from '@/components/dashboard/ReviewQueueCard';
 import { GoalProgressCard } from '@/components/dashboard/GoalProgressCard';
+import { LevelBadge } from '@/components/dashboard/LevelBadge';
 
 function pickGreeting(): string {
   const hour = new Date().getHours();
@@ -73,6 +75,7 @@ export default async function DashboardPage() {
     yesterdayStats,
     insightState,
     tripContext,
+    xpData,
   ] = await Promise.all([
     getSceneMasteryForPath(userId, pathId),
     getDueWordCount(userId, languageId),
@@ -83,6 +86,7 @@ export default async function DashboardPage() {
     getDailyLearningStats(userId, yesterdayStr),
     getInsightState(userId),
     getTripContext(userId),
+    getUserXp(userId),
   ]);
 
   const firstName = session.user.name?.split(/\s+/)[0] ?? null;
@@ -133,8 +137,25 @@ export default async function DashboardPage() {
             </h1>
           </div>
         </div>
-        <StreakFlame count={streak} size="sm" active={streak > 0} />
+        <div className="flex items-center gap-3 shrink-0">
+          <LevelBadge xpTotal={xpData.xp_total} />
+          <StreakFlame count={streak} size="sm" active={streak > 0} />
+        </div>
       </div>
+
+      {/* Streak at risk — nudge before it resets, with the action that saves it */}
+      {streak > 0 && !streakData.active_today && (
+        <Link
+          href={hasReviews ? '/review' : hasNextScene ? `/learn/${nextScene!.id}` : '/paths'}
+          className="flex items-center gap-2.5 rounded-2xl px-4 py-3 bg-amber-500/10 border border-amber-500/25 active:scale-[0.99] transition-transform"
+        >
+          <span aria-hidden className="text-lg">🔥</span>
+          <span className="text-[13px] font-bold text-[color:var(--foreground)]">
+            {streak}-day streak on the line — {hasReviews ? 'one quick review keeps it alive' : 'learn one word to keep it alive'}
+          </span>
+          <span aria-hidden className="ml-auto font-black text-amber-600">›</span>
+        </Link>
+      )}
 
       {/* Review queue — top priority when reviews are due */}
       {hasReviews && (
