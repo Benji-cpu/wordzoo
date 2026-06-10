@@ -11,6 +11,7 @@ import {
   saveMnemonic,
 } from '@/lib/services/mnemonic-service';
 import { checkAccess, incrementUsage } from '@/lib/services/billing-service';
+import { setCurrentMnemonic } from '@/lib/db/queries';
 
 interface RegenerateResponse {
   mnemonic: Mnemonic;
@@ -63,6 +64,9 @@ export async function POST(request: NextRequest) {
 
     const imageUrl = await generateSceneImage(candidate.imagePrompt);
     const mnemonic = await saveMnemonic(wordId, userId, candidate, imageUrl);
+
+    // Pin the fresh mnemonic so it wins selection on the next review
+    await setCurrentMnemonic(userId, wordId, mnemonic.id);
 
     await incrementUsage(userId, 'regenerate_mnemonic');
 

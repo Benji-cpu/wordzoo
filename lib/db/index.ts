@@ -41,10 +41,12 @@ export {
   getTutorMessages,
   getUserKnownWords,
   getUserDueWords,
+  getDueWordCount,
   getUserVocabWithMnemonics,
   getDueWordsForReview,
   updateWordSRS,
   getOrCreateUserWord,
+  setCurrentMnemonic,
   getUserStreak,
   updateUserStreak,
   getOrCreateLearnerProfile,
@@ -84,6 +86,7 @@ export {
   getOrCreateUserPhrase,
   updatePhraseSRS,
   getDuePhrasesForReview,
+  getDuePhraseCount,
   insertGuidedConversationSession,
 } from './scene-flow-queries';
 export type {

@@ -32,7 +32,7 @@ export async function getPhraseWordsWithMnemonics(
       FROM mnemonics WHERE word_id = w.id
         AND (user_id IS NULL OR user_id = ${userId})
       ORDER BY CASE WHEN user_id = ${userId} THEN 0 ELSE 1 END,
-               upvote_count DESC LIMIT 1
+               upvote_count DESC, created_at DESC LIMIT 1
     ) m ON true
     WHERE pw.phrase_id = ANY(${phraseIds})
     ORDER BY pw.phrase_id, pw.position
@@ -240,6 +240,24 @@ export async function getDuePhrasesForReview(
     LIMIT ${limit}
   `;
   return rows as DuePhraseForReview[];
+}
+
+export async function getDuePhraseCount(
+  userId: string,
+  languageId?: string | null
+): Promise<number> {
+  const rows = await sql`
+    SELECT COUNT(*)::int AS count
+    FROM user_phrases up
+    JOIN scene_phrases sp ON sp.id = up.phrase_id
+    JOIN scenes s ON s.id = sp.scene_id
+    JOIN paths p ON p.id = s.path_id
+    WHERE up.user_id = ${userId}
+      AND up.next_review_at <= NOW()
+      AND up.status != 'new'
+      AND (${languageId ?? null}::uuid IS NULL OR p.language_id = ${languageId ?? null}::uuid)
+  `;
+  return (rows[0] as { count: number })?.count ?? 0;
 }
 
 // --- Tutor Guided Conversation ---

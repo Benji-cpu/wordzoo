@@ -3,14 +3,17 @@ import Link from 'next/link';
 interface ReviewQueueCardProps {
   dueCount: number;
   languageName?: string | null;
+  startWithMostOverdue?: boolean;
 }
 
-export function ReviewQueueCard({ dueCount, languageName }: ReviewQueueCardProps) {
+export function ReviewQueueCard({ dueCount, languageName, startWithMostOverdue }: ReviewQueueCardProps) {
   if (dueCount <= 0) return null;
 
-  const subtitle = languageName
-    ? `${languageName} · words & phrases ready to review`
-    : 'words & phrases ready to review';
+  const subtitle = startWithMostOverdue
+    ? "we'll start with the most overdue"
+    : languageName
+      ? `${languageName} · words & phrases ready to review`
+      : 'words & phrases ready to review';
 
   return (
     <Link

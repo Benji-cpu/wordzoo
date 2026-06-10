@@ -167,7 +167,8 @@ export async function getSceneWordsWithDetails(
         AND (user_id IS NULL OR user_id = ${userId})
       ORDER BY
         CASE WHEN id = uw.current_mnemonic_id THEN 0 WHEN user_id = ${userId} THEN 1 ELSE 2 END,
-        upvote_count DESC
+        upvote_count DESC,
+        created_at DESC
       LIMIT 1
     ) m ON true
     WHERE sw.scene_id = ${sceneId}
@@ -198,7 +199,8 @@ export async function getSceneWordsForLearning(
         AND (user_id IS NULL OR user_id = ${userId})
       ORDER BY
         CASE WHEN user_id = ${userId} THEN 0 ELSE 1 END,
-        upvote_count DESC
+        upvote_count DESC,
+        created_at DESC
       LIMIT 1
     ) m ON true
     WHERE sw.scene_id = ${sceneId}
@@ -442,7 +444,8 @@ export async function getOverdueWordsForPreviousScenes(
         AND (user_id IS NULL OR user_id = ${userId})
       ORDER BY
         CASE WHEN id = uw.current_mnemonic_id THEN 0 WHEN user_id = ${userId} THEN 1 ELSE 2 END,
-        upvote_count DESC
+        upvote_count DESC,
+        created_at DESC
       LIMIT 1
     ) m ON true
     WHERE uw.user_id = ${userId} AND s.path_id = ${pathId}
@@ -769,6 +772,22 @@ export async function getUserDueWords(
   return rows as KnownWordRow[];
 }
 
+export async function getDueWordCount(
+  userId: string,
+  languageId?: string | null
+): Promise<number> {
+  const rows = await sql`
+    SELECT COUNT(*)::int AS count
+    FROM user_words uw
+    JOIN words w ON w.id = uw.word_id
+    WHERE uw.user_id = ${userId}
+      AND uw.next_review_at <= NOW()
+      AND uw.status != 'new'
+      AND (${languageId ?? null}::uuid IS NULL OR w.language_id = ${languageId ?? null}::uuid)
+  `;
+  return (rows[0] as { count: number })?.count ?? 0;
+}
+
 export interface VocabWithMnemonic {
   word_id: string;
   text: string;
@@ -797,7 +816,8 @@ export async function getUserVocabWithMnemonics(
         AND (user_id IS NULL OR user_id = ${userId})
       ORDER BY
         CASE WHEN id = uw.current_mnemonic_id THEN 0 WHEN user_id = ${userId} THEN 1 ELSE 2 END,
-        upvote_count DESC
+        upvote_count DESC,
+        created_at DESC
       LIMIT 1
     ) m ON true
     WHERE uw.user_id = ${userId} AND w.language_id = ${languageId}
@@ -1346,7 +1366,8 @@ export async function getDueWordsForReview(
         AND (user_id IS NULL OR user_id = ${userId})
       ORDER BY
         CASE WHEN id = uw.current_mnemonic_id THEN 0 WHEN user_id = ${userId} THEN 1 ELSE 2 END,
-        upvote_count DESC
+        upvote_count DESC,
+        created_at DESC
       LIMIT 1
     ) m ON true
     WHERE uw.user_id = ${userId}
@@ -1381,7 +1402,8 @@ export async function getAllLearnedWordsForPractice(
         AND (user_id IS NULL OR user_id = ${userId})
       ORDER BY
         CASE WHEN id = uw.current_mnemonic_id THEN 0 WHEN user_id = ${userId} THEN 1 ELSE 2 END,
-        upvote_count DESC
+        upvote_count DESC,
+        created_at DESC
       LIMIT 1
     ) m ON true
     WHERE uw.user_id = ${userId}
@@ -1442,7 +1464,7 @@ export async function getOrCreateUserWord(
     INSERT INTO user_words (user_id, word_id, current_mnemonic_id, status)
     VALUES (
       ${userId}, ${wordId},
-      COALESCE(${mnemonicId}, (SELECT id FROM mnemonics WHERE word_id = ${wordId} AND user_id IS NULL ORDER BY upvote_count DESC LIMIT 1)),
+      COALESCE(${mnemonicId}, (SELECT id FROM mnemonics WHERE word_id = ${wordId} AND user_id IS NULL ORDER BY upvote_count DESC, created_at DESC LIMIT 1)),
       'learning'
     )
     ON CONFLICT (user_id, word_id)
@@ -1450,6 +1472,18 @@ export async function getOrCreateUserWord(
     RETURNING id, ease_factor, interval_days, times_reviewed, times_correct, status, direction
   `;
   return rows[0] as { id: string; ease_factor: number; interval_days: number; times_reviewed: number; times_correct: number; status: string; direction: string };
+}
+
+export async function setCurrentMnemonic(
+  userId: string,
+  wordId: string,
+  mnemonicId: string
+): Promise<void> {
+  await sql`
+    UPDATE user_words
+    SET current_mnemonic_id = ${mnemonicId}
+    WHERE user_id = ${userId} AND word_id = ${wordId}
+  `;
 }
 
 export async function getUserFeedbackForMnemonic(
@@ -1468,6 +1502,7 @@ export async function getUserFeedbackForMnemonic(
 export interface UserStreakData {
   current_streak: number;
   longest_streak: number;
+  active_today: boolean;
 }
 
 export async function getUserStreak(userId: string): Promise<UserStreakData> {
@@ -1476,9 +1511,9 @@ export async function getUserStreak(userId: string): Promise<UserStreakData> {
     FROM user_streaks
     WHERE user_id = ${userId}
   `;
-  if (!rows[0]) return { current_streak: 0, longest_streak: 0 };
+  if (!rows[0]) return { current_streak: 0, longest_streak: 0, active_today: false };
   const row = rows[0] as { current_streak: number; longest_streak: number; last_active_date: string | null };
-  if (!row.last_active_date) return { current_streak: 0, longest_streak: row.longest_streak };
+  if (!row.last_active_date) return { current_streak: 0, longest_streak: row.longest_streak, active_today: false };
 
   const lastActive = new Date(row.last_active_date);
   const today = new Date();
@@ -1486,12 +1521,13 @@ export async function getUserStreak(userId: string): Promise<UserStreakData> {
   const lastActiveDay = Date.UTC(lastActive.getFullYear(), lastActive.getMonth(), lastActive.getDate());
   const todayDay = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
   const daysDiff = Math.floor((todayDay - lastActiveDay) / (1000 * 60 * 60 * 24));
+  const activeToday = daysDiff === 0;
 
   if (daysDiff <= 1) {
-    return { current_streak: row.current_streak, longest_streak: row.longest_streak };
+    return { current_streak: row.current_streak, longest_streak: row.longest_streak, active_today: activeToday };
   }
   // Streak has lapsed — return 0 without updating DB
-  return { current_streak: 0, longest_streak: row.longest_streak };
+  return { current_streak: 0, longest_streak: row.longest_streak, active_today: activeToday };
 }
 
 export async function updateUserStreak(userId: string): Promise<void> {
@@ -1595,7 +1631,8 @@ export async function getLearnedWordsWithMnemonics(
         AND (user_id IS NULL OR user_id = ${userId})
       ORDER BY
         CASE WHEN id = uw.current_mnemonic_id THEN 0 WHEN user_id = ${userId} THEN 1 ELSE 2 END,
-        upvote_count DESC
+        upvote_count DESC,
+        created_at DESC
       LIMIT 1
     ) m ON true
     WHERE uw.user_id = ${userId}

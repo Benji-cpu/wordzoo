@@ -3,13 +3,13 @@ import { redirect } from 'next/navigation';
 import {
   getUserActivePath,
   getSceneMasteryForPath,
-  getUserDueWords,
+  getDueWordCount,
   getLanguageById,
   getUserStreak,
   getTodayInfoByte,
   getDailyLearningStats,
 } from '@/lib/db/queries';
-import { getDuePhrasesForReview } from '@/lib/db/scene-flow-queries';
+import { getDuePhraseCount } from '@/lib/db/scene-flow-queries';
 import { isSceneComplete, sceneProgress as getSceneProgress, findCurrentSceneIndex } from '@/lib/utils/scene-progress';
 import { habitatFromLanguageCode } from '@/lib/utils/language-habitat';
 import { StreakFlame } from '@/components/ui/StreakFlame';
@@ -65,8 +65,8 @@ export default async function DashboardPage() {
 
   const [
     sceneMastery,
-    dueWords,
-    duePhrases,
+    dueWordCount,
+    duePhraseCount,
     language,
     streakData,
     todayInfoByte,
@@ -75,8 +75,8 @@ export default async function DashboardPage() {
     tripContext,
   ] = await Promise.all([
     getSceneMasteryForPath(userId, pathId),
-    getUserDueWords(userId, languageId),
-    getDuePhrasesForReview(userId, 100),
+    getDueWordCount(userId, languageId),
+    getDuePhraseCount(userId, languageId),
     getLanguageById(languageId),
     getUserStreak(userId),
     getTodayInfoByte(languageId),
@@ -94,7 +94,9 @@ export default async function DashboardPage() {
   const currentSceneIndex = findCurrentSceneIndex(sceneMastery);
   const currentSceneProgress = nextScene ? getSceneProgress(nextScene) : 0;
 
-  const totalDueCount = dueWords.length + duePhrases.length;
+  const totalDueCount = dueWordCount + duePhraseCount;
+  // Review sessions load at most 20 words + 20 phrases per sitting
+  const dueExceedsSession = dueWordCount > 20 || duePhraseCount > 20;
 
   const completedSceneCount = sceneMastery.filter(s => isSceneComplete(s)).length;
   const totalWordsLearnedFromScenes = sceneMastery.reduce((sum, s) => sum + (s.mastered_words ?? 0), 0);
@@ -136,7 +138,11 @@ export default async function DashboardPage() {
 
       {/* Review queue — top priority when reviews are due */}
       {hasReviews && (
-        <ReviewQueueCard dueCount={totalDueCount} languageName={language?.name} />
+        <ReviewQueueCard
+          dueCount={totalDueCount}
+          languageName={language?.name}
+          startWithMostOverdue={dueExceedsSession}
+        />
       )}
 
       {/* Hero / empty state */}
