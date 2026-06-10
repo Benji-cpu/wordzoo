@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { requestMnemonicRegen } from '@/lib/learn/regen-request';
 
 interface FeedbackButtonsProps {
   mnemonicId: string;
@@ -16,6 +17,13 @@ export function FeedbackButtons({ mnemonicId, context, compact = false, overlay 
   const [showComment, setShowComment] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [regenRequested, setRegenRequested] = useState(false);
+
+  function handleRegen() {
+    if (regenRequested) return;
+    setRegenRequested(true);
+    requestMnemonicRegen(mnemonicId, commentText.trim() || undefined);
+  }
 
   const placeholderText = context === 'learn'
     ? 'What made it memorable (or not)?'
@@ -130,6 +138,16 @@ export function FeedbackButtons({ mnemonicId, context, compact = false, overlay 
             )}
           </div>
         </div>
+      )}
+
+      {/* Thumbs-down follow-up: one tap swaps in a better mnemonic */}
+      {selectedRating === 'thumbs_down' && !regenRequested && (
+        <button
+          onClick={handleRegen}
+          className="mt-2 w-full px-3 py-1.5 rounded-lg text-xs font-semibold bg-accent-default/10 text-accent-default hover:bg-accent-default/20 transition-colors animate-fade-in"
+        >
+          Get a different mnemonic ✨
+        </button>
       )}
 
       {/* Thanks message */}

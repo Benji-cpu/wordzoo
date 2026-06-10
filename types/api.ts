@@ -24,6 +24,11 @@ export const RegenerateMnemonicSchema = z.object({
   excludeKeywords: z.array(z.string()),
 });
 
+export const RegenerateFromFeedbackSchema = z.object({
+  mnemonicId: z.string().uuid(),
+  comment: z.string().max(500).optional(),
+});
+
 export const CustomMnemonicSchema = z.object({
   wordId: z.string().uuid(),
   keyword: z.string().min(1).max(200),

@@ -170,7 +170,13 @@ export function sanitizeFeedbackComments(comments: string[]): string[] {
 }
 
 export async function regenerateMnemonicFromFeedback(
-  mnemonicId: string
+  mnemonicId: string,
+  options?: {
+    /** Owner of the new mnemonic row. Default null (curated) — the admin path. */
+    userId?: string | null;
+    /** Extra feedback comments (e.g. the one just typed, not yet in the DB read). */
+    extraComments?: string[];
+  }
 ): Promise<Mnemonic> {
   const mnemonic = await getMnemonicById(mnemonicId);
   if (!mnemonic) {
@@ -179,7 +185,10 @@ export async function regenerateMnemonicFromFeedback(
 
   const word = await fetchWord(mnemonic.word_id);
   const rawComments = await getNegativeCommentsForMnemonic(mnemonicId);
-  const sanitizedComments = sanitizeFeedbackComments(rawComments);
+  const sanitizedComments = sanitizeFeedbackComments([
+    ...(options?.extraComments ?? []),
+    ...rawComments,
+  ]);
 
   const prompt = `${MNEMONIC_SYSTEM_PROMPT}\n\n${buildFeedbackRegeneratePrompt(
     word.romanization || word.text,
@@ -210,7 +219,7 @@ export async function regenerateMnemonicFromFeedback(
   const imageUrl = await generateSceneImage(best.imagePrompt);
 
   // Create a NEW mnemonic row (old one is preserved)
-  return saveMnemonic(mnemonic.word_id, null, best, imageUrl, false);
+  return saveMnemonic(mnemonic.word_id, options?.userId ?? null, best, imageUrl, false);
 }
 
 export async function saveMnemonic(

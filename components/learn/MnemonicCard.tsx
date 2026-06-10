@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/Card';
 import { PronunciationButton } from '@/components/audio/SpeakerButton';
 import { MnemonicImage } from '@/components/shared/MnemonicImage';
 import { playWordPronunciation, isAudioUnlocked } from '@/lib/audio/pronunciation';
+import { requestMnemonicRegen } from '@/lib/learn/regen-request';
 
 function renderBridgeSentence(sentence: string) {
   // Split on ALL-CAPS words (2+ letters) and render them highlighted
@@ -51,6 +52,13 @@ export function MnemonicCard({
   const [showComment, setShowComment] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+  const [regenRequested, setRegenRequested] = useState(false);
+
+  function handleRegen() {
+    if (!mnemonicId || regenRequested) return;
+    setRegenRequested(true);
+    requestMnemonicRegen(mnemonicId, commentText.trim() || undefined);
+  }
 
   useEffect(() => {
     if (wordId && !hasAutoPlayed.current && isAudioUnlocked()) {
@@ -288,6 +296,16 @@ export function MnemonicCard({
             )}
           </div>
         </div>
+      )}
+
+      {/* Thumbs-down follow-up: one tap swaps in a better mnemonic */}
+      {feedbackRating === 'thumbs_down' && !regenRequested && mnemonicId && (
+        <button
+          onClick={(e) => { e.stopPropagation(); handleRegen(); }}
+          className="mt-2 w-full px-3 py-2 rounded-[10px] text-xs font-extrabold bg-[color:var(--surface-inset)] text-[color:var(--accent-indonesian)] active:scale-[0.98] transition-transform animate-fade-in"
+        >
+          Get a different mnemonic ✨
+        </button>
       )}
 
       {feedbackSubmitted && (
