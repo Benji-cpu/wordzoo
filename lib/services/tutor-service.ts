@@ -6,6 +6,7 @@ import {
   getTutorMessages,
   getUserKnownWords,
   getUserDueWords,
+  getWordsByIds,
   getLanguageById,
   insertGuidedConversationSession,
   getSceneDialogues,
@@ -51,20 +52,30 @@ export async function startSession(
   mode: string,
   languageId: string,
   scenario?: string,
-  userName?: string | null
+  userName?: string | null,
+  focusWordIds?: string[]
 ): Promise<{ sessionId: string; greeting: string }> {
   const session = await insertTutorSession(userId, languageId, mode, scenario);
 
   const language = await getLanguageById(languageId);
   if (!language) throw new Error('Language not found');
 
-  const [knownWords, dueWords, { contextString: adaptiveCtx, proficiencyTier }, userProfile] = await Promise.all([
+  const [knownWords, defaultDueWords, { contextString: adaptiveCtx, proficiencyTier }, userProfile] = await Promise.all([
     getUserKnownWords(userId, languageId),
     getUserDueWords(userId, languageId),
     buildAdaptiveContext(userId, languageId),
     getUserProfile(userId),
   ]);
   const l1Name = l1NameFromCode(userProfile?.native_language);
+
+  // Review→tutor handoff: the user arrives having just cleared their due
+  // queue, so seed the word_review prompt with the words they just reviewed
+  // instead of the (now empty) due list.
+  let dueWords = defaultDueWords;
+  if (mode === 'word_review' && focusWordIds && focusWordIds.length > 0) {
+    const focusWords = await getWordsByIds(focusWordIds, languageId);
+    if (focusWords.length > 0) dueWords = focusWords;
+  }
 
   let systemPrompt: string;
 
@@ -393,7 +404,7 @@ export async function endSession(
   // Fire-and-forget: SRS bridge analysis + learner profile update
   (async () => {
     try {
-      const { analyzeSessionWordUsage, recordConversationReviews } = await import('@/lib/services/tutor-srs-bridge');
+      const { analyzeSessionWordUsage, recordConversationReviews, bridgeIntroducedWords } = await import('@/lib/services/tutor-srs-bridge');
       const { updateFromSession } = await import('@/lib/services/learner-profile-service');
 
       const [knownWords, dueWords] = await Promise.all([
@@ -404,12 +415,24 @@ export async function endSession(
       const wordUsage = await analyzeSessionWordUsage(messages, knownWords, dueWords, session.language_id);
       const srsResult = await recordConversationReviews(userId, sessionId, session.language_id, wordUsage);
 
+      // Deterministic fallback: bolded tutor words that the LLM analysis didn't
+      // bridge (or couldn't — empty-vocab users skip the LLM path entirely)
+      const knownTexts = new Set([
+        ...knownWords.map((w) => w.text.toLowerCase()),
+        ...dueWords.map((w) => w.text.toLowerCase()),
+      ]);
+      const alreadyBridged = new Set(wordUsage.introduced.map((e) => e.wordId));
+      const extraIntroduced = await bridgeIntroducedWords(
+        userId, sessionId, session.language_id,
+        Array.from(mentionedWords), knownTexts, alreadyBridged
+      );
+
       // Enrich session summary with SRS data
       await updateTutorSession(sessionId, {
         summary: {
           ...summary,
           srsReviewsRecorded: srsResult.reviewsRecorded,
-          wordsIntroduced: srsResult.wordsIntroduced,
+          wordsIntroduced: srsResult.wordsIntroduced + extraIntroduced,
           accuracyRate: srsResult.accuracyRate,
         },
       });

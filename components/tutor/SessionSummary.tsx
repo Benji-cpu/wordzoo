@@ -47,6 +47,24 @@ export function SessionSummary({ summary, onNewSession, onStartSession, mode, me
   const router = useRouter();
   const isGuidedWithReturn = mode === 'guided_conversation' && !!returnTo;
 
+  // Forward CTA: without a returnTo, the summary used to dead-end on
+  // "Practice Again / New Session". Fetch the due count so we can always
+  // hand the user to their next learning activity.
+  const [dueCount, setDueCount] = useState<number | null>(null);
+  useEffect(() => {
+    if (limitReached || returnTo) return;
+    let cancelled = false;
+    fetch('/api/reviews/due')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => {
+        if (!cancelled && Array.isArray(json?.data)) setDueCount(json.data.length);
+      })
+      .catch(() => {
+        // Non-critical — CTA falls back to the dashboard link
+      });
+    return () => { cancelled = true; };
+  }, [limitReached, returnTo]);
+
   // Count corrections from model messages
   const correctionCount = useMemo(() => {
     if (!messages) return 0;
@@ -336,11 +354,21 @@ export function SessionSummary({ summary, onNewSession, onStartSession, mode, me
             </>
           ) : (
             <>
-              {returnTo && (
+              {returnTo ? (
                 <Link href={returnTo} className="block">
                   <Button className="w-full">
                     {returnTo.startsWith('/learn/') ? 'Continue to Next Scene' : returnTo.startsWith('/paths/') ? 'Back to Path' : 'Dashboard'} →
                   </Button>
+                </Link>
+              ) : dueCount !== null && dueCount > 0 ? (
+                <Link href="/review" className="block">
+                  <Button className="w-full">
+                    Review {dueCount >= 20 ? '20+' : dueCount} due word{dueCount === 1 ? '' : 's'} →
+                  </Button>
+                </Link>
+              ) : (
+                <Link href="/dashboard" className="block">
+                  <Button className="w-full">Continue learning →</Button>
                 </Link>
               )}
               {mode && onStartSession && (
@@ -352,7 +380,7 @@ export function SessionSummary({ summary, onNewSession, onStartSession, mode, me
                   Practice Again ({MODE_LABELS[mode] ?? mode})
                 </Button>
               )}
-              <Button onClick={onNewSession} variant={returnTo ? 'secondary' : undefined} className="w-full">
+              <Button onClick={onNewSession} variant="secondary" className="w-full">
                 New Session
               </Button>
             </>

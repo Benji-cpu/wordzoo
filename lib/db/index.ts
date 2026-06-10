@@ -53,6 +53,7 @@ export {
   updateLearnerProfile,
   getWeakWords,
   getWordsByTexts,
+  getWordsByIds,
   insertTutorWordReviews,
   getRecentNudges,
   insertNudge,

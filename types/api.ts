@@ -64,6 +64,7 @@ export const TutorSessionSchema = z.object({
   mode: TutorModeEnum,
   languageId: z.string().uuid(),
   scenario: z.string().max(500).optional(),
+  focusWordIds: z.array(z.string().uuid()).max(20).optional(),
 });
 
 export const TutorEndSessionSchema = z.object({

@@ -336,6 +336,7 @@ export function ReviewClient({ dueWords, duePhrases, practiceWords = [], wordFam
         correctCount={correctCount}
         revisionCount={missedItems.length}
         revisionCorrectCount={revisionCorrectCount}
+        reviewedWordIds={items.filter((i) => i.type === 'word').map((i) => i.data.word_id)}
       />
     );
   }

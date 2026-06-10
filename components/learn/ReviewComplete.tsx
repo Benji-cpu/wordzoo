@@ -13,6 +13,7 @@ interface ReviewCompleteProps {
   correctCount: number;
   revisionCount?: number;
   revisionCorrectCount?: number;
+  reviewedWordIds?: string[];
 }
 
 export function ReviewComplete({
@@ -20,8 +21,14 @@ export function ReviewComplete({
   correctCount,
   revisionCount = 0,
   revisionCorrectCount = 0,
+  reviewedWordIds = [],
 }: ReviewCompleteProps) {
   const didRevision = revisionCount > 0;
+  // Carry the just-reviewed words into the tutor so the word_review session
+  // practices them instead of the (now empty) due queue
+  const tutorHref = reviewedWordIds.length > 0
+    ? `/tutor?mode=word_review&words=${reviewedWordIds.slice(0, 10).join(',')}`
+    : '/tutor?mode=word_review';
   const { play } = useSound();
   const { trigger } = useHaptic();
   const { award, sessionEarned } = useXP();
@@ -46,7 +53,7 @@ export function ReviewComplete({
             ? 'Great job reinforcing those tricky words — keep the habit going.'
             : 'Nice work on your reviews. The best time to learn a new word is right now.'
         }
-        primary={{ label: 'Practice in conversation →', href: '/tutor?mode=word_review' }}
+        primary={{ label: 'Practice in conversation →', href: tutorHref }}
         secondary={{ label: 'Back to home', href: '/dashboard' }}
       />
 

@@ -78,7 +78,10 @@ Return ONLY a JSON object:
       introduced?: string[];
     }>(
       [{ role: 'user', content: prompt }],
-      'You are a language learning analyst. Return only valid JSON.'
+      'You are a language learning analyst. Return only valid JSON.',
+      // Long transcripts truncate at the default output cap, surfacing as
+      // "Unterminated string in JSON" and dropping the whole analysis
+      { maxOutputTokens: 4096 }
     );
 
     const usage: SessionWordUsage = {
@@ -116,6 +119,44 @@ Return ONLY a JSON object:
     console.error('[tutor-srs-bridge] Failed to analyze session word usage:', error);
     return { correct: [], corrected: [], introduced: [], missed: [] };
   }
+}
+
+// Deterministic complement to the LLM "introduced" detection: every word the
+// tutor bolded (**word**) that the learner doesn't already track gets bridged
+// into user_words, so tutor-introduced vocabulary always reaches the review
+// queue — including for brand-new users with zero known words, where the LLM
+// classification path is skipped entirely.
+export async function bridgeIntroducedWords(
+  userId: string,
+  sessionId: string,
+  languageId: string,
+  mentionedTexts: string[],
+  knownWordTexts: Set<string>,
+  alreadyBridgedWordIds: Set<string>
+): Promise<number> {
+  const candidates = mentionedTexts
+    .map((t) => t.toLowerCase().trim())
+    .filter((t) => t.length > 0 && !knownWordTexts.has(t))
+    .slice(0, 10);
+  if (candidates.length === 0) return 0;
+
+  let bridged = 0;
+  const trackingRows: { sessionId: string; userId: string; wordId: string; languageId: string; usageType: string; srsQuality: number | null }[] = [];
+  try {
+    const foundWords = await getWordsByTexts(candidates, languageId);
+    for (const w of foundWords) {
+      if (alreadyBridgedWordIds.has(w.id)) continue;
+      await getOrCreateUserWord(userId, w.id, null);
+      trackingRows.push({ sessionId, userId, wordId: w.id, languageId, usageType: 'introduced', srsQuality: null });
+      bridged++;
+    }
+    if (trackingRows.length > 0) {
+      await insertTutorWordReviews(trackingRows);
+    }
+  } catch (error) {
+    console.error('[tutor-srs-bridge] Failed to bridge introduced words:', error);
+  }
+  return bridged;
 }
 
 export async function recordConversationReviews(

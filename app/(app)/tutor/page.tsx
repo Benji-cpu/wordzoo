@@ -20,6 +20,8 @@ export default function TutorPage() {
   const sceneIdParam = searchParams.get('sceneId');
   const returnToParam = searchParams.get('returnTo');
   const returnTo = returnToParam && returnToParam.startsWith('/') ? returnToParam : null;
+  const modeParam = searchParams.get('mode');
+  const wordsParam = searchParams.get('words');
 
   const [initialMode, setInitialMode] = useState<string | undefined>(undefined);
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -150,9 +152,11 @@ export default function TutorPage() {
   }, []);
 
   // Check for active (resumable) session when languageId is available
-  // Skip if coming from scene handoff (sceneIdParam) — we'll start a fresh guided session
+  // Skip if coming from scene handoff (sceneIdParam) or an explicit mode
+  // deep-link (modeParam) — those always start a fresh session, otherwise a
+  // stale resumable chat hijacks the handoff context
   useEffect(() => {
-    if (!languageId || sessionId || sceneIdParam) {
+    if (!languageId || sessionId || sceneIdParam || modeParam) {
       setIsCheckingSession(false);
       return;
     }
@@ -238,10 +242,20 @@ export default function TutorPage() {
       setIsStarting(true);
       setActiveMode(mode);
       try {
+        // Review→tutor handoff: seed word_review with the just-reviewed words
+        const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        const focusWordIds = mode === 'word_review' && wordsParam
+          ? wordsParam.split(',').filter((id) => uuidRe.test(id)).slice(0, 10)
+          : undefined;
         const res = await fetch('/api/tutor/session', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ mode, languageId, scenario }),
+          body: JSON.stringify({
+            mode,
+            languageId,
+            scenario,
+            ...(focusWordIds?.length ? { focusWordIds } : {}),
+          }),
         });
         const json = await res.json();
         if (!res.ok || json.error) {
@@ -258,7 +272,7 @@ export default function TutorPage() {
         setIsStarting(false);
       }
     },
-    [languageId, addGreeting]
+    [languageId, addGreeting, wordsParam]
   );
 
   const handleStartGuidedSession = useCallback(

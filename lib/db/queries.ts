@@ -1807,6 +1807,18 @@ export async function getWordsByTexts(
   return rows as { id: string; text: string; meaning_en: string }[];
 }
 
+export async function getWordsByIds(
+  wordIds: string[],
+  languageId: string
+): Promise<KnownWordRow[]> {
+  if (wordIds.length === 0) return [];
+  const rows = await sql`
+    SELECT id AS word_id, text, romanization, meaning_en FROM words
+    WHERE id = ANY(${wordIds}) AND language_id = ${languageId}
+  `;
+  return rows as KnownWordRow[];
+}
+
 // --- Tutor Word Review Queries ---
 
 export async function insertTutorWordReviews(
