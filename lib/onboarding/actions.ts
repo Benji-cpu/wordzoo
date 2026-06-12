@@ -120,5 +120,17 @@ export async function claimReferral(referrerId: string) {
 
   const { attributeReferralSignup } = await import('@/lib/db/public-queries');
   const result = await attributeReferralSignup(referrerId, session.user.id);
+
+  if (result) {
+    // Reward the referrer (+7 days Premium, capped). Reward failure must
+    // never break the new user's signup import.
+    try {
+      const { grantReferralReward } = await import('@/lib/services/referral-service');
+      await grantReferralReward(result.id, referrerId);
+    } catch (error) {
+      console.error('Referral reward grant failed:', error);
+    }
+  }
+
   return { success: !!result };
 }

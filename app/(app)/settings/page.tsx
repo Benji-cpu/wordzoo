@@ -3,6 +3,12 @@ import { redirect } from 'next/navigation';
 import { getUserProfile } from '@/lib/db/queries';
 import { getAllPremadePaths, getUserActivePath, getLanguageById, getAllLanguages } from '@/lib/db';
 import { SubscriptionSection } from './SubscriptionSection';
+import { InviteSection } from './InviteSection';
+import {
+  getReferralStats,
+  getInviteUrl,
+  REFERRAL_REWARD_DAYS,
+} from '@/lib/services/referral-service';
 import { ProfileSection } from './ProfileSection';
 import { LanguageSection } from './LanguageSection';
 import { PersonaSection } from './PersonaSection';
@@ -15,11 +21,12 @@ export default async function SettingsPage() {
   const session = await auth();
   if (!session?.user?.id) redirect('/login');
 
-  const [profile, premadePaths, activePath, allLanguages] = await Promise.all([
+  const [profile, premadePaths, activePath, allLanguages, referralStats] = await Promise.all([
     getUserProfile(session.user.id),
     getAllPremadePaths(),
     getUserActivePath(session.user.id),
     getAllLanguages(),
+    getReferralStats(session.user.id),
   ]);
 
   const activeLanguage = activePath ? await getLanguageById(activePath.path_language_id) : null;
@@ -61,6 +68,13 @@ export default async function SettingsPage() {
 
       <ProfileSection userId={session.user.id} />
       <SubscriptionSection />
+      <InviteSection
+        inviteUrl={getInviteUrl(session.user.id)}
+        signups={referralStats.signups}
+        rewardedDays={referralStats.rewardedDays}
+        bonusUntil={referralStats.bonusUntil}
+        rewardDays={REFERRAL_REWARD_DAYS}
+      />
       <LanguageSection
         initialNativeLanguage={profile?.native_language ?? 'en'}
         targetOptions={targetOptions}

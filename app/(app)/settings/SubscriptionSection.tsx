@@ -12,6 +12,7 @@ interface BillingStatus {
     plan: string | null;
     status: string | null;
     currentPeriodEnd: string | null;
+    bonusUntil: string | null;
   };
   usage: {
     words_learned: { current: number; limit: number };
@@ -121,6 +122,11 @@ export function SubscriptionSection() {
                 {status.subscription.plan === 'yearly' ? 'Yearly' : 'Monthly'} billing
                 {status.subscription.currentPeriodEnd &&
                   ` · Renews ${new Date(status.subscription.currentPeriodEnd).toLocaleDateString()}`}
+              </p>
+            )}
+            {!isPremium && status.subscription.bonusUntil && (
+              <p className="text-xs text-green-400 mt-1 font-semibold">
+                Premium until {new Date(status.subscription.bonusUntil).toLocaleDateString()} (referral bonus)
               </p>
             )}
           </div>

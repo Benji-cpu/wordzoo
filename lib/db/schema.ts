@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
   native_language TEXT NOT NULL DEFAULT 'en',
   subscription_tier TEXT NOT NULL DEFAULT 'free' CHECK (subscription_tier IN ('free', 'premium')),
   preferences JSONB NOT NULL DEFAULT '{"audio_speed": 1, "absurdity_level": "medium", "hands_free_mode": false}',
+  bonus_premium_until TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -208,7 +209,8 @@ CREATE TABLE IF NOT EXISTS referrals (
   click_ip TEXT,
   click_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   signup_at TIMESTAMPTZ,
-  status TEXT NOT NULL DEFAULT 'clicked' CHECK (status IN ('clicked','signed_up'))
+  status TEXT NOT NULL DEFAULT 'clicked' CHECK (status IN ('clicked','signed_up')),
+  rewarded_at TIMESTAMPTZ
 );
 CREATE INDEX IF NOT EXISTS idx_referrals_referrer ON referrals(referrer_id);
 

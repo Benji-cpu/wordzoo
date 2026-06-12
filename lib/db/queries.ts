@@ -880,11 +880,11 @@ export async function getUserVocabWithMnemonics(
 
 // --- Billing Queries ---
 
-export async function getUserById(userId: string): Promise<{ id: string; email: string; subscription_tier: string } | null> {
+export async function getUserById(userId: string): Promise<{ id: string; email: string; subscription_tier: string; bonus_premium_until: string | null } | null> {
   const rows = await sql`
-    SELECT id, email, subscription_tier FROM users WHERE id = ${userId}
+    SELECT id, email, subscription_tier, bonus_premium_until FROM users WHERE id = ${userId}
   `;
-  return (rows[0] as { id: string; email: string; subscription_tier: string }) ?? null;
+  return (rows[0] as { id: string; email: string; subscription_tier: string; bonus_premium_until: string | null }) ?? null;
 }
 
 export interface UserProfile {

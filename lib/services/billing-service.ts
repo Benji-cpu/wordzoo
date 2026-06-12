@@ -1,4 +1,5 @@
 import type { BillingFeature } from '@/types/api';
+import { hasActiveBonus } from '@/lib/services/referral-service';
 import {
   getUserById,
   getSubscriptionByUserId,
@@ -62,6 +63,11 @@ export async function checkAccess(
 
   // Admin users bypass all billing limits
   if (isAdminUser(user.email)) {
+    return { allowed: true, reason: null, currentUsage: null, limit: null, upgradeMessage: null };
+  }
+
+  // Referral-bonus Premium: temporary full access earned by inviting friends
+  if (hasActiveBonus(user.bonus_premium_until)) {
     return { allowed: true, reason: null, currentUsage: null, limit: null, upgradeMessage: null };
   }
 
@@ -147,10 +153,11 @@ export async function incrementUsage(
   feature: BillingFeature,
   amount: number = 1
 ): Promise<void> {
-  // Skip usage tracking for premium and admin users
+  // Skip usage tracking for premium, admin, and referral-bonus users
   const user = await getUserById(userId);
   if (user?.subscription_tier === 'premium') return;
   if (isAdminUser(user?.email)) return;
+  if (hasActiveBonus(user?.bonus_premium_until)) return;
 
   const incrementFn = INCREMENT_FNS[feature];
   if (!incrementFn) return;
@@ -193,6 +200,7 @@ export async function getSubscriptionStatus(userId: string): Promise<{
   plan: string | null;
   status: string | null;
   currentPeriodEnd: Date | null;
+  bonusUntil: string | null;
 }> {
   const user = await getUserById(userId);
   const subscription = await getSubscriptionByUserId(userId);
@@ -202,6 +210,7 @@ export async function getSubscriptionStatus(userId: string): Promise<{
     plan: subscription?.plan ?? null,
     status: subscription?.status ?? null,
     currentPeriodEnd: subscription?.current_period_end ?? null,
+    bonusUntil: hasActiveBonus(user?.bonus_premium_until) ? user!.bonus_premium_until : null,
   };
 }
 
