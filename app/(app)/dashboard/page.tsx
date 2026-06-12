@@ -7,8 +7,9 @@ import {
   getLanguageById,
   getUserStreak,
   getUserXp,
-  getTodayInfoByte,
+  getLatestInfoByte,
   getDailyLearningStats,
+  getDueCountsByOtherLanguages,
 } from '@/lib/db/queries';
 import { getDuePhraseCount } from '@/lib/db/scene-flow-queries';
 import { isSceneComplete, sceneProgress as getSceneProgress, findCurrentSceneIndex } from '@/lib/utils/scene-progress';
@@ -30,13 +31,15 @@ import { ReviewQueueCard } from '@/components/dashboard/ReviewQueueCard';
 import { GoalProgressCard } from '@/components/dashboard/GoalProgressCard';
 import { LevelBadge } from '@/components/dashboard/LevelBadge';
 
-function pickGreeting(): string {
+function pickGreeting(short: boolean): string {
   const hour = new Date().getHours();
   if (hour < 5) return 'Still up?';
-  if (hour < 12) return 'Good morning';
-  if (hour < 17) return 'Good afternoon';
-  if (hour < 21) return 'Good evening';
-  return 'Good night';
+  // Short forms keep "Greeting, Name" on one line next to the level/streak
+  // badges on a 390px viewport.
+  if (hour < 12) return short ? 'Morning' : 'Good morning';
+  if (hour < 17) return short ? 'Afternoon' : 'Good afternoon';
+  if (hour < 21) return short ? 'Evening' : 'Good evening';
+  return short ? 'Night' : 'Good night';
 }
 
 function pickKicker(streak: number): string {
@@ -76,21 +79,23 @@ export default async function DashboardPage() {
     insightState,
     tripContext,
     xpData,
+    otherLanguagesDue,
   ] = await Promise.all([
     getSceneMasteryForPath(userId, pathId),
     getDueWordCount(userId, languageId),
     getDuePhraseCount(userId, languageId),
     getLanguageById(languageId),
     getUserStreak(userId),
-    getTodayInfoByte(languageId),
+    getLatestInfoByte(languageId),
     getDailyLearningStats(userId, yesterdayStr),
     getInsightState(userId),
     getTripContext(userId),
     getUserXp(userId),
+    getDueCountsByOtherLanguages(userId, languageId),
   ]);
 
   const firstName = session.user.name?.split(/\s+/)[0] ?? null;
-  const greeting = pickGreeting();
+  const greeting = pickGreeting(Boolean(firstName));
   const kicker = pickKicker(streakData.current_streak);
   const habitat = habitatFromLanguageCode(language?.code);
 
@@ -132,7 +137,7 @@ export default async function DashboardPage() {
             <div className="text-[11px] uppercase tracking-[0.12em] font-extrabold text-[color:var(--text-secondary)]">
               {kicker}
             </div>
-            <h1 className="text-[22px] font-extrabold tracking-tight text-[color:var(--foreground)] leading-tight truncate">
+            <h1 className="text-[19px] min-[420px]:text-[22px] font-extrabold tracking-tight text-[color:var(--foreground)] leading-tight truncate">
               {caughtUp ? 'All caught up!' : firstName ? `${greeting}, ${firstName}` : greeting}
             </h1>
           </div>
@@ -164,6 +169,21 @@ export default async function DashboardPage() {
           languageName={language?.name}
           startWithMostOverdue={dueExceedsSession}
         />
+      )}
+
+      {/* Due items hiding in other languages — review is scoped to the active
+          path's language, so without this they'd be invisible */}
+      {otherLanguagesDue.length > 0 && (
+        <Link
+          href="/settings"
+          className="flex items-center gap-2.5 rounded-2xl px-4 py-3 bg-surface-inset border border-card-border active:scale-[0.99] transition-transform"
+        >
+          <span aria-hidden className="text-lg">⏳</span>
+          <span className="text-[13px] font-semibold text-[color:var(--foreground)]">
+            {otherLanguagesDue.map((o) => `${o.due_count} due in ${o.name}`).join(' · ')}
+          </span>
+          <span aria-hidden className="ml-auto font-black text-text-secondary">›</span>
+        </Link>
       )}
 
       {/* Hero / empty state */}
@@ -221,6 +241,11 @@ export default async function DashboardPage() {
             language?.code === 'id' || language?.code === 'es' || language?.code === 'ja' || language?.code === 'pt'
               ? language.code
               : undefined
+          }
+          staleLabel={
+            new Date(todayInfoByte.publish_date).toISOString().slice(0, 10) !== new Date().toISOString().slice(0, 10)
+              ? `from ${new Date(todayInfoByte.publish_date).toLocaleDateString('en-US', { weekday: 'long' })}`
+              : null
           }
           category={todayInfoByte.category}
           topicSummary={todayInfoByte.topic_summary}

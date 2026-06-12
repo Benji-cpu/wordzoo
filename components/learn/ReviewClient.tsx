@@ -95,10 +95,13 @@ interface ReviewClientProps {
   practiceWords?: DueWordForReview[];
   wordFamiliesMap?: Record<string, LearnWordFamily[]>;
   phraseWordMap?: Record<string, PhraseWordMnemonic[]>;
+  languageCode?: string | null;
+  /** Due counts in languages other than the active one — never say "all caught up" while these exist. */
+  otherLanguagesDue?: { code: string; name: string; count: number }[];
   insightState?: { seenIds: string[]; shownToday: number };
 }
 
-export function ReviewClient({ dueWords, duePhrases, practiceWords = [], wordFamiliesMap = {}, phraseWordMap = {}, insightState }: ReviewClientProps) {
+export function ReviewClient({ dueWords, duePhrases, practiceWords = [], wordFamiliesMap = {}, phraseWordMap = {}, languageCode = null, otherLanguagesDue = [], insightState }: ReviewClientProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
@@ -308,6 +311,15 @@ export function ReviewClient({ dueWords, duePhrases, practiceWords = [], wordFam
             ? `No reviews due right now. You can practice ${practiceWords.length} words if you'd like.`
             : 'Nothing to review yet — learn new words to grow your queue.'}
         </p>
+        {otherLanguagesDue.length > 0 && (
+          <Link
+            href="/settings"
+            className="mb-6 -mt-2 block rounded-xl bg-amber-500/10 border border-amber-500/25 px-4 py-3 text-[13px] font-semibold text-[color:var(--foreground)] active:scale-[0.99] transition-transform"
+          >
+            {otherLanguagesDue.map((o) => `${o.count} in ${o.name}`).join(' · ')} still waiting —
+            switch your learning language to review them ›
+          </Link>
+        )}
         {practiceWords.length > 0 ? (
           <ThumbButton
             onClick={() => setPracticeMode(true)}
@@ -337,6 +349,7 @@ export function ReviewClient({ dueWords, duePhrases, practiceWords = [], wordFam
         revisionCount={missedItems.length}
         revisionCorrectCount={revisionCorrectCount}
         reviewedWordIds={items.filter((i) => i.type === 'word').map((i) => i.data.word_id)}
+        otherLanguagesDue={otherLanguagesDue}
       />
     );
   }
@@ -461,6 +474,8 @@ export function ReviewClient({ dueWords, duePhrases, practiceWords = [], wordFam
             phraseBridgeSentence={current.data.phrase_bridge_sentence}
             compositeImageUrl={current.data.composite_image_url}
             words={phraseWordMap[current.data.phrase_id] ?? []}
+            audioUrl={current.data.audio_url}
+            languageCode={languageCode}
             mode={phraseMode}
             onReveal={handleReveal}
             revealed={revealed}

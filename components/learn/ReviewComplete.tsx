@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import Link from 'next/link';
 import { EmptyStateCard } from '@/components/ui/EmptyStateCard';
 import { ActionCard, ActionCardRow } from '@/components/ui/ActionCard';
 import { Celebration } from '@/components/ui/Celebration';
@@ -14,6 +15,7 @@ interface ReviewCompleteProps {
   revisionCount?: number;
   revisionCorrectCount?: number;
   reviewedWordIds?: string[];
+  otherLanguagesDue?: { code: string; name: string; count: number }[];
 }
 
 export function ReviewComplete({
@@ -22,6 +24,7 @@ export function ReviewComplete({
   revisionCount = 0,
   revisionCorrectCount = 0,
   reviewedWordIds = [],
+  otherLanguagesDue = [],
 }: ReviewCompleteProps) {
   const didRevision = revisionCount > 0;
   // Carry the just-reviewed words into the tutor so the word_review session
@@ -56,6 +59,16 @@ export function ReviewComplete({
         primary={{ label: 'Practice in conversation →', href: tutorHref }}
         secondary={{ label: 'Back to home', href: '/dashboard' }}
       />
+
+      {otherLanguagesDue.length > 0 && (
+        <Link
+          href="/settings"
+          className="rounded-xl bg-amber-500/10 border border-amber-500/25 px-4 py-3 text-[13px] font-semibold text-[color:var(--foreground)] active:scale-[0.99] transition-transform"
+        >
+          {otherLanguagesDue.map((o) => `${o.count} in ${o.name}`).join(' · ')} still waiting —
+          switch your learning language to review them ›
+        </Link>
+      )}
 
       {sessionEarned > 0 && (
         <p className="self-center inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[color:var(--color-fox-soft)] text-[color:var(--color-fox-deep)] dark:text-[color:var(--color-fox-primary)] text-[13px] font-extrabold">

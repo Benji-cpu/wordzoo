@@ -56,7 +56,7 @@ export function HabitatCard({
             {label}
           </div>
           <div className="flex items-baseline gap-2">
-            <div className="text-[15px] font-extrabold truncate">{title}</div>
+            <div className="text-[15px] font-extrabold truncate" title={title}>{title}</div>
             {trailing && (
               <div className="text-[11px] font-bold opacity-80 whitespace-nowrap">{trailing}</div>
             )}

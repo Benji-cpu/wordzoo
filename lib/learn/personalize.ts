@@ -96,11 +96,13 @@ function personalizePtTarget(text: string, { name, gender, role }: PtOptions): s
   let out = text;
 
   // Learner self / second-person introduction. Only the copula patterns —
-  // never a bare "Ana" (which can be an NPC elsewhere).
+  // never a bare "Ana" (which can be an NPC elsewhere). The article is
+  // optional because usage notes write "Eu sou Ana" without it.
   if (name) {
     out = out.replace(
-      /\b(Eu sou|Sou|Você é|Voce é)\s+(a|o)\s+Ana\b/g,
-      (_m, copula: string, article: string) => {
+      /\b(Eu sou|Sou|Você é|Voce é)\s+(?:(a|o)\s+)?Ana\b/g,
+      (_m, copula: string, article: string | undefined) => {
+        if (!article) return `${copula} ${name}`;
         const art = gender === 'male' ? 'o' : gender === 'female' ? 'a' : article;
         return `${copula} ${art} ${name}`;
       },
@@ -121,14 +123,19 @@ function personalizePtTarget(text: string, { name, gender, role }: PtOptions): s
   return out;
 }
 
-/** Rewrite an English helper string (name only — English has no agreement). */
-function personalizeEn(text: string, name: string | null): string {
+/**
+ * Rewrite an English helper string (name only — English has no agreement).
+ * Exported for surfaces that hold loose English fields (e.g. review-queue
+ * word bridge sentences) — gate calls on isPersonalizableLanguage.
+ */
+export function personalizeEn(text: string, name: string | null): string {
   if (!name) return text;
-  // Self / second-person only ("I am Ana", "Are you Ana?", "You are Ana") —
-  // never "This is Ana" (an NPC introduction in some scenes).
+  // Self / second-person only ("I am Ana", "I am the Ana" in literal
+  // translations, "I AM ANA!" in shouted mnemonic bridges) — never
+  // "This is Ana" (an NPC introduction in some scenes).
   return text.replace(
-    /\b(I am|I'm|Are you|You are)\s+Ana\b/g,
-    (_m, lead: string) => `${lead} ${name}`,
+    /\b(I am|I'm|Are you|You are)(\s+the)?\s+Ana\b/gi,
+    (_m, lead: string, article: string | undefined) => `${lead}${article ?? ''} ${name}`,
   );
 }
 
@@ -178,7 +185,47 @@ export function personalizeSceneContent<
     literal_translation: p.literal_translation
       ? personalizeEn(p.literal_translation, name)
       : p.literal_translation,
+    phrase_bridge_sentence: p.phrase_bridge_sentence
+      ? personalizeEn(p.phrase_bridge_sentence, name)
+      : p.phrase_bridge_sentence,
+    usage_note: p.usage_note
+      ? personalizeEn(personalizePtTarget(p.usage_note, { name, gender, role: 'learner' }), name)
+      : p.usage_note,
+    words: p.words?.map((w) => ({
+      ...w,
+      bridge_sentence: w.bridge_sentence ? personalizeEn(w.bridge_sentence, name) : w.bridge_sentence,
+    })) ?? p.words,
   }));
 
   return { dialogues: newDialogues, phrases: newPhrases };
+}
+
+/**
+ * Personalize the learner-facing fields of a review-queue phrase (the review
+ * page reads phrases straight from the due queue, not via scene flow). Same
+ * safety rules as personalizeSceneContent.
+ */
+export function personalizeReviewPhrase<
+  T extends {
+    text_target: string;
+    text_en: string;
+    literal_translation: string | null;
+    phrase_bridge_sentence: string | null;
+  },
+>(phrase: T, langCode: string | null | undefined, identity: LearnerIdentity): T {
+  if (!isPersonalizableLanguage(langCode)) return phrase;
+  if (!identity.firstName && !identity.gender) return phrase;
+  const name = identity.firstName;
+  const gender = identity.gender;
+  return {
+    ...phrase,
+    text_target: personalizePtTarget(phrase.text_target, { name, gender, role: 'learner' }),
+    text_en: personalizeEn(phrase.text_en, name),
+    literal_translation: phrase.literal_translation
+      ? personalizeEn(phrase.literal_translation, name)
+      : phrase.literal_translation,
+    phrase_bridge_sentence: phrase.phrase_bridge_sentence
+      ? personalizeEn(phrase.phrase_bridge_sentence, name)
+      : phrase.phrase_bridge_sentence,
+  };
 }
