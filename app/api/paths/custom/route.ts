@@ -1,11 +1,16 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import { CustomPathSchema } from '@/types/api';
 import type { ApiResponse } from '@/types/api';
 import type { Path } from '@/types/database';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { auth } from '@/lib/auth';
 import { generateCustomPath } from '@/lib/services/custom-path-service';
+import { enrichPath } from '@/lib/services/path-enrichment-service';
 import { checkAccess } from '@/lib/services/billing-service';
+
+// Path generation + post-response enrichment (mnemonics, images, TTS) need
+// far more than the default budget; after() shares this route's duration.
+export const maxDuration = 300;
 
 export async function POST(request: NextRequest) {
   const ip = request.headers.get('x-forwarded-for') ?? 'anonymous';
@@ -45,7 +50,10 @@ export async function POST(request: NextRequest) {
     }
 
     const { languageId, userInput } = parsed.data;
-    const path = await generateCustomPath(session.user.id, userInput, languageId);
+    const userId = session.user.id;
+    const path = await generateCustomPath(userId, userInput, languageId);
+
+    after(() => enrichPath(path.id, userId));
 
     return NextResponse.json<ApiResponse<Path>>({
       data: path,

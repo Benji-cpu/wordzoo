@@ -1,11 +1,16 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import { stripe } from '@/lib/billing/stripe';
 import { generateStudioPath } from '@/lib/services/studio-service';
+import { enrichPath } from '@/lib/services/path-enrichment-service';
 import {
   insertStudioPathPurchase,
   getStudioPathPurchaseBySessionId,
   consumeStudioPathPurchase,
 } from '@/lib/db/queries';
+
+// Path generation + post-response enrichment (mnemonics, images, TTS) need
+// far more than the default budget; after() shares this route's duration.
+export const maxDuration = 300;
 
 export async function GET(request: NextRequest) {
   const sessionId = request.nextUrl.searchParams.get('session_id');
@@ -47,6 +52,8 @@ export async function GET(request: NextRequest) {
     if (existing && !existing.consumed_at) {
       await consumeStudioPathPurchase(existing.id, path.id);
     }
+
+    after(() => enrichPath(path.id, userId));
 
     return NextResponse.redirect(new URL(`/paths/${path.id}`, request.url));
   } catch (error) {

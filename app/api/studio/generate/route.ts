@@ -1,15 +1,20 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import { StudioGenerateSchema } from '@/types/api';
 import type { ApiResponse } from '@/types/api';
 import type { Path } from '@/types/database';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { auth } from '@/lib/auth';
 import { generateStudioPath } from '@/lib/services/studio-service';
+import { enrichPath } from '@/lib/services/path-enrichment-service';
 import {
   getUserById,
   getUnconsumedStudioPathPurchase,
   consumeStudioPathPurchase,
 } from '@/lib/db/queries';
+
+// Path generation + post-response enrichment (mnemonics, images, TTS) need
+// far more than the default budget; after() shares this route's duration.
+export const maxDuration = 300;
 
 export async function POST(request: NextRequest) {
   const ip = request.headers.get('x-forwarded-for') ?? 'anonymous';
@@ -63,6 +68,8 @@ export async function POST(request: NextRequest) {
     if (purchase) {
       await consumeStudioPathPurchase(purchase.id, path.id);
     }
+
+    after(() => enrichPath(path.id, userId));
 
     return NextResponse.json<ApiResponse<{ path: Path }>>({
       data: { path },

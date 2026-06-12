@@ -15,6 +15,7 @@ import {
   getLanguageById,
   getUserKnownWords,
   getPathById,
+  setPathEnrichmentStatus,
 } from '@/lib/db/queries';
 import { generateText, generateChat } from '@/lib/ai/gemini';
 import {
@@ -384,6 +385,10 @@ export async function generateStudioPath(
     status: 'completed',
     pathId: path.id,
   });
+
+  // Mnemonics + audio are filled in asynchronously after the response
+  // (see path-enrichment-service); flag the path so the UI can show progress.
+  await setPathEnrichmentStatus(path.id, 'pending');
 
   return path;
 }

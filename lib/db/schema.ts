@@ -130,6 +130,7 @@ CREATE TABLE IF NOT EXISTS paths (
   type TEXT NOT NULL DEFAULT 'premade' CHECK (type IN ('premade', 'custom', 'travel')),
   title TEXT NOT NULL,
   description TEXT,
+  enrichment_status TEXT NOT NULL DEFAULT 'none',
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

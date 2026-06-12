@@ -533,6 +533,57 @@ export async function insertPathWord(
   `;
 }
 
+export type PathEnrichmentStatus = 'none' | 'pending' | 'processing' | 'done' | 'partial';
+
+export async function setPathEnrichmentStatus(
+  pathId: string,
+  status: PathEnrichmentStatus
+): Promise<void> {
+  await sql`UPDATE paths SET enrichment_status = ${status} WHERE id = ${pathId}`;
+}
+
+export interface WordNeedingEnrichment {
+  id: string;
+  text: string;
+  romanization: string | null;
+  language_code: string;
+  needs_mnemonic: boolean;
+  needs_audio: boolean;
+}
+
+/**
+ * Words in a path that lack a mnemonic and/or pronunciation audio, ordered
+ * scene-by-scene so the first scene the user opens is enriched first.
+ */
+export async function getPathWordsNeedingEnrichment(
+  pathId: string
+): Promise<WordNeedingEnrichment[]> {
+  const rows = await sql`
+    SELECT DISTINCT ON (w.id)
+      w.id,
+      w.text,
+      w.romanization,
+      l.code AS language_code,
+      NOT EXISTS (SELECT 1 FROM mnemonics m WHERE m.word_id = w.id) AS needs_mnemonic,
+      (w.pronunciation_audio_url IS NULL) AS needs_audio,
+      s.sort_order AS scene_order,
+      sw.sort_order AS word_order
+    FROM scenes s
+    JOIN scene_words sw ON sw.scene_id = s.id
+    JOIN words w ON w.id = sw.word_id
+    JOIN languages l ON l.id = w.language_id
+    WHERE s.path_id = ${pathId}
+    ORDER BY w.id, s.sort_order, sw.sort_order
+  `;
+  return (rows as Array<WordNeedingEnrichment & { scene_order: number; word_order: number }>)
+    .filter((r) => r.needs_mnemonic || r.needs_audio)
+    .sort((a, b) => a.scene_order - b.scene_order || a.word_order - b.word_order);
+}
+
+export async function updateWordAudioUrl(wordId: string, url: string): Promise<void> {
+  await sql`UPDATE words SET pronunciation_audio_url = ${url} WHERE id = ${wordId}`;
+}
+
 export async function insertWord(data: {
   languageId: string;
   text: string;

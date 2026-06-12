@@ -53,7 +53,11 @@ export async function generateMnemonic(
 
   const response = await generateText(prompt, {
     temperature: 0.9,
-    maxOutputTokens: 2048,
+    // 2048 clipped verbose candidates mid-string (same issue as the
+    // feedback-regen path); JSON mode stops single-quote/trailing-comma
+    // output that parseCandidates can't handle.
+    maxOutputTokens: 8192,
+    responseMimeType: 'application/json',
   });
 
   const candidates = parseCandidates(response.text);
@@ -89,7 +93,8 @@ export async function regenerateMnemonic(
 
   const response = await generateText(prompt, {
     temperature: 0.95,
-    maxOutputTokens: 2048,
+    maxOutputTokens: 8192,
+    responseMimeType: 'application/json',
   });
 
   const candidates = parseCandidates(response.text);

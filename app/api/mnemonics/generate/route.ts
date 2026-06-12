@@ -51,7 +51,15 @@ export async function POST(request: NextRequest) {
     const result = await generateMnemonic(wordId, userId);
     const candidate = result.candidates[result.recommended];
 
-    const imageUrl = await generateSceneImage(candidate.imagePrompt);
+    // A mnemonic without an image still renders via the keyword fallback
+    // card — don't let image generation (Blob quota, model hiccups) sink
+    // the whole mnemonic.
+    let imageUrl: string | null = null;
+    try {
+      imageUrl = await generateSceneImage(candidate.imagePrompt);
+    } catch (error) {
+      console.error('Mnemonic image generation failed, saving without image:', error);
+    }
     const mnemonic = await saveMnemonic(wordId, userId, candidate, imageUrl);
 
     return NextResponse.json<ApiResponse<GenerateResponse>>({

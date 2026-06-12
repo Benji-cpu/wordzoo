@@ -13,6 +13,7 @@ import {
   insertScene,
   insertSceneWord,
   insertPathWord,
+  setPathEnrichmentStatus,
 } from '@/lib/db/queries';
 import { upsertUserPath } from '@/lib/db/queries';
 
@@ -112,6 +113,10 @@ async function buildPath(
 
   // Set as user's active path
   await upsertUserPath(userId, path.id, 'active');
+
+  // Mnemonics + audio are filled in asynchronously after the response
+  // (see path-enrichment-service); flag the path so the UI can show progress.
+  await setPathEnrichmentStatus(path.id, 'pending');
 
   return path;
 }

@@ -11,6 +11,10 @@ const VOICE_CONFIG: Record<string, { languageCode: string; name: string }> = {
   en: { languageCode: 'en-US', name: 'en-US-Neural2-C' },
 };
 
+export function hasTtsVoice(langCode: string): boolean {
+  return Boolean(VOICE_CONFIG[langCode]);
+}
+
 export async function synthesizeSpeech(
   text: string,
   langCode: string,
