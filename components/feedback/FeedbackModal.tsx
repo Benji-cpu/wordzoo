@@ -33,7 +33,7 @@ export function FeedbackModal({ isOpen, onClose, context, screenshotBlob, domain
 
   // Voice feedback: auto-start dictation on open, fold speech into the message,
   // stop on send/close (user request — "record on open, stop+send on enter").
-  const { isListening, transcript, startListening, stopListening, supported: voiceSupported } =
+  const { isListening, transcript, startListening, stopListening, supported: voiceSupported, error: voiceError } =
     useSpeechInput('en-US');
   const dictationBaseRef = useRef('');
 
@@ -252,13 +252,25 @@ export function FeedbackModal({ isOpen, onClose, context, screenshotBlob, domain
                     disabled={state === 'sending'}
                   />
 
+                  {/* Voice input failure hint — never fail silently */}
+                  {voiceError && !isListening && (
+                    <p className="text-xs text-amber-600 dark:text-amber-400 mt-2" role="status">
+                      {voiceError}
+                    </p>
+                  )}
+                  {!voiceSupported && (
+                    <p className="text-xs text-text-secondary/80 mt-2" role="status">
+                      Voice input isn&rsquo;t supported in this browser — type your feedback below.
+                    </p>
+                  )}
+
                   <div className="flex items-center justify-between mt-3">
                     {voiceSupported ? (
                       <button
                         type="button"
                         onClick={toggleDictation}
                         aria-pressed={isListening}
-                        aria-label={isListening ? 'Stop voice input' : 'Start voice input'}
+                        aria-label={isListening ? 'Stop voice input' : voiceError ? 'Try voice input again' : 'Start voice input'}
                         className={`inline-flex items-center gap-1.5 px-3 h-11 rounded-xl text-sm font-semibold transition-colors ${
                           isListening
                             ? 'bg-red-500/15 text-red-500 border border-red-500/30'
@@ -269,7 +281,7 @@ export function FeedbackModal({ isOpen, onClose, context, screenshotBlob, domain
                           <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
                           <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4" />
                         </svg>
-                        {isListening ? 'Listening…' : 'Speak'}
+                        {isListening ? 'Listening…' : voiceError ? 'Try again' : 'Speak'}
                       </button>
                     ) : <span />}
                     <div className="flex gap-2 items-center">

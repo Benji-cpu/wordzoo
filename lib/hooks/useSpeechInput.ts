@@ -98,22 +98,6 @@ export function useSpeechInput(langCode: string) {
     }
     setError(null);
 
-    // Request mic access for audio visualization
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      streamRef.current = stream;
-      const audioContext = new AudioContext();
-      audioContextRef.current = audioContext;
-      const analyser = audioContext.createAnalyser();
-      analyser.fftSize = 256;
-      analyserRef.current = analyser;
-      const source = audioContext.createMediaStreamSource(stream);
-      source.connect(analyser);
-      startAudioLoop(analyser);
-    } catch {
-      // Visualization unavailable — still proceed with speech recognition
-    }
-
     const recognition = new SpeechRecognition();
     recognition.continuous = true;   // Stay active until user stops
     recognition.interimResults = true;
@@ -129,9 +113,17 @@ export function useSpeechInput(langCode: string) {
 
     recognition.onerror = (event: { error: string }) => {
       // 'no-speech' is non-fatal when continuous — ignore it
-      if (event.error !== 'no-speech') {
-        stopListening();
+      if (event.error === 'no-speech') return;
+      if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+        setError('Microphone access is blocked. Allow it in your browser settings to dictate, or just type below.');
+      } else if (event.error === 'audio-capture') {
+        setError('No microphone found. Check your device and try again, or just type below.');
+      } else if (event.error === 'network') {
+        setError('Speech recognition needs a network connection. Try again, or just type below.');
+      } else if (event.error !== 'aborted') {
+        setError('Voice input stopped unexpectedly. Tap the mic to try again.');
       }
+      stopListening();
     };
 
     recognition.onend = () => {
@@ -143,8 +135,36 @@ export function useSpeechInput(langCode: string) {
 
     recognitionRef.current = recognition;
     setTranscript('');
-    setIsListening(true);
-    recognition.start();
+    // Start recognition synchronously within the user gesture — awaiting
+    // getUserMedia first breaks the gesture chain on iOS Safari.
+    try {
+      recognition.start();
+      setIsListening(true);
+    } catch {
+      recognitionRef.current = null;
+      setError('Voice input could not start. Tap the mic to try again.');
+      return;
+    }
+
+    // Mic stream for the audio-level visualization — best-effort, after start.
+    navigator.mediaDevices?.getUserMedia({ audio: true }).then((stream) => {
+      if (!recognitionRef.current) {
+        // Recognition already stopped while we waited for permission
+        stream.getTracks().forEach((t) => t.stop());
+        return;
+      }
+      streamRef.current = stream;
+      const audioContext = new AudioContext();
+      audioContextRef.current = audioContext;
+      const analyser = audioContext.createAnalyser();
+      analyser.fftSize = 256;
+      analyserRef.current = analyser;
+      const source = audioContext.createMediaStreamSource(stream);
+      source.connect(analyser);
+      startAudioLoop(analyser);
+    }).catch(() => {
+      // Visualization unavailable — recognition keeps running
+    });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [langCode]);
 
@@ -155,5 +175,8 @@ export function useSpeechInput(langCode: string) {
     stopAudio();
   }, []);
 
-  return { isListening, transcript, audioLevel, startListening, stopListening, supported, error };
+  const status: 'unsupported' | 'listening' | 'error' | 'idle' =
+    !supported ? 'unsupported' : isListening ? 'listening' : error ? 'error' : 'idle';
+
+  return { isListening, transcript, audioLevel, startListening, stopListening, supported, error, status };
 }
