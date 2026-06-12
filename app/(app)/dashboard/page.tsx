@@ -217,6 +217,11 @@ export default async function DashboardPage() {
       {/* Daily Info Byte */}
       {todayInfoByte && (
         <InfoByteCard
+          languageCode={
+            language?.code === 'id' || language?.code === 'es' || language?.code === 'ja' || language?.code === 'pt'
+              ? language.code
+              : undefined
+          }
           category={todayInfoByte.category}
           topicSummary={todayInfoByte.topic_summary}
           easyTarget={todayInfoByte.easy_target}

@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
+import { speakText, stopPlayback } from '@/lib/audio/pronunciation';
+import type { SupportedLanguageCode } from '@/types/audio';
 import type { InfoByteDifficulty } from '@/types/database';
 
 const DIFFICULTIES: { value: InfoByteDifficulty; label: string }[] = [
@@ -33,6 +35,7 @@ interface InfoByteCardProps {
   mediumEnglish: string;
   hardTarget: string;
   hardEnglish: string;
+  languageCode?: SupportedLanguageCode;
 }
 
 export function InfoByteCard({
@@ -44,21 +47,47 @@ export function InfoByteCard({
   mediumEnglish,
   hardTarget,
   hardEnglish,
+  languageCode,
 }: InfoByteCardProps) {
   const [difficulty, setDifficulty] = useState<InfoByteDifficulty>('easy');
   const [revealed, setRevealed] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
+  const [canSpeak, setCanSpeak] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved === 'easy' || saved === 'medium' || saved === 'hard') {
       setDifficulty(saved);
     }
+    setCanSpeak(typeof window !== 'undefined' && 'speechSynthesis' in window);
   }, []);
+
+  // Stop any in-flight narration when the card unmounts.
+  useEffect(() => () => stopPlayback(), []);
 
   function handleDifficultyChange(d: InfoByteDifficulty) {
     setDifficulty(d);
     setRevealed(false);
+    stopPlayback();
+    setSpeaking(false);
     localStorage.setItem(STORAGE_KEY, d);
+  }
+
+  async function handleSpeak(text: string) {
+    if (!languageCode) return;
+    if (speaking) {
+      stopPlayback();
+      setSpeaking(false);
+      return;
+    }
+    setSpeaking(true);
+    try {
+      await speakText(text, languageCode);
+    } catch {
+      // Voice unavailable — silently ignore.
+    } finally {
+      setSpeaking(false);
+    }
   }
 
   const targetText = difficulty === 'easy' ? easyTarget : difficulty === 'medium' ? mediumTarget : hardTarget;
@@ -75,6 +104,29 @@ export function InfoByteCard({
         <div className="flex items-center gap-2">
           <span className="text-sm font-semibold text-foreground">Daily Dose</span>
           <Badge>{formatCategory(category)}</Badge>
+          {canSpeak && languageCode && (
+            <button
+              onClick={() => handleSpeak(targetText)}
+              aria-label={speaking ? 'Stop reading aloud' : 'Read aloud'}
+              className={`w-7 h-7 flex items-center justify-center rounded-full transition-colors ${
+                speaking
+                  ? 'bg-accent-default text-white'
+                  : 'text-text-secondary hover:text-foreground hover:bg-surface-inset'
+              }`}
+            >
+              {speaking ? (
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                  <rect x="6" y="6" width="12" height="12" rx="2" />
+                </svg>
+              ) : (
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor" stroke="none" />
+                  <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+                </svg>
+              )}
+            </button>
+          )}
         </div>
 
         {/* Difficulty toggle */}

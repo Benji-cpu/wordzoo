@@ -204,6 +204,19 @@ async function playViaTTS(
   return speakWithPromise(utterance);
 }
 
+/**
+ * Speak arbitrary target-language text via the browser's speech synthesis.
+ * Used by surfaces without pre-seeded audio (e.g. the daily info byte).
+ */
+export async function speakText(
+  text: string,
+  langCode: SupportedLanguageCode
+): Promise<void> {
+  stopPlayback();
+  const speed = getPlaybackSpeed();
+  return playViaTTS(text, langCode, speed);
+}
+
 export function stopPlayback(): void {
   speechSynthesis.cancel();
   if (currentAudio) {

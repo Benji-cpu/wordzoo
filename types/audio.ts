@@ -1,6 +1,6 @@
 // --- Audio Engine Types ---
 
-export type SupportedLanguageCode = 'id' | 'es' | 'ja';
+export type SupportedLanguageCode = 'id' | 'es' | 'ja' | 'pt';
 
 export interface LanguageVoiceConfig {
   bcp47: string;

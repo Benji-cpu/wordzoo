@@ -4,6 +4,7 @@ export const LANGUAGE_VOICE_MAP: Record<SupportedLanguageCode, LanguageVoiceConf
   id: { bcp47: 'id-ID', fallbackBcp47: 'ms-MY', speechRecognitionSupported: true },
   es: { bcp47: 'es-MX', fallbackBcp47: 'es-ES', speechRecognitionSupported: true },
   ja: { bcp47: 'ja-JP', fallbackBcp47: 'ja-JP', speechRecognitionSupported: false },
+  pt: { bcp47: 'pt-BR', fallbackBcp47: 'pt-PT', speechRecognitionSupported: true },
 };
 
 const voiceCache = new Map<string, SpeechSynthesisVoice>();
@@ -37,6 +38,9 @@ export async function getVoiceForLanguage(
 
   await waitForVoices();
   const config = LANGUAGE_VOICE_MAP[langCode];
+  // Unknown language code (e.g. a stream added before this map learns about
+  // it): fall back to a prefix match on the code itself rather than crashing.
+  if (!config) return findVoice(langCode) ?? null;
   const voice = findVoice(config.bcp47) ?? findVoice(config.fallbackBcp47) ?? null;
   if (voice) voiceCache.set(langCode, voice);
   return voice;
