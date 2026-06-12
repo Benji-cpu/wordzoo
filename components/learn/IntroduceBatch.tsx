@@ -119,15 +119,6 @@ export function IntroduceBatch({
       .catch(() => {});
   }, [recordIntroduce, stepIdx, steps, words, onIntroduceBlocked]);
 
-  // If generation failed for the current word's mnemonic, skip its card
-  // rather than stranding the user on a spinner.
-  useEffect(() => {
-    const step = steps[stepIdx];
-    if (!step || step.sub !== 'mnemonic') return;
-    const w = words[step.wordIdx];
-    if (w && !w.mnemonic && failedMnemonics.has(w.word.id)) advance();
-  }, [stepIdx, steps, words, failedMnemonics, advance]);
-
   if (words.length === 0) {
     // Defensive: empty batch — hand off immediately.
     onComplete();
@@ -188,8 +179,10 @@ export function IntroduceBatch({
   const mnemonic = word.mnemonic ?? generatedMnemonics[word.word.id] ?? null;
 
   if (!mnemonic) {
-    // Generation in flight (AI-path enrichment hasn't caught up). Never a
-    // dead end: the user can move on and the mnemonic lands by review time.
+    // Generation in flight (AI-path enrichment hasn't caught up) or failed.
+    // Never a dead end: the user can always move on, and an in-flight
+    // mnemonic lands by review time.
+    const failed = failedMnemonics.has(word.word.id);
     return (
       <div className="flex flex-col items-center justify-center text-center py-12 px-6 animate-fade-in">
         <span
@@ -198,15 +191,21 @@ export function IntroduceBatch({
         >
           {word.word.text}
         </span>
-        <p className="text-sm text-[color:var(--text-secondary)] mb-6 animate-pulse">
-          Conjuring a memory trick for this word…
+        <p className={`text-sm text-[color:var(--text-secondary)] mb-6 ${failed ? '' : 'animate-pulse'}`}>
+          {failed
+            ? 'No memory trick this time — straight to the drill.'
+            : 'Conjuring a memory trick for this word…'}
         </p>
         <button
           type="button"
           onClick={advance}
-          className="px-4 py-2 rounded-xl text-sm font-bold text-[color:var(--text-secondary)] hover:text-[color:var(--foreground)] transition-colors"
+          className={
+            failed
+              ? 'rounded-xl bg-[color:var(--color-fox-primary)] text-white font-bold py-3 px-6 active:scale-[0.98] transition'
+              : 'px-4 py-2 rounded-xl text-sm font-bold text-[color:var(--text-secondary)] hover:text-[color:var(--foreground)] transition-colors'
+          }
         >
-          Skip ahead →
+          {failed ? 'Continue →' : 'Skip ahead →'}
         </button>
       </div>
     );
