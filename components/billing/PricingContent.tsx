@@ -28,7 +28,7 @@ const PREMIUM_FEATURES = [
   'Priority support',
 ];
 
-export default function PricingPage() {
+export function PricingContent({ isAuthed }: { isAuthed: boolean }) {
   const searchParams = useSearchParams();
   const success = searchParams.get('success');
   const canceled = searchParams.get('canceled');
@@ -140,9 +140,15 @@ export default function PricingPage() {
               </li>
             ))}
           </ul>
-          <Button className="w-full" onClick={handleCheckout} disabled={loading}>
-            {loading ? 'Loading...' : `Get Premium — ${PLANS[billing].price}${PLANS[billing].period}`}
-          </Button>
+          {isAuthed ? (
+            <Button className="w-full" onClick={handleCheckout} disabled={loading}>
+              {loading ? 'Loading...' : `Get Premium — ${PLANS[billing].price}${PLANS[billing].period}`}
+            </Button>
+          ) : (
+            <Button className="w-full" href="/signup">
+              Create free account
+            </Button>
+          )}
         </Card>
       </div>
     </div>
