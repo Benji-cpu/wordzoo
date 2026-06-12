@@ -10,6 +10,8 @@ CREATE TABLE IF NOT EXISTS users (
   subscription_tier TEXT NOT NULL DEFAULT 'free' CHECK (subscription_tier IN ('free', 'premium')),
   preferences JSONB NOT NULL DEFAULT '{"audio_speed": 1, "absurdity_level": "medium", "hands_free_mode": false}',
   bonus_premium_until TIMESTAMPTZ,
+  email_reminders_enabled BOOLEAN NOT NULL DEFAULT TRUE,
+  unsubscribe_token UUID NOT NULL DEFAULT gen_random_uuid(),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

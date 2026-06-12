@@ -14,6 +14,7 @@ import { LanguageSection } from './LanguageSection';
 import { PersonaSection } from './PersonaSection';
 import { firstNameOf } from '@/lib/learn/personalize';
 import { TripSection } from './TripSection';
+import { EmailSection } from './EmailSection';
 import { FeedbackSection } from './FeedbackSection';
 import { DangerSection } from './DangerSection';
 
@@ -82,6 +83,7 @@ export default async function SettingsPage() {
       />
       <PersonaSection initialName={personaName} initialGender={personaGender} />
       <TripSection targetLanguageCode={activeLanguage?.code ?? null} />
+      <EmailSection />
       <FeedbackSection />
       {profile && <DangerSection userEmail={profile.email} />}
     </div>
