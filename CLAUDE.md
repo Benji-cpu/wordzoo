@@ -41,6 +41,7 @@ The nightly feedback triage runs as a **two-stage pipeline** with `digests/YYYY-
 | `reset-usage` | Vercel Cron | `0 0 * * *` | `/api/cron/reset-usage` |
 | `generate-info-byte` | Vercel Cron | `0 1 * * *` | `/api/cron/generate-info-byte` |
 | `check-subscriptions` | Vercel Cron | `0 3 * * *` | `/api/cron/check-subscriptions` |
+| `daily-reminders` | Vercel Cron | `0 9 * * *` (≈17:00 Bali) | `/api/cron/daily-reminders` — retention emails (streak nudges weekdays, weekly recap Sundays); no-ops without `RESEND_API_KEY` |
 | `nightly-routine` (prepare) | Vercel Cron | `27 19 * * *` (≈03:27 Bali) | `/api/cron/nightly-routine` |
 | `nightly-routine` (synth) | Claude Code remote agent | `32 19 * * *` (≈03:32 Bali) | `.claude/agents/nightly-routine.md` |
 
@@ -117,7 +118,7 @@ Stripe handles subscriptions (monthly/yearly) and one-time travel pack purchases
 
 `DATABASE_URL`, `AUTH_SECRET`, `AUTH_URL`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`, `GOOGLE_GEMINI_API_KEY`, `GOOGLE_CLOUD_TTS_API_KEY`, `STABILITY_AI_API_KEY`, `BLOB_READ_WRITE_TOKEN`, `STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_PRICE_MONTHLY`, `STRIPE_PRICE_YEARLY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_APP_URL`, `CRON_SECRET` (also set as GitHub repo secret), `ADMIN_EMAILS`, `GITHUB_PAT_REPO_WRITE` (fine-grained PAT scoped to `Benji-cpu/wordzoo` with `Contents: write` — used by `/api/cron/nightly-routine` to write `digests/YYYY-MM-DD.json`)
 
-**Optional (future):** `RESEND_API_KEY`, `ADMIN_EMAIL` — required if/when the nightly digest is wired up to email the summary.
+**Optional:** `RESEND_API_KEY`, `EMAIL_FROM` — the retention email system (`/api/cron/daily-reminders`, `lib/services/email-service.ts`) is fully wired but skips every send (cron stays green) until `RESEND_API_KEY` is set in Vercel. `EMAIL_FROM` defaults to Resend's test sender (`onboarding@resend.dev`, delivers only to the Resend account owner) until a sending domain is verified. `ADMIN_EMAIL` — reserved for the nightly digest email.
 
 **`ADMIN_EMAILS`** is comma-separated and gates `/admin/*` pages and `/api/admin/*` routes via `app/(app)/admin/layout.tsx`. If unset, admin pages refuse all users. Must include both `b.hemsonstruthers@gmail.com` and `profbenjo@gmail.com` (Benji's two power-user accounts).
 
