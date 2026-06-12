@@ -716,6 +716,7 @@ export function SceneFlowClient({
         state.step === 'show' ? (
           <PhraseCard
             phrase={phrases[state.phraseIndex]}
+            languageCode={languageCode}
             onContinue={handlePhraseContinue}
           />
         ) : (

@@ -50,6 +50,7 @@ export function TappableWord({ word, children }: TappableWordProps) {
               src={word.mnemonic.image_url}
               alt={word.mnemonic.keyword_text}
               className="w-20 h-20 rounded-lg object-cover mx-auto mb-2"
+              onError={(e) => { e.currentTarget.style.display = 'none'; }}
             />
           )}
           {word.mnemonic?.keyword_text && (

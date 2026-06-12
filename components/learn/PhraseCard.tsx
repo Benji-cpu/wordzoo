@@ -3,8 +3,9 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { Card } from '@/components/ui/Card';
 import { MnemonicImage } from '@/components/shared/MnemonicImage';
-import { stopPlayback, isAudioUnlocked } from '@/lib/audio';
+import { stopPlayback, isAudioUnlocked, playPhraseAudio } from '@/lib/audio';
 import type { ScenePhrase } from '@/types/database';
+import type { PlaybackSpeed } from '@/types/audio';
 
 function renderBridgeSentence(sentence: string) {
   const parts = sentence.split(/\b([A-Z]{2,}(?:\s+[A-Z]{2,})*)\b/);
@@ -20,45 +21,47 @@ function renderBridgeSentence(sentence: string) {
 interface PhraseCardProps {
   phrase: ScenePhrase;
   onContinue: () => void;
+  /** Target language code — enables browser-TTS fallback when audio_url is missing or fails. */
+  languageCode?: string | null;
 }
 
-function playAudioAtRate(url: string, rate: number): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const audio = new Audio(url);
-    audio.playbackRate = rate;
-    audio.onended = () => resolve();
-    audio.onerror = () => reject(new Error('Audio playback failed'));
-    audio.play().catch(reject);
-  });
-}
-
-export function PhraseCard({ phrase, onContinue }: PhraseCardProps) {
+export function PhraseCard({ phrase, onContinue, languageCode }: PhraseCardProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const autoPlayedRef = useRef(false);
 
+  const canPlay = Boolean(phrase.audio_url || languageCode);
+
+  const playPhrase = useCallback((rate: PlaybackSpeed = 1.0) => {
+    return playPhraseAudio(phrase.audio_url, {
+      text: phrase.text_target,
+      languageCode,
+      rate,
+    });
+  }, [phrase.audio_url, phrase.text_target, languageCode]);
+
   // Auto-play audio when the card appears
   useEffect(() => {
-    if (!phrase.audio_url || autoPlayedRef.current || !isAudioUnlocked()) return;
+    if (!canPlay || autoPlayedRef.current || !isAudioUnlocked()) return;
     autoPlayedRef.current = true;
 
     const timer = setTimeout(() => {
       setIsPlaying(true);
-      playAudioAtRate(phrase.audio_url!, 1.0)
+      playPhrase()
         .catch(() => {})
         .finally(() => setIsPlaying(false));
     }, 300); // Small delay for the card animation
 
     return () => clearTimeout(timer);
-  }, [phrase.audio_url]);
+  }, [canPlay, playPhrase]);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => stopPlayback();
   }, []);
 
-  const handleReplay = useCallback(async (e: React.MouseEvent, rate = 1.0) => {
+  const handleReplay = useCallback(async (e: React.MouseEvent, rate: PlaybackSpeed = 1.0) => {
     e.stopPropagation();
-    if (!phrase.audio_url) return;
+    if (!canPlay) return;
     if (isPlaying) {
       stopPlayback();
       setIsPlaying(false);
@@ -66,16 +69,16 @@ export function PhraseCard({ phrase, onContinue }: PhraseCardProps) {
     }
     setIsPlaying(true);
     try {
-      await playAudioAtRate(phrase.audio_url, rate);
+      await playPhrase(rate);
     } catch {
       // ignore
     } finally {
       setIsPlaying(false);
     }
-  }, [phrase.audio_url, isPlaying]);
+  }, [canPlay, playPhrase, isPlaying]);
 
   const handleSlowReplay = useCallback((e: React.MouseEvent) => {
-    handleReplay(e, 0.7);
+    handleReplay(e, 0.75);
   }, [handleReplay]);
 
   return (
@@ -105,12 +108,12 @@ export function PhraseCard({ phrase, onContinue }: PhraseCardProps) {
         </p>
       )}
 
-      {phrase.audio_url && (
+      {canPlay && (
         <div className="flex items-center justify-center gap-2 mb-3" onClick={(e) => e.stopPropagation()}>
           <button
             type="button"
             onClick={(e) => handleReplay(e)}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+            className={`inline-flex items-center gap-1.5 px-3 min-h-11 rounded-full text-xs font-medium transition-colors ${
               isPlaying
                 ? 'bg-accent-id/20 text-accent-id border border-accent-id/40'
                 : 'bg-card-surface text-text-secondary border border-card-border hover:border-accent-id/30'
@@ -127,14 +130,14 @@ export function PhraseCard({ phrase, onContinue }: PhraseCardProps) {
           <button
             type="button"
             onClick={handleSlowReplay}
-            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium text-text-secondary bg-card-surface border border-card-border hover:border-accent-id/30 transition-colors"
+            className="inline-flex items-center gap-1 px-2.5 min-h-11 rounded-full text-xs font-medium text-text-secondary bg-card-surface border border-card-border hover:border-accent-id/30 transition-colors"
             aria-label="Play at slow speed"
           >
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="10" />
               <polyline points="12 6 12 12 8 14" />
             </svg>
-            0.7x
+            0.75x
           </button>
         </div>
       )}

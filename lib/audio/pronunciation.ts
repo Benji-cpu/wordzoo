@@ -150,7 +150,11 @@ export async function playWordPronunciation(
   if (!word) return;
 
   if (word.pronunciation_audio_url) {
-    return playAudioUrl(word.pronunciation_audio_url, speed);
+    try {
+      return await playAudioUrl(word.pronunciation_audio_url, speed);
+    } catch {
+      // URL failed (e.g. blob storage outage), fall through to TTS
+    }
   }
 
   return playViaTTS(word.text, word.language_code, speed);
@@ -202,6 +206,36 @@ async function playViaTTS(
   if (voice) utterance.voice = voice;
   utterance.rate = speed;
   return speakWithPromise(utterance);
+}
+
+interface PlayPhraseOptions {
+  text: string;
+  languageCode?: SupportedLanguageCode | string | null;
+  rate?: PlaybackSpeed;
+}
+
+/**
+ * Play a phrase: pre-generated audio URL first, falling back to browser TTS
+ * when the URL is missing or fails to load (e.g. blob storage outage).
+ */
+export async function playPhraseAudio(
+  url: string | null | undefined,
+  options: PlayPhraseOptions
+): Promise<void> {
+  stopPlayback();
+  const speed = options.rate ?? getPlaybackSpeed();
+
+  if (url) {
+    try {
+      return await playAudioUrl(url, speed);
+    } catch {
+      // URL failed, fall through to TTS
+    }
+  }
+
+  if (options.languageCode) {
+    return playViaTTS(options.text, options.languageCode as SupportedLanguageCode, speed);
+  }
 }
 
 /**

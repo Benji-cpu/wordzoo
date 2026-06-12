@@ -185,6 +185,7 @@ export function PhraseBlock({
         batch={batch}
         totalPhrases={phrases.length}
         globalIndexStart={phase.batchIndex * BATCH_SIZE}
+        languageCode={languageCode}
         onComplete={advanceFromIntro}
       />
     );
@@ -218,6 +219,7 @@ interface PhraseIntroBatchProps {
   batch: ScenePhraseWithMnemonics[];
   totalPhrases: number;
   globalIndexStart: number;
+  languageCode?: SupportedLanguageCode;
   onComplete: () => void;
 }
 
@@ -226,6 +228,7 @@ function PhraseIntroBatch({
   batch,
   totalPhrases,
   globalIndexStart,
+  languageCode,
   onComplete,
 }: PhraseIntroBatchProps) {
   const steps = useMemo<IntroStep[]>(() => {
@@ -289,6 +292,7 @@ function PhraseIntroBatch({
       <PhraseCard
         key={`pcard-${phrase.id}`}
         phrase={phrase}
+        languageCode={languageCode}
         onContinue={advance}
       />
     );
@@ -299,6 +303,7 @@ function PhraseIntroBatch({
     <PhraseBreakdown
       key={`pbreak-${phrase.id}`}
       phrase={phrase}
+      languageCode={languageCode}
       onContinue={advance}
     />
   );

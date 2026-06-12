@@ -150,14 +150,16 @@ export function MnemonicImage({
   onLoad,
 }: MnemonicImageProps) {
   const [loaded, setLoaded] = useState(false);
+  const [errored, setErrored] = useState(false);
   const [prevSrc, setPrevSrc] = useState(src);
   const [zoomed, setZoomed] = useState(false);
   if (src !== prevSrc) {
     setPrevSrc(src);
     setLoaded(false);
+    setErrored(false);
   }
 
-  if (!src) {
+  if (!src || errored) {
     if (fallback === null) return null;
     return <>{fallback ?? <DefaultFallback keyword={keyword} variant={variant} />}</>;
   }
@@ -184,6 +186,7 @@ export function MnemonicImage({
           setLoaded(true);
           onLoad?.();
         }}
+        onError={() => setErrored(true)}
         onClick={isZoomable ? (e) => { e.stopPropagation(); setZoomed(true); } : undefined}
       />
       {zoomed && (

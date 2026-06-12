@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Card } from '@/components/ui/Card';
 import { SwipeIndicators, getSwipeBorderStyle } from '@/components/learn/SwipeIndicators';
 import { MnemonicImage } from '@/components/shared/MnemonicImage';
+import { playPhraseAudio, stopPlayback, isAudioUnlocked } from '@/lib/audio';
 import type { PhraseWordMnemonic } from '@/types/database';
 
 function renderBridgeSentence(sentence: string) {
@@ -24,6 +25,8 @@ interface PhraseReviewCardProps {
   phraseBridgeSentence: string | null;
   compositeImageUrl: string | null;
   words?: PhraseWordMnemonic[];
+  audioUrl?: string | null;
+  languageCode?: string | null;
   mode: 'recognition' | 'production';
   onReveal: () => void;
   revealed: boolean;
@@ -36,6 +39,8 @@ export function PhraseReviewCard({
   phraseBridgeSentence,
   compositeImageUrl,
   words = [],
+  audioUrl = null,
+  languageCode = null,
   mode,
   onReveal,
   revealed,
@@ -45,6 +50,22 @@ export function PhraseReviewCard({
   const [showWordBreakdown, setShowWordBreakdown] = useState(autoExpand);
   const [swipeX, setSwipeX] = useState(0);
   const startXRef = useRef(0);
+
+  const playPhrase = useCallback(() => {
+    return playPhraseAudio(audioUrl, { text: textTarget, languageCode }).catch(() => {});
+  }, [audioUrl, textTarget, languageCode]);
+
+  // Recognition mode: the target phrase IS the question — speak it on mount.
+  useEffect(() => {
+    if (mode === 'recognition' && isAudioUnlocked()) playPhrase();
+  }, [mode, playPhrase]);
+
+  // Both modes: speak the target phrase when the answer is revealed.
+  useEffect(() => {
+    if (revealed && mode === 'production' && isAudioUnlocked()) playPhrase();
+  }, [revealed, mode, playPhrase]);
+
+  useEffect(() => () => stopPlayback(), []);
 
   useEffect(() => {
     function onTouchStart(e: TouchEvent) {
@@ -125,6 +146,21 @@ export function PhraseReviewCard({
     transition: 'none',
   } : {};
 
+  const replayButton = (audioUrl || languageCode) ? (
+    <button
+      type="button"
+      onClick={(e) => { e.stopPropagation(); playPhrase(); }}
+      aria-label="Play phrase audio"
+      className="inline-flex items-center justify-center min-w-11 min-h-11 -my-2 rounded-full text-text-secondary hover:text-accent-id transition-colors align-middle"
+    >
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+        <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+        <path d="M19.07 4.93a10 10 0 0 1 0 14.14" opacity={0.5} />
+      </svg>
+    </button>
+  ) : null;
+
   return (
     <div style={swipeStyle} className="relative">
       {revealed && <SwipeIndicators swipeX={swipeX} />}
@@ -139,7 +175,7 @@ export function PhraseReviewCard({
             <p className="text-xs text-text-secondary uppercase tracking-wider mb-4">
               What does this mean?
             </p>
-            <h2 className="font-display text-[color:var(--color-fox-primary)] leading-[1.05] mb-3" style={{ fontSize: 'clamp(1.75rem, 6.8vw, 2.5rem)' }}>{textTarget}</h2>
+            <h2 className="font-display text-[color:var(--color-fox-primary)] leading-[1.05] mb-3" style={{ fontSize: 'clamp(1.75rem, 6.8vw, 2.5rem)' }}>{textTarget}{replayButton}</h2>
 
             {revealed && (
               <div className="mt-3 pt-3 border-t border-card-border animate-slide-up">
@@ -189,7 +225,7 @@ export function PhraseReviewCard({
 
             {revealed && (
               <div className="mt-3 pt-3 border-t border-card-border animate-slide-up">
-                <p className="font-display text-[color:var(--color-fox-primary)] leading-[1.05] mb-3" style={{ fontSize: 'clamp(1.65rem, 6.5vw, 2.25rem)' }}>{textTarget}</p>
+                <p className="font-display text-[color:var(--color-fox-primary)] leading-[1.05] mb-3" style={{ fontSize: 'clamp(1.65rem, 6.5vw, 2.25rem)' }}>{textTarget}{replayButton}</p>
                 {literalTranslation && (
                   <p className="text-sm text-text-secondary italic mb-3">
                     Literally: &ldquo;{literalTranslation}&rdquo;
