@@ -1,0 +1,19 @@
+{
+  "project": "wordzoo",
+  "today": "2026-07-04",
+  "startedAt": "2026-07-03T19:33:05.636Z",
+  "finishedAt": "2026-07-03T19:33:06.624Z",
+  "feedback": {
+    "byStatus": {
+      "actioned": 138,
+      "dismissed": 1
+    },
+    "newLast24h": 0,
+    "pendingRows": []
+  },
+  "health": {
+    "stuckMnemonicsLast72h": 1,
+    "overdueReviews": 148
+  },
+  "errors": []
+}
