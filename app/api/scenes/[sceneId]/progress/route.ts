@@ -4,7 +4,11 @@ import { UpdateSceneProgressSchema } from '@/types/api';
 import { auth } from '@/lib/auth';
 import { sql } from '@/lib/db/client';
 import { updateSceneProgress } from '@/lib/db/scene-flow-queries';
-import { incrementDailyUsageScenesCompleted, getDailyLearningStats } from '@/lib/db/queries';
+import {
+  incrementDailyUsageScenesCompleted,
+  getDailyLearningStats,
+  verifySceneAccess,
+} from '@/lib/db/queries';
 
 interface SceneProgress {
   learnedWordIds: string[];
@@ -24,6 +28,13 @@ export async function GET(
   }
 
   const { sceneId } = await params;
+  if (!(await verifySceneAccess(sceneId, session.user.id))) {
+    return NextResponse.json<ApiResponse<null>>(
+      { data: null, error: 'Not found' },
+      { status: 404 }
+    );
+  }
+
   const today = new Date().toISOString().split('T')[0];
 
   const [rows, dailyStats] = await Promise.all([
@@ -58,6 +69,13 @@ export async function POST(
   }
 
   const { sceneId } = await params;
+  if (!(await verifySceneAccess(sceneId, session.user.id))) {
+    return NextResponse.json<ApiResponse<null>>(
+      { data: null, error: 'Not found' },
+      { status: 404 }
+    );
+  }
+
   const body = await request.json();
   const parsed = UpdateSceneProgressSchema.safeParse(body);
   if (!parsed.success) {

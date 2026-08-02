@@ -8,6 +8,7 @@ import {
   upsertUserPath,
   getWordFamilies,
   getClozePhrasesForWord,
+  verifySceneAccess,
 } from '@/lib/db/queries';
 import { getSceneFlowData, getOrCreateSceneProgress } from '@/lib/db/scene-flow-queries';
 import { getUserProfile } from '@/lib/db/queries';
@@ -90,6 +91,21 @@ export default async function LearnPage({ params, searchParams }: PageProps) {
   const session = await auth();
   const userId = session?.user?.id ?? null;
   const userEmail = session?.user?.email ?? null;
+
+  // Access gate. This page previously rendered the full scene payload —
+  // dialogue, phrases, vocabulary, mnemonics — for ANY signed-in user, unlike
+  // its API twin at /api/scenes/[sceneId] which has always checked. That made
+  // every paid travel-pack scene and every other user's private path readable
+  // by anyone holding a scene UUID.
+  //
+  // It has to run before the upsertUserPath below, which would otherwise
+  // enroll the visitor in a stranger's path AND mark their own path abandoned.
+  if (!userId) {
+    redirect(`/login?return=/learn/${sceneId}`);
+  }
+  if (!(await verifySceneAccess(sceneId, userId))) {
+    return notFound();
+  }
 
   // Resolve Pedagogy v2 flags. Off in prod by default; admins on via the
   // ADMIN_EMAILS allowlist; URL `?p2=1` is the dev-time override.

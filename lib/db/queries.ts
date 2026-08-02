@@ -639,11 +639,42 @@ export async function verifyPathAccess(pathId: string, userId: string): Promise<
   return rows.length > 0;
 }
 
+/**
+ * Can this user open this scene?
+ *
+ *   premade                -> always
+ *   own custom / studio    -> always
+ *   own travel pack        -> first scene free, the rest need a purchases row
+ *   anyone else's path     -> no
+ *
+ * The travel branch is the paywall. It used to live only in TripDashboard as a
+ * client-side `isLocked` flag while the server happily rendered any scene by
+ * id, so the $4.99 pack was readable by anyone who read a scene UUID out of the
+ * RSC payload.
+ *
+ * NOTE: verifyPathAccess deliberately does NOT check purchases — a travel path
+ * is owned by its buyer, so gating the path itself would lock the owner out of
+ * the very page that sells them the upgrade.
+ */
 export async function verifySceneAccess(sceneId: string, userId: string): Promise<boolean> {
   const rows = await sql`
     SELECT 1 FROM scenes s
     JOIN paths p ON p.id = s.path_id
-    WHERE s.id = ${sceneId} AND (p.type = 'premade' OR p.user_id = ${userId})
+    WHERE s.id = ${sceneId}
+      AND (
+        p.type = 'premade'
+        OR (
+          p.user_id = ${userId}
+          AND (
+            p.type <> 'travel'
+            OR s.sort_order = 0
+            OR EXISTS (
+              SELECT 1 FROM purchases pu
+              WHERE pu.pack_id = p.id AND pu.user_id = ${userId}
+            )
+          )
+        )
+      )
     LIMIT 1
   `;
   return rows.length > 0;
@@ -1149,6 +1180,15 @@ export async function getStudioPathPurchaseBySessionId(
   return (rows[0] as StudioPathPurchase) ?? null;
 }
 
+/**
+ * An unconsumed $2.99 studio-path purchase for this user.
+ *
+ * The session match is strict. It used to be
+ * `(studio_session_id = $2 OR studio_session_id IS NULL)`, which let any
+ * dangling purchase row be redeemed against any studio session.
+ * createStudioPathCheckout always sets metadata.sessionId, and both insert
+ * paths carry it through, so nothing legitimate relies on the null branch.
+ */
 export async function getUnconsumedStudioPathPurchase(
   userId: string,
   studioSessionId?: string
@@ -1158,7 +1198,7 @@ export async function getUnconsumedStudioPathPurchase(
         SELECT * FROM studio_path_purchases
         WHERE user_id = ${userId}
           AND consumed_at IS NULL
-          AND (studio_session_id = ${studioSessionId} OR studio_session_id IS NULL)
+          AND studio_session_id = ${studioSessionId}
         ORDER BY created_at DESC
         LIMIT 1
       `

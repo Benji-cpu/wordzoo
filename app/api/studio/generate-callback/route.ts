@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse, after } from 'next/server';
 import { stripe } from '@/lib/billing/stripe';
+import { auth } from '@/lib/auth';
 import { generateStudioPath } from '@/lib/services/studio-service';
 import { enrichPath } from '@/lib/services/path-enrichment-service';
 import {
@@ -22,8 +23,37 @@ export async function GET(request: NextRequest) {
 
   try {
     const checkoutSession = await stripe.checkout.sessions.retrieve(sessionId);
-    const userId = checkoutSession.metadata?.userId;
-    if (!userId || checkoutSession.payment_status !== 'paid') {
+    const metadata = checkoutSession.metadata ?? {};
+    const userId = metadata.userId;
+
+    // This route is middleware-bypassed and unauthenticated, and previously
+    // checked only `metadata.userId && payment_status === 'paid'`. The Stripe
+    // checkout URL exposes `cs_...` in plain sight, so ANY paid session — a
+    // $4.99 travel pack, a subscription — could be replayed here to mint a
+    // free $2.99 studio path. Assert the product, the amount, and that the
+    // payment was made for THIS studio session.
+    const isValid =
+      Boolean(userId) &&
+      checkoutSession.payment_status === 'paid' &&
+      metadata.type === 'studio_path' &&
+      metadata.sessionId === studioSessionId &&
+      checkoutSession.amount_total === 299 &&
+      checkoutSession.currency === 'usd';
+
+    if (!isValid) {
+      console.error('[studio-callback] rejected checkout session', {
+        sessionId,
+        studioSessionId,
+        type: metadata.type,
+        paymentStatus: checkoutSession.payment_status,
+        amountTotal: checkoutSession.amount_total,
+      });
+      return NextResponse.redirect(new URL('/paths/studio?error=payment_failed', request.url));
+    }
+
+    // If someone IS signed in, they must be the buyer.
+    const session = await auth();
+    if (session?.user?.id && session.user.id !== userId) {
       return NextResponse.redirect(new URL('/paths/studio?error=payment_failed', request.url));
     }
 

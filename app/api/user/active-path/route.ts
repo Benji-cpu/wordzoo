@@ -3,6 +3,7 @@ import { z } from 'zod/v4';
 import type { ApiResponse } from '@/types/api';
 import { auth } from '@/lib/auth';
 import { upsertUserPath, getPremadePathByLanguageCode } from '@/lib/db';
+import { verifyPathAccess } from '@/lib/db/queries';
 
 const PatchSchema = z.object({
   // Caller may send a specific pathId, or just the target language code
@@ -41,6 +42,16 @@ export async function PATCH(request: NextRequest) {
       );
     }
     pathId = path.id;
+  }
+
+  // upsertUserPath marks every OTHER path abandoned, so an unchecked pathId let
+  // a caller pin someone else's private path as their active one — surfacing
+  // its title and structure on the dashboard, and clobbering their own.
+  if (!(await verifyPathAccess(pathId!, session.user.id))) {
+    return NextResponse.json<ApiResponse<null>>(
+      { data: null, error: 'Not found' },
+      { status: 404 }
+    );
   }
 
   try {
