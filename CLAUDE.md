@@ -94,8 +94,8 @@ Google OAuth via NextAuth v5 beta (`next-auth@5.0.0-beta.30`) with Neon adapter.
 ## Test Login (E2E)
 
 All projects require `/api/auth/test-login` for Playwright testing:
-- Returns 404 in production (`NODE_ENV === 'production'`)
-- Creates a dev-only session via NextAuth
+- Returns 404 when `NODE_ENV === 'production'` **or `process.env.VERCEL` is set** — the route mints a session for any email (creating the user if absent, including an `ADMIN_EMAILS` address), so gating on `NODE_ENV` alone left it open on preview deploys
+- Creates a dev-only session via NextAuth; works locally on `:8000`
 - Enables E2E browser testing without real OAuth flows
 
 ## AI Integration
@@ -105,6 +105,31 @@ Gemini 2.0 Flash via `@google/genai` SDK (NOT `@google-ai/generativelanguage`). 
 ## Billing
 
 Stripe handles subscriptions (monthly/yearly) and one-time travel pack purchases. Free tier has daily limits: 5 words, 3 tutor messages, 300s hands-free, 2 mnemonic regenerations. Premium-only: custom paths, offline downloads, community submissions. Usage resets daily via `/api/cron/reset-usage`. Logic in `lib/services/billing-service.ts`.
+
+## Spend Guard (required for every AI / image / TTS / Blob route)
+
+**Any route that calls Gemini, generates an image, synthesizes TTS, or writes to Blob MUST claim budget first.** These operations cost real money, and an unmetered one already filled and suspended the Blob store once (see `docs/2026-08-02-product-evaluation.md`).
+
+```ts
+const guard = await guardSpend('mnemonic_generate');       // + { feature: 'custom_path' } to also gate on billing
+if (!guard.ok) return guard.response;                       // pre-built 401 / 429 / 403
+// ... guard.userId is the authenticated user
+```
+
+- `lib/spend-guard.ts` — auth-aware route wrappers (`guardSpend`, `guardAnonymousSpend`). Does auth → admin bypass → durable claim → optional `checkAccess`.
+- `lib/spend-ledger.ts` — the pure primitive (`claimSpend`, `SPEND_LIMITS`, `clientIp`). **Edge routes must import from here** — spend-guard pulls in NextAuth and the billing service.
+- Budgets live in `SPEND_LIMITS`. Adding a `SpendKind` to the union is required; the closed union makes a typo a compile error rather than a silently unlimited endpoint.
+- Backed by the `spend_events` table via one atomic conditional INSERT, so concurrent lambdas serialize through Postgres. Pruned to 30 days by `/api/cron/reset-usage`; rolled up per kind into the nightly digest as `health.spendLast24h`.
+- **`lib/rate-limit.ts` is deprecated** — its in-memory token bucket was per-lambda and effectively unlimited. It now only re-exports `clientIp`.
+- **Admins bypass every guard.** To exercise a limit, use a non-admin account or temporarily clear `ADMIN_EMAILS`.
+
+## Access Control
+
+- **`verifySceneAccess(sceneId, userId)`** is the entitlement check: premade → always; own custom/studio → always; own **travel** pack → scene `sort_order = 0` free, rest requires a `purchases` row; anyone else's path → never. Call it in *both* the page and the API route — the page-level omission was a full paywall bypass.
+- **`verifyPathAccess`** deliberately does NOT consult `purchases` — a travel path is owned by its buyer, so gating the path would lock them out of the page that sells the upgrade.
+- Admin gating is `isAdminEmail()` / `adminEmails()` from **`lib/auth/admin.ts`** (dependency-free, lowercases both sides). Never re-implement the `ADMIN_EMAILS` split inline — the old inline copies were case-sensitive and diverged from the billing service.
+- Route bodies: use `readJson(request)` from **`lib/api/request.ts`**, not bare `await request.json()` (which 500s on a malformed body).
+- External calls (Gemini, image gen, TTS, Blob `put`) must carry `AbortSignal.timeout(...)`.
 
 ## Gotchas
 

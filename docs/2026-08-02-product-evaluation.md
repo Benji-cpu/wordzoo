@@ -1,0 +1,287 @@
+# WordZoo — Product Evaluation (2026-08-02)
+
+A red-team / blue-team review of the whole app: what's broken, why, and what to do.
+Written after 7 weeks of dormancy. Phases 1–6 below were implemented and shipped
+the same day; Phase 7 (owner actions) and Phase 8 (pedagogy) are still open.
+
+---
+
+## 1. Where things actually stood
+
+`7a0c42e` (2026-06-12) was the last app-code commit. Every one of the ~50 commits
+on `main` since is automated triage markdown, and roughly 80% of those are
+`triage: missing digest` stubs reporting the same never-fixed failure.
+
+The last successful digest (`digests/2026-07-31.json`):
+
+```json
+"feedback": { "byStatus": { "actioned": 138, "dismissed": 1 }, "newLast24h": 0 },
+"health":   { "stuckMnemonicsLast72h": 1, "overdueReviews": 149 }
+```
+
+139 feedback rows lifetime, all from the founder's own accounts. Zero new in 24h.
+`overdueReviews` flat at ~149 for six weeks — nobody is reviewing.
+
+Confirmed with the owner: **the only real user is him, learning Indonesian.**
+Four production blockers were all still live: Vercel Blob suspended,
+`PEDAGOGY_V2_SLICES` unset, `RESEND_API_KEY` unset, and Stripe on the shared
+VO2MAXBODY account (the last is deliberate and out of scope).
+
+## 2. The finding that explains the rest
+
+These weren't four independent problems. They were one causal chain, and it
+started in the code:
+
+```
+Travel funnel runs full AI enrichment BEFORE Stripe checkout exists
+      ↓  ~40 Gemini calls + ~40 images + ~40 TTS + ~80 Blob writes, per abandoned checkout
+Blob quota blown on a Hobby plan
+      ↓
+Blob store suspended → every mnemonic image and every audio file 403s
+      ↓
+The core differentiator — visual keyword mnemonics — is INVISIBLE in production
+      ↓
+The app looks broken → no reason to use it → no feedback → nothing to report
+      ↓
+7 weeks of silence
+```
+
+`components/trip/TripCommit.tsx` called `POST /api/paths/travel` (which fired
+`after(() => enrichPath(...))` over **every word in the path**) at line 36,
+created the Stripe checkout session at line 56, and redirected to Stripe at
+line 72. Abandon at the payment page and we ate 100% of the production cost
+for $0. Nothing metered it.
+
+**The consequence for sequencing: un-suspending Blob without fixing the spend
+architecture would just refill and re-suspend it.** That ordering constraint
+drove the whole plan.
+
+## 3. The alignment gap
+
+The build quality is not the problem. The mnemonic prompts in `lib/ai/prompts.ts`
+are genuinely rigorous — they enforce the Atkinson keyword method, ban proper
+names, demand visual co-equality between keyword and meaning, and state their own
+acceptance test. The Leitner drill system works. The no-dead-ends principle is
+applied consistently across empty states.
+
+**The gap is that almost none of it is switched on.**
+
+- Pedagogy v2 — batched intro, Leitner drills, production typing, cloze, 80%
+  checkpoints, in-scene conversation; two months of work — is admin-only because
+  `PEDAGOGY_V2_SLICES` is unset. Real users get the legacy
+  `word → mnemonic → quiz` loop.
+- The retention email system is fully wired and silently no-ops without
+  `RESEND_API_KEY`.
+- Those legacy lessons render without images, because Blob is suspended.
+
+The product a new user would meet is the thinnest version of the app, with the
+pictures missing.
+
+---
+
+## 4. Red team
+
+### 4.1 Money leaks — FIXED (Phase 1–2)
+
+| Leak | Where |
+|---|---|
+| Travel pack paid full AI cost before checkout existed | `TripCommit.tsx:36-72`, `paths/travel/route.ts:60` |
+| `mnemonics/generate` (Gemini 8192 tok + image + Blob) had no `checkAccess` at all | `mnemonics/generate/route.ts:20` |
+| `mnemonics/custom` free while the identical `/regenerate` cost a quota | `mnemonics/custom/route.ts:13` |
+| `paths/travel` ungated while near-identical `paths/custom:44` was gated | `paths/travel/route.ts:14` |
+| Rate limiter was an in-memory module-scope `Map` → per-lambda on Vercel, ceiling scaled with attacker concurrency, never evicted | `lib/rate-limit.ts:9-37` |
+| `/api/trip/preview` ran Gemini unauthenticated | `trip/preview/route.ts:9` |
+| Unmetered Gemini on conversation-grade, studio/suggestions, studio/chat, tutor/session, tutor/guided-session | various |
+| `IntroduceBatch` fires `mnemonics/generate` **in parallel for every unenriched word in a scene** — the mechanism that fills Blob at scale | `IntroduceBatch.tsx:69-89` |
+
+That last one plus `PEDAGOGY_V2_SLICES=*` was the loaded gun: `restructure`
+activates `IntroduceBatch` for everyone.
+
+### 4.2 Paid-content bypass — FIXED (Phase 3)
+
+`/learn/[sceneId]` rendered the complete scene payload for **any** authenticated
+user with no access check, while its API twin `/api/scenes/[sceneId]` had always
+checked. The travel paywall was a client-side `isLocked` flag in `TripDashboard`
+while the server serialized every scene id into the RSC payload. So the $4.99
+pack — and every other user's private path — was readable by anyone who read a
+UUID out of devtools.
+
+The page then called `upsertUserPath()` on that path, enrolling the visitor in a
+stranger's path and (because `upsertUserPath` marks every other path abandoned)
+silently dropping their own.
+
+`/api/studio/generate-callback` is middleware-bypassed and checked only
+`metadata.userId && payment_status === 'paid'` — never the product type or the
+amount. Any paid Stripe session could be replayed for a free $2.99 studio path.
+
+### 4.3 Privacy — FIXED (Phase 5)
+
+- `getPublicWordData`'s LATERAL had no `user_id IS NULL` filter. Since
+  `upvote_count` is 0 everywhere, the `created_at DESC` tiebreak reliably
+  surfaced whichever user most recently generated a mnemonic for that word —
+  publishing their private mnemonic as the public share card and OG image.
+- `deleteUserCascade` was `DELETE FROM users` with a comment falsely claiming
+  everything cascaded. Five FKs are `ON DELETE SET NULL`, and for `mnemonics`
+  that null **is the marker for global curated content** — so a GDPR erasure
+  request promoted the user's private mnemonics into the shared pool.
+- `/api/auth/test-login` was gated only on `NODE_ENV`, so on any Vercel preview
+  deploy it minted a session for any email, creating the user if absent.
+- `/api/admin/activity-feed` accepted `CRON_SECRET` via `?secret=` while
+  returning every user's email. (It was also missing from the middleware bypass,
+  so its documented Bearer auth never actually reached the handler.)
+- Admin gating was duplicated inline across 10 sites and compared
+  **case-sensitively**, while `billing-service` and `flags.ts` lowercased both
+  sides — a mixed-case Google address bypassed premium limits while being denied
+  the admin UI.
+
+### 4.4 Pedagogy — STILL OPEN (Phase 8)
+
+This is the honest critique, and it's the part that decides whether the product
+is worth using.
+
+**The SRS never punishes forgetting.** `lib/srs/engine.ts:65-69` — on `forgot`,
+the interval resets to 1 but **the ease factor is untouched**. No lapse counter,
+no leech detection, no learning steps (minimum interval is a full day), no
+interval fuzz, no maximum cap. A word you forget ten times keeps EF 2.5 and
+re-inflates 1 → 6 → 15 → 38 days. This is why `overdueReviews` only ever climbs.
+
+**"Mastered" is a time bucket wearing an achievement's clothes** —
+`interval_days >= 30`, reachable in about four correct answers.
+`lib/pedagogy/mastery.ts` implements a real 5-stage ladder with retrieval-delay
+checks; it has **zero importers** and no backing column.
+
+**Review is self-graded and production-only.** `ReviewClient.tsx:167-168`
+hardcodes `wordMode = 'production'`; the recognition direction exists in the
+schema and is never used. Meanwhile the in-scene drills *are* objectively graded
+and throw the granularity away — `SceneFlowClient.tsx:697` collapses everything
+to `got_it | forgot`.
+
+**The app collects the data to prove it works and never reads it.**
+`pedagogy_events` has 30 event types, exactly one INSERT, and **zero SELECTs
+anywhere in the codebase**. `times_correct` and `times_reviewed` sit on every row
+and are never divided. The mnemonic prompt even states its own success criterion
+— *"would someone seeing ONLY the generated image guess the word's meaning within
+2 tries?"* — and nothing measures it. **There is no answer in this codebase to
+"does WordZoo teach better than a flashcard app?"**
+
+**Real feedback targets the pedagogy's core mechanism.** The dominant complaint
+cluster is the mobile keyboard destroying cloze and production typing — the only
+two *productive retrieval* modes in the app:
+
+> "when the keyboard opens on mobile it's just kind of pushes everything away and
+> it's hard to see" — feedback `724a2ed2`
+
+And the single most damning report:
+
+> "We seem to have hit an era where the learning stopped." — feedback `33e8819f`
+
+Triage reconstructed it: ~83 minutes in one scene, the same 4 phrases cycling.
+The Leitner queue working exactly as designed, and reading as infinite.
+
+**Dead weight:** `ListeningExercise.tsx` (282 lines) has no importers, yet
+`exercise-picker.ts` can still assign `listening` as an active cue — rendering a
+recognition MCQ, labelling it *"hear & type"*, and crediting the learner for a
+modality they were never tested in.
+
+### 4.5 Operations
+
+The nightly pipeline has self-diagnosed the identical failure ~50 times without a
+fix, generating commit noise that drowns the real history — while measuring a
+userbase of one.
+
+---
+
+## 5. What shipped today
+
+| Commit | Content |
+|---|---|
+| `bdbc49d` | Durable spend guard (`spend_events` + atomic conditional insert), wired into 13 unmetered endpoints; travel enrichment deferred behind payment; shared admin helper; studio ownership check |
+| `ba66be6` | `verifySceneAccess` honours purchases; learn-page IDOR closed; 4 missing route gates; Stripe callback hardened |
+| `bd5c9a9` | Public mnemonic leak; account-deletion transaction; test-login gated on `VERCEL`; activity-feed Bearer-only; share-image IP limit; `words_learned` double-count; XP/hands-free caps |
+| `46830ec` | Timeouts on every external call; `readJson` across 29 routes; guarded model-output `JSON.parse`; `sharp` declared; security headers; webhook retry |
+
+**The spend guard is the load-bearing piece.** It claims budget with a single
+atomic conditional INSERT, so N concurrent lambdas serialize through Postgres
+instead of each seeing a fresh in-memory bucket. Verified against the live DB:
+
+```
+sequential, limit 3 (expect T,T,T,F,F): T,T,T,F,F
+parallel x12, limit 4 -> granted: 4 (expect 4)
+units 60+60 vs limit 100 (expect T,F): T,F
+window expiry (expect T): T
+```
+
+Current budgets (per user per rolling window, admins exempt):
+
+| kind | limit | window |
+|---|---|---|
+| `mnemonic_generate` | 60 | 24h |
+| `path_enrich_word` | 250 | 24h |
+| `conversation_grade` | 120 | 24h |
+| `studio_chat` | 100 | 24h |
+| `tutor_greeting` / `studio_suggestions` | 30 | 24h |
+| `mnemonic_regenerate` | 20 | 24h |
+| `mnemonic_custom` / `screenshot_upload` | 10 | 24h / 60min |
+| `path_generate` | 5 | 24h |
+| `trip_preview` (by IP, anonymous) | 3 | 60min |
+| `share_image` (by IP, anonymous) | 60 | 60min |
+| `xp_award` | 3000 units | 24h |
+
+A per-kind 24h rollup now lands in the nightly digest under
+`health.spendLast24h`. **That number is the go/no-go signal for un-suspending
+Blob.**
+
+---
+
+## 6. Phase 7 — owner actions, in this order
+
+1. **Now, no prerequisites:** set `RESEND_API_KEY` in Vercel. The retention email
+   system is fully wired and silently no-ops without it.
+
+2. **Now that the spend guard is live:** un-suspend the Vercel Blob store. Check
+   whether it's a usage cap or a payment failure; `lib/db/cleanup-orphan-blobs.ts`
+   and `recompress-blob-images.ts` already exist for reclaiming space. Then watch
+   `health.spendLast24h` in the digest for 48h.
+
+3. **Only after that reads sane:** set `PEDAGOGY_V2_SLICES`. Start with
+   `restructure,production,cloze` — **not `*`**. `restructure` activates
+   `IntroduceBatch`, whose parallel mnemonic generation is exactly what filled
+   Blob. It must also come *after* the Blob unblock, or v2 renders entirely
+   imageless.
+
+4. **Re-enrich** any path left `partial` while Blob was down.
+
+---
+
+## 7. Phase 8 — the pedagogy backlog (open)
+
+Ranked by what actually moves the product:
+
+1. **Measure retention.** One query over `times_correct / times_reviewed`, and a
+   first `SELECT` against `pedagogy_events`, answers "does this work?" It is
+   currently unanswerable — which means every pedagogy decision is being made
+   blind.
+2. **Fix the mobile keyboard on cloze and production typing.** The dominant real
+   feedback cluster, landing on the only two productive-retrieval modes.
+3. **Penalise lapses in the SRS.** Apply an EF penalty on `forgot`, add a lapse
+   counter and leech handling, add interval fuzz and a max cap. This is why
+   overdue reviews only ever climb.
+4. **Make "mastered" mean something.** Wire `lib/pedagogy/mastery.ts` (it needs a
+   `mastery_stage` column) or delete it.
+5. **Stop discarding drill granularity.** In-scene drills are objectively graded
+   and collapse to `got_it | forgot`; they could feed a real 4-point quality.
+6. **Fix or remove the phantom `listening` cue,** and delete
+   `ListeningExercise.tsx` if it isn't going to be wired.
+
+## 8. Smaller known debt
+
+- `recordPhraseReview` is a verbatim copy-paste of `recordReview` — any SRS
+  change has to be made twice.
+- 202 `scene_pattern_exercises` rows are seeded and never rendered (the phase was
+  cut; the seed data wasn't).
+- `lib/db/expanded/` is a byte-for-byte duplicate of `lib/db/content/id/`.
+- Six one-off `apply-*.ts` scripts exist because the main migration runner aborts
+  on a pre-existing constraint conflict.
+- Curriculum shortfall: `docs/curriculum-indonesian-a1-a2.md` specifies 10 units
+  / 50 scenes / ~580 words. Shipped: 5 units / 34 scenes / 231 new words.
+- The CSP ships as `Report-Only`. Promote it to enforcing once reports are clean.
