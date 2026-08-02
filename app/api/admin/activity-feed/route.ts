@@ -11,11 +11,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@/lib/db/client';
 
 export async function GET(request: NextRequest) {
+  // Bearer header only. The `?secret=` fallback was removed: query strings land
+  // in Vercel access logs, browser history and Referer headers, and this route
+  // returns every user's email and name.
   const authHeader = request.headers.get('authorization');
   const url = new URL(request.url);
-  const querySecret = url.searchParams.get('secret');
   const expected = process.env.CRON_SECRET;
-  if (!expected || (authHeader !== `Bearer ${expected}` && querySecret !== expected)) {
+  if (!expected || authHeader !== `Bearer ${expected}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

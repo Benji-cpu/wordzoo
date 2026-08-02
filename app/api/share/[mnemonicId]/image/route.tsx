@@ -2,13 +2,23 @@ import { ImageResponse } from 'next/og';
 import { NextRequest } from 'next/server';
 import { ShareImageQuerySchema } from '@/types/api';
 import { getMnemonicForShare } from '@/lib/db/public-queries';
+// spend-ledger, not spend-guard: the guard module imports NextAuth and the
+// billing service, neither of which belongs in an edge bundle.
+import { claimSpend, clientIp } from '@/lib/spend-ledger';
 
 export const runtime = 'edge';
 
+// Sharing your own mnemonic by unguessable UUID is the intended feature, so
+// this stays public and unscoped — but it is an unauthenticated DB read plus a
+// 1200x1200 image render, so it needs a per-IP ceiling.
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ mnemonicId: string }> }
 ) {
+  if (!(await claimSpend(`ip:${clientIp(request)}`, 'share_image'))) {
+    return new Response('Rate limit exceeded', { status: 429 });
+  }
+
   const { mnemonicId } = await params;
 
   const { searchParams } = request.nextUrl;

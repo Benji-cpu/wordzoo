@@ -5,6 +5,7 @@ import {
   getWordsByTexts,
   insertTutorWordReviews,
 } from '@/lib/db';
+import { recordIntroduction } from '@/lib/db/queries';
 import type { KnownWordRow } from '@/lib/db/queries';
 import type { TutorMessage, SessionEvaluation } from '@/types/database';
 
@@ -146,6 +147,11 @@ export async function bridgeIntroducedWords(
     const foundWords = await getWordsByTexts(candidates, languageId);
     for (const w of foundWords) {
       if (alreadyBridgedWordIds.has(w.id)) continue;
+      // recordIntroduction first — it owns words_learned and only counts a
+      // word the caller hasn't met before. Creating the row via
+      // getOrCreateUserWord alone meant tutor-introduced words were never
+      // counted toward the daily total at all.
+      await recordIntroduction(userId, w.id);
       await getOrCreateUserWord(userId, w.id, null);
       trackingRows.push({ sessionId, userId, wordId: w.id, languageId, usageType: 'introduced', srsQuality: null });
       bridged++;
@@ -195,6 +201,7 @@ export async function recordConversationReviews(
   // Introduced words → create user_word (no SRS update)
   for (const entry of wordUsage.introduced) {
     try {
+      await recordIntroduction(userId, entry.wordId);
       await getOrCreateUserWord(userId, entry.wordId, null);
       wordsIntroduced++;
       tutorWordReviews.push({ sessionId, userId, wordId: entry.wordId, languageId, usageType: 'introduced', srsQuality: null });

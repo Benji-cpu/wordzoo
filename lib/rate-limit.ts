@@ -13,4 +13,4 @@
  * keep working.
  */
 
-export { clientIp } from '@/lib/spend-guard';
+export { clientIp } from '@/lib/spend-ledger';

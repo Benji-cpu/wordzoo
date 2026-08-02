@@ -24,9 +24,17 @@ export default auth((req) => {
     return NextResponse.next();
   }
 
-  // Allow the nightly-routine agent to read/mark pending feedback with the
-  // CRON_SECRET bearer. The route handler validates the token itself.
-  if (pathname === '/api/admin/feedback/pending') {
+  // Allow the nightly-routine agent to read/mark pending feedback, and the
+  // cross-app ops hub to read the activity feed, with the CRON_SECRET bearer.
+  // Each route handler re-validates the token itself.
+  //
+  // activity-feed was missing here, so its documented Bearer auth never
+  // reached the handler — middleware 401'd it first, making the route
+  // unreachable from outside the app.
+  if (
+    pathname === '/api/admin/feedback/pending' ||
+    pathname === '/api/admin/activity-feed'
+  ) {
     const auth = req.headers.get('authorization');
     const secret = process.env.CRON_SECRET;
     if (secret && auth === `Bearer ${secret}`) {

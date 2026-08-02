@@ -215,7 +215,7 @@ export async function resetDailyLimits(): Promise<void> {
   await resetAllDailyUsage();
   // The spend ledger is a rolling window, not a daily counter, so it isn't
   // reset — just pruned so it can't grow without bound.
-  const { pruneSpendEvents } = await import('@/lib/spend-guard');
+  const { pruneSpendEvents } = await import('@/lib/spend-ledger');
   await pruneSpendEvents().catch((error) => {
     console.error('[reset-usage] spend_events prune failed:', error);
   });

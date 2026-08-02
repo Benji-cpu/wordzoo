@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod/v4';
 import { auth } from '@/lib/auth';
+import { isAdminEmail } from '@/lib/auth/admin';
+import { claimSpend } from '@/lib/spend-ledger';
 import { addUserXp, getUserXp } from '@/lib/db/queries';
 import type { ApiResponse } from '@/types/api';
 
@@ -50,6 +52,23 @@ export async function POST(request: NextRequest) {
       { status: 400 },
     );
   }
+
+  // XP is entirely client-declared — the server can't verify the claimed event
+  // happened. It's cosmetic (level badge), so rather than rebuild it as a
+  // server-derived stat we just cap the daily total. 3000/day is far above a
+  // heavy session (a full scene is ~25 XP) and stops a trivial award loop.
+  if (!isAdminEmail(session.user.email)) {
+    const affordable = await claimSpend(`user:${session.user.id}`, 'xp_award', {
+      units: parsed.data.amount,
+    });
+    if (!affordable) {
+      return NextResponse.json<ApiResponse<null>>(
+        { data: null, error: 'Daily XP limit reached' },
+        { status: 429 },
+      );
+    }
+  }
+
   const data = await addUserXp(
     session.user.id,
     parsed.data.amount,

@@ -49,6 +49,13 @@ export async function getPublicWordData(wordId: string): Promise<PublicWordData 
       SELECT m.id, m.keyword_text, m.scene_description, m.image_url, m.upvote_count
       FROM mnemonics m
       WHERE m.word_id = w.id
+        -- user_id IS NULL is the "global curated content" marker used by every
+        -- other selection query in the app. This one omitted it, and since
+        -- upvote_count is 0 everywhere the created_at tiebreak reliably
+        -- surfaced whichever user most recently generated a mnemonic for this
+        -- word — publishing their private mnemonic as the public share card
+        -- and OG image.
+        AND m.user_id IS NULL
       ORDER BY m.upvote_count DESC NULLS LAST, m.created_at DESC
       LIMIT 1
     ) best ON true

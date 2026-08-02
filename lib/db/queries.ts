@@ -1007,9 +1007,42 @@ export async function updateUserPreferences(
   `;
 }
 
+/**
+ * Full account erasure.
+ *
+ * The old implementation was a bare `DELETE FROM users` with a comment
+ * claiming everything cascaded. It did not. Five foreign keys are
+ * ON DELETE SET NULL, and for two of them "set null" is actively harmful:
+ *
+ *   mnemonics.user_id  -> user_id IS NULL is the marker for GLOBAL CURATED
+ *                         content, so a deleted user's private mnemonics were
+ *                         promoted into the shared pool and served to everyone.
+ *   paths.user_id      -> their generated paths became ownerless.
+ *
+ * pedagogy_events and mnemonic_shares were merely orphaned, but a GDPR erasure
+ * request means delete, not anonymise, so they go too.
+ *
+ * referrals.referred_user_id is deliberately LEFT as SET NULL: it records that
+ * some OTHER user earned a referral bonus, and that credit is theirs to keep.
+ *
+ * Runs in a transaction. Order matters — mnemonics and paths must go before
+ * the user row, since the SET NULL would otherwise have already fired.
+ * Deleting paths cascades to scenes / path_words / purchases / user_paths;
+ * deleting mnemonics cascades to mnemonic_feedback and nulls any other user's
+ * pinned current_mnemonic_id (they fall back to a global mnemonic). The
+ * remaining 22 user-owned tables cascade from the final users delete.
+ */
 export async function deleteUserCascade(userId: string): Promise<void> {
-  // All related tables use ON DELETE CASCADE, so a single delete removes everything.
-  await sql`DELETE FROM users WHERE id = ${userId}`;
+  // sql.transaction (Neon HTTP driver) — the same client the rest of the app
+  // uses. Not `pool`, which has no webSocketConstructor configured outside
+  // lib/db/migrate.ts and would fail at runtime.
+  await sql.transaction([
+    sql`DELETE FROM mnemonics WHERE user_id = ${userId}`,
+    sql`DELETE FROM mnemonic_shares WHERE user_id = ${userId}`,
+    sql`DELETE FROM pedagogy_events WHERE user_id = ${userId}`,
+    sql`DELETE FROM paths WHERE user_id = ${userId}`,
+    sql`DELETE FROM users WHERE id = ${userId}`,
+  ]);
 }
 
 export interface UserTrip {

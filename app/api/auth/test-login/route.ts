@@ -6,7 +6,12 @@ const TEST_USER_EMAIL = 'test@wordzoo.dev';
 
 export async function GET(request: NextRequest) {
   // Block in production
-  if (process.env.NODE_ENV === 'production') {
+  // NODE_ENV alone is not enough: this route mints a session cookie for ANY
+  // email and creates the user if absent (including an ADMIN_EMAILS address),
+  // so on a Vercel preview deploy it is a complete authentication bypass.
+  // `VERCEL` is set on every Vercel deployment and unset locally, which keeps
+  // Playwright on :8000 working.
+  if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
     return NextResponse.json({ error: 'Not available' }, { status: 404 });
   }
 

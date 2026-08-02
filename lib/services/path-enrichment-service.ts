@@ -4,7 +4,7 @@ import {
   saveMnemonic,
 } from '@/lib/services/mnemonic-service';
 import { synthesizeSpeech, hasTtsVoice } from '@/lib/ai/google-tts';
-import { claimSpend } from '@/lib/spend-guard';
+import { claimSpend } from '@/lib/spend-ledger';
 import {
   getPathWordsNeedingEnrichment,
   setPathEnrichmentStatus,

@@ -1,4 +1,4 @@
-import { getDueWordsForReview, getOrCreateUserWord, updateWordSRS, updateUserStreak, incrementDailyUsageWordsLearned } from '@/lib/db/queries';
+import { getDueWordsForReview, getOrCreateUserWord, updateWordSRS, updateUserStreak, recordIntroduction } from '@/lib/db/queries';
 import type { DueWordForReview } from '@/lib/db/queries';
 import { getOrCreateUserPhrase, updatePhraseSRS, getDuePhrasesForReview } from '@/lib/db/scene-flow-queries';
 import type { DuePhraseForReview } from '@/lib/db/scene-flow-queries';
@@ -35,13 +35,18 @@ export async function recordReview(
   direction: 'recognition' | 'production',
   rating: Rating
 ): Promise<{ nextReviewAt: Date; newInterval: number }> {
+  // recordIntroduction is the single owner of daily_usage.words_learned and is
+  // idempotent, so a word counts exactly once regardless of where the learner
+  // first met it (IntroduceBatch, review, or the tutor).
+  //
+  // This used to be `if (userWord.times_reviewed === 0) increment...`, which
+  // double-counted: recordIntroduction (fired by IntroduceBatch) creates the
+  // user_words row with times_reviewed = 0, so the very next drill answer
+  // counted the same word a second time — quietly halving the free tier from
+  // 5 words/day to 2.5. It must run BEFORE getOrCreateUserWord, which would
+  // otherwise create the row and make the introduction look like a repeat.
+  await recordIntroduction(userId, wordId);
   const userWord = await getOrCreateUserWord(userId, wordId, null);
-
-  // First-ever review = word just "learned" — track for pacing + free-tier limits
-  if (userWord.times_reviewed === 0) {
-    const today = new Date().toISOString().split('T')[0];
-    incrementDailyUsageWordsLearned(userId, today, 1).catch(() => {});
-  }
 
   const q = ratingToQuality(rating);
   const oldEF = userWord.ease_factor;

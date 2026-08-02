@@ -5,7 +5,11 @@ import { incrementUsage } from '@/lib/services/billing-service';
 import type { ApiResponse } from '@/types/api';
 
 const CompleteSchema = z.object({
-  durationSeconds: z.number().int().min(0).max(7200),
+  // Client-declared, and the server has no way to verify it — hands-free uses
+  // the browser's own SpeechSynthesis, so there is no server-side spend to
+  // correlate against. 900s (15 min) is a generous single session and keeps a
+  // fabricated value from being wildly out of band. Was 7200 (2 hours).
+  durationSeconds: z.number().int().min(0).max(900),
 });
 
 export async function POST(request: NextRequest) {
