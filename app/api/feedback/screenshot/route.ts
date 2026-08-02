@@ -1,18 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
 import { put } from '@vercel/blob';
+import { guardSpend } from '@/lib/spend-guard';
 import type { ApiResponse } from '@/types/api';
 
 const MAX_SIZE = 2 * 1024 * 1024; // 2MB
 
+// Blobs here are served publicly, so the stored content type must come from an
+// allowlist, never from the client. Otherwise this is an arbitrary-content
+// host on our own domain.
+const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
+
 export async function POST(request: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json<ApiResponse<null>>(
-      { data: null, error: 'Unauthorized' },
-      { status: 401 }
-    );
-  }
+  const guard = await guardSpend('screenshot_upload');
+  if (!guard.ok) return guard.response;
 
   try {
     const formData = await request.formData();
@@ -31,9 +31,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const blob = await put(`feedback/${session.user.id}/${Date.now()}.jpg`, file, {
+    const contentType = ALLOWED_TYPES.has(file.type) ? file.type : 'image/jpeg';
+    const blob = await put(`feedback/${guard.userId}/${Date.now()}.jpg`, file, {
       access: 'public',
-      contentType: file.type || 'image/jpeg',
+      contentType,
     });
 
     return NextResponse.json<ApiResponse<{ url: string }>>({

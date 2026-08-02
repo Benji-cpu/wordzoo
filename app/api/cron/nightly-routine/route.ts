@@ -147,6 +147,20 @@ export async function GET(request: NextRequest) {
     return rows[0]?.count ?? 0;
   });
 
+  // Spend rollup: what the AI/image/TTS/Blob endpoints actually cost in the
+  // last 24h, per kind. This is the signal that says whether it's safe to
+  // un-suspend the Blob store, and the early warning if a client starts
+  // looping a generation endpoint.
+  const spendLast24h = await safe('spendLast24h', async () => {
+    return (await sql`
+      SELECT kind, SUM(units)::int AS units, COUNT(*)::int AS calls
+      FROM spend_events
+      WHERE created_at > now() - interval '24 hours'
+      GROUP BY kind
+      ORDER BY units DESC
+    `) as Array<{ kind: string; units: number; calls: number }>;
+  });
+
   const pendingRows = await safe('pendingRows', async () => {
     return (await sql`
       SELECT af.id, af.user_id, af.message, af.page_url, af.page_title,
@@ -174,6 +188,7 @@ export async function GET(request: NextRequest) {
     health: {
       stuckMnemonicsLast72h: stuckMnemonicsLast72h ?? 0,
       overdueReviews: overdueReviews ?? 0,
+      spendLast24h: spendLast24h ?? [],
     },
     errors,
   };

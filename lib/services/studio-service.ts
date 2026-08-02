@@ -397,10 +397,17 @@ export async function generateStudioPath(
 
 export async function generateSubScenarioChips(
   sessionId: string,
-  scenario: string
+  scenario: string,
+  userId: string
 ): Promise<StudioChip[]> {
   const session = await getStudioSessionById(sessionId);
   if (!session) {
+    throw new Error('Studio session not found');
+  }
+  // Matches the ownership check its siblings already do (continueStudioChat,
+  // generateStudioPath) — without it any user could drive Gemini against
+  // someone else's studio session.
+  if (session.user_id !== userId) {
     throw new Error('Studio session not found');
   }
 

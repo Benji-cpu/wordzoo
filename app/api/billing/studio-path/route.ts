@@ -1,20 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { StudioPathCheckoutSchema } from '@/types/api';
 import type { ApiResponse } from '@/types/api';
-import { checkRateLimit } from '@/lib/rate-limit';
 import { auth } from '@/lib/auth';
 import { createStudioPathCheckout } from '@/lib/billing/stripe';
 
 export async function POST(request: NextRequest) {
-  const ip = request.headers.get('x-forwarded-for') ?? 'anonymous';
-  const { allowed } = checkRateLimit(`billing:studio-path:${ip}`);
-  if (!allowed) {
-    return NextResponse.json<ApiResponse<null>>(
-      { data: null, error: 'Rate limit exceeded' },
-      { status: 429 }
-    );
-  }
-
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json<ApiResponse<null>>(

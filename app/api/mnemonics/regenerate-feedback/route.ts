@@ -2,29 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { RegenerateFromFeedbackSchema } from '@/types/api';
 import type { ApiResponse } from '@/types/api';
 import type { Mnemonic } from '@/types/database';
-import { checkRateLimit } from '@/lib/rate-limit';
-import { auth } from '@/lib/auth';
+import { guardSpend } from '@/lib/spend-guard';
 import { regenerateMnemonicFromFeedback } from '@/lib/services/mnemonic-service';
 import { checkAccess, incrementUsage } from '@/lib/services/billing-service';
 import { setCurrentMnemonic } from '@/lib/db/queries';
 
 export async function POST(request: NextRequest) {
-  const ip = request.headers.get('x-forwarded-for') ?? 'anonymous';
-  const { allowed } = checkRateLimit(`mnemonics:regenerate-feedback:${ip}`);
-  if (!allowed) {
-    return NextResponse.json<ApiResponse<null>>(
-      { data: null, error: 'Rate limit exceeded' },
-      { status: 429 }
-    );
-  }
-
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json<ApiResponse<null>>(
-      { data: null, error: 'Authentication required' },
-      { status: 401 }
-    );
-  }
+  // Gemini + a fresh image generation + a Blob write per call.
+  const guard = await guardSpend('mnemonic_regenerate');
+  if (!guard.ok) return guard.response;
 
   const body = await request.json();
   const parsed = RegenerateFromFeedbackSchema.safeParse(body);
@@ -37,7 +23,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const { mnemonicId, comment } = parsed.data;
-    const userId = session.user.id;
+    const userId = guard.userId;
 
     const access = await checkAccess(userId, 'regenerate_mnemonic');
     if (!access.allowed) {

@@ -2,17 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { StartGuidedSessionSchema } from '@/types/api';
 import type { ApiResponse } from '@/types/api';
 import { auth } from '@/lib/auth';
+import { guardSpend } from '@/lib/spend-guard';
 import { startGuidedSession } from '@/lib/services/tutor-service';
-import { getSceneWithLanguage } from '@/lib/db/queries';
+import { getSceneWithLanguage, verifySceneAccess } from '@/lib/db/queries';
 
 export async function POST(request: NextRequest) {
+  const guard = await guardSpend('tutor_greeting');
+  if (!guard.ok) return guard.response;
+
   const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json<ApiResponse<null>>(
-      { data: null, error: 'Authentication required' },
-      { status: 401 }
-    );
-  }
 
   const body = await request.json();
   const parsed = StartGuidedSessionSchema.safeParse(body);
@@ -27,7 +25,7 @@ export async function POST(request: NextRequest) {
     const { sceneId } = parsed.data;
 
     const scene = await getSceneWithLanguage(sceneId);
-    if (!scene) {
+    if (!scene || !(await verifySceneAccess(sceneId, guard.userId))) {
       return NextResponse.json<ApiResponse<null>>(
         { data: null, error: 'Scene not found' },
         { status: 404 }
@@ -35,11 +33,11 @@ export async function POST(request: NextRequest) {
     }
 
     const result = await startGuidedSession(
-      session.user.id,
+      guard.userId,
       scene.language_id,
       sceneId,
       scene.scene_context ?? scene.scene_title,
-      session.user.name
+      session?.user?.name
     );
 
     return NextResponse.json<ApiResponse<typeof result>>(

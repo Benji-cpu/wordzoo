@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth';
 import { AppFeedbackQuerySchema } from '@/types/api';
 import type { ApiResponse } from '@/types/api';
 import { getAppFeedbackStats, getAppFeedbackList } from '@/lib/db/admin-queries';
+import { isAdminEmail } from '@/lib/auth/admin';
 
 export async function GET(request: NextRequest) {
   const session = await auth();
@@ -13,8 +14,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const adminEmails = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim());
-  if (!adminEmails.includes(session.user.email!)) {
+  if (!isAdminEmail(session.user.email)) {
     return NextResponse.json<ApiResponse<null>>(
       { data: null, error: 'Forbidden' },
       { status: 403 }

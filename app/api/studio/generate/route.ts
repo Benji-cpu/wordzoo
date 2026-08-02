@@ -2,8 +2,7 @@ import { NextRequest, NextResponse, after } from 'next/server';
 import { StudioGenerateSchema } from '@/types/api';
 import type { ApiResponse } from '@/types/api';
 import type { Path } from '@/types/database';
-import { checkRateLimit } from '@/lib/rate-limit';
-import { auth } from '@/lib/auth';
+import { guardSpend } from '@/lib/spend-guard';
 import { generateStudioPath } from '@/lib/services/studio-service';
 import { enrichPath } from '@/lib/services/path-enrichment-service';
 import {
@@ -17,22 +16,9 @@ import {
 export const maxDuration = 300;
 
 export async function POST(request: NextRequest) {
-  const ip = request.headers.get('x-forwarded-for') ?? 'anonymous';
-  const { allowed } = checkRateLimit(`studio:generate:${ip}`);
-  if (!allowed) {
-    return NextResponse.json<ApiResponse<null>>(
-      { data: null, error: 'Rate limit exceeded' },
-      { status: 429 }
-    );
-  }
-
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json<ApiResponse<null>>(
-      { data: null, error: 'Authentication required' },
-      { status: 401 }
-    );
-  }
+  // One studio path fans out to a mnemonic + image + TTS per word.
+  const guard = await guardSpend('path_generate');
+  if (!guard.ok) return guard.response;
 
   const body = await request.json();
   const parsed = StudioGenerateSchema.safeParse(body);
@@ -45,7 +31,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const { sessionId } = parsed.data;
-    const userId = session.user.id;
+    const userId = guard.userId;
 
     // Billing: allow premium OR anyone with an unconsumed studio_path purchase
     const user = await getUserById(userId);

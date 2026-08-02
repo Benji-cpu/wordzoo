@@ -3,8 +3,7 @@ import { GenerateMnemonicSchema } from '@/types/api';
 import type { ApiResponse } from '@/types/api';
 import type { MnemonicCandidate } from '@/types/ai';
 import type { Mnemonic } from '@/types/database';
-import { checkRateLimit } from '@/lib/rate-limit';
-import { auth } from '@/lib/auth';
+import { guardSpend } from '@/lib/spend-guard';
 import {
   generateMnemonic,
   generateSceneImage,
@@ -18,22 +17,11 @@ interface GenerateResponse {
 }
 
 export async function POST(request: NextRequest) {
-  const ip = request.headers.get('x-forwarded-for') ?? 'anonymous';
-  const { allowed } = checkRateLimit(`mnemonics:generate:${ip}`);
-  if (!allowed) {
-    return NextResponse.json<ApiResponse<null>>(
-      { data: null, error: 'Rate limit exceeded' },
-      { status: 429 }
-    );
-  }
-
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json<ApiResponse<null>>(
-      { data: null, error: 'Authentication required' },
-      { status: 401 }
-    );
-  }
+  // Gemini (8192 output tokens) + an image generation + a Blob write per call,
+  // and IntroduceBatch fires this in parallel for every unenriched word in a
+  // scene. This is the single most expensive endpoint in the app.
+  const guard = await guardSpend('mnemonic_generate');
+  if (!guard.ok) return guard.response;
 
   const body = await request.json();
   const parsed = GenerateMnemonicSchema.safeParse(body);
@@ -46,7 +34,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const { wordId } = parsed.data;
-    const userId = session.user.id;
+    const userId = guard.userId;
 
     const result = await generateMnemonic(wordId, userId);
     const candidate = result.candidates[result.recommended];

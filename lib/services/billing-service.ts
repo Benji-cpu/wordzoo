@@ -1,4 +1,5 @@
 import type { BillingFeature } from '@/types/api';
+import { isAdminEmail } from '@/lib/auth/admin';
 import { hasActiveBonus } from '@/lib/services/referral-service';
 import {
   getUserById,
@@ -14,11 +15,7 @@ import {
   updateUserSubscriptionTier,
 } from '@/lib/db/queries';
 
-function isAdminUser(email: string | null | undefined): boolean {
-  if (!email) return false;
-  const adminEmails = process.env.ADMIN_EMAILS?.split(',').map(e => e.trim().toLowerCase()) ?? [];
-  return adminEmails.includes(email.toLowerCase());
-}
+const isAdminUser = isAdminEmail;
 
 const FREE_LIMITS: Record<string, { field: string; limit: number }> = {
   new_word: { field: 'words_learned', limit: 5 },
@@ -216,6 +213,12 @@ export async function getSubscriptionStatus(userId: string): Promise<{
 
 export async function resetDailyLimits(): Promise<void> {
   await resetAllDailyUsage();
+  // The spend ledger is a rolling window, not a daily counter, so it isn't
+  // reset — just pruned so it can't grow without bound.
+  const { pruneSpendEvents } = await import('@/lib/spend-guard');
+  await pruneSpendEvents().catch((error) => {
+    console.error('[reset-usage] spend_events prune failed:', error);
+  });
 }
 
 export async function checkExpiringSubscriptions(): Promise<void> {

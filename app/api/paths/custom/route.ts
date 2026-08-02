@@ -2,33 +2,19 @@ import { NextRequest, NextResponse, after } from 'next/server';
 import { CustomPathSchema } from '@/types/api';
 import type { ApiResponse } from '@/types/api';
 import type { Path } from '@/types/database';
-import { checkRateLimit } from '@/lib/rate-limit';
-import { auth } from '@/lib/auth';
+import { guardSpend } from '@/lib/spend-guard';
 import { generateCustomPath } from '@/lib/services/custom-path-service';
 import { enrichPath } from '@/lib/services/path-enrichment-service';
-import { checkAccess } from '@/lib/services/billing-service';
 
 // Path generation + post-response enrichment (mnemonics, images, TTS) need
 // far more than the default budget; after() shares this route's duration.
 export const maxDuration = 300;
 
 export async function POST(request: NextRequest) {
-  const ip = request.headers.get('x-forwarded-for') ?? 'anonymous';
-  const { allowed } = checkRateLimit(`paths:custom:${ip}`);
-  if (!allowed) {
-    return NextResponse.json<ApiResponse<null>>(
-      { data: null, error: 'Rate limit exceeded' },
-      { status: 429 }
-    );
-  }
-
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json<ApiResponse<null>>(
-      { data: null, error: 'Authentication required' },
-      { status: 401 }
-    );
-  }
+  // Premium-only, and additionally capped: one custom path fans out to a
+  // mnemonic + image + TTS clip for every word in it.
+  const guard = await guardSpend('path_generate', { feature: 'custom_path' });
+  if (!guard.ok) return guard.response;
 
   const body = await request.json();
   const parsed = CustomPathSchema.safeParse(body);
@@ -40,17 +26,8 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    // Check billing access
-    const access = await checkAccess(session.user.id, 'custom_path');
-    if (!access.allowed) {
-      return NextResponse.json<ApiResponse<null>>(
-        { data: null, error: access.upgradeMessage ?? 'Premium feature' },
-        { status: 403 }
-      );
-    }
-
     const { languageId, userInput } = parsed.data;
-    const userId = session.user.id;
+    const userId = guard.userId;
     const path = await generateCustomPath(userId, userInput, languageId);
 
     after(() => enrichPath(path.id, userId));

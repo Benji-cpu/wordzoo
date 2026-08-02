@@ -1,4 +1,5 @@
 import { sql } from '@/lib/db/client';
+import { isAdminEmail } from '@/lib/auth/admin';
 import type { AppFeedback } from '@/types/database';
 import type { SubmitAppFeedbackInput } from '@/types/api';
 
@@ -11,14 +12,7 @@ export class FeedbackRateLimitError extends Error {
   }
 }
 
-function isPowerUser(email: string | null): boolean {
-  if (!email) return false;
-  const admins = (process.env.ADMIN_EMAILS ?? '')
-    .split(',')
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean);
-  return admins.includes(email.toLowerCase());
-}
+const isPowerUser = isAdminEmail;
 
 export async function insertAppFeedback(
   userId: string,

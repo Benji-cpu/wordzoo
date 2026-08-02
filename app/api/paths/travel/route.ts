@@ -2,8 +2,7 @@ import { NextRequest, NextResponse, after } from 'next/server';
 import { TravelPackSchema } from '@/types/api';
 import type { ApiResponse } from '@/types/api';
 import type { Path } from '@/types/database';
-import { checkRateLimit } from '@/lib/rate-limit';
-import { auth } from '@/lib/auth';
+import { guardSpend } from '@/lib/spend-guard';
 import { generateTravelPack } from '@/lib/services/custom-path-service';
 import { enrichPath } from '@/lib/services/path-enrichment-service';
 
@@ -12,22 +11,11 @@ import { enrichPath } from '@/lib/services/path-enrichment-service';
 export const maxDuration = 300;
 
 export async function POST(request: NextRequest) {
-  const ip = request.headers.get('x-forwarded-for') ?? 'anonymous';
-  const { allowed } = checkRateLimit(`paths:travel:${ip}`);
-  if (!allowed) {
-    return NextResponse.json<ApiResponse<null>>(
-      { data: null, error: 'Rate limit exceeded' },
-      { status: 429 }
-    );
-  }
-
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json<ApiResponse<null>>(
-      { data: null, error: 'Authentication required' },
-      { status: 401 }
-    );
-  }
+  // Travel packs stay available to free users — this is the $4.99 product, not
+  // a premium feature — but the generation itself is capped. Deliberately NOT
+  // gated on `custom_path`: that would make the paid pack premium-only.
+  const guard = await guardSpend('path_generate');
+  if (!guard.ok) return guard.response;
 
   const body = await request.json();
   const parsed = TravelPackSchema.safeParse(body);
@@ -39,7 +27,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const userId = session.user.id;
+    const userId = guard.userId;
     const { destination, duration, languageId, useCases, tripDays, tripStartDate } = parsed.data;
     const path = await generateTravelPack(
       userId,
@@ -54,10 +42,15 @@ export async function POST(request: NextRequest) {
       const { upsertUserPathWithTrip } = await import('@/lib/db/queries');
       const startDate = tripStartDate ?? new Date().toISOString().slice(0, 10);
       // Average words per scene; the dashboard divides scenes across trip days.
-      await upsertUserPathWithTrip(session.user.id, path.id, startDate, 6);
+      await upsertUserPathWithTrip(userId, path.id, startDate, 6);
     }
 
-    after(() => enrichPath(path.id, userId));
+    // Only the free teaser scene is enriched before payment. TripCommit calls
+    // this route BEFORE creating the Stripe checkout session, so enriching the
+    // whole path here meant every abandoned checkout cost us a full fan-out of
+    // mnemonics + images + TTS (~40 words) for $0. The rest is enriched from
+    // the trip dashboard once a purchase exists.
+    after(() => enrichPath(path.id, userId, { maxScenes: 1 }));
 
     return NextResponse.json<ApiResponse<Path>>({
       data: path,

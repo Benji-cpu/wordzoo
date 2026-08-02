@@ -764,4 +764,26 @@ CREATE TABLE IF NOT EXISTS mnemonic_shares (
 );
 CREATE INDEX IF NOT EXISTS idx_mnemonic_shares_mnemonic ON mnemonic_shares(mnemonic_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_mnemonic_shares_user ON mnemonic_shares(user_id, created_at DESC);
+
+-- Durable spend ledger. Every call that costs real money (Gemini tokens, image
+-- generation, TTS, Blob writes) claims a row here BEFORE doing the work, via an
+-- atomic conditional insert in lib/spend-guard.ts.
+--
+-- Why a table and not a daily_usage column: daily_usage is calendar-day
+-- granular and reset by cron, so it can't stop a burst. A rolling window can.
+-- The timestamped rows double as the spend audit trail — which is what tells us
+-- whether it's safe to un-suspend the Blob store.
+--
+-- Deliberately NO foreign key to users: subject also holds anonymous "ip:"
+-- keys, and the ledger must survive account deletion.
+CREATE TABLE IF NOT EXISTS spend_events (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  subject TEXT NOT NULL,
+  kind TEXT NOT NULL,
+  units INTEGER NOT NULL DEFAULT 1,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_spend_events_subject_kind
+  ON spend_events(subject, kind, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_spend_events_created ON spend_events(created_at DESC);
 `;

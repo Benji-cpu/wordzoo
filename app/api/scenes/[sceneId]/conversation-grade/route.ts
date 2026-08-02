@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod/v4';
 import type { ApiResponse } from '@/types/api';
-import { auth } from '@/lib/auth';
+import { guardSpend } from '@/lib/spend-guard';
+import { verifySceneAccess } from '@/lib/db/queries';
 import { generateChatJSON } from '@/lib/ai/gemini';
 
 /**
@@ -31,13 +32,18 @@ interface GradeResult {
 
 export async function POST(
   request: NextRequest,
-  _ctx: { params: Promise<{ sceneId: string }> },
+  ctx: { params: Promise<{ sceneId: string }> },
 ) {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const guard = await guardSpend('conversation_grade');
+  if (!guard.ok) return guard.response;
+
+  // The route deliberately bypasses the 3/day tutor budget, so without this it
+  // was an unmetered Gemini endpoint reachable for any scene id.
+  const { sceneId } = await ctx.params;
+  if (!(await verifySceneAccess(sceneId, guard.userId))) {
     return NextResponse.json<ApiResponse<null>>(
-      { data: null, error: 'Authentication required' },
-      { status: 401 },
+      { data: null, error: 'Not found' },
+      { status: 404 },
     );
   }
 

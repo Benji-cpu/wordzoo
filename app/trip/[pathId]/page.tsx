@@ -1,7 +1,13 @@
+import { after } from 'next/server';
 import { auth } from '@/lib/auth';
 import { redirect, notFound } from 'next/navigation';
 import { getPathById, getSceneMasteryForPath, getUserPathRow, getPurchaseForPath } from '@/lib/db/queries';
+import { enrichPath } from '@/lib/services/path-enrichment-service';
 import { TripDashboard } from '@/components/trip/TripDashboard';
+
+// Full post-purchase enrichment runs here via after(); it needs the same
+// budget as the generation routes.
+export const maxDuration = 300;
 
 interface PageProps {
   params: Promise<{ pathId: string }>;
@@ -33,6 +39,16 @@ export default async function TripDashboardPage({ params, searchParams }: PagePr
     getSceneMasteryForPath(session.user.id, pathId),
     getPurchaseForPath(session.user.id, pathId),
   ]);
+
+  // Enrichment is deliberately deferred until money has actually changed hands
+  // (see /api/paths/travel, which only enriches the free teaser scene). Stripe
+  // redirects the buyer straight here, so this is where the rest gets filled
+  // in. Idempotent: 'processing'/'done' short-circuits, and enrichPath only
+  // ever picks up words that are still missing a mnemonic or audio.
+  if (purchase && path.enrichment_status !== 'processing' && path.enrichment_status !== 'done') {
+    const userId = session.user.id;
+    after(() => enrichPath(pathId, userId));
+  }
 
   const tripStartDate = userPath?.trip_start_date ?? null;
   const studyDays = Math.max(1, sceneRows.length);

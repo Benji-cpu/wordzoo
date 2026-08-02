@@ -2,19 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { TripPreviewSchema } from '@/types/api';
 import type { ApiResponse } from '@/types/api';
 import type { TripPreviewResponse } from '@/lib/trip/types';
-import { checkRateLimit } from '@/lib/rate-limit';
+import { guardAnonymousSpend } from '@/lib/spend-guard';
 import { previewTravelPack } from '@/lib/services/custom-path-service';
 import { getLanguageByCode, getLanguageById } from '@/lib/db/queries';
 
 export async function POST(request: NextRequest) {
-  const ip = request.headers.get('x-forwarded-for') ?? 'anonymous';
-  const { allowed } = checkRateLimit(`trip:preview:${ip}`);
-  if (!allowed) {
-    return NextResponse.json<ApiResponse<null>>(
-      { data: null, error: 'Rate limit exceeded' },
-      { status: 429 }
-    );
-  }
+  // Unauthenticated Gemini call — the only spend gate here is the caller's IP,
+  // so it must be a durable one. 3/hour is generous for a real trip planner
+  // and useless as a free generation endpoint.
+  const guard = await guardAnonymousSpend(request, 'trip_preview');
+  if (!guard.ok) return guard.response;
 
   let body: unknown;
   try {

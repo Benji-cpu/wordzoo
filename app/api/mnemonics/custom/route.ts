@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { CustomMnemonicSchema } from '@/types/api';
 import type { ApiResponse } from '@/types/api';
 import type { Mnemonic } from '@/types/database';
-import { checkRateLimit } from '@/lib/rate-limit';
-import { auth } from '@/lib/auth';
+import { guardSpend } from '@/lib/spend-guard';
+import { incrementUsage } from '@/lib/services/billing-service';
 import {
   generateFromUserKeyword,
   generateSceneImage,
@@ -11,22 +11,11 @@ import {
 } from '@/lib/services/mnemonic-service';
 
 export async function POST(request: NextRequest) {
-  const ip = request.headers.get('x-forwarded-for') ?? 'anonymous';
-  const { allowed } = checkRateLimit(`mnemonics:custom:${ip}`);
-  if (!allowed) {
-    return NextResponse.json<ApiResponse<null>>(
-      { data: null, error: 'Rate limit exceeded' },
-      { status: 429 }
-    );
-  }
-
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json<ApiResponse<null>>(
-      { data: null, error: 'Authentication required' },
-      { status: 401 }
-    );
-  }
+  // Identical economics to /regenerate (Gemini + image + Blob), so it gets the
+  // same quota. Previously this route was free while /regenerate cost one — a
+  // learner could bypass the regeneration limit just by supplying a keyword.
+  const guard = await guardSpend('mnemonic_custom', { feature: 'regenerate_mnemonic' });
+  if (!guard.ok) return guard.response;
 
   const body = await request.json();
   const parsed = CustomMnemonicSchema.safeParse(body);
@@ -39,12 +28,20 @@ export async function POST(request: NextRequest) {
 
   try {
     const { wordId, keyword } = parsed.data;
-    const userId = session.user.id;
+    const userId = guard.userId;
 
     const candidate = await generateFromUserKeyword(wordId, userId, keyword);
 
-    const imageUrl = await generateSceneImage(candidate.imagePrompt);
+    // Image failure must not sink the mnemonic — the keyword fallback card
+    // still renders. Mirrors /api/mnemonics/generate.
+    let imageUrl: string | null = null;
+    try {
+      imageUrl = await generateSceneImage(candidate.imagePrompt);
+    } catch (error) {
+      console.error('Custom mnemonic image generation failed, saving without image:', error);
+    }
     const mnemonic = await saveMnemonic(wordId, userId, candidate, imageUrl, true);
+    await incrementUsage(userId, 'regenerate_mnemonic');
 
     return NextResponse.json<ApiResponse<Mnemonic>>({
       data: mnemonic,

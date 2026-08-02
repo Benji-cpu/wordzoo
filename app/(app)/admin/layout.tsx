@@ -1,13 +1,13 @@
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import { isAdminEmail } from '@/lib/auth/admin';
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
   if (!session?.user?.id) redirect('/login');
 
-  const adminEmails = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim());
-  if (!adminEmails.includes(session.user.email!)) {
+  if (!isAdminEmail(session.user.email)) {
     redirect('/dashboard');
   }
 

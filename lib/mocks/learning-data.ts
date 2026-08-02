@@ -72,11 +72,11 @@ const MOCK_SCENE_WORDS: Record<string, string[]> = {
 
 // ── Paths ───────────────────────────────────────────────────────────
 const MOCK_PATHS: Path[] = [
-  { id: PATH_ID, language_id: LANG_ID, user_id: null, type: 'premade', title: 'Belajar Bahasa Indonesia', description: 'Your journey to speaking Indonesian — from first words to real conversations', created_at: new Date() },
-  { id: uuid(310), language_id: LANG_ID, user_id: null, type: 'premade', title: 'Daily Conversation', description: 'Build confidence for everyday interactions.', created_at: new Date() },
-  { id: uuid(320), language_id: LANG_ID, user_id: null, type: 'travel', title: 'Bali Beach Trip', description: 'Words for a perfect beach vacation in Bali.', created_at: new Date() },
-  { id: uuid(330), language_id: LANG_ID, user_id: null, type: 'travel', title: 'Jakarta Business', description: 'Professional phrases for business meetings.', created_at: new Date() },
-  { id: uuid(340), language_id: LANG_ID, user_id: 'user-1', type: 'custom', title: 'Cooking Words', description: 'Words I want to learn for cooking Indonesian food.', created_at: new Date() },
+  { id: PATH_ID, language_id: LANG_ID, user_id: null, type: 'premade', title: 'Belajar Bahasa Indonesia', description: 'Your journey to speaking Indonesian — from first words to real conversations', enrichment_status: 'none', created_at: new Date() },
+  { id: uuid(310), language_id: LANG_ID, user_id: null, type: 'premade', title: 'Daily Conversation', description: 'Build confidence for everyday interactions.', enrichment_status: 'none', created_at: new Date() },
+  { id: uuid(320), language_id: LANG_ID, user_id: null, type: 'travel', title: 'Bali Beach Trip', description: 'Words for a perfect beach vacation in Bali.', enrichment_status: 'none', created_at: new Date() },
+  { id: uuid(330), language_id: LANG_ID, user_id: null, type: 'travel', title: 'Jakarta Business', description: 'Professional phrases for business meetings.', enrichment_status: 'none', created_at: new Date() },
+  { id: uuid(340), language_id: LANG_ID, user_id: 'user-1', type: 'custom', title: 'Cooking Words', description: 'Words I want to learn for cooking Indonesian food.', enrichment_status: 'none', created_at: new Date() },
 ];
 
 // ── Public API ──────────────────────────────────────────────────────

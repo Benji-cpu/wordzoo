@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod/v4';
 import type { ApiResponse } from '@/types/api';
-import { checkRateLimit } from '@/lib/rate-limit';
 import { auth } from '@/lib/auth';
 import { createTravelPackCheckout } from '@/lib/billing/stripe';
 
@@ -25,15 +24,6 @@ const Body = z.object({
 });
 
 export async function POST(request: NextRequest) {
-  const ip = request.headers.get('x-forwarded-for') ?? 'anonymous';
-  const { allowed } = checkRateLimit(`billing:travel-pack:${ip}`);
-  if (!allowed) {
-    return NextResponse.json<ApiResponse<null>>(
-      { data: null, error: 'Rate limit exceeded' },
-      { status: 429 }
-    );
-  }
-
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json<ApiResponse<null>>(

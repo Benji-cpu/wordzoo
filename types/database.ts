@@ -82,6 +82,8 @@ export interface UserWord {
   updated_at: Date;
 }
 
+export type PathEnrichmentStatus = 'none' | 'pending' | 'processing' | 'partial' | 'done';
+
 export interface Path {
   id: string;
   language_id: string;
@@ -89,6 +91,8 @@ export interface Path {
   type: 'premade' | 'custom' | 'travel' | 'studio';
   title: string;
   description: string | null;
+  /** Progress of the async mnemonic/image/audio backfill for AI-generated paths. */
+  enrichment_status: PathEnrichmentStatus;
   created_at: Date;
 }
 

@@ -554,9 +554,13 @@ export interface WordNeedingEnrichment {
 /**
  * Words in a path that lack a mnemonic and/or pronunciation audio, ordered
  * scene-by-scene so the first scene the user opens is enriched first.
+ *
+ * `maxScenes` limits enrichment to the first N scenes — used to enrich only
+ * the free teaser scene of a travel pack before payment.
  */
 export async function getPathWordsNeedingEnrichment(
-  pathId: string
+  pathId: string,
+  maxScenes?: number
 ): Promise<WordNeedingEnrichment[]> {
   const rows = await sql`
     SELECT DISTINCT ON (w.id)
@@ -577,6 +581,7 @@ export async function getPathWordsNeedingEnrichment(
   `;
   return (rows as Array<WordNeedingEnrichment & { scene_order: number; word_order: number }>)
     .filter((r) => r.needs_mnemonic || r.needs_audio)
+    .filter((r) => maxScenes === undefined || r.scene_order < maxScenes)
     .sort((a, b) => a.scene_order - b.scene_order || a.word_order - b.word_order);
 }
 

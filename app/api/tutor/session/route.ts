@@ -1,27 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { TutorSessionSchema } from '@/types/api';
 import type { ApiResponse } from '@/types/api';
-import { checkRateLimit } from '@/lib/rate-limit';
 import { auth } from '@/lib/auth';
+import { guardSpend } from '@/lib/spend-guard';
 import { startSession } from '@/lib/services/tutor-service';
 
 export async function POST(request: NextRequest) {
-  const ip = request.headers.get('x-forwarded-for') ?? 'anonymous';
-  const { allowed } = checkRateLimit(`tutor:session:${ip}`);
-  if (!allowed) {
-    return NextResponse.json<ApiResponse<null>>(
-      { data: null, error: 'Rate limit exceeded' },
-      { status: 429 }
-    );
-  }
+  // Starting a session generates an AI greeting, so it costs a Gemini call
+  // even though it never touches the 3/day message budget.
+  const guard = await guardSpend('tutor_greeting');
+  if (!guard.ok) return guard.response;
 
   const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json<ApiResponse<null>>(
-      { data: null, error: 'Unauthorized' },
-      { status: 401 }
-    );
-  }
 
   const body = await request.json();
   const parsed = TutorSessionSchema.safeParse(body);
@@ -34,7 +24,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const { mode, languageId, scenario, focusWordIds } = parsed.data;
-    const result = await startSession(session.user.id, mode, languageId, scenario, session.user.name, focusWordIds);
+    const result = await startSession(guard.userId, mode, languageId, scenario, session?.user?.name, focusWordIds);
     return NextResponse.json<ApiResponse<typeof result>>(
       { data: result, error: null }
     );

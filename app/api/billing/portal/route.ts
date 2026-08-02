@@ -1,19 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import type { ApiResponse } from '@/types/api';
-import { checkRateLimit } from '@/lib/rate-limit';
 import { auth } from '@/lib/auth';
 import { createPortalSession } from '@/lib/billing/stripe';
 
-export async function POST(request: NextRequest) {
-  const ip = request.headers.get('x-forwarded-for') ?? 'anonymous';
-  const { allowed } = checkRateLimit(`billing:portal:${ip}`);
-  if (!allowed) {
-    return NextResponse.json<ApiResponse<null>>(
-      { data: null, error: 'Rate limit exceeded' },
-      { status: 429 }
-    );
-  }
-
+export async function POST() {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json<ApiResponse<null>>(

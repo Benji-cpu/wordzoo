@@ -2,27 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { StudioStartSchema, StudioChatSchema } from '@/types/api';
 import type { ApiResponse } from '@/types/api';
 import type { StudioMessage } from '@/types/database';
-import { checkRateLimit } from '@/lib/rate-limit';
-import { auth } from '@/lib/auth';
+import { guardSpend } from '@/lib/spend-guard';
 import { startStudioSession, handleStudioMessage } from '@/lib/services/studio-service';
 
 export async function POST(request: NextRequest) {
-  const ip = request.headers.get('x-forwarded-for') ?? 'anonymous';
-  const { allowed } = checkRateLimit(`studio:chat:${ip}`);
-  if (!allowed) {
-    return NextResponse.json<ApiResponse<null>>(
-      { data: null, error: 'Rate limit exceeded' },
-      { status: 429 }
-    );
-  }
-
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json<ApiResponse<null>>(
-      { data: null, error: 'Authentication required' },
-      { status: 401 }
-    );
-  }
+  // Every turn is a Gemini call.
+  const guard = await guardSpend('studio_chat');
+  if (!guard.ok) return guard.response;
 
   const body = await request.json();
 
@@ -39,7 +25,7 @@ export async function POST(request: NextRequest) {
 
     try {
       const { languageId, prefillScenario } = parsed.data;
-      const result = await startStudioSession(session.user.id, languageId, prefillScenario);
+      const result = await startStudioSession(guard.userId, languageId, prefillScenario);
 
       return NextResponse.json<ApiResponse<{ sessionId: string; message: StudioMessage }>>({
         data: result,
@@ -64,7 +50,7 @@ export async function POST(request: NextRequest) {
 
     try {
       const { sessionId, message, selections } = parsed.data;
-      const tutorMessage = await handleStudioMessage(sessionId, session.user.id, message, selections);
+      const tutorMessage = await handleStudioMessage(sessionId, guard.userId, message, selections);
 
       return NextResponse.json<ApiResponse<StudioMessage>>({
         data: tutorMessage,

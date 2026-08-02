@@ -8,6 +8,7 @@ import {
   TEAM_OWNER_EMAIL,
 } from '@/lib/deployment-events';
 import type { ApiResponse } from '@/types/api';
+import { isAdminEmail } from '@/lib/auth/admin';
 
 async function requireAdmin(): Promise<NextResponse | null> {
   const session = await auth();
@@ -17,10 +18,7 @@ async function requireAdmin(): Promise<NextResponse | null> {
       { status: 401 }
     );
   }
-  const adminEmails = (process.env.ADMIN_EMAILS || '')
-    .split(',')
-    .map((e) => e.trim());
-  if (!adminEmails.includes(session.user.email!)) {
+  if (!isAdminEmail(session.user.email)) {
     return NextResponse.json<ApiResponse<null>>(
       { data: null, error: 'Forbidden' },
       { status: 403 }

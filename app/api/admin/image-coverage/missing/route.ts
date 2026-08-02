@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { ApiResponse } from '@/types/api';
 import { auth } from '@/lib/auth';
+import { isAdminEmail } from '@/lib/auth/admin';
 import {
   getMissingMnemonicImages,
   getMissingPhraseImages,
@@ -32,8 +33,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const adminEmails = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim());
-  if (!adminEmails.includes(session.user.email!)) {
+  if (!isAdminEmail(session.user.email)) {
     return NextResponse.json<ApiResponse<null>>(
       { data: null, error: 'Forbidden' },
       { status: 403 }

@@ -30,6 +30,7 @@ import { TripHero } from '@/components/dashboard/TripHero';
 import { ReviewQueueCard } from '@/components/dashboard/ReviewQueueCard';
 import { GoalProgressCard } from '@/components/dashboard/GoalProgressCard';
 import { LevelBadge } from '@/components/dashboard/LevelBadge';
+import { isAdminEmail } from '@/lib/auth/admin';
 
 function pickGreeting(short: boolean): string {
   const hour = new Date().getHours();
@@ -52,8 +53,7 @@ export default async function DashboardPage() {
   const session = await auth();
   if (!session?.user?.id) redirect('/login');
   const userId = session.user.id;
-  const adminEmails = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim());
-  const isAdmin = adminEmails.includes(session.user.email ?? '');
+  const isAdmin = isAdminEmail(session.user.email);
 
   // Get user's active path — if none, redirect to path selection
   const activePath = await getUserActivePath(userId);

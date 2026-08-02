@@ -12,6 +12,8 @@
  *   4. Default: every slice off.
  */
 
+import { isAdminEmail } from '@/lib/auth/admin';
+
 export type PedagogySlice =
   | 'distractors'   // Phase 1: smart distractors + reveal-mask delay
   | 'production'    // Phase 2: typing exercise + Leitner re-queue
@@ -72,14 +74,8 @@ function envSlices(): PedagogyFlags {
   return out;
 }
 
-function adminEmails(): Set<string> {
-  return new Set(
-    (process.env.ADMIN_EMAILS ?? '')
-      .split(',')
-      .map((e) => e.trim().toLowerCase())
-      .filter(Boolean),
-  );
-}
+// isAdminEmail lives in lib/auth/admin.ts — dependency-free by design so this
+// module stays importable from anywhere.
 
 function getParam(
   params: ResolveContext['searchParams'],
@@ -116,11 +112,8 @@ function urlOverride(params: ResolveContext['searchParams']): Partial<PedagogyFl
 export function resolvePedagogyFlags(ctx: ResolveContext = {}): PedagogyFlags {
   const baseline = envSlices();
 
-  if (ctx.userEmail) {
-    const admins = adminEmails();
-    if (admins.has(ctx.userEmail.trim().toLowerCase())) {
-      Object.assign(baseline, ON);
-    }
+  if (isAdminEmail(ctx.userEmail)) {
+    Object.assign(baseline, ON);
   }
 
   const override = urlOverride(ctx.searchParams);

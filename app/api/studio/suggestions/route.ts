@@ -2,17 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { StudioSuggestionsSchema } from '@/types/api';
 import type { ApiResponse } from '@/types/api';
 import type { StudioChip } from '@/types/database';
-import { auth } from '@/lib/auth';
+import { guardSpend } from '@/lib/spend-guard';
 import { generateSubScenarioChips } from '@/lib/services/studio-service';
 
 export async function POST(request: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json<ApiResponse<null>>(
-      { data: null, error: 'Authentication required' },
-      { status: 401 }
-    );
-  }
+  const guard = await guardSpend('studio_suggestions');
+  if (!guard.ok) return guard.response;
 
   const body = await request.json();
   const parsed = StudioSuggestionsSchema.safeParse(body);
@@ -25,7 +20,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const { sessionId, scenario } = parsed.data;
-    const chips = await generateSubScenarioChips(sessionId, scenario);
+    const chips = await generateSubScenarioChips(sessionId, scenario, guard.userId);
 
     return NextResponse.json<ApiResponse<StudioChip[]>>({
       data: chips,
