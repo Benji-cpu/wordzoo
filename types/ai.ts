@@ -4,6 +4,8 @@ export interface GeminiTextOptions {
   maxOutputTokens?: number;
   model?: string;
   responseMimeType?: string;
+  /** Abort the request after this many ms. Defaults to 30s. */
+  timeoutMs?: number;
 }
 
 export interface GeminiChatMessage {

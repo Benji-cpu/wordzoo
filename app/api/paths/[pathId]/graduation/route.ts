@@ -5,6 +5,7 @@ import { auth } from '@/lib/auth';
 import { verifyPathAccess } from '@/lib/db';
 import { checkGraduation, completeGraduation } from '@/lib/services/graduation-service';
 import type { GraduationData, GraduationResult } from '@/lib/services/graduation-service';
+import { readJson } from '@/lib/api/request';
 
 export async function GET(
   _request: NextRequest,
@@ -71,7 +72,9 @@ export async function POST(
     );
   }
 
-  const body = await request.json();
+  const jsonBody = await readJson(request);
+  if (!jsonBody.ok) return jsonBody.response;
+  const body = jsonBody.data;
   const bodyParsed = GraduatePathSchema.safeParse(body);
   if (!bodyParsed.success) {
     return NextResponse.json<ApiResponse<null>>(

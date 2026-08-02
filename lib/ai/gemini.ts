@@ -11,6 +11,27 @@ function getClient() {
 
 const DEFAULT_MODEL = 'gemini-2.5-flash';
 
+/**
+ * Every call below carries an abort signal. Without one a hung Gemini request
+ * blocks forever, and on the 300s routes (paths/travel, paths/custom,
+ * studio/generate) that means a single stalled call burns the entire lambda
+ * budget. 30s covers normal completions; the long-form path/mnemonic
+ * generations pass a larger timeout explicitly.
+ */
+const DEFAULT_TIMEOUT_MS = 30_000;
+const LONG_TIMEOUT_MS = 60_000;
+
+/** Turn a truncated or non-JSON model reply into a clear error. */
+function parseModelJson<T>(raw: string | undefined): T {
+  try {
+    return JSON.parse(raw ?? '{}') as T;
+  } catch {
+    throw new Error(
+      'Failed to parse AI response as JSON. The model returned malformed output.'
+    );
+  }
+}
+
 export async function generateText(
   prompt: string,
   options: GeminiTextOptions = {}
@@ -25,6 +46,7 @@ export async function generateText(
       temperature: options.temperature ?? 0.7,
       maxOutputTokens: options.maxOutputTokens ?? 1024,
       ...(options.responseMimeType ? { responseMimeType: options.responseMimeType } : {}),
+      abortSignal: AbortSignal.timeout(options.timeoutMs ?? DEFAULT_TIMEOUT_MS),
     },
   });
 
@@ -52,6 +74,7 @@ export async function generateChat(
       systemInstruction: systemPrompt,
       temperature: 0.7,
       maxOutputTokens: 1024,
+      abortSignal: AbortSignal.timeout(DEFAULT_TIMEOUT_MS),
     },
   });
 
@@ -81,10 +104,14 @@ export async function generateChatJSON<T = unknown>(
       temperature: 0.7,
       maxOutputTokens: options?.maxOutputTokens ?? 2048,
       responseMimeType: 'application/json',
+      // Large maxOutputTokens means a long-form generation; give it room.
+      abortSignal: AbortSignal.timeout(
+        (options?.maxOutputTokens ?? 2048) > 2048 ? LONG_TIMEOUT_MS : DEFAULT_TIMEOUT_MS
+      ),
     },
   });
 
-  const data = JSON.parse(response.text ?? '{}') as T;
+  const data = parseModelJson<T>(response.text);
   return { data, tokensUsed: response.usageMetadata?.totalTokenCount ?? 0 };
 }
 
@@ -107,6 +134,9 @@ export async function generateChatStream(
       systemInstruction: systemPrompt,
       temperature: options?.temperature ?? 0.7,
       maxOutputTokens: options?.maxOutputTokens ?? 1024,
+      // Aborting mid-stream surfaces in the for-await below, which already
+      // routes errors to controller.error().
+      abortSignal: AbortSignal.timeout(LONG_TIMEOUT_MS),
     },
   });
 

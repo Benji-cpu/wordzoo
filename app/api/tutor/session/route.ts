@@ -4,6 +4,7 @@ import type { ApiResponse } from '@/types/api';
 import { auth } from '@/lib/auth';
 import { guardSpend } from '@/lib/spend-guard';
 import { startSession } from '@/lib/services/tutor-service';
+import { readJson } from '@/lib/api/request';
 
 export async function POST(request: NextRequest) {
   // Starting a session generates an AI greeting, so it costs a Gemini call
@@ -13,7 +14,9 @@ export async function POST(request: NextRequest) {
 
   const session = await auth();
 
-  const body = await request.json();
+  const jsonBody = await readJson(request);
+  if (!jsonBody.ok) return jsonBody.response;
+  const body = jsonBody.data;
   const parsed = TutorSessionSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json<ApiResponse<null>>(

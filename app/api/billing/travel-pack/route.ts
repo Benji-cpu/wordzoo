@@ -3,6 +3,7 @@ import { z } from 'zod/v4';
 import type { ApiResponse } from '@/types/api';
 import { auth } from '@/lib/auth';
 import { createTravelPackCheckout } from '@/lib/billing/stripe';
+import { readJson } from '@/lib/api/request';
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:8000';
 
@@ -32,7 +33,9 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const body = await request.json();
+  const jsonBody = await readJson(request);
+  if (!jsonBody.ok) return jsonBody.response;
+  const body = jsonBody.data;
   const parsed = Body.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json<ApiResponse<null>>(

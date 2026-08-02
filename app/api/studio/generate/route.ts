@@ -5,6 +5,7 @@ import type { Path } from '@/types/database';
 import { guardSpend } from '@/lib/spend-guard';
 import { generateStudioPath } from '@/lib/services/studio-service';
 import { enrichPath } from '@/lib/services/path-enrichment-service';
+import { readJson } from '@/lib/api/request';
 import {
   getUserById,
   getUnconsumedStudioPathPurchase,
@@ -20,7 +21,9 @@ export async function POST(request: NextRequest) {
   const guard = await guardSpend('path_generate');
   if (!guard.ok) return guard.response;
 
-  const body = await request.json();
+  const jsonBody = await readJson(request);
+  if (!jsonBody.ok) return jsonBody.response;
+  const body = jsonBody.data;
   const parsed = StudioGenerateSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json<ApiResponse<null>>(

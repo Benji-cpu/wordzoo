@@ -5,6 +5,7 @@ import { isAdminEmail } from '@/lib/auth/admin';
 import { claimSpend } from '@/lib/spend-ledger';
 import { addUserXp, getUserXp } from '@/lib/db/queries';
 import type { ApiResponse } from '@/types/api';
+import { readJson } from '@/lib/api/request';
 
 const AddXpSchema = z.object({
   amount: z.number().int().min(1).max(500),
@@ -44,7 +45,9 @@ export async function POST(request: NextRequest) {
       { status: 401 },
     );
   }
-  const body = await request.json();
+  const jsonBody = await readJson(request);
+  if (!jsonBody.ok) return jsonBody.response;
+  const body = jsonBody.data;
   const parsed = AddXpSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json<ApiResponse<null>>(

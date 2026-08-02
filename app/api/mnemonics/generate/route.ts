@@ -4,6 +4,7 @@ import type { ApiResponse } from '@/types/api';
 import type { MnemonicCandidate } from '@/types/ai';
 import type { Mnemonic } from '@/types/database';
 import { guardSpend } from '@/lib/spend-guard';
+import { readJson } from '@/lib/api/request';
 import {
   generateMnemonic,
   generateSceneImage,
@@ -23,7 +24,9 @@ export async function POST(request: NextRequest) {
   const guard = await guardSpend('mnemonic_generate');
   if (!guard.ok) return guard.response;
 
-  const body = await request.json();
+  const jsonBody = await readJson(request);
+  if (!jsonBody.ok) return jsonBody.response;
+  const body = jsonBody.data;
   const parsed = GenerateMnemonicSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json<ApiResponse<null>>(

@@ -6,13 +6,16 @@ import { guardSpend } from '@/lib/spend-guard';
 import { regenerateMnemonicFromFeedback } from '@/lib/services/mnemonic-service';
 import { checkAccess, incrementUsage } from '@/lib/services/billing-service';
 import { setCurrentMnemonic } from '@/lib/db/queries';
+import { readJson } from '@/lib/api/request';
 
 export async function POST(request: NextRequest) {
   // Gemini + a fresh image generation + a Blob write per call.
   const guard = await guardSpend('mnemonic_regenerate');
   if (!guard.ok) return guard.response;
 
-  const body = await request.json();
+  const jsonBody = await readJson(request);
+  if (!jsonBody.ok) return jsonBody.response;
+  const body = jsonBody.data;
   const parsed = RegenerateFromFeedbackSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json<ApiResponse<null>>(

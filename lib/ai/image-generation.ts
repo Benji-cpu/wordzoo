@@ -52,6 +52,9 @@ export async function generateImage(prompt: string): Promise<ImageGenerationResp
         aspectRatio: '1:1',
         imageSize: '1K',
       },
+      // Image generation is the slowest call in the app; 60s, then give up
+      // rather than hold the lambda open.
+      abortSignal: AbortSignal.timeout(60_000),
     },
   });
 
@@ -83,6 +86,7 @@ export async function generateImage(prompt: string): Promise<ImageGenerationResp
   const blob = await put(`mnemonics/${filename}.webp`, webpBuffer, {
     access: 'public',
     contentType: 'image/webp',
+    abortSignal: AbortSignal.timeout(30_000),
   });
 
   return { imageUrl: blob.url };

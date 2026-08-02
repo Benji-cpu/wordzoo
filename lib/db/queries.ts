@@ -1272,6 +1272,18 @@ export async function recordWebhookEvent(stripeEventId: string, eventType: strin
   return rows.length > 0;
 }
 
+/**
+ * Release an idempotency claim so Stripe's retry can process the event again.
+ *
+ * The claim is taken BEFORE the handler runs, so without this a transient
+ * failure mid-handler (a Neon blip during checkout.session.completed) left the
+ * event permanently marked processed — the customer paid and never received
+ * premium, with nothing but a console.error to show for it.
+ */
+export async function releaseWebhookEvent(stripeEventId: string): Promise<void> {
+  await sql`DELETE FROM webhook_events WHERE stripe_event_id = ${stripeEventId}`;
+}
+
 export async function getDailyUsage(userId: string, date: string): Promise<DailyUsage | null> {
   const rows = await sql`
     SELECT * FROM daily_usage WHERE user_id = ${userId} AND date = ${date}

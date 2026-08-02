@@ -7,6 +7,7 @@ import {
   updateUserPreferences,
 } from '@/lib/db/queries';
 import type { ApiResponse } from '@/types/api';
+import { readJson } from '@/lib/api/request';
 
 const PreferencesSchema = z.object({
   nativeLanguage: z.string().min(2).max(10).optional(),
@@ -33,7 +34,9 @@ export async function PATCH(request: NextRequest) {
       { status: 401 }
     );
   }
-  const body = await request.json();
+  const jsonBody = await readJson(request);
+  if (!jsonBody.ok) return jsonBody.response;
+  const body = jsonBody.data;
   const parsed = PreferencesSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json<ApiResponse<null>>(

@@ -5,6 +5,7 @@ import type { Path } from '@/types/database';
 import { guardSpend } from '@/lib/spend-guard';
 import { generateCustomPath } from '@/lib/services/custom-path-service';
 import { enrichPath } from '@/lib/services/path-enrichment-service';
+import { readJson } from '@/lib/api/request';
 
 // Path generation + post-response enrichment (mnemonics, images, TTS) need
 // far more than the default budget; after() shares this route's duration.
@@ -16,7 +17,9 @@ export async function POST(request: NextRequest) {
   const guard = await guardSpend('path_generate', { feature: 'custom_path' });
   if (!guard.ok) return guard.response;
 
-  const body = await request.json();
+  const jsonBody = await readJson(request);
+  if (!jsonBody.ok) return jsonBody.response;
+  const body = jsonBody.data;
   const parsed = CustomPathSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json<ApiResponse<null>>(

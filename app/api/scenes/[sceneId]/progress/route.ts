@@ -4,6 +4,7 @@ import { UpdateSceneProgressSchema } from '@/types/api';
 import { auth } from '@/lib/auth';
 import { sql } from '@/lib/db/client';
 import { updateSceneProgress } from '@/lib/db/scene-flow-queries';
+import { readJson } from '@/lib/api/request';
 import {
   incrementDailyUsageScenesCompleted,
   getDailyLearningStats,
@@ -76,7 +77,9 @@ export async function POST(
     );
   }
 
-  const body = await request.json();
+  const jsonBody = await readJson(request);
+  if (!jsonBody.ok) return jsonBody.response;
+  const body = jsonBody.data;
   const parsed = UpdateSceneProgressSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json<ApiResponse<null>>(

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod/v4';
 import type { ApiResponse } from '@/types/api';
 import { auth } from '@/lib/auth';
+import { readJson } from '@/lib/api/request';
 import {
   getEmailRemindersEnabled,
   setEmailRemindersEnabled,
@@ -36,7 +37,9 @@ export async function PATCH(request: NextRequest) {
     );
   }
 
-  const body = await request.json();
+  const jsonBody = await readJson(request);
+  if (!jsonBody.ok) return jsonBody.response;
+  const body = jsonBody.data;
   const parsed = EmailPrefsSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json<ApiResponse<null>>(

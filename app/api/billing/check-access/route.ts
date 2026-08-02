@@ -3,6 +3,7 @@ import { CheckAccessSchema } from '@/types/api';
 import type { ApiResponse } from '@/types/api';
 import { auth } from '@/lib/auth';
 import { checkAccess } from '@/lib/services/billing-service';
+import { readJson } from '@/lib/api/request';
 
 export async function POST(request: NextRequest) {
   const session = await auth();
@@ -13,7 +14,9 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const body = await request.json();
+  const jsonBody = await readJson(request);
+  if (!jsonBody.ok) return jsonBody.response;
+  const body = jsonBody.data;
   const parsed = CheckAccessSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json<ApiResponse<null>>(

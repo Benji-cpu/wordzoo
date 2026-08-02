@@ -5,6 +5,7 @@ import { auth } from '@/lib/auth';
 import { guardSpend } from '@/lib/spend-guard';
 import { startGuidedSession } from '@/lib/services/tutor-service';
 import { getSceneWithLanguage, verifySceneAccess } from '@/lib/db/queries';
+import { readJson } from '@/lib/api/request';
 
 export async function POST(request: NextRequest) {
   const guard = await guardSpend('tutor_greeting');
@@ -12,7 +13,9 @@ export async function POST(request: NextRequest) {
 
   const session = await auth();
 
-  const body = await request.json();
+  const jsonBody = await readJson(request);
+  if (!jsonBody.ok) return jsonBody.response;
+  const body = jsonBody.data;
   const parsed = StartGuidedSessionSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json<ApiResponse<null>>(

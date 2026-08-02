@@ -32,6 +32,8 @@ export async function synthesizeSpeech(
 
   const response = await fetch(`${TTS_API_URL}?key=${apiKey}`, {
     method: 'POST',
+    // Without this a stalled TTS call hangs the enclosing lambda indefinitely.
+    signal: AbortSignal.timeout(20_000),
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       input: { text },

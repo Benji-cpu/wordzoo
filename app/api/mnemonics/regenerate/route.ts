@@ -11,6 +11,7 @@ import {
 } from '@/lib/services/mnemonic-service';
 import { checkAccess, incrementUsage } from '@/lib/services/billing-service';
 import { setCurrentMnemonic } from '@/lib/db/queries';
+import { readJson } from '@/lib/api/request';
 
 interface RegenerateResponse {
   mnemonic: Mnemonic;
@@ -23,7 +24,9 @@ export async function POST(request: NextRequest) {
   const guard = await guardSpend('mnemonic_regenerate');
   if (!guard.ok) return guard.response;
 
-  const body = await request.json();
+  const jsonBody = await readJson(request);
+  if (!jsonBody.ok) return jsonBody.response;
+  const body = jsonBody.data;
   const parsed = RegenerateMnemonicSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json<ApiResponse<null>>(

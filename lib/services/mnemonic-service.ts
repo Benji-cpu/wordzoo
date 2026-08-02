@@ -16,7 +16,17 @@ import { getMnemonicById, getNegativeCommentsForMnemonic } from '@/lib/db/admin-
 function parseCandidates(text: string): MnemonicCandidate[] {
   // Strip markdown code fences if present
   const cleaned = text.replace(/```(?:json)?\s*/g, '').replace(/```\s*/g, '').trim();
-  const parsed = JSON.parse(cleaned);
+  // Raw JSON.parse on model output throws a bare SyntaxError on truncation,
+  // which surfaces to the caller as an opaque 500. Match the shape used in
+  // custom-path-service.ts.
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(cleaned);
+  } catch {
+    throw new Error(
+      'Failed to parse AI response as JSON. The model returned malformed output.'
+    );
+  }
 
   if (!Array.isArray(parsed)) {
     throw new Error('Expected JSON array of candidates');

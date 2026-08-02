@@ -6,6 +6,7 @@ import { auth } from '@/lib/auth';
 import { getMnemonicById } from '@/lib/db/admin-queries';
 import { insertMnemonic } from '@/lib/db/queries';
 import { isAdminEmail } from '@/lib/auth/admin';
+import { readJson } from '@/lib/api/request';
 
 export async function POST(request: NextRequest) {
   const session = await auth();
@@ -23,7 +24,9 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const body = await request.json();
+  const jsonBody = await readJson(request);
+  if (!jsonBody.ok) return jsonBody.response;
+  const body = jsonBody.data;
   const parsed = AdminMnemonicOverrideSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json<ApiResponse<null>>(

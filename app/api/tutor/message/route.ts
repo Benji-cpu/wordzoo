@@ -4,6 +4,7 @@ import type { ApiResponse } from '@/types/api';
 import { auth } from '@/lib/auth';
 import { sendMessage } from '@/lib/services/tutor-service';
 import { checkAccess, incrementUsage } from '@/lib/services/billing-service';
+import { readJson } from '@/lib/api/request';
 
 export async function POST(request: NextRequest) {
   const session = await auth();
@@ -14,7 +15,9 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const body = await request.json();
+  const jsonBody = await readJson(request);
+  if (!jsonBody.ok) return jsonBody.response;
+  const body = jsonBody.data;
   const parsed = TutorMessageSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json<ApiResponse<null>>(

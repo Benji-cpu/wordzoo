@@ -4,16 +4,21 @@ import type { ApiResponse } from '@/types/api';
 import type { StudioMessage } from '@/types/database';
 import { guardSpend } from '@/lib/spend-guard';
 import { startStudioSession, handleStudioMessage } from '@/lib/services/studio-service';
+import { readJson } from '@/lib/api/request';
 
 export async function POST(request: NextRequest) {
   // Every turn is a Gemini call.
   const guard = await guardSpend('studio_chat');
   if (!guard.ok) return guard.response;
 
-  const body = await request.json();
+  const jsonBody = await readJson(request);
+  if (!jsonBody.ok) return jsonBody.response;
+  const body = jsonBody.data;
+  const hasSessionId =
+    typeof body === 'object' && body !== null && Boolean((body as { sessionId?: unknown }).sessionId);
 
   // Route based on whether sessionId is present in the body
-  if (!body.sessionId) {
+  if (!hasSessionId) {
     // Start a new studio session
     const parsed = StudioStartSchema.safeParse(body);
     if (!parsed.success) {
