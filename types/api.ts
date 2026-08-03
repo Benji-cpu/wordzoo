@@ -227,7 +227,7 @@ export type AdminMnemonicOverrideInput = z.infer<typeof AdminMnemonicOverrideSch
 // progress POSTs don't 400 — the route normalizes them forward to 'summary'.
 export const SceneFlowPhaseEnum = z.enum(['dialogue', 'phrases', 'vocabulary', 'patterns', 'affixes', 'conversation', 'summary']);
 
-export const V2PhaseStepEnum = z.enum(['intro', 'drill', 'checkpoint']);
+export const V2PhaseStepEnum = z.enum(['intro', 'drill', 'converse', 'checkpoint']);
 
 export const UpdateSceneProgressSchema = z.object({
   currentPhase: SceneFlowPhaseEnum,

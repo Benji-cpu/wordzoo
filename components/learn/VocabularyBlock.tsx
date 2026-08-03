@@ -4,13 +4,18 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { IntroduceBatch } from '@/components/learn/IntroduceBatch';
 import { DrillBlock } from '@/components/learn/DrillBlock';
 import { SceneCheckpoint } from '@/components/learn/SceneCheckpoint';
+import { ConversationBlock } from '@/components/learn/ConversationBlock';
 import type { LearnWord } from '@/types/learn';
 import type { SupportedLanguageCode } from '@/types/audio';
 import type { CueType, DrillQueue } from '@/lib/pedagogy/leitner';
 import type { PedagogyFlags } from '@/lib/pedagogy/flags';
-import type { V2BlockProgress, V2InitialState } from '@/components/learn/v2-progress';
-
-const BATCH_SIZE = 3;
+import type { ConversationExchange } from '@/lib/learn/conversation-data';
+import {
+  chunkIntoBatches,
+  VOCAB_BATCH_SIZE,
+  type V2BlockProgress,
+  type V2InitialState,
+} from '@/components/learn/v2-progress';
 
 interface VocabularyBlockProps {
   words: LearnWord[];
@@ -35,6 +40,19 @@ interface VocabularyBlockProps {
    * kept meeting words that were never saved.
    */
   onIntroduceBlocked?: (upgradeMessage: string | null) => void;
+  /**
+   * One short conversation per batch, played straight after that batch's
+   * drill. Index is the batch index; an empty or missing entry means no
+   * interlude for that batch. This is what stops the scene being a wall of
+   * drilling with all the talking saved for the end.
+   */
+  interludes?: ConversationExchange[][];
+  /** Context ConversationBlock needs; required only when interludes are passed. */
+  conversationContext?: {
+    learnerName: string | null;
+    languageName: string;
+    sceneId: string;
+  };
   /** Fired after the end-of-vocab checkpoint resolves. */
   onComplete: () => void;
 }
@@ -42,6 +60,7 @@ interface VocabularyBlockProps {
 type Phase =
   | { kind: 'intro'; batchIndex: number }
   | { kind: 'drill'; batchIndex: number }
+  | { kind: 'converse'; batchIndex: number }
   | { kind: 'checkpoint' };
 
 export function VocabularyBlock({
@@ -53,19 +72,20 @@ export function VocabularyBlock({
   onProgress,
   initialState,
   onIntroduceBlocked,
+  interludes,
+  conversationContext,
   onComplete,
 }: VocabularyBlockProps) {
-  const batches = useMemo(() => {
-    const out: LearnWord[][] = [];
-    // Don't fragment small sets: 5 or fewer words stay in a single batch so
-    // the learner never hits a 1-item "mini drill" that feels pointless
-    // (user feedback). 6+ chunk into BATCH_SIZE groups as before.
-    const size = Math.max(1, words.length <= 5 ? words.length : BATCH_SIZE);
-    for (let i = 0; i < words.length; i += size) {
-      out.push(words.slice(i, i + size));
-    }
-    return out;
-  }, [words]);
+  const batches = useMemo(() => chunkIntoBatches(words, VOCAB_BATCH_SIZE), [words]);
+
+  const interludeFor = useCallback(
+    (batchIndex: number): ConversationExchange[] | null => {
+      if (!conversationContext) return null;
+      const ex = interludes?.[batchIndex];
+      return ex && ex.length > 0 ? ex : null;
+    },
+    [interludes, conversationContext],
+  );
 
   const [phase, setPhase] = useState<Phase>(() => {
     if (batches.length === 0) return { kind: 'checkpoint' };
@@ -84,13 +104,16 @@ export function VocabularyBlock({
     const out: CueType[] = ['recognition'];
     if (flags.production) out.push('production');
     if (flags.cloze) out.push('cloze');
+    if (flags.speech) out.push('speak');
     return out;
-  }, [flags.production, flags.cloze]);
+  }, [flags.production, flags.cloze, flags.speech]);
 
   const recordReview = useCallback(
     (wordId: string, cueType: CueType, correct: boolean) => {
       const direction =
-        cueType === 'production' || cueType === 'cloze' ? 'production' : 'recognition';
+        cueType === 'production' || cueType === 'cloze' || cueType === 'speak'
+          ? 'production'
+          : 'recognition';
       onItemAnswered?.(wordId, correct, direction);
     },
     [onItemAnswered],
@@ -107,10 +130,21 @@ export function VocabularyBlock({
   const advanceFromDrill = useCallback(() => {
     setPhase((p) => {
       if (p.kind !== 'drill') return p;
+      // Talk before moving on: use what was just drilled (plus everything
+      // earlier — the planner picks for cumulative coverage) in a real
+      // exchange while it's still warm.
+      if (interludeFor(p.batchIndex)) return { kind: 'converse', batchIndex: p.batchIndex };
       const next = p.batchIndex + 1;
-      if (next >= batches.length) {
-        return { kind: 'checkpoint' };
-      }
+      if (next >= batches.length) return { kind: 'checkpoint' };
+      return { kind: 'intro', batchIndex: next };
+    });
+  }, [batches.length, interludeFor]);
+
+  const advanceFromConverse = useCallback(() => {
+    setPhase((p) => {
+      if (p.kind !== 'converse') return p;
+      const next = p.batchIndex + 1;
+      if (next >= batches.length) return { kind: 'checkpoint' };
       return { kind: 'intro', batchIndex: next };
     });
   }, [batches.length]);
@@ -125,13 +159,36 @@ export function VocabularyBlock({
   }, []);
 
   // Compute fraction + goBack on every state change and report up.
-  // Granularity: each batch contributes 2 slots (intro + drill); checkpoint
-  // is a 3rd-rail final slot. Within drill, drillFraction interpolates.
-  const totalSlots = batches.length * 2 + 1;
+  // Each batch contributes 2 slots (intro + drill), plus a 3rd when it has a
+  // conversation interlude; the checkpoint is the final slot. Counting the
+  // interludes exactly keeps the progress bar honest rather than jumping.
+  const { slotOffsets, totalSlots } = useMemo(() => {
+    const offsets: number[] = [];
+    let acc = 0;
+    for (let i = 0; i < batches.length; i++) {
+      offsets.push(acc);
+      acc += 2 + (interludeFor(i) ? 1 : 0);
+    }
+    return { slotOffsets: offsets, totalSlots: acc + 1 };
+  }, [batches.length, interludeFor]);
+
+  /** Where "back" lands at the end of a batch: its interlude if it had one. */
+  const tailOf = useCallback(
+    (batchIndex: number): Phase =>
+      interludeFor(batchIndex)
+        ? { kind: 'converse', batchIndex }
+        : { kind: 'drill', batchIndex },
+    [interludeFor],
+  );
+
   const goBack = useCallback((): boolean => {
     if (phase.kind === 'checkpoint') {
       if (batches.length === 0) return false;
-      setPhase({ kind: 'drill', batchIndex: batches.length - 1 });
+      setPhase(tailOf(batches.length - 1));
+      return true;
+    }
+    if (phase.kind === 'converse') {
+      setPhase({ kind: 'drill', batchIndex: phase.batchIndex });
       return true;
     }
     if (phase.kind === 'drill') {
@@ -142,11 +199,11 @@ export function VocabularyBlock({
     }
     // intro
     if (phase.batchIndex > 0) {
-      setPhase({ kind: 'drill', batchIndex: phase.batchIndex - 1 });
+      setPhase(tailOf(phase.batchIndex - 1));
       return true;
     }
     return false;
-  }, [phase, batches.length]);
+  }, [phase, batches.length, tailOf]);
 
   // Latest goBack closure — wrap in a ref so the callback we hand the parent
   // always points at the current phase without forcing the parent to re-run
@@ -162,11 +219,12 @@ export function VocabularyBlock({
     if (phase.kind === 'checkpoint') {
       fraction = 1;
     } else if (phase.kind === 'intro') {
-      fraction = (phase.batchIndex * 2) / totalSlots;
+      fraction = slotOffsets[phase.batchIndex] / totalSlots;
+    } else if (phase.kind === 'converse') {
+      fraction = (slotOffsets[phase.batchIndex] + 2) / totalSlots;
     } else {
       // drill
-      fraction =
-        (phase.batchIndex * 2 + 1 + drillFraction) / totalSlots;
+      fraction = (slotOffsets[phase.batchIndex] + 1 + drillFraction) / totalSlots;
     }
     const batchIndex = phase.kind === 'checkpoint' ? batches.length : phase.batchIndex;
     onProgress({
@@ -175,7 +233,7 @@ export function VocabularyBlock({
       kind: phase.kind,
       batchIndex,
     });
-  }, [phase, drillFraction, totalSlots, onProgress, batches.length]);
+  }, [phase, drillFraction, totalSlots, slotOffsets, onProgress, batches.length]);
 
   if (words.length === 0) {
     // No vocabulary in this scene — let the parent skip to summary.
@@ -196,8 +254,29 @@ export function VocabularyBlock({
     );
   }
 
+  if (phase.kind === 'converse') {
+    const exchanges = interludeFor(phase.batchIndex);
+    if (exchanges && conversationContext) {
+      return (
+        <ConversationBlock
+          key={`converse-${phase.batchIndex}`}
+          exchanges={exchanges}
+          learnerName={conversationContext.learnerName}
+          languageName={conversationContext.languageName}
+          languageCode={languageCode}
+          sceneId={conversationContext.sceneId}
+          onComplete={advanceFromConverse}
+        />
+      );
+    }
+    // Interlude vanished (words re-filtered between sessions) — don't strand
+    // the learner on an empty phase.
+    advanceFromConverse();
+    return null;
+  }
+
   const batch = batches[phase.batchIndex];
-  const globalIndexStart = phase.batchIndex * BATCH_SIZE;
+  const globalIndexStart = phase.batchIndex * VOCAB_BATCH_SIZE;
 
   if (phase.kind === 'intro') {
     return (

@@ -10,7 +10,7 @@
  * Pure functions only — owners persist via JSONB on user_scene_progress.
  */
 
-export type CueType = 'recognition' | 'production' | 'cloze' | 'listening' | 'pattern';
+export type CueType = 'recognition' | 'production' | 'cloze' | 'speak' | 'listening' | 'pattern';
 
 export interface DrillItem {
   itemId: string;                  // wordId, phraseId, or scene_pattern_exercise.id
@@ -131,6 +131,26 @@ export function applyWrong(q: DrillQueue, cueType: CueType, gap: number = 2): Dr
   const nextCursor = items.length === 0 ? 0 : Math.min(q.cursor, items.length - 1);
   void cueType;
   return { ...q, items, cursor: nextCursor };
+}
+
+/**
+ * Apply a presentation that taught us nothing — the speak cue where the mic
+ * never produced a transcript, so there is no answer to judge.
+ *
+ * Bumps `tries` and nothing else: no cue type passed, no re-queue, cursor
+ * unmoved. The bump is load-bearing rather than cosmetic — DrillBlock keys its
+ * "present a fresh exercise" effect on `itemId#tries`, so without it the cue
+ * type never re-picks and a learner with a broken mic is stranded on the same
+ * unusable exercise forever. Marking them wrong instead would be worse: that
+ * is a failing grade for a permission dialog.
+ */
+export function applySkipped(q: DrillQueue): DrillQueue {
+  const item = currentItem(q);
+  if (!item) return q;
+  const items = q.items.map((it, i) =>
+    i === q.cursor ? { ...it, tries: it.tries + 1 } : it,
+  );
+  return { ...q, items };
 }
 
 export function isComplete(q: DrillQueue): boolean {

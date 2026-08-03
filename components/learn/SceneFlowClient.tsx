@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { SceneFlowHeader } from '@/components/learn/SceneFlowHeader';
 import { SceneShell } from '@/components/learn/SceneShell';
@@ -18,7 +18,12 @@ import { useWordLimit } from '@/lib/hooks/useWordLimit';
 import { toastError } from '@/lib/ui/toast';
 import { PhraseBlock } from '@/components/learn/PhraseBlock';
 import { ConversationBlock } from '@/components/learn/ConversationBlock';
-import { getSceneConversation } from '@/lib/learn/conversation-data';
+import {
+  resolveSceneConversation,
+  planSceneConversation,
+  tokenizeTarget,
+} from '@/lib/learn/derive-conversation';
+import { isScoringAvailable } from '@/lib/audio';
 import { InsightCard } from '@/components/insights/InsightCard';
 import { getEligibleInsight, type InsightUserState } from '@/lib/insights/engine';
 import type { InsightDefinition, TriggerContext } from '@/lib/insights/data';
@@ -26,7 +31,14 @@ import type { SceneDialogue, ScenePhraseWithMnemonics, UserSceneProgress } from 
 import type { LearnWord } from '@/types/learn';
 import type { SupportedLanguageCode } from '@/types/audio';
 import type { PedagogyFlags } from '@/lib/pedagogy/flags';
-import type { V2BlockProgress, V2InitialState, V2PhaseKind } from '@/components/learn/v2-progress';
+import {
+  chunkIntoBatches,
+  PHRASE_BATCH_SIZE,
+  VOCAB_BATCH_SIZE,
+  type V2BlockProgress,
+  type V2InitialState,
+  type V2PhaseKind,
+} from '@/components/learn/v2-progress';
 
 interface SceneFlowClientProps {
   sceneId: string;
@@ -219,18 +231,85 @@ export function SceneFlowClient({
   const hasAnchorImage = !!anchorImageUrl;
   const useV2Vocab = pedagogyFlags?.restructure === true;
 
-  // In-scene conversation practice: gated by the 'conversation' flag AND an
-  // authored allowlist (a scene with no content simply skips the phase).
-  const conversationExchanges =
-    pedagogyFlags?.conversation === true ? getSceneConversation(sceneId) : null;
+  // Filter out already-learned words so users don't re-learn duplicates across
+  // scenes. Memoized because the conversation plan below keys off it — an
+  // array rebuilt every render would rebuild every exchange with it.
+  const [learnedWordIds, setLearnedWordIds] = useState<Set<string> | null>(null);
+  const words = useMemo(
+    () => (learnedWordIds ? allWords.filter((w) => !learnedWordIds.has(w.word.id)) : allWords),
+    [allWords, learnedWordIds],
+  );
+
+  /**
+   * Can the mic actually be used? Resolved after mount — `isScoringAvailable`
+   * reads `window`, and computing it during render would disagree between
+   * server and client.
+   */
+  const [speechReady, setSpeechReady] = useState(false);
+  useEffect(() => {
+    if (pedagogyFlags?.speech !== true || !languageCode) return;
+    // Deliberate: see the same probe in DrillBlock — client-only, post-mount.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSpeechReady(isScoringAvailable(languageCode));
+  }, [pedagogyFlags?.speech, languageCode]);
+
+  // In-scene conversation practice, gated by the 'conversation' flag. Authored
+  // content wins where it exists; everything else is derived from the scene's
+  // own dialogue, so this is no longer three Indonesian scenes only.
+  const conversationSource = useMemo(
+    () =>
+      pedagogyFlags?.conversation === true
+        ? resolveSceneConversation({ sceneId, dialogues, phrases })
+        : null,
+    [pedagogyFlags?.conversation, sceneId, dialogues, phrases],
+  );
+
+  /**
+   * The whole conversation schedule, computed once: one short exchange after
+   * each drill batch, plus the full run-through as the capstone.
+   *
+   * `slotWordTexts` accumulates across batches rather than resetting, which is
+   * what makes the interludes keep reaching back — an exchange built out of
+   * batch-1 vocabulary still scores well at the last slot instead of being
+   * crowded out by whatever was drilled most recently.
+   */
+  const conversationPlan = useMemo(() => {
+    if (!conversationSource) return null;
+    const phraseBatches = chunkIntoBatches(phrases, PHRASE_BATCH_SIZE);
+    const wordBatches = chunkIntoBatches(words, VOCAB_BATCH_SIZE);
+
+    const taught: string[] = [];
+    const slotWordTexts: string[][] = [];
+    for (const batch of phraseBatches) {
+      for (const p of batch) taught.push(...tokenizeTarget(p.text_target));
+      slotWordTexts.push([...taught]);
+    }
+    for (const batch of wordBatches) {
+      for (const w of batch) taught.push(...tokenizeTarget(w.word.text));
+      slotWordTexts.push([...taught]);
+    }
+
+    const plan = planSceneConversation({
+      exchanges: conversationSource,
+      slotWordTexts,
+      speakSupported: speechReady,
+    });
+
+    return {
+      phraseInterludes: plan.interludes.slice(0, phraseBatches.length),
+      vocabInterludes: plan.interludes.slice(phraseBatches.length),
+      capstone: plan.capstone,
+    };
+  }, [conversationSource, phrases, words, speechReady]);
+
+  const conversationExchanges = conversationPlan?.capstone ?? null;
   const conversationCount = conversationExchanges?.length ?? 0;
   const hasConversation = conversationCount > 0;
 
-  // Filter out already-learned words so users don't re-learn duplicates across scenes
-  const [learnedWordIds, setLearnedWordIds] = useState<Set<string> | null>(null);
-  const words = learnedWordIds
-    ? allWords.filter(w => !learnedWordIds.has(w.word.id))
-    : allWords;
+  const conversationContext = useMemo(
+    () => ({ learnerName: learnerName ?? null, languageName, sceneId }),
+    [learnerName, languageName, sceneId],
+  );
 
   // Free-tier daily new-word limit. Every word answer goes through this so a
   // 403 is surfaced instead of swallowed, and so the summary can report what
@@ -762,6 +841,8 @@ export function SceneFlowClient({
           flags={pedagogyFlags!}
           onProgress={handleV2PhrasesProgress}
           initialState={v2InitialFromProgress(initialProgress, 'phrases')}
+          interludes={conversationPlan?.phraseInterludes}
+          conversationContext={conversationPlan ? conversationContext : undefined}
           onItemAnswered={recordPhraseAnswer}
           onComplete={() => {
             // Leaving phrases — clear v2 sub-state for the next phase.
@@ -804,6 +885,8 @@ export function SceneFlowClient({
           flags={pedagogyFlags!}
           onProgress={handleV2VocabProgress}
           initialState={v2InitialFromProgress(initialProgress, 'vocabulary')}
+          interludes={conversationPlan?.vocabInterludes}
+          conversationContext={conversationPlan ? conversationContext : undefined}
           onIntroduceBlocked={limit.markBlocked}
           onItemAnswered={(wordId, correct, direction) => {
             void recordWordAnswer(wordId, direction, correct);

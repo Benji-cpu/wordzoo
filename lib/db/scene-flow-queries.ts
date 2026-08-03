@@ -125,7 +125,7 @@ export async function updateSceneProgress(
     completedAt?: Date;
     /** Pedagogy v2 sub-state. `null` clears the column (legacy mode);
      * `undefined` leaves it untouched. */
-    phaseStep?: 'intro' | 'drill' | 'checkpoint' | null;
+    phaseStep?: 'intro' | 'drill' | 'converse' | 'checkpoint' | null;
     phaseBatch?: number;
   }
 ): Promise<void> {

@@ -6,6 +6,9 @@ import { Fox } from '@/components/mascot/Fox';
 import { useSound } from '@/lib/hooks/useSound';
 import { useHaptic } from '@/lib/hooks/useHaptic';
 import { fuzzyMatchAnswer, normalizeForCompare } from '@/lib/pedagogy/normalize';
+import { fireTelemetry } from '@/lib/pedagogy/telemetry';
+import { SpeakChallenge, type SpeakOutcome } from '@/components/learn/SpeakChallenge';
+import { stableShuffle } from '@/lib/learn/derive-conversation';
 import {
   applyLearnerName,
   countLearnerTurns,
@@ -37,9 +40,15 @@ interface Bubble {
 /**
  * In-scene progressive, two-sided conversation practice (Pedagogy v2
  * "conversation" slice). The learner both ANSWERS the NPC and ASKS questions,
- * ramping easy (tap the line) → medium (type with hints) → hard (free
- * production graded leniently). Content + difficulty are authored per turn in
- * lib/learn/conversation-data.ts.
+ * ramping easy (tap the line) → medium (type with hints) → say it aloud →
+ * hard (free production graded leniently).
+ *
+ * Content is authored per turn in lib/learn/conversation-data.ts where it
+ * exists, and otherwise derived from the scene's own dialogue by
+ * lib/learn/derive-conversation.ts — which is what gives every scene and every
+ * language a conversation instead of just three Indonesian ones. Difficulty is
+ * stamped by that module's planner, because the same exchange comes back
+ * harder each time it is replayed between drill batches.
  *
  * Layout follows the scene's pinned-footer contract: the chat transcript
  * scrolls in SceneShell's middle while the active control stays pinned at the
@@ -52,6 +61,7 @@ export function ConversationBlock({
   exchanges,
   learnerName,
   languageName,
+  languageCode,
   sceneId,
   initialExchangeIndex = 0,
   onProgress,
@@ -72,6 +82,8 @@ export function ConversationBlock({
   const [coach, setCoach] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [shake, setShake] = useState(false);
+  /** Speak turn where the mic didn't work out; renders the typing form instead. */
+  const [speakFellBack, setSpeakFellBack] = useState(false);
 
   const inputRef = useRef<HTMLInputElement | null>(null);
   const endRef = useRef<HTMLDivElement | null>(null);
@@ -103,13 +115,11 @@ export function ConversationBlock({
   const options = useMemo(() => {
     if (!turn || turn.mode !== 'select' || !turn.distractors) return [] as string[];
     const all = [turn.target, ...turn.distractors.slice(0, 3)];
-    const seed = `${pos.ex}-${pos.turn}`;
-    const hash = seed.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
-    return all
-      .map((item, i) => ({ item, sort: (hash * (i + 1) * 31) % 1000 }))
-      .sort((a, b) => a.sort - b.sort)
-      .map((x) => x.item);
-  }, [turn, pos.ex, pos.turn]);
+    // Seeded shuffle — the local sum-of-charcodes hash it replaced collided on
+    // anagram seeds, and this one is shared with the derivation module so the
+    // ordering rule lives in exactly one place.
+    return stableShuffle(all, `${sceneId}:${pos.ex}-${pos.turn}`);
+  }, [turn, sceneId, pos.ex, pos.turn]);
 
   const resetTurnUi = useCallback(() => {
     setSelected(null);
@@ -120,6 +130,7 @@ export function ConversationBlock({
     setCoach(null);
     setFeedback(null);
     setShake(false);
+    setSpeakFellBack(false);
   }, []);
 
   // Reveal NPC turns into the transcript when we land on them; complete when
@@ -201,24 +212,64 @@ export function ConversationBlock({
     [play, trigger, pushMine, advance],
   );
 
+  /** Without these the whole conversation layer is invisible on /admin/pedagogy. */
+  const recordTurn = useCallback(
+    (correct: boolean, mode: string) => {
+      fireTelemetry({
+        event: correct ? 'conversation_turn_correct' : 'conversation_turn_wrong',
+        payload: { sceneId, mode },
+      });
+    },
+    [sceneId],
+  );
+
+  // ── Speak ──
+  const handleSpeakOutcome = useCallback(
+    (outcome: SpeakOutcome) => {
+      if (!turn) return;
+      if (outcome.kind === 'pass') {
+        recordTurn(true, 'speak');
+        acceptLearner(turn.target);
+        return;
+      }
+      if (outcome.kind === 'fail') {
+        recordTurn(false, 'speak');
+        // Same recast the produce tier uses — show the line, let them move on.
+        setCoach(turn.target);
+        setFeedback('Not quite what we heard — here it is again.');
+        return;
+      }
+      // Nothing was scored, or they'd rather type. Not a wrong answer; hand
+      // them the typing form for this turn, hints and reveal ladder included.
+      setSpeakFellBack(true);
+    },
+    [turn, recordTurn, acceptLearner],
+  );
+
+  const handleSpeakNotScored = useCallback(() => {
+    fireTelemetry({ event: 'speak_not_scored', payload: { sceneId, surface: 'conversation' } });
+  }, [sceneId]);
+
   // ── Select ──
   const handleSelect = useCallback(
     (option: string) => {
       if (!turn || selected) return;
       if (option === turn.target) {
         setSelected(option);
+        recordTurn(true, 'select');
         acceptLearner(option);
       } else {
         play('incorrect');
         trigger('error');
         setShake(true);
         setTimeout(() => setShake(false), 400);
+        recordTurn(false, 'select');
         const next = attempts + 1;
         setAttempts(next);
         if (next >= 2) setRevealed(true); // after two misses, highlight the right one (no dead end)
       }
     },
-    [turn, selected, attempts, acceptLearner, play, trigger],
+    [turn, selected, attempts, acceptLearner, recordTurn, play, trigger],
   );
 
   // ── Type ──
@@ -230,12 +281,14 @@ export function ConversationBlock({
     if (turn.acceptAny) {
       const n = normalizeForCompare(guess);
       if (n.startsWith('nama saya') && n.length > 'nama saya'.length + 1) {
+        recordTurn(true, 'type');
         acceptLearner(guess);
         return;
       }
     }
     const result = fuzzyMatchAnswer(guess, turn.target);
     if (result.kind === 'exact' || result.kind === 'close') {
+      recordTurn(true, 'type');
       acceptLearner(turn.target);
       return;
     }
@@ -243,6 +296,7 @@ export function ConversationBlock({
     trigger('error');
     setShake(true);
     setTimeout(() => setShake(false), 400);
+    recordTurn(false, 'type');
     const next = attempts + 1;
     setAttempts(next);
     if (next >= 2) {
@@ -250,7 +304,7 @@ export function ConversationBlock({
     }
     setTyped('');
     inputRef.current?.focus();
-  }, [turn, typed, attempts, acceptLearner, play, trigger]);
+  }, [turn, typed, attempts, acceptLearner, recordTurn, play, trigger]);
 
   // When the answer is revealed, finishing the transcription advances.
   const handleTypeChange = useCallback(
@@ -285,10 +339,12 @@ export function ConversationBlock({
       const data = json?.data as { accept: boolean; feedback: string; reference: string } | undefined;
       if (data?.accept) {
         setFeedback(data.feedback);
+        recordTurn(true, 'produce');
         acceptLearner(attempt);
       } else {
         // Coach: show the reference as a gentle recast, then advance on tap.
         setGrading(false);
+        recordTurn(false, 'produce');
         setCoach(data?.reference ?? turn.target);
         setFeedback(data?.feedback ?? null);
       }
@@ -296,7 +352,7 @@ export function ConversationBlock({
       // Fail-open — never block.
       acceptLearner(attempt);
     }
-  }, [turn, typed, grading, sceneId, languageName, acceptLearner]);
+  }, [turn, typed, grading, sceneId, languageName, acceptLearner, recordTurn]);
 
   const acceptCoachAndAdvance = useCallback(() => {
     if (!turn) return;
@@ -380,7 +436,21 @@ export function ConversationBlock({
               {turn.goal_en && <p className="text-xs text-[color:var(--text-secondary)] truncate ml-2">{turn.goal_en}</p>}
             </div>
 
-            {turn.mode === 'select' && turn.distractors ? (
+            {turn.mode === 'speak' && languageCode && !speakFellBack ? (
+              <SpeakChallenge
+                key={`conv-speak-${pos.ex}-${pos.turn}`}
+                target={turn.target}
+                promptEn={turn.goal_en ?? turn.en}
+                languageCode={languageCode}
+                compact
+                // The speak tier sits above typing on the ladder, so this is
+                // recall: no model playback, no target on screen.
+                showTarget={false}
+                modelFirst={false}
+                onOutcome={handleSpeakOutcome}
+                onNotScored={handleSpeakNotScored}
+              />
+            ) : turn.mode === 'select' && turn.distractors ? (
               <div className="grid grid-cols-1 gap-2.5">
                 {options.map((option) => {
                   const isRevealedRight = revealed && option === turn.target;
@@ -409,7 +479,7 @@ export function ConversationBlock({
                 }}
                 className="flex flex-col gap-2"
               >
-                {revealed && turn.mode === 'type' && (
+                {revealed && (turn.mode === 'type' || turn.mode === 'speak') && (
                   <p className="text-sm text-[color:var(--text-secondary)]">
                     Answer: <span className="font-bold text-[color:var(--color-fox-primary)]">{turn.target}</span> · type it to continue
                   </p>

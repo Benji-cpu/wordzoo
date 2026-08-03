@@ -36,7 +36,18 @@ export type PedagogyEvent =
   | 'phrase_checkpoint_started'
   | 'phrase_checkpoint_passed'
   | 'phrase_checkpoint_failed'
-  | 'phrase_remediation_loop_started';
+  | 'phrase_remediation_loop_started'
+  // Speaking. `speak_correct`/`speak_wrong` are NOT declared here: the speak
+  // cue rides the existing drill_correct/drill_wrong emitters with
+  // payload.cueType = 'speak', which /admin/pedagogy already buckets by cue.
+  /** The mic produced no transcript (denied, silent, unsupported). Named so it
+   *  matches neither %_correct nor %_wrong — it is not a verdict and must never
+   *  land in an accuracy bucket. */
+  | 'speak_not_scored'
+  // In-scene conversation. Without these the whole conversation layer is
+  // invisible to measurement.
+  | 'conversation_turn_correct'
+  | 'conversation_turn_wrong';
 
 interface FireOptions {
   event: PedagogyEvent;

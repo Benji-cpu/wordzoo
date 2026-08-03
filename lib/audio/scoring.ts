@@ -45,6 +45,123 @@ export function isScoringAvailable(languageCode: SupportedLanguageCode): boolean
   return getSpeechRecognition() !== null;
 }
 
+const LISTEN_TIMEOUT_MS = 5000;
+
+function notScored(
+  reason: NonNullable<PronunciationResult['reason']>,
+  feedback: string,
+  targetWord: string,
+): PronunciationResult {
+  return { score: 'not_scored', reason, transcription: '', feedback, targetWord };
+}
+
+/**
+ * Listen once and score whatever was transcribed against `target`.
+ *
+ * Target-agnostic on purpose: the original listener was reachable only through
+ * a `wordId`, which meant a sentence-level speak turn couldn't use it at all.
+ * `startPronunciationChallenge` below is now a thin wrapper, so the hands-free
+ * engine's behaviour is unchanged.
+ *
+ * Never rejects. Anything that stops us obtaining a transcript resolves as
+ * `not_scored` with a reason — a microphone problem is not a verdict on the
+ * learner, and callers must not treat it as one.
+ */
+export function startSpeechAttempt(
+  target: string,
+  languageCode: SupportedLanguageCode,
+  options: { romanization?: string | null; timeoutMs?: number } = {},
+): { promise: Promise<PronunciationResult>; stop: () => void } {
+  const { romanization = null, timeoutMs = LISTEN_TIMEOUT_MS } = options;
+
+  if (!isScoringAvailable(languageCode)) {
+    return {
+      promise: Promise.resolve(
+        notScored(
+          'unsupported_browser',
+          "This browser can't listen, so nothing was scored.",
+          target,
+        ),
+      ),
+      stop: () => {},
+    };
+  }
+
+  let stop = () => {};
+  const promise = new Promise<PronunciationResult>((resolve) => {
+    const SpeechRec = getSpeechRecognition()!;
+    const recognition = new SpeechRec();
+    const config = LANGUAGE_VOICE_MAP[languageCode];
+
+    recognition.lang = config.bcp47;
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 3;
+
+    let resolved = false;
+    const timer = setTimeout(() => recognition.stop(), timeoutMs);
+
+    const settle = (result: PronunciationResult) => {
+      if (resolved) return;
+      resolved = true;
+      clearTimeout(timer);
+      resolve(result);
+    };
+
+    stop = () => {
+      recognition.abort();
+      settle(
+        notScored('no_speech', 'Stopped before anything was scored.', target),
+      );
+    };
+
+    recognition.onresult = (event: WebSpeechRecognitionEvent) => {
+      const transcription = event.results[0][0].transcript;
+      settle(scorePronunciation(transcription, target, languageCode, romanization));
+    };
+
+    recognition.onerror = (event: WebSpeechRecognitionErrorEvent) => {
+      settle(
+        event.error === 'not-allowed'
+          ? notScored(
+              'mic_denied',
+              'Mic access is off, so nothing was scored. Allow the mic and try again.',
+              target,
+            )
+          : notScored(
+              'recognition_error',
+              "We couldn't hear you, so nothing was scored. Try again.",
+              target,
+            ),
+      );
+    };
+
+    recognition.onend = () => {
+      settle(
+        notScored(
+          'no_speech',
+          'No speech detected — nothing was scored. Tap the mic and try again.',
+          target,
+        ),
+      );
+    };
+
+    try {
+      recognition.start();
+    } catch {
+      settle(
+        notScored(
+          'recognition_error',
+          "Listening didn't start, so nothing was checked.",
+          target,
+        ),
+      );
+    }
+  });
+
+  return { promise, stop };
+}
+
 export async function startPronunciationChallenge(
   wordId: string
 ): Promise<PronunciationChallenge> {
@@ -56,132 +173,22 @@ export async function startPronunciationChallenge(
   // Play the word first so the user hears the target
   await playWordPronunciation(wordId);
 
+  const attempt = startSpeechAttempt(word.text, word.language_code, {
+    romanization: word.romanization,
+  });
+
   const challenge: PronunciationChallenge = {
     wordId,
     targetWord: word.text,
     language: word.language_code,
-    isListening: false,
+    isListening: true,
     result: null,
-    stop: () => {},
+    stop: attempt.stop,
   };
 
-  if (!isScoringAvailable(word.language_code)) {
-    challenge.result = {
-      score: 'not_scored',
-      reason: 'unsupported_browser',
-      transcription: '',
-      feedback: "This browser can't score pronunciation, so nothing was checked.",
-      targetWord: word.text,
-    };
-    return challenge;
-  }
-
-  return listenAndScore(challenge, word.text, word.language_code, word.romanization);
-}
-
-function listenAndScore(
-  challenge: PronunciationChallenge,
-  targetWord: string,
-  langCode: SupportedLanguageCode,
-  romanization: string | null
-): Promise<PronunciationChallenge> {
-  return new Promise((resolve) => {
-    const SpeechRec = getSpeechRecognition()!;
-    const recognition = new SpeechRec();
-    const config = LANGUAGE_VOICE_MAP[langCode];
-
-    recognition.lang = config.bcp47;
-    recognition.continuous = false;
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 3;
-
-    let resolved = false;
-
-    challenge.isListening = true;
-    challenge.stop = () => {
-      recognition.abort();
-      if (!resolved) {
-        resolved = true;
-        challenge.isListening = false;
-        resolve(challenge);
-      }
-    };
-
-    const timeout = setTimeout(() => {
-      recognition.stop();
-    }, 5000);
-
-    recognition.onresult = (event: WebSpeechRecognitionEvent) => {
-      clearTimeout(timeout);
-      const transcription = event.results[0][0].transcript;
-      challenge.result = scorePronunciation(transcription, targetWord, langCode, romanization);
-      challenge.isListening = false;
-      resolved = true;
-      resolve(challenge);
-    };
-
-    recognition.onerror = (event: WebSpeechRecognitionErrorEvent) => {
-      clearTimeout(timeout);
-      challenge.isListening = false;
-
-      if (event.error === 'not-allowed') {
-        challenge.result = {
-          score: 'not_scored',
-          reason: 'mic_denied',
-          transcription: '',
-          feedback: 'Mic access is off, so nothing was scored. Allow the mic and try again.',
-          targetWord,
-        };
-      } else {
-        challenge.result = {
-          score: 'not_scored',
-          reason: 'recognition_error',
-          transcription: '',
-          feedback: "We couldn't hear you, so nothing was scored. Try again.",
-          targetWord,
-        };
-      }
-
-      if (!resolved) {
-        resolved = true;
-        resolve(challenge);
-      }
-    };
-
-    recognition.onend = () => {
-      clearTimeout(timeout);
-      if (!resolved) {
-        challenge.isListening = false;
-        challenge.result = {
-          score: 'not_scored',
-          reason: 'no_speech',
-          transcription: '',
-          feedback: 'No speech detected — nothing was scored. Tap the mic and try again.',
-          targetWord,
-        };
-        resolved = true;
-        resolve(challenge);
-      }
-    };
-
-    try {
-      recognition.start();
-    } catch {
-      clearTimeout(timeout);
-      challenge.isListening = false;
-      challenge.result = {
-        score: 'not_scored',
-        reason: 'recognition_error',
-        transcription: '',
-        feedback: "Pronunciation scoring didn't start, so nothing was checked.",
-        targetWord,
-      };
-      if (!resolved) {
-        resolved = true;
-        resolve(challenge);
-      }
-    }
-  });
+  challenge.result = await attempt.promise;
+  challenge.isListening = false;
+  return challenge;
 }
 
 export function scorePronunciation(

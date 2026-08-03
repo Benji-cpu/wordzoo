@@ -5,13 +5,18 @@ import { PhraseCard } from '@/components/learn/PhraseCard';
 import { PhraseBreakdown } from '@/components/learn/PhraseBreakdown';
 import { PhraseDrillBlock } from '@/components/learn/PhraseDrillBlock';
 import { PhraseCheckpoint } from '@/components/learn/PhraseCheckpoint';
+import { ConversationBlock } from '@/components/learn/ConversationBlock';
 import type { ScenePhraseWithMnemonics } from '@/types/database';
 import type { SupportedLanguageCode } from '@/types/audio';
 import type { CueType, DrillQueue } from '@/lib/pedagogy/leitner';
 import type { PedagogyFlags } from '@/lib/pedagogy/flags';
-import type { V2BlockProgress, V2InitialState } from '@/components/learn/v2-progress';
-
-const BATCH_SIZE = 2;
+import type { ConversationExchange } from '@/lib/learn/conversation-data';
+import {
+  chunkIntoBatches,
+  PHRASE_BATCH_SIZE,
+  type V2BlockProgress,
+  type V2InitialState,
+} from '@/components/learn/v2-progress';
 
 interface PhraseBlockProps {
   phrases: ScenePhraseWithMnemonics[];
@@ -24,6 +29,14 @@ interface PhraseBlockProps {
   onProgress?: (progress: V2BlockProgress) => void;
   /** Restore prior sub-state when the user re-enters a scene mid-phase. */
   initialState?: V2InitialState;
+  /** One short conversation per batch, played straight after that batch's drill. */
+  interludes?: ConversationExchange[][];
+  /** Context ConversationBlock needs; required only when interludes are passed. */
+  conversationContext?: {
+    learnerName: string | null;
+    languageName: string;
+    sceneId: string;
+  };
   /** Fired after the end-of-phrases checkpoint resolves. */
   onComplete: () => void;
 }
@@ -32,6 +45,7 @@ type IntroStep = { phraseIdx: number; sub: 'card' | 'breakdown' };
 type Phase =
   | { kind: 'intro'; batchIndex: number }
   | { kind: 'drill'; batchIndex: number }
+  | { kind: 'converse'; batchIndex: number }
   | { kind: 'checkpoint' };
 
 /**
@@ -53,19 +67,20 @@ export function PhraseBlock({
   onItemAnswered,
   onProgress,
   initialState,
+  interludes,
+  conversationContext,
   onComplete,
 }: PhraseBlockProps) {
-  const batches = useMemo(() => {
-    const out: ScenePhraseWithMnemonics[][] = [];
-    // Keep small phrase sets together (5 or fewer = one batch) so the drill
-    // never bottoms out on a lone phrase — matches the vocab batching rule
-    // and the user's "don't split unless there are more than ~5" feedback.
-    const size = Math.max(1, phrases.length <= 5 ? phrases.length : BATCH_SIZE);
-    for (let i = 0; i < phrases.length; i += size) {
-      out.push(phrases.slice(i, i + size));
-    }
-    return out;
-  }, [phrases]);
+  const batches = useMemo(() => chunkIntoBatches(phrases, PHRASE_BATCH_SIZE), [phrases]);
+
+  const interludeFor = useCallback(
+    (batchIndex: number): ConversationExchange[] | null => {
+      if (!conversationContext) return null;
+      const ex = interludes?.[batchIndex];
+      return ex && ex.length > 0 ? ex : null;
+    },
+    [interludes, conversationContext],
+  );
 
   const [phase, setPhase] = useState<Phase>(() => {
     if (batches.length === 0) return { kind: 'checkpoint' };
@@ -98,10 +113,18 @@ export function PhraseBlock({
   const advanceFromDrill = useCallback(() => {
     setPhase((p) => {
       if (p.kind !== 'drill') return p;
+      if (interludeFor(p.batchIndex)) return { kind: 'converse', batchIndex: p.batchIndex };
       const next = p.batchIndex + 1;
-      if (next >= batches.length) {
-        return { kind: 'checkpoint' };
-      }
+      if (next >= batches.length) return { kind: 'checkpoint' };
+      return { kind: 'intro', batchIndex: next };
+    });
+  }, [batches.length, interludeFor]);
+
+  const advanceFromConverse = useCallback(() => {
+    setPhase((p) => {
+      if (p.kind !== 'converse') return p;
+      const next = p.batchIndex + 1;
+      if (next >= batches.length) return { kind: 'checkpoint' };
       return { kind: 'intro', batchIndex: next };
     });
   }, [batches.length]);
@@ -115,11 +138,33 @@ export function PhraseBlock({
     setDrillFraction(Math.max(0, Math.min(1, 1 - remaining / initial)));
   }, []);
 
-  const totalSlots = batches.length * 2 + 1;
+  // Each batch is intro + drill, plus a 3rd slot when it has an interlude.
+  const { slotOffsets, totalSlots } = useMemo(() => {
+    const offsets: number[] = [];
+    let acc = 0;
+    for (let i = 0; i < batches.length; i++) {
+      offsets.push(acc);
+      acc += 2 + (interludeFor(i) ? 1 : 0);
+    }
+    return { slotOffsets: offsets, totalSlots: acc + 1 };
+  }, [batches.length, interludeFor]);
+
+  const tailOf = useCallback(
+    (batchIndex: number): Phase =>
+      interludeFor(batchIndex)
+        ? { kind: 'converse', batchIndex }
+        : { kind: 'drill', batchIndex },
+    [interludeFor],
+  );
+
   const goBack = useCallback((): boolean => {
     if (phase.kind === 'checkpoint') {
       if (batches.length === 0) return false;
-      setPhase({ kind: 'drill', batchIndex: batches.length - 1 });
+      setPhase(tailOf(batches.length - 1));
+      return true;
+    }
+    if (phase.kind === 'converse') {
+      setPhase({ kind: 'drill', batchIndex: phase.batchIndex });
       return true;
     }
     if (phase.kind === 'drill') {
@@ -129,11 +174,11 @@ export function PhraseBlock({
       return true;
     }
     if (phase.batchIndex > 0) {
-      setPhase({ kind: 'drill', batchIndex: phase.batchIndex - 1 });
+      setPhase(tailOf(phase.batchIndex - 1));
       return true;
     }
     return false;
-  }, [phase, batches.length]);
+  }, [phase, batches.length, tailOf]);
 
   const goBackRef = useRef(goBack);
   useEffect(() => {
@@ -146,9 +191,11 @@ export function PhraseBlock({
     if (phase.kind === 'checkpoint') {
       fraction = 1;
     } else if (phase.kind === 'intro') {
-      fraction = (phase.batchIndex * 2) / totalSlots;
+      fraction = slotOffsets[phase.batchIndex] / totalSlots;
+    } else if (phase.kind === 'converse') {
+      fraction = (slotOffsets[phase.batchIndex] + 2) / totalSlots;
     } else {
-      fraction = (phase.batchIndex * 2 + 1 + drillFraction) / totalSlots;
+      fraction = (slotOffsets[phase.batchIndex] + 1 + drillFraction) / totalSlots;
     }
     const batchIndex = phase.kind === 'checkpoint' ? batches.length : phase.batchIndex;
     onProgress({
@@ -157,7 +204,7 @@ export function PhraseBlock({
       kind: phase.kind,
       batchIndex,
     });
-  }, [phase, drillFraction, totalSlots, onProgress, batches.length]);
+  }, [phase, drillFraction, totalSlots, slotOffsets, onProgress, batches.length]);
 
   if (phrases.length === 0) {
     onComplete();
@@ -175,6 +222,25 @@ export function PhraseBlock({
     );
   }
 
+  if (phase.kind === 'converse') {
+    const exchanges = interludeFor(phase.batchIndex);
+    if (exchanges && conversationContext) {
+      return (
+        <ConversationBlock
+          key={`converse-${phase.batchIndex}`}
+          exchanges={exchanges}
+          learnerName={conversationContext.learnerName}
+          languageName={conversationContext.languageName}
+          languageCode={languageCode}
+          sceneId={conversationContext.sceneId}
+          onComplete={advanceFromConverse}
+        />
+      );
+    }
+    advanceFromConverse();
+    return null;
+  }
+
   const batch = batches[phase.batchIndex];
 
   if (phase.kind === 'intro') {
@@ -184,7 +250,7 @@ export function PhraseBlock({
         batchIndex={phase.batchIndex}
         batch={batch}
         totalPhrases={phrases.length}
-        globalIndexStart={phase.batchIndex * BATCH_SIZE}
+        globalIndexStart={phase.batchIndex * PHRASE_BATCH_SIZE}
         languageCode={languageCode}
         onComplete={advanceFromIntro}
       />

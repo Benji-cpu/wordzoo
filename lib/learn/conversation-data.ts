@@ -17,12 +17,20 @@
  * Difficulty ladder per learner turn:
  *   - 'select'  → tap the correct line among authored distractors (easiest)
  *   - 'type'    → type it with English goal + hint chips + reveal ladder
+ *   - 'speak'   → say it; scored on what the browser transcribed. Only ever
+ *                 assigned where speech recognition actually works, and a
+ *                 mic problem is never a wrong answer.
  *   - 'produce' → free production from an English goal only; graded leniently
  *                 by the conversation-grade route, ACCEPT-AND-COACH (never a
  *                 dead end — MEMORY: the app must never wall the learner in).
+ *
+ * Scenes without an entry here are no longer left without conversation: see
+ * lib/learn/derive-conversation.ts, which builds the same shapes from the
+ * scene's own dialogue. This file stays types + authored content, and
+ * authored content always wins.
  */
 
-export type ConversationMode = 'select' | 'type' | 'produce';
+export type ConversationMode = 'select' | 'type' | 'speak' | 'produce';
 export type ConversationSide = 'ask' | 'answer';
 
 export interface ConversationTurn {

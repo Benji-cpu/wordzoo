@@ -38,13 +38,25 @@ import type { CueType, DrillItem } from './leitner';
  *
  * Add a cue type here only when DrillBlock can draw it.
  */
-export const RENDERABLE_CUE_TYPES: readonly CueType[] = ['recognition', 'production', 'cloze'];
+export const RENDERABLE_CUE_TYPES: readonly CueType[] = [
+  'recognition',
+  'production',
+  'cloze',
+  'speak',
+];
 
 export interface PickerEligibility {
   hasMnemonic: boolean;
   hasAudioUrl: boolean;
   /** Word appears in at least one scene_phrase via phrase_words. */
   hasClozePhrase: boolean;
+  /**
+   * The browser AND the language can transcribe speech (Japanese cannot;
+   * neither can Firefox at all). False → `speak` is never emitted, so the
+   * learner is served a cue they can actually complete instead of a mic
+   * prompt that can only fail. Prevention, not recovery.
+   */
+  speechRecognitionAvailable: boolean;
   /** Cue types the parent enabled for this build (from the pedagogy flags). */
   enabledCueTypes: CueType[];
 }
@@ -62,6 +74,7 @@ export function eligibleCueTypes(eligibility: PickerEligibility): CueType[] {
   // served whether or not the flag was on.
   if (enabled.has('production')) wanted.push('production');
   if (enabled.has('cloze') && eligibility.hasClozePhrase) wanted.push('cloze');
+  if (enabled.has('speak') && eligibility.speechRecognitionAvailable) wanted.push('speak');
 
   const out = wanted.filter((c) => renderable.has(c));
 

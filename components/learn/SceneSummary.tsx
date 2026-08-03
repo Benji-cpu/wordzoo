@@ -227,6 +227,15 @@ export function SceneSummary({
                 Practice with Tutor
               </ThumbButton>
             </Link>
+            {/* /practice/speak has worked since it was built but lost its only
+                entry point when the dashboard action tiles were removed
+                (673b670). It is the one place that drills saying the words out
+                loud end to end, so it gets a door again. */}
+            <Link href="/practice/speak" className="block">
+              <Button variant="secondary" className="w-full">
+                Say it out loud
+              </Button>
+            </Link>
             <Link
               href={nextSceneHref}
               className="mt-0.5 block text-center text-sm font-semibold text-text-secondary hover:text-foreground transition-colors py-2"

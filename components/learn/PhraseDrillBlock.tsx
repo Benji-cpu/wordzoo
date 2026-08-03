@@ -282,6 +282,10 @@ function humanCueType(cue: CueType): string {
     case 'recognition': return 'pick the phrase';
     case 'production': return 'type it';
     case 'cloze': return 'fill the blank';
+    // Phrase drills don't emit 'speak' yet — eligiblePhraseCueTypes never
+    // returns it, so this label is unreachable. It exists because the switch is
+    // exhaustive, which is what caught the cue type being added at all.
+    case 'speak': return 'say it';
     case 'listening': return 'hear & type';
     case 'pattern': return 'pattern';
   }

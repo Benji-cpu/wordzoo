@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { SupportedLanguageCode, PronunciationResult } from '@/types/audio';
 import { isScoringAvailable, startPronunciationChallenge } from '@/lib/audio';
+import { MicIcon, ScoreDisplay } from '@/components/audio/mic-ui';
 
 type ComponentState = 'idle' | 'listening' | 'processing' | 'showing_result';
 
@@ -94,41 +95,3 @@ export function RepeatAfterMe({ wordId, languageCode, onResult, className = '' }
   );
 }
 
-function ScoreDisplay({ result }: { result: PronunciationResult }) {
-  const config: Record<PronunciationResult['score'], { icon: string; color: string; bg: string }> = {
-    close_enough: { icon: '✓', color: 'text-green-400', bg: 'bg-green-500/20' },
-    getting_there: { icon: '◐', color: 'text-amber-400', bg: 'bg-amber-500/20' },
-    try_again: { icon: '↻', color: 'text-orange-400', bg: 'bg-orange-500/20' },
-    // Neutral on purpose — we never heard them, so this is not a verdict.
-    not_scored: { icon: '–', color: 'text-text-secondary', bg: 'bg-surface-inset' },
-  };
-  const tone = config[result.score];
-
-  return (
-    <div className={`flex items-center gap-2 rounded-lg px-3 py-1.5 ${tone.bg}`}>
-      <span className={`text-lg font-bold ${tone.color}`}>{tone.icon}</span>
-      <span className={`text-sm ${tone.color}`}>{result.feedback}</span>
-    </div>
-  );
-}
-
-function MicIcon({ size }: { size: number }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <rect x="9" y="1" width="6" height="11" rx="3" />
-      <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-      <line x1="12" y1="19" x2="12" y2="23" />
-      <line x1="8" y1="23" x2="16" y2="23" />
-    </svg>
-  );
-}

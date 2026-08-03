@@ -1,6 +1,6 @@
 export { detectAudioCapabilities, LANGUAGE_VOICE_MAP } from './voice-map';
 export { playWordPronunciation, playAudioDirect, playPhraseAudio, speakText, stopPlayback, getPlaybackSpeed, setPlaybackSpeed, isAudioUnlocked, onAudioUnlocked, attachAudioUnlockListener, preloadAudioUrls } from './pronunciation';
 export { narrateMnemonic, stopNarration } from './narration';
-export { isScoringAvailable, startPronunciationChallenge, scorePronunciation } from './scoring';
+export { isScoringAvailable, startPronunciationChallenge, startSpeechAttempt, scorePronunciation } from './scoring';
 export { HandsFreeEngine } from './hands-free';
 export { useHandsFreeSession } from './useHandsFreeSession';

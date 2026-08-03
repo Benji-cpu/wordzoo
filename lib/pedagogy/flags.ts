@@ -21,7 +21,8 @@ export type PedagogySlice =
   | 'restructure'   // Phase 4: introduce-batch / drill-block / checkpoint
   | 'cloze'         // Phase 5: cloze, pattern, listening drill, confidence
   | 'tutor'         // Phase 6: no-reveal tutor + SRS auto-apply
-  | 'conversation'; // Phase 7: in-scene progressive two-sided conversation
+  | 'conversation'  // Phase 7: in-scene progressive two-sided conversation
+  | 'speech';       // Phase 8: mic-scored speak turns in drill + conversation
 
 export type PedagogyFlags = Record<PedagogySlice, boolean>;
 
@@ -33,6 +34,7 @@ const ALL_SLICES: readonly PedagogySlice[] = [
   'cloze',
   'tutor',
   'conversation',
+  'speech',
 ];
 
 const OFF: PedagogyFlags = {
@@ -43,6 +45,7 @@ const OFF: PedagogyFlags = {
   cloze: false,
   tutor: false,
   conversation: false,
+  speech: false,
 };
 
 const ON: PedagogyFlags = {
@@ -53,6 +56,7 @@ const ON: PedagogyFlags = {
   cloze: true,
   tutor: true,
   conversation: true,
+  speech: true,
 };
 
 interface ResolveContext {

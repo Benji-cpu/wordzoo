@@ -5,11 +5,14 @@ import { QuizOptions } from '@/components/learn/QuizOptions';
 import { ProductionTyping } from '@/components/learn/ProductionTyping';
 import { Cloze } from '@/components/learn/Cloze';
 import type { LearnWord } from '@/types/learn';
-import type { SupportedLanguageCode } from '@/types/audio';
+import type { PronunciationResult, SupportedLanguageCode } from '@/types/audio';
+import { SpeakChallenge, type SpeakOutcome } from '@/components/learn/SpeakChallenge';
+import { isScoringAvailable } from '@/lib/audio';
 import {
   buildQueue,
   applyCorrect,
   applyWrong,
+  applySkipped,
   currentItem,
   type CueType,
   type DrillItem,
@@ -53,13 +56,41 @@ export function DrillBlock({
   onItemAnswered,
   onComplete,
 }: DrillBlockProps) {
+  /**
+   * Whether the mic can actually be used, resolved AFTER mount.
+   *
+   * `isScoringAvailable` reads `window`, so computing it during render would
+   * return false on the server and true on the client — a hydration mismatch
+   * that would swap the rendered exercise out from under the learner. Server
+   * and first paint agree on "no speak"; it turns on a tick later.
+   */
+  const [speechAvailable, setSpeechAvailable] = useState(false);
+  /** Set once the mic has failed twice; stops offering speak for this batch. */
+  const [speakBlocked, setSpeakBlocked] = useState(false);
+  /** Items where the learner chose typing over the mic. */
+  const [speakDeclined, setSpeakDeclined] = useState<string[]>([]);
+  const notScoredStreak = useRef(0);
+
+  useEffect(() => {
+    if (!languageCode) return;
+    // Deliberate: a client-only capability probe has to land after mount, or
+    // server and client render different exercises.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSpeechAvailable(isScoringAvailable(languageCode));
+  }, [languageCode]);
+
   const eligibilityMap = useMemo<BatchEligibilityMap>(() => {
+    const declined = new Set(speakDeclined);
     const out: BatchEligibilityMap = {};
     for (const w of words) {
       out[w.word.id] = {
         hasMnemonic: !!w.mnemonic,
         hasAudioUrl: !!w.word.pronunciation_audio_url,
         hasClozePhrase: !!(w.clozePhrases && w.clozePhrases.length > 0),
+        // Never offer the mic where it can't work, or where this learner has
+        // already told us it isn't working. Prevention beats an error state.
+        speechRecognitionAvailable:
+          speechAvailable && !speakBlocked && !declined.has(w.word.id),
         // Pass the list through rather than flattening it to one boolean. The
         // old `clozeEnabled` collapsed cloze and listening together, so turning
         // cloze on also made `listening` assignable — and DrillBlock has no
@@ -68,7 +99,7 @@ export function DrillBlock({
       };
     }
     return out;
-  }, [words, enabledCueTypes]);
+  }, [words, enabledCueTypes, speechAvailable, speakBlocked, speakDeclined]);
 
   const [queue, setQueue] = useState<DrillQueue>(() => {
     if (initialQueue && initialQueue.items.length > 0) {
@@ -163,6 +194,52 @@ export function DrillBlock({
     setQueue((q) => applyWrong(q, activeCueType, 2));
   }, [queue, activeCueType, onItemAnswered]);
 
+  /**
+   * The speak cue resolved. `pass`/`fail` are real verdicts and score normally.
+   * `fallback` is not — it means we never obtained a transcript, or the learner
+   * asked to type instead, so the item is neither passed nor failed. It is
+   * `applySkipped`, which bumps `tries` so a fresh cue type gets picked; the
+   * item stays owed exactly what it was owed before.
+   */
+  const handleSpeakOutcome = useCallback(
+    (outcome: SpeakOutcome) => {
+      const item = currentItem(queue);
+      if (!item) return;
+
+      if (outcome.kind === 'pass') {
+        notScoredStreak.current = 0;
+        advanceCorrect();
+        return;
+      }
+      if (outcome.kind === 'fail') {
+        notScoredStreak.current = 0;
+        handleWrong();
+        return;
+      }
+
+      if (outcome.reason === 'not_scored') setSpeakBlocked(true);
+      setSpeakDeclined((ids) => (ids.includes(item.itemId) ? ids : [...ids, item.itemId]));
+      setQueue((q) => applySkipped(q));
+    },
+    [queue, advanceCorrect, handleWrong],
+  );
+
+  const handleSpeakNotScored = useCallback(
+    (result: PronunciationResult) => {
+      notScoredStreak.current += 1;
+      const item = currentItem(queue);
+      fireTelemetry({
+        event: 'speak_not_scored',
+        payload: { wordId: item?.itemId ?? '', reason: result.reason ?? 'unknown' },
+      });
+      // Two failures in a row is a broken or absent mic, not bad luck. Stop
+      // asking for the rest of the batch rather than making every turn a
+      // permission prompt.
+      if (notScoredStreak.current >= 2) setSpeakBlocked(true);
+    },
+    [queue],
+  );
+
   // Recovery: cursor past the end while items still exist (shouldn't happen,
   // but if it does, snap back to a valid index in an effect — never call
   // setState during render).
@@ -231,6 +308,24 @@ export function DrillBlock({
     );
   }
 
+  if (activeCueType === 'speak' && languageCode) {
+    return (
+      <>
+        {header}
+        <SpeakChallenge
+          key={`drill-speak-${item.itemId}-${attemptKey}`}
+          target={word.word.text}
+          promptEn={word.word.meaning_en}
+          languageCode={languageCode}
+          audioUrl={word.word.pronunciation_audio_url}
+          romanization={word.word.romanization}
+          onOutcome={handleSpeakOutcome}
+          onNotScored={handleSpeakNotScored}
+        />
+      </>
+    );
+  }
+
   if (activeCueType === 'production') {
     return (
       <>
@@ -279,6 +374,7 @@ function humanCueType(cue: CueType): string {
     case 'recognition': return 'meaning';
     case 'production': return 'spell it';
     case 'cloze': return 'fill the blank';
+    case 'speak': return 'say it';
     case 'listening': return 'hear & type';
     case 'pattern': return 'pattern';
   }
@@ -290,6 +386,7 @@ function defaultEligibility(): PickerEligibility {
     hasMnemonic: false,
     hasAudioUrl: false,
     hasClozePhrase: false,
+    speechRecognitionAvailable: false,
     enabledCueTypes: ['recognition'],
   };
 }
