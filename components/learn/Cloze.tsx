@@ -24,14 +24,14 @@ interface ClozeProps {
   onAnswer?: (correct: boolean, attempts: number) => void;
 }
 
-const ALLOWED_EDITS = 2;
 const BLANK = '_____';
 
 /**
  * Render a phrase from the same scene with the target word blanked out.
- * The learner types the missing word; we fuzzy-match (≤2 edits, accent-
- * insensitive). Wrong → reveal English meaning as hint, retry. Wrong twice
- * → reveal full word, type-to-dismiss.
+ * The learner types the missing word; we fuzzy-match (accent-insensitive,
+ * with a length-scaled typo tolerance — see `allowedEditsFor`). Wrong →
+ * reveal English meaning as hint, retry. Wrong twice → reveal full word,
+ * type-to-dismiss.
  */
 export function Cloze({
   correctTarget,
@@ -96,7 +96,7 @@ export function Cloze({
       if (done || !phrase) return;
       const guess = typed.trim();
       if (!guess) return;
-      const result = fuzzyMatchAnswer(guess, correctTarget, ALLOWED_EDITS);
+      const result = fuzzyMatchAnswer(guess, correctTarget);
       const nextAttempts = attempts + 1;
       setAttempts(nextAttempts);
 

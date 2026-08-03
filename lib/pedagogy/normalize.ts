@@ -2,8 +2,10 @@
  * String normalization + Levenshtein for fuzzy answer matching.
  *
  * Used by ProductionTyping (Phase 2), Cloze (Phase 5), and ListeningExercise's
- * dictation mode. Accent-insensitive so a learner typing "kofi" for "kopi" or
- * "estas" for "estás" gets credit, with a "close — exact spelling: X" toast.
+ * dictation mode. Accent- and case-insensitive at every length, so "estas" for
+ * "estás" is an exact match. Beyond that, near-misses earn credit with a
+ * "close — exact spelling: X" toast, but only as far as `allowedEditsFor`
+ * permits: short words must be spelled right, since spelling them is the point.
  */
 
 export function normalizeForCompare(value: string): string {
@@ -45,14 +47,36 @@ export type FuzzyMatchResult =
   | { kind: 'wrong'; distance: number };
 
 /**
+ * Edit tolerance scaled to how long the target is.
+ *
+ * A flat allowance (we used to allow 2 edits everywhere) is nonsense on short
+ * words: it accepts "voice" for "noite", "quatro" for "quarto", and literally
+ * any two-letter string for a two-letter target. Typos only deserve leniency
+ * once there is enough word for a typo to be a small fraction of it.
+ *
+ *   ≤4 chars  → 0 (exact only; accents and case are still ignored)
+ *   5–7 chars → 1
+ *   ≥8 chars  → len/4, capped at 5 (phrases and sentences)
+ */
+export function allowedEditsFor(target: string): number {
+  const len = normalizeForCompare(target).length;
+  if (len <= 4) return 0;
+  if (len <= 7) return 1;
+  return Math.min(5, Math.floor(len / 4));
+}
+
+/**
  * Compare a typed answer to the target word with accent-insensitive
  * Levenshtein. Distance 0 → exact, ≤ allowedEdits → close (still counts as
  * correct, surfaces a "near-miss" toast for the learner), otherwise wrong.
+ *
+ * `allowedEdits` defaults to `allowedEditsFor(target)`. Pass 0 explicitly for
+ * transcription checks (type-the-revealed-answer), where only exact counts.
  */
 export function fuzzyMatchAnswer(
   typed: string,
   target: string,
-  allowedEdits: number = 2,
+  allowedEdits: number = allowedEditsFor(target),
 ): FuzzyMatchResult {
   const tNorm = normalizeForCompare(typed);
   const aNorm = normalizeForCompare(target);

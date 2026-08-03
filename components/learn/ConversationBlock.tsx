@@ -234,7 +234,7 @@ export function ConversationBlock({
         return;
       }
     }
-    const result = fuzzyMatchAnswer(guess, turn.target, 2);
+    const result = fuzzyMatchAnswer(guess, turn.target);
     if (result.kind === 'exact' || result.kind === 'close') {
       acceptLearner(turn.target);
       return;

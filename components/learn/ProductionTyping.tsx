@@ -8,7 +8,7 @@ import { Fox } from '@/components/mascot/Fox';
 import { useSound } from '@/lib/hooks/useSound';
 import { useHaptic } from '@/lib/hooks/useHaptic';
 import { useXP, XP_AMOUNTS } from '@/lib/hooks/useXP';
-import { fuzzyMatchAnswer } from '@/lib/pedagogy/normalize';
+import { fuzzyMatchAnswer, allowedEditsFor } from '@/lib/pedagogy/normalize';
 import { fireTelemetry } from '@/lib/pedagogy/telemetry';
 import type { SupportedLanguageCode } from '@/types/audio';
 
@@ -21,9 +21,9 @@ interface ProductionTypingProps {
   wordId: string;
   /** Optional pre-generated pronunciation; played on correct answer. */
   audioUrl?: string | null;
-  /** Fuzzy-match tolerance (Levenshtein edit distance). Default 2.
-   * Phrase-level callers pass a length-scaled value because longer text
-   * tolerates more typos before the answer is "wrong". */
+  /** Fuzzy-match tolerance (Levenshtein edit distance). Defaults to
+   * `allowedEditsFor(correctTarget)` — scaled to target length, so a 4-letter
+   * word must be spelled exactly. Only override to be stricter. */
   maxEdits?: number;
   onCorrect: () => void;
   /**
@@ -39,11 +39,11 @@ export function ProductionTyping({
   correctTarget,
   wordId,
   audioUrl,
-  maxEdits = 2,
+  maxEdits,
   onCorrect,
   onAnswer,
 }: ProductionTypingProps) {
-  const ALLOWED_EDITS = maxEdits;
+  const ALLOWED_EDITS = maxEdits ?? allowedEditsFor(correctTarget);
   const [typed, setTyped] = useState('');
   const [attempts, setAttempts] = useState(0);
   const [hint, setHint] = useState<string | null>(null);
@@ -125,7 +125,7 @@ export function ProductionTyping({
       setTyped('');
       inputRef.current?.focus();
     },
-    [typed, correctTarget, attempts, done, play, trigger, finalize, onAnswer, wordId],
+    [typed, correctTarget, ALLOWED_EDITS, attempts, done, play, trigger, finalize, onAnswer, wordId],
   );
 
   const handleChange = useCallback(

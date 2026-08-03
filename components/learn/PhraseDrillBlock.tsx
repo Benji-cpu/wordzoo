@@ -233,8 +233,6 @@ export function PhraseDrillBlock({
   }
 
   if (activeCueType === 'production') {
-    const len = phrase.text_target.length;
-    const maxEdits = Math.min(5, Math.max(2, Math.floor(len / 4)));
     return (
       <>
         {header}
@@ -245,7 +243,6 @@ export function PhraseDrillBlock({
           targetLanguageCode={languageCode}
           wordId={phrase.id /* Cloze/Production both use this as a focus key */}
           audioUrl={phrase.audio_url}
-          maxEdits={maxEdits}
           onCorrect={handleCorrect}
           onAnswer={(correct, attempts) => {
             // Mark wrong on the second wrong attempt — matches DrillBlock's
