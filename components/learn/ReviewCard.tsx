@@ -34,11 +34,18 @@ interface ReviewCardProps {
   revealed: boolean;
   onRate?: (rating: Rating) => void;
   wordFamilies?: LearnWordFamily[];
+  /**
+   * Whether to show the mnemonic picture on reveal. False once the word is
+   * sticking — see the taper note below. Defaults to true; the keyword line and
+   * bridge sentence are never hidden, only the image.
+   */
+  showMnemonicImage?: boolean;
 }
 
-export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, wordFamilies }: ReviewCardProps) {
+export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, wordFamilies, showMnemonicImage = true }: ReviewCardProps) {
   const [swipeX, setSwipeX] = useState(0);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageRevealed, setImageRevealed] = useState(false);
   const startXRef = useRef(0);
 
   // Reset overlay visibility when word changes — derive during render
@@ -47,6 +54,7 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, w
   if (word.id !== prevWordId) {
     setPrevWordId(word.id);
     setImageLoaded(false);
+    setImageRevealed(false);
   }
 
   // Swipe handling
@@ -98,9 +106,38 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, w
     transition: 'none',
   } : {};
 
+  // --- Mnemonic taper ---
+  //
+  // The Atkinson keyword method is a SCAFFOLD: you use the picture to build the
+  // form-meaning link, then let it fall away so retrieval becomes direct.
+  // WordZoo re-showed the image on every reveal forever, which trains a
+  // permanent two-step path (meaning -> picture -> word) — exactly the
+  // bottleneck that stops people producing at conversational speed. It also
+  // meant "mastered" partly measured how well the picture was remembered.
+  //
+  // Once a word has survived a 7-day gap the scaffold comes off, and failing
+  // routes it into the existing revision round, which re-shows the full
+  // mnemonic card. Scaffold on failure, not on every success.
+  //
+  // The picture is one tap away regardless — this is a default, not a lockout.
+  const showImage = showMnemonicImage || imageRevealed;
+
+  const imageTapThrough = !showImage && mnemonic.image_url && (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation();
+        setImageRevealed(true);
+      }}
+      className="mb-2 text-[12px] font-semibold text-[color:var(--text-secondary)] underline underline-offset-2"
+    >
+      Show the picture
+    </button>
+  );
+
   // Image is capped to ~32vh so revealed state + rating + bridge fit in
   // one mobile viewport without scrolling.
-  const mnemonicImage = mnemonic.image_url && (
+  const mnemonicImage = showImage && mnemonic.image_url && (
     <div className="relative w-full rounded-xl overflow-hidden mb-1 bg-surface-inset max-h-[32vh]">
       <MnemonicImage
         src={mnemonic.image_url}
@@ -216,6 +253,7 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, w
                   </p>
                 )}
                 {mnemonicImage}
+                {imageTapThrough}
                 {ratingSection}
                 {wordFamilySection}
               </div>
@@ -251,6 +289,7 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, w
             {revealed && (
               <div className="pt-2 border-t border-card-border animate-slide-up">
                 {mnemonicImage}
+                {imageTapThrough}
                 <div className="flex items-center justify-center gap-2 mb-1">
                   <p className="font-display text-[color:var(--color-fox-primary)] leading-none" style={{ fontSize: 'clamp(1.9rem, 7.5vw, 2.5rem)' }}>{word.text}</p>
                   <div onClick={(e) => e.stopPropagation()} className="flex items-center">

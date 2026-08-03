@@ -506,6 +506,12 @@ export function ReviewClient({ dueWords, duePhrases, dueCanDos = [], practiceWor
             revealed={revealed}
             onRate={handleRevisionRate}
             wordFamilies={wordFamiliesMap[revisionItem.word_id]}
+            // No taper here, deliberately — this is the scaffold-on-failure
+            // path. The learner is in the revision round precisely because they
+            // missed the word, which is exactly when re-encoding is wanted.
+            // (The image only renders after `revealed` anyway, so it is
+            // feedback, never a cue.)
+            showMnemonicImage
           />
         )}
       </>
@@ -563,6 +569,13 @@ export function ReviewClient({ dueWords, duePhrases, dueCanDos = [], practiceWor
             revealed={revealed}
             onRate={handleRate}
             wordFamilies={wordFamiliesMap[current.data.word_id]}
+            // Taper the picture once the word has survived a 7-day gap.
+            // `status` is interval-bucketed by the SRS ('learning' < 7d,
+            // 'reviewing' >= 7d, 'mastered' >= 30d) and already rides along on
+            // DueWordForReview, so this needs no new query or column. A miss
+            // still routes into the revision round, which re-shows the full
+            // mnemonic card.
+            showMnemonicImage={current.data.status === 'learning'}
           />
         );
       case 'can_do':
