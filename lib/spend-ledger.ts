@@ -26,6 +26,7 @@ export type SpendKind =
   | 'tutor_greeting'
   | 'screenshot_upload'
   | 'share_image'
+  | 'can_do_certify'
   | 'xp_award';
 
 export interface SpendLimit {
@@ -58,6 +59,10 @@ export const SPEND_LIMITS: Record<SpendKind, SpendLimit> = {
   tutor_greeting: { limit: 30, windowMinutes: 1440 },
   screenshot_upload: { limit: 10, windowMinutes: 60 },
   share_image: { limit: 60, windowMinutes: 60 },
+  // Certification is rare by construction — a can-do unlocks once per scene and
+  // is gated 48h out, with a 24h cooldown after a failure. 40/day is far above
+  // honest use and caps the cost of someone hammering the endpoint.
+  can_do_certify: { limit: 40, windowMinutes: 1440 },
   xp_award: { limit: 3000, windowMinutes: 1440 },
 };
 

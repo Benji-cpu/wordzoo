@@ -1,8 +1,8 @@
 /**
  * String normalization + Levenshtein for fuzzy answer matching.
  *
- * Used by ProductionTyping (Phase 2), Cloze (Phase 5), and ListeningExercise's
- * dictation mode. Accent- and case-insensitive at every length, so "estas" for
+ * Used by ProductionTyping (Phase 2), Cloze (Phase 5), and the can-do
+ * certification pre-check. Accent- and case-insensitive at every length, so "estas" for
  * "estás" is an exact match. Beyond that, near-misses earn credit with a
  * "close — exact spelling: X" toast, but only as far as `allowedEditsFor`
  * permits: short words must be spelled right, since spelling them is the point.

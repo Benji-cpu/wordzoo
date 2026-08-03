@@ -25,6 +25,8 @@ interface SceneSummaryProps {
   sceneTitle: string;
   sceneDescription?: string | null;
   words: SummaryWord[];
+  /** Can-dos this scene unlocks. Empty for scenes with none authored yet. */
+  canDos?: { id: string; statement_en: string }[];
   showUpgrade?: boolean;
   nextScene?: { id: string; title: string; description?: string | null } | null;
   pathId?: string;
@@ -40,6 +42,7 @@ interface SceneSummaryProps {
 export function SceneSummary({
   sceneTitle,
   words,
+  canDos = [],
   showUpgrade = false,
   nextScene,
   pathId,
@@ -154,6 +157,29 @@ export function SceneSummary({
           })}
         </div>
       </Card>
+
+      {/* Capability sits beside throughput, same visual weight as the words
+          card. The "in 2 days, without help" line is load-bearing: it sets the
+          delayed + unaided expectation up front, which is what makes passing
+          mean something later. Renders nothing when the scene has no authored
+          can-dos, rather than showing an empty state. */}
+      {canDos.length > 0 && (
+        <Card className="mb-2 py-2.5">
+          <div className="text-[11px] font-extrabold tracking-[0.14em] uppercase text-[color:var(--text-secondary)] mb-1.5">
+            {canDos.length} {canDos.length === 1 ? 'can-do' : 'can-dos'} unlocked
+          </div>
+          <ul className="space-y-1 mb-2">
+            {canDos.map((c) => (
+              <li key={c.id} className="text-[13px] font-semibold leading-snug">
+                {c.statement_en}
+              </li>
+            ))}
+          </ul>
+          <p className="text-[11.5px] text-[color:var(--text-secondary)]">
+            We&apos;ll test {canDos.length === 1 ? 'this' : 'these'} in 2 days — no hints, no word bank.
+          </p>
+        </Card>
+      )}
 
       {insight && onInsightDismiss && (
         <div className="mb-4">

@@ -15,8 +15,10 @@ import Link from 'next/link';
 import { InsightCard } from '@/components/insights/InsightCard';
 import { getEligibleInsight } from '@/lib/insights/engine';
 import type { InsightDefinition } from '@/lib/insights/data';
+import { CanDoTest, type CertifyResult } from '@/components/learn/CanDoTest';
 import type { DueWordForReview } from '@/lib/db/queries';
 import type { DuePhraseForReview } from '@/lib/db/scene-flow-queries';
+import type { DueCanDo } from '@/lib/db/can-do-queries';
 import type { LearnWordFamily } from '@/types/learn';
 import type { Word, Mnemonic, PhraseWordMnemonic } from '@/types/database';
 
@@ -25,7 +27,11 @@ type ReviewPhase = 'main' | 'transition' | 'revision' | 'done';
 
 type ReviewItem =
   | { type: 'word'; data: DueWordForReview }
-  | { type: 'phrase'; data: DuePhraseForReview };
+  | { type: 'phrase'; data: DuePhraseForReview }
+  | { type: 'can_do'; data: DueCanDo };
+
+/** At most this many certification tests per review session. */
+const MAX_CAN_DOS_PER_SESSION = 2;
 
 function toWord(dw: DueWordForReview): Word {
   return {
@@ -92,6 +98,7 @@ function ProgressBarPortal({ current, total }: { current: number; total: number 
 interface ReviewClientProps {
   dueWords: DueWordForReview[];
   duePhrases: DuePhraseForReview[];
+  dueCanDos?: DueCanDo[];
   practiceWords?: DueWordForReview[];
   wordFamiliesMap?: Record<string, LearnWordFamily[]>;
   phraseWordMap?: Record<string, PhraseWordMnemonic[]>;
@@ -101,7 +108,7 @@ interface ReviewClientProps {
   insightState?: { seenIds: string[]; shownToday: number };
 }
 
-export function ReviewClient({ dueWords, duePhrases, practiceWords = [], wordFamiliesMap = {}, phraseWordMap = {}, languageCode = null, otherLanguagesDue = [], insightState }: ReviewClientProps) {
+export function ReviewClient({ dueWords, duePhrases, dueCanDos = [], practiceWords = [], wordFamiliesMap = {}, phraseWordMap = {}, languageCode = null, otherLanguagesDue = [], insightState }: ReviewClientProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
@@ -142,7 +149,14 @@ export function ReviewClient({ dueWords, duePhrases, practiceWords = [], wordFam
   const effectiveWords = practiceMode ? practiceWords : dueWords;
   const effectivePhrases = practiceMode ? [] as DuePhraseForReview[] : duePhrases;
 
-  const items: ReviewItem[] = [];
+  // Can-dos go FIRST, and are capped. First because they're the highest-value
+  // item in the queue — someone who bails after three cards should still have
+  // done the thing that actually measures capability. Capped because a wall of
+  // unaided production is demoralising, and each one costs a Gemini call.
+  const items: ReviewItem[] = practiceMode
+    ? []
+    : dueCanDos.slice(0, MAX_CAN_DOS_PER_SESSION).map((d) => ({ type: 'can_do' as const, data: d }));
+
   const wLen = effectiveWords.length;
   const pLen = effectivePhrases.length;
   let wi = 0, pi = 0;
@@ -171,6 +185,10 @@ export function ReviewClient({ dueWords, duePhrases, practiceWords = [], wordFam
         case 'phrase':
           urls.push(it.data.audio_url);
           break;
+        case 'can_do':
+          // Nothing to preload — a can-do check is silent by design. Any audio
+          // here would be a pronunciation hint.
+          break;
       }
     }
     preloadAudioUrls(urls);
@@ -182,8 +200,29 @@ export function ReviewClient({ dueWords, duePhrases, practiceWords = [], wordFam
   // Recognition-only learners can't speak; production-only learners can't
   // follow a reply — both directions matter.
   const modeForItem = useCallback((item: ReviewItem): 'recognition' | 'production' => {
+    // Can-dos are always unaided production; they have no stored direction.
+    if (item.type === 'can_do') return 'production';
     return item.data.direction === 'production' ? 'recognition' : 'production';
   }, []);
+
+  // Shared tail of every "this item is done" path, so the end-of-queue
+  // handoff to the revision phase lives in exactly one place.
+  const advance = useCallback(() => {
+    const nextIndex = currentIndex + 1;
+    if (nextIndex >= items.length) {
+      setPhase(missedItemsRef.current.length > 0 ? 'transition' : 'done');
+    } else {
+      setCurrentIndex(nextIndex);
+      setRevealed(false);
+    }
+  }, [currentIndex, items.length]);
+
+  const handleCanDoSettled = useCallback((_result: CertifyResult) => {
+    // The verdict is already persisted server-side; nothing to record here.
+    // Certification deliberately does NOT feed the SRS — passing means the
+    // capability is proven, not that a flashcard interval should move.
+    advance();
+  }, [advance]);
 
   const handleReveal = useCallback(() => {
     setRevealed(true);
@@ -191,6 +230,9 @@ export function ReviewClient({ dueWords, duePhrases, practiceWords = [], wordFam
 
   const handleRate = useCallback((rating: Rating) => {
     if (!current) return;
+    // Can-dos never render RatingButtons — they settle through their own
+    // callback with a server-side verdict, not a self-report.
+    if (current.type === 'can_do') return;
 
     if (rating === 'instant' || rating === 'got_it') {
       setCorrectCount(c => c + 1);
@@ -241,18 +283,8 @@ export function ReviewClient({ dueWords, duePhrases, practiceWords = [], wordFam
         .catch(recordFailure);
     }
 
-    const nextIndex = currentIndex + 1;
-    if (nextIndex >= items.length) {
-      if (missedItemsRef.current.length > 0) {
-        setPhase('transition');
-      } else {
-        setPhase('done');
-      }
-    } else {
-      setCurrentIndex(nextIndex);
-      setRevealed(false);
-    }
-  }, [currentIndex, current, items.length, modeForItem]);
+    advance();
+  }, [current, modeForItem, advance]);
 
   const handleRevisionMnemonicContinue = useCallback(() => {
     setRevisionStep('quiz');
@@ -462,7 +494,12 @@ export function ReviewClient({ dueWords, duePhrases, practiceWords = [], wordFam
   }
 
   const activeMode = modeForItem(current);
-  const modeLabel = activeMode === 'recognition' ? 'Recognize' : 'Produce';
+  const modeLabel =
+    current.type === 'can_do'
+      ? 'Certify'
+      : activeMode === 'recognition'
+        ? 'Recognize'
+        : 'Produce';
 
   return (
     <>
@@ -499,6 +536,17 @@ export function ReviewClient({ dueWords, duePhrases, practiceWords = [], wordFam
             revealed={revealed}
             onRate={handleRate}
             wordFamilies={wordFamiliesMap[current.data.word_id]}
+          />
+        );
+      case 'can_do':
+        return (
+          <CanDoTest
+            key={current.data.can_do_id}
+            canDoId={current.data.can_do_id}
+            sceneId={current.data.scene_id}
+            statementEn={current.data.statement_en}
+            promptEn={current.data.prompt_en}
+            onSettled={handleCanDoSettled}
           />
         );
       case 'phrase':

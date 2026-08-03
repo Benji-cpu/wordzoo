@@ -29,6 +29,8 @@ import { getTripContext } from '@/lib/services/trip-service';
 import { TripHero } from '@/components/dashboard/TripHero';
 import { ReviewQueueCard } from '@/components/dashboard/ReviewQueueCard';
 import { GoalProgressCard } from '@/components/dashboard/GoalProgressCard';
+import { CanDoInventoryCard } from '@/components/dashboard/CanDoInventoryCard';
+import { getCanDoInventory } from '@/lib/db/can-do-queries';
 import { LevelBadge } from '@/components/dashboard/LevelBadge';
 import { isAdminEmail } from '@/lib/auth/admin';
 
@@ -80,6 +82,7 @@ export default async function DashboardPage() {
     tripContext,
     xpData,
     otherLanguagesDue,
+    canDoInventory,
   ] = await Promise.all([
     getSceneMasteryForPath(userId, pathId),
     getDueWordCount(userId, languageId),
@@ -92,6 +95,7 @@ export default async function DashboardPage() {
     getTripContext(userId),
     getUserXp(userId),
     getDueCountsByOtherLanguages(userId, languageId),
+    getCanDoInventory(userId, languageId),
   ]);
 
   const firstName = session.user.name?.split(/\s+/)[0] ?? null;
@@ -222,8 +226,23 @@ export default async function DashboardPage() {
         />
       ) : null}
 
-      {/* Goal meter — suppressed when TripHero is the hero (would duplicate trip data) */}
-      {!(tripContext.hasTrip && hasNextScene) && (
+      {/* Capability inventory — the answer to "what can I actually do?".
+          Shown once there's anything to say; otherwise the slot falls through
+          to GoalProgressCard as before. */}
+      {(canDoInventory.certified > 0 || canDoInventory.due_now > 0) && (
+        <CanDoInventoryCard
+          inventory={canDoInventory}
+          languageName={language?.name ?? 'your language'}
+        />
+      )}
+
+      {/* Goal meter — suppressed when TripHero is the hero (would duplicate
+          trip data), and also when the can-do card is carrying the "here's
+          your direction" slot AND there's no real trip to count down to. A
+          genuine trip countdown always survives; only the empty
+          "set a learning goal" state gets displaced. */}
+      {!(tripContext.hasTrip && hasNextScene) &&
+        (tripContext.hasTrip || canDoInventory.certified === 0) && (
         <GoalProgressCard tripContext={tripContext} />
       )}
 

@@ -819,4 +819,63 @@ BEGIN
       CHECK (direction IN ('recognition','production','both'));
   END IF;
 END $$;
+
+-- The capability layer.
+--
+-- Everything else in this schema counts throughput: words seen, XP, streak
+-- days, SRS intervals. None of it answers the learner's actual question —
+-- "can I handle ordering food yet?" A can-do is one communicative act
+-- ("I can ask a driver how much a ride costs"), certified by a single
+-- delayed, unaided production test.
+--
+-- Content is authored in lib/db/content/can-dos/<lang>.ts (AI-drafted, then
+-- hand-edited) and seeded from there, so the statements live in git rather
+-- than only in the database.
+CREATE TABLE IF NOT EXISTS can_dos (
+  id UUID PRIMARY KEY,
+  scene_id UUID NOT NULL REFERENCES scenes(id) ON DELETE CASCADE,
+  statement_en TEXT NOT NULL,
+  prompt_en TEXT NOT NULL,
+  -- Grader reference only. Never sent to the client before a verdict, or the
+  -- test stops being unaided.
+  reference_target TEXT NOT NULL,
+  accept_notes TEXT,
+  -- Lemmas any correct answer must contain. Checked for free before spending a
+  -- Gemini call. Empty is the safe default — an over-strict list rejects valid
+  -- answers with no appeal.
+  must_include TEXT[] NOT NULL DEFAULT '{}',
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  source TEXT NOT NULL DEFAULT 'ai_generated',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_can_dos_scene ON can_dos(scene_id, sort_order);
+
+-- Per-user certification state. Deliberately NOT SRS-shaped: certification is a
+-- rare binary event with a cooldown, so ease_factor/interval_days would be dead
+-- columns. eligible_at carries both the >=48h delayed-test gate and the
+-- post-failure retry cooldown — the same "one timestamp + a partial index"
+-- idiom as user_words.next_review_at.
+CREATE TABLE IF NOT EXISTS user_can_dos (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  can_do_id UUID NOT NULL REFERENCES can_dos(id) ON DELETE CASCADE,
+  status TEXT NOT NULL DEFAULT 'unlocked' CHECK (status IN ('unlocked','certified')),
+  unlocked_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  eligible_at TIMESTAMPTZ NOT NULL,
+  attempts INTEGER NOT NULL DEFAULT 0,
+  fails INTEGER NOT NULL DEFAULT 0,
+  certified_at TIMESTAMPTZ,
+  last_attempt_at TIMESTAMPTZ,
+  last_attempt_text TEXT,
+  last_verdict TEXT CHECK (last_verdict IN ('pass','fail','unclear')),
+  last_feedback TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE(user_id, can_do_id)
+);
+CREATE INDEX IF NOT EXISTS idx_user_can_dos_due
+  ON user_can_dos(user_id, eligible_at) WHERE status = 'unlocked';
+CREATE INDEX IF NOT EXISTS idx_user_can_dos_certified
+  ON user_can_dos(user_id, certified_at DESC) WHERE status = 'certified';
 `;

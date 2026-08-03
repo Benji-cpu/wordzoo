@@ -4,6 +4,7 @@ import { getDueWords, getDuePhrases } from '@/lib/srs/engine';
 import { getAllLearnedWordsForPractice, getWordFamilies, getUserActivePath, getLanguageById, getDueCountsByOtherLanguages } from '@/lib/db/queries';
 import { getPhraseWordsWithMnemonics } from '@/lib/db/scene-flow-queries';
 import { getInsightState } from '@/lib/db/insight-queries';
+import { getDueCanDos } from '@/lib/db/can-do-queries';
 import { getUserProfile } from '@/lib/db/queries';
 import {
   personalizeReviewPhrase,
@@ -26,9 +27,10 @@ export default async function ReviewPage() {
   const activePath = await getUserActivePath(session.user.id);
   const languageId = activePath?.path_language_id ?? null;
 
-  const [dueWords, rawDuePhrases, practiceWords, insightState, language, otherLanguagesDue, profile] = await Promise.all([
+  const [dueWords, rawDuePhrases, dueCanDos, practiceWords, insightState, language, otherLanguagesDue, profile] = await Promise.all([
     getDueWords(session.user.id, undefined, undefined, languageId),
     getDuePhrases(session.user.id, undefined, languageId),
+    getDueCanDos(session.user.id, 5, languageId),
     getAllLearnedWordsForPractice(session.user.id, undefined, languageId),
     getInsightState(session.user.id),
     languageId ? getLanguageById(languageId) : Promise.resolve(null),
@@ -96,7 +98,7 @@ export default async function ReviewPage() {
 
   return (
     <div className="max-w-lg mx-auto -mt-2">
-      <ReviewClient dueWords={dueWords} duePhrases={duePhrases} practiceWords={practiceWords} wordFamiliesMap={wordFamiliesMap} phraseWordMap={phraseWordMap} languageCode={language?.code ?? null} otherLanguagesDue={otherLanguagesDue.map(o => ({ code: o.code, name: o.name, count: o.due_count }))} insightState={{ seenIds: Array.from(insightState.seenIds), shownToday: insightState.shownToday }} />
+      <ReviewClient dueWords={dueWords} duePhrases={duePhrases} dueCanDos={dueCanDos} practiceWords={practiceWords} wordFamiliesMap={wordFamiliesMap} phraseWordMap={phraseWordMap} languageCode={language?.code ?? null} otherLanguagesDue={otherLanguagesDue.map(o => ({ code: o.code, name: o.name, count: o.due_count }))} insightState={{ seenIds: Array.from(insightState.seenIds), shownToday: insightState.shownToday }} />
     </div>
   );
 }

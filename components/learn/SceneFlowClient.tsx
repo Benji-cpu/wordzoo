@@ -47,6 +47,8 @@ interface SceneFlowClientProps {
   pedagogyFlags?: PedagogyFlags;
   /** Learner's name for in-scene conversation personalization (`[name]`). */
   learnerName?: string | null;
+  /** Can-dos this scene unlocks, shown on the summary. */
+  canDos?: { id: string; statement_en: string }[];
 }
 
 type FlowState =
@@ -209,6 +211,7 @@ export function SceneFlowClient({
   insightState,
   pedagogyFlags,
   learnerName,
+  canDos = [],
 }: SceneFlowClientProps) {
   const hasAnchorImage = !!anchorImageUrl;
   const useV2Vocab = pedagogyFlags?.restructure === true;
@@ -855,7 +858,7 @@ export function SceneFlowClient({
               Progress not saved — tap to retry
             </button>
           )}
-          <SceneSummary sceneTitle={sceneTitle} sceneDescription={sceneDescription} words={allWords} nextScene={nextScene} pathId={pathId} sceneId={sceneId} sceneNumber={sceneNumber} totalScenes={totalScenes} wordsLearnedToday={dailyStats.words_learned} scenesCompletedToday={dailyStats.scenes_completed} insight={activeInsight && activeInsightContext === 'scene_summary' ? activeInsight : undefined} onInsightDismiss={dismissInsight} />
+          <SceneSummary sceneTitle={sceneTitle} sceneDescription={sceneDescription} words={allWords} canDos={canDos} nextScene={nextScene} pathId={pathId} sceneId={sceneId} sceneNumber={sceneNumber} totalScenes={totalScenes} wordsLearnedToday={dailyStats.words_learned} scenesCompletedToday={dailyStats.scenes_completed} insight={activeInsight && activeInsightContext === 'scene_summary' ? activeInsight : undefined} onInsightDismiss={dismissInsight} />
         </>
       )}
     </SceneShell>

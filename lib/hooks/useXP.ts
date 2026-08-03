@@ -17,7 +17,9 @@ export type XpReason =
   // Pedagogy v2 phrase-side analogues (round 3).
   | 'phrase_drill_correct'
   | 'phrase_production_correct'
-  | 'phrase_checkpoint_passed';
+  | 'phrase_checkpoint_passed'
+  // Capability layer: a delayed, unaided production test passed.
+  | 'can_do_certified';
 
 export const XP_AMOUNTS: Record<XpReason, number> = {
   correct_answer: 2,
@@ -32,6 +34,10 @@ export const XP_AMOUNTS: Record<XpReason, number> = {
   phrase_drill_correct: 3,
   phrase_production_correct: 4,
   phrase_checkpoint_passed: 15,
+  // The largest award in the table, above scene_complete (25), because it is
+  // the only thing a learner does with no scaffolding and a real chance of
+  // failing — and it can only happen once per can-do.
+  can_do_certified: 50,
 };
 
 type XpState = {

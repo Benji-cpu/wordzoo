@@ -22,6 +22,7 @@ const AddXpSchema = z.object({
     'phrase_drill_correct',
     'phrase_production_correct',
     'phrase_checkpoint_passed',
+    'can_do_certified',
   ]),
 });
 

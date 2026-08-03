@@ -114,8 +114,24 @@ export async function POST(
     incrementDailyUsageScenesCompleted(session.user.id, today, 1).catch(() => {});
   }
 
-  return NextResponse.json<ApiResponse<{ success: boolean }>>({
-    data: { success: true },
+  // Finishing a scene unlocks its can-dos, scheduled 48h out. Awaited rather
+  // than fire-and-forget because SceneSummary renders "N can-dos unlocked"
+  // immediately after this returns, and the insert is idempotent
+  // (ON CONFLICT DO NOTHING) so replaying the summary is free.
+  let canDosUnlocked = 0;
+  if (phase === 'summary') {
+    try {
+      const { unlockCanDosForScene } = await import('@/lib/db/can-do-queries');
+      canDosUnlocked = await unlockCanDosForScene(session.user.id, sceneId);
+    } catch (error) {
+      // Never fail a scene completion over this — the learner finished the
+      // scene either way, and the next completion retries the insert.
+      console.error('[scene-progress] can-do unlock failed:', error);
+    }
+  }
+
+  return NextResponse.json<ApiResponse<{ success: boolean; canDosUnlocked: number }>>({
+    data: { success: true, canDosUnlocked },
     error: null,
   });
 }

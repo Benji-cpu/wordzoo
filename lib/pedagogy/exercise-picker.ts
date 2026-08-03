@@ -29,10 +29,12 @@ import type { CueType, DrillItem } from './leitner';
  * `listening` as passed — i.e. they were graded on a modality they were never
  * tested in.
  *
- * `ListeningExercise.tsx` exists (282 lines) but is not wired: it carries its
- * own local Levenshtein with a flat edit allowance, which would reintroduce
- * exactly the short-word free-pass fixed in 6712580. Wiring it means first
- * moving it onto `fuzzyMatchAnswer` from lib/pedagogy/normalize.
+ * `ListeningExercise.tsx` used to sit unwired alongside this — 282 lines, no
+ * importers, carrying its own local Levenshtein with a flat edit allowance that
+ * would have reintroduced the short-word free-pass fixed in 6712580. It has
+ * been deleted rather than left as a trap. Building a listening cue means
+ * writing a render branch in DrillBlock on top of `fuzzyMatchAnswer` from
+ * lib/pedagogy/normalize, not resurrecting that file.
  *
  * Add a cue type here only when DrillBlock can draw it.
  */

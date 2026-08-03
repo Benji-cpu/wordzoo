@@ -17,6 +17,7 @@ import type { LearnWord } from '@/types/learn';
 import { SceneFlowClient } from '@/components/learn/SceneFlowClient';
 import { LessonPersonaPrompt } from '@/components/learn/LessonPersonaPrompt';
 import { getInsightState } from '@/lib/db/insight-queries';
+import { getCanDosForScene } from '@/lib/db/can-do-queries';
 import { resolvePedagogyFlags } from '@/lib/pedagogy/flags';
 import {
   personalizeSceneContent,
@@ -162,12 +163,13 @@ export default async function LearnPage({ params, searchParams }: PageProps) {
 
   // All scenes render through SceneFlowClient. The 6 legacy scenes were
   // dropped as part of the Pedagogy v2 cutover.
-  const [flowData, words, progress, insightState, profile] = await Promise.all([
+  const [flowData, words, progress, insightState, profile, sceneCanDos] = await Promise.all([
     getSceneFlowData(sceneId, userId),
     buildWordsArray(sceneId, scene.language_id, userId, pedagogyFlags.cloze),
     userId ? getOrCreateSceneProgress(userId, sceneId) : null,
     userId ? getInsightState(userId) : null,
     userId ? getUserProfile(userId) : null,
+    getCanDosForScene(sceneId),
   ]);
 
   // Personalize learner-facing content (name + gender agreement). Falls back
@@ -240,6 +242,7 @@ export default async function LearnPage({ params, searchParams }: PageProps) {
         insightState={insightState ? { seenIds: Array.from(insightState.seenIds), shownToday: insightState.shownToday } : null}
         pedagogyFlags={pedagogyFlags}
         learnerName={learnerName}
+        canDos={sceneCanDos}
       />
     </>
   );
