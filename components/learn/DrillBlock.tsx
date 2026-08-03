@@ -60,7 +60,11 @@ export function DrillBlock({
         hasMnemonic: !!w.mnemonic,
         hasAudioUrl: !!w.word.pronunciation_audio_url,
         hasClozePhrase: !!(w.clozePhrases && w.clozePhrases.length > 0),
-        clozeEnabled: enabledCueTypes.includes('cloze') || enabledCueTypes.includes('listening'),
+        // Pass the list through rather than flattening it to one boolean. The
+        // old `clozeEnabled` collapsed cloze and listening together, so turning
+        // cloze on also made `listening` assignable — and DrillBlock has no
+        // listening branch. See RENDERABLE_CUE_TYPES in the picker.
+        enabledCueTypes,
       };
     }
     return out;
@@ -281,7 +285,13 @@ function humanCueType(cue: CueType): string {
 }
 
 function defaultEligibility(): PickerEligibility {
-  return { hasMnemonic: false, hasAudioUrl: false, hasClozePhrase: false, clozeEnabled: false };
+  // Recognition-only floor for an item we have no data for.
+  return {
+    hasMnemonic: false,
+    hasAudioUrl: false,
+    hasClozePhrase: false,
+    enabledCueTypes: ['recognition'],
+  };
 }
 
 // Re-export for parents wiring the queue via DB resume.

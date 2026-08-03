@@ -43,6 +43,108 @@ function calculateStatus(intervalDays: number): 'learning' | 'reviewing' | 'mast
   return 'learning';
 }
 
+/** Nothing schedules further out than this. */
+const MAX_INTERVAL_DAYS = 365;
+/** Intervals at or above this get fuzzed so same-session cohorts don't clump. */
+const FUZZ_FROM_DAYS = 4;
+/** Reviews before an item can be judged a leech. */
+const LEECH_MIN_REVIEWS = 8;
+/** Lifetime accuracy below this, at LEECH_MIN_REVIEWS+, marks a leech. */
+const LEECH_ACCURACY = 0.5;
+/** A leech never schedules beyond this, so it keeps circulating. */
+const LEECH_MAX_INTERVAL_DAYS = 21;
+
+/**
+ * Spread an interval by ±5% (at least ±1 day) so a batch of words learned in
+ * one sitting doesn't all come due on the same future day.
+ *
+ * Without this, every scene's vocabulary returns as a single lump — which is
+ * what made `overdueReviews` climb in steps rather than drain smoothly, and
+ * what makes a missed day feel unrecoverable.
+ */
+function fuzzInterval(days: number): number {
+  if (days < FUZZ_FROM_DAYS) return days;
+  const spread = Math.max(1, Math.round(days * 0.05));
+  const offset = Math.floor(Math.random() * (spread * 2 + 1)) - spread;
+  return Math.max(FUZZ_FROM_DAYS, days + offset);
+}
+
+interface ScheduleInput {
+  rating: Rating;
+  /** Only 'review' is genuine delayed retrieval — see ReviewSource. */
+  source: ReviewSource;
+  easeFactor: number;
+  intervalDays: number;
+  timesReviewed: number;
+  timesCorrect: number;
+}
+
+interface ScheduleResult {
+  easeFactor: number;
+  intervalDays: number;
+  isCorrect: boolean;
+  isLeech: boolean;
+  /** True when a lapse actually cost ease (i.e. it came from the review queue). */
+  penalized: boolean;
+}
+
+/**
+ * SM-2 scheduling, shared by words and phrases.
+ *
+ * Two deliberate departures from the previous implementation:
+ *
+ * 1. **A lapse now costs ease** — but only when it came from the review queue.
+ *    Previously `forgot` reset the interval and left the ease factor untouched,
+ *    so a word could be forgotten ten times and still re-inflate 1 -> 6 -> 15 ->
+ *    38 days on an unchanged EF 2.5. That is the mechanism behind the
+ *    monotonically climbing overdue count. In-scene drills and tutor usage
+ *    re-ask within seconds, so a miss there is a first-exposure stumble, not a
+ *    failure of retention — charging ease for it would punish learning
+ *    something new. Hence the `source` gate.
+ *
+ * 2. **Leeches stop graduating.** With no lapse column, an item is judged a
+ *    leech from the counters that already exist: many reviews, poor lifetime
+ *    accuracy. Those get capped rather than allowed to reach month-long gaps on
+ *    a shaky ease.
+ */
+function schedule(input: ScheduleInput): ScheduleResult {
+  const q = ratingToQuality(input.rating);
+  const isCorrect = q >= 3;
+  const oldEF = input.easeFactor;
+  const oldInterval = input.intervalDays;
+
+  let newEF = oldEF + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02));
+  if (newEF < 1.3) newEF = 1.3;
+
+  let newInterval: number;
+  let penalized = false;
+
+  if (isCorrect) {
+    if (oldInterval === 0) newInterval = 1;
+    else if (oldInterval === 1) newInterval = 6;
+    else newInterval = Math.round(oldInterval * newEF);
+    newInterval = fuzzInterval(newInterval);
+  } else {
+    newInterval = 1;
+    if (input.source === 'review') {
+      penalized = true; // keep the SM-2 penalty computed above
+    } else {
+      newEF = oldEF; // first-exposure miss — reset the interval, spare the ease
+    }
+  }
+
+  // Judged on the state *before* this answer, so a single good rep can't clear
+  // a long history of failures.
+  const isLeech =
+    input.timesReviewed >= LEECH_MIN_REVIEWS &&
+    input.timesCorrect / Math.max(1, input.timesReviewed) < LEECH_ACCURACY;
+
+  if (isLeech) newInterval = Math.min(newInterval, LEECH_MAX_INTERVAL_DAYS);
+  newInterval = Math.min(newInterval, MAX_INTERVAL_DAYS);
+
+  return { easeFactor: newEF, intervalDays: newInterval, isCorrect, isLeech, penalized };
+}
+
 export async function getDueWords(
   userId: string,
   limit?: number,
@@ -72,30 +174,22 @@ export async function recordReview(
   await recordIntroduction(userId, wordId);
   const userWord = await getOrCreateUserWord(userId, wordId, null);
 
-  const q = ratingToQuality(rating);
   const oldEF = userWord.ease_factor;
   const oldInterval = userWord.interval_days;
-  const isCorrect = q >= 3;
-
-  // SM-2 ease factor calculation
-  let newEF = oldEF + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02));
-  if (newEF < 1.3) newEF = 1.3;
-
-  // Interval calculation
-  let newInterval: number;
-  if (isCorrect) {
-    if (oldInterval === 0) {
-      newInterval = 1;
-    } else if (oldInterval === 1) {
-      newInterval = 6;
-    } else {
-      newInterval = Math.round(oldInterval * newEF);
-    }
-  } else {
-    // Forgot: reset interval, keep ease factor unchanged
-    newInterval = 1;
-    newEF = oldEF;
-  }
+  const {
+    easeFactor: newEF,
+    intervalDays: newInterval,
+    isCorrect,
+    isLeech,
+    penalized,
+  } = schedule({
+    rating,
+    source,
+    easeFactor: oldEF,
+    intervalDays: oldInterval,
+    timesReviewed: userWord.times_reviewed,
+    timesCorrect: userWord.times_correct,
+  });
 
   const now = new Date();
   const nextReviewAt = new Date(now.getTime() + newInterval * 24 * 60 * 60 * 1000);
@@ -123,6 +217,8 @@ export async function recordReview(
     newIntervalDays: newInterval,
     newEase: newEF,
     timesReviewed: userWord.times_reviewed,
+    isLeech,
+    easePenalized: penalized,
   });
 
   // Update streak (fire-and-forget — don't block learning flow)
@@ -148,23 +244,22 @@ export async function recordPhraseReview(
 ): Promise<{ nextReviewAt: Date; newInterval: number }> {
   const userPhrase = await getOrCreateUserPhrase(userId, phraseId);
 
-  const q = ratingToQuality(rating);
   const oldEF = userPhrase.ease_factor;
   const oldInterval = userPhrase.interval_days;
-  const isCorrect = q >= 3;
-
-  let newEF = oldEF + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02));
-  if (newEF < 1.3) newEF = 1.3;
-
-  let newInterval: number;
-  if (isCorrect) {
-    if (oldInterval === 0) newInterval = 1;
-    else if (oldInterval === 1) newInterval = 6;
-    else newInterval = Math.round(oldInterval * newEF);
-  } else {
-    newInterval = 1;
-    newEF = oldEF;
-  }
+  const {
+    easeFactor: newEF,
+    intervalDays: newInterval,
+    isCorrect,
+    isLeech,
+    penalized,
+  } = schedule({
+    rating,
+    source,
+    easeFactor: oldEF,
+    intervalDays: oldInterval,
+    timesReviewed: userPhrase.times_reviewed,
+    timesCorrect: userPhrase.times_correct,
+  });
 
   const now = new Date();
   const nextReviewAt = new Date(now.getTime() + newInterval * 24 * 60 * 60 * 1000);
@@ -192,6 +287,8 @@ export async function recordPhraseReview(
     newIntervalDays: newInterval,
     newEase: newEF,
     timesReviewed: userPhrase.times_reviewed,
+    isLeech,
+    easePenalized: penalized,
   });
 
   updateUserStreak(userId).catch(() => {});
