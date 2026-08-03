@@ -786,4 +786,22 @@ CREATE TABLE IF NOT EXISTS spend_events (
 CREATE INDEX IF NOT EXISTS idx_spend_events_subject_kind
   ON spend_events(subject, kind, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_spend_events_created ON spend_events(created_at DESC);
+
+-- Drift repair: phase_step / phase_batch were added out-of-band by
+-- lib/db/apply-scene-progress-v2-state.ts and never landed in the
+-- user_scene_progress CREATE above. Production already has them, but a DB built
+-- from this file alone would break v2 scene resume at runtime
+-- (scene-flow-queries.ts reads and writes both).
+ALTER TABLE user_scene_progress ADD COLUMN IF NOT EXISTS phase_step TEXT;
+ALTER TABLE user_scene_progress ADD COLUMN IF NOT EXISTS phase_batch INTEGER NOT NULL DEFAULT 0;
+
+-- Measurement indexes. The overdue-queue rollup scans user_words by due date,
+-- and the can-do 48h gate scans user_scene_progress by completion. Both are
+-- partial: rows that can never match are excluded from the index entirely.
+CREATE INDEX IF NOT EXISTS idx_user_words_next_review
+  ON user_words(next_review_at) WHERE status <> 'new';
+CREATE INDEX IF NOT EXISTS idx_user_phrases_next_review
+  ON user_phrases(next_review_at) WHERE status <> 'new';
+CREATE INDEX IF NOT EXISTS idx_user_scene_progress_completed
+  ON user_scene_progress(completed_at) WHERE completed_at IS NOT NULL;
 `;

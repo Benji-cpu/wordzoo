@@ -201,6 +201,10 @@ export function ReviewClient({ dueWords, duePhrases, practiceWords = [], wordFam
           wordId: current.data.word_id,
           direction: wordMode,
           rating,
+          // The review queue is the only genuine delayed-retrieval surface in
+          // the app; in-scene drills re-ask within seconds. The SRS treats the
+          // two differently — see ReviewSourceEnum in types/api.ts.
+          source: 'review',
         }),
       })
         .then((res) => { if (!res.ok) recordFailure(); })
@@ -212,6 +216,7 @@ export function ReviewClient({ dueWords, duePhrases, practiceWords = [], wordFam
         body: JSON.stringify({
           phraseId: current.data.phrase_id,
           rating,
+          source: 'review',
         }),
       })
         .then((res) => { if (!res.ok) recordFailure(); })

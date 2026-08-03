@@ -124,6 +124,7 @@ export async function GET(request: NextRequest) {
     stuckMnemonicsLast72h,
     overdueReviews,
     spendLast24h,
+    pedagogy,
     pendingRows,
   ] = await Promise.all([
     safe('feedbackByStatus', async () => {
@@ -178,6 +179,22 @@ export async function GET(request: NextRequest) {
       `) as Array<{ kind: string; units: number; calls: number }>;
     }),
 
+    // Pedagogy rollup. The admin page at /admin/pedagogy renders these live,
+    // but pedagogy_events is pruned at 90 days — committing the summary into
+    // digests/*.json is what gives us a permanent, diffable retention history
+    // in git without standing up a warehouse.
+    safe('pedagogy', async () => {
+      const { getCueAccuracy, getCheckpointStats, getRetentionCurve, getOverdueQueue } =
+        await import('@/lib/db/pedagogy-queries');
+      const [cueAccuracy, checkpoints, retention, overdue] = await Promise.all([
+        getCueAccuracy(1),
+        getCheckpointStats(1),
+        getRetentionCurve(30),
+        getOverdueQueue(),
+      ]);
+      return { cueAccuracy, checkpoints, retention, overdue };
+    }),
+
     safe('pendingRows', async () => {
       return (await sql`
         SELECT af.id, af.user_id, af.message, af.page_url, af.page_title,
@@ -207,6 +224,7 @@ export async function GET(request: NextRequest) {
       stuckMnemonicsLast72h: stuckMnemonicsLast72h ?? 0,
       overdueReviews: overdueReviews ?? 0,
       spendLast24h: spendLast24h ?? [],
+      pedagogy: pedagogy ?? null,
     },
     errors,
   };

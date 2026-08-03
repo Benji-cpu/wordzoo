@@ -52,10 +52,21 @@ export const SetTripSchema = z.object({
 export const ReviewDirectionEnum = z.enum(['recognition', 'production']);
 export const ReviewRatingEnum = z.enum(['instant', 'got_it', 'hard', 'forgot']);
 
+/**
+ * Where a review came from. The review queue is genuine delayed retrieval; an
+ * in-scene drill is not (the Leitner queue re-asks the same item seconds later,
+ * and a first-ever exposure counts as "wrong" the first time by design). The
+ * SRS uses this to decide whether a miss is a real lapse — see lib/srs/engine.
+ * Defaults to 'scene', the no-penalty branch, so a caller that omits it
+ * under-penalises rather than wrecking ease factors.
+ */
+export const ReviewSourceEnum = z.enum(['review', 'scene', 'tutor']);
+
 export const RecordReviewSchema = z.object({
   wordId: z.string().uuid(),
   direction: ReviewDirectionEnum,
   rating: ReviewRatingEnum,
+  source: ReviewSourceEnum.optional(),
 });
 
 export const DueWordsQuerySchema = z.object({
@@ -242,6 +253,8 @@ export type StartGuidedSessionInput = z.infer<typeof StartGuidedSessionSchema>;
 export const RecordPhraseReviewSchema = z.object({
   phraseId: z.string().uuid(),
   rating: ReviewRatingEnum,
+  direction: ReviewDirectionEnum.optional(),
+  source: ReviewSourceEnum.optional(),
 });
 
 export type RecordPhraseReviewInput = z.infer<typeof RecordPhraseReviewSchema>;

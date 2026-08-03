@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { wordId, direction, rating } = parsed.data;
+  const { wordId, direction, rating, source } = parsed.data;
   const userId = session.user.id;
 
   // Enforce free-tier daily new-word limit only when this is a brand-new word
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  const result = await recordReview(userId, wordId, direction, rating);
+  const result = await recordReview(userId, wordId, direction, rating, source);
 
   return NextResponse.json<ApiResponse<{ nextReviewAt: Date; newInterval: number }>>(
     { data: result, error: null }

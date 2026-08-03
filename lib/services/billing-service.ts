@@ -219,6 +219,15 @@ export async function resetDailyLimits(): Promise<void> {
   await pruneSpendEvents().catch((error) => {
     console.error('[reset-usage] spend_events prune failed:', error);
   });
+
+  // pedagogy_events has no natural bound either — the telemetry route has no
+  // rate limit and every drill answer writes a row. The admin rollups only
+  // look back 30-90 days, and the nightly digest keeps a permanent summary in
+  // git, so the raw rows don't need to live forever.
+  const { prunePedagogyEvents } = await import('@/lib/db/pedagogy-queries');
+  await prunePedagogyEvents().catch((error) => {
+    console.error('[reset-usage] pedagogy_events prune failed:', error);
+  });
 }
 
 export async function checkExpiringSubscriptions(): Promise<void> {

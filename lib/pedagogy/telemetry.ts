@@ -3,33 +3,33 @@
  * Console-logs in dev so we can watch the new flow without standing up a UI.
  */
 
+/**
+ * Every event that an emitter actually fires. Kept in exact sync with the
+ * fireTelemetry call sites on purpose: the union used to declare 32 members
+ * while only 16 had emitters, and /admin/pedagogy renders one row per event
+ * name — so a phantom member shows up forever as a zero, which reads as
+ * "learners never do this" rather than "nothing emits this".
+ *
+ * If you add a member here, add the call site in the same commit.
+ *
+ * Server-emitted events are NOT in this union — they are inserted directly
+ * into pedagogy_events and never travel through fireTelemetry. Currently:
+ *   srs_review_recorded  (lib/srs/engine.ts)
+ */
 export type PedagogyEvent =
   | 'drill_correct'
   | 'drill_wrong'
-  | 'production_attempt'
   | 'production_correct'
   | 'production_wrong'
-  | 'cloze_attempt'
   | 'cloze_correct'
   | 'cloze_wrong'
   | 'checkpoint_started'
   | 'checkpoint_passed'
   | 'checkpoint_failed'
   | 'remediation_loop_started'
-  | 'mastery_stage_promoted'
-  | 'introduction_recorded'
-  | 'introduction_blocked_daily_limit'
-  | 'distractor_tier_used'
-  | 'reveal_mask_dismissed'
   // Phrase-side analogues (round 3).
   | 'phrase_drill_correct'
   | 'phrase_drill_wrong'
-  | 'phrase_production_attempt'
-  | 'phrase_production_correct'
-  | 'phrase_production_wrong'
-  | 'phrase_cloze_attempt'
-  | 'phrase_cloze_correct'
-  | 'phrase_cloze_wrong'
   | 'phrase_checkpoint_started'
   | 'phrase_checkpoint_passed'
   | 'phrase_checkpoint_failed'

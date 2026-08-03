@@ -179,7 +179,7 @@ export async function recordConversationReviews(
   // Correct usage → SRS quality 4 (got_it)
   for (const entry of wordUsage.correct) {
     try {
-      await recordReview(userId, entry.wordId, 'production', 'got_it');
+      await recordReview(userId, entry.wordId, 'production', 'got_it', 'tutor');
       reviewsRecorded++;
       tutorWordReviews.push({ sessionId, userId, wordId: entry.wordId, languageId, usageType: 'correct', srsQuality: 4 });
     } catch (error) {
@@ -190,7 +190,7 @@ export async function recordConversationReviews(
   // Corrected usage → SRS quality 3 (hard)
   for (const entry of wordUsage.corrected) {
     try {
-      await recordReview(userId, entry.wordId, 'production', 'hard');
+      await recordReview(userId, entry.wordId, 'production', 'hard', 'tutor');
       reviewsRecorded++;
       tutorWordReviews.push({ sessionId, userId, wordId: entry.wordId, languageId, usageType: 'corrected', srsQuality: 3 });
     } catch (error) {

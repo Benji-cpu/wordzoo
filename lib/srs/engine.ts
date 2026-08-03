@@ -2,8 +2,31 @@ import { getDueWordsForReview, getOrCreateUserWord, updateWordSRS, updateUserStr
 import type { DueWordForReview } from '@/lib/db/queries';
 import { getOrCreateUserPhrase, updatePhraseSRS, getDuePhrasesForReview } from '@/lib/db/scene-flow-queries';
 import type { DuePhraseForReview } from '@/lib/db/scene-flow-queries';
+import { sql } from '@/lib/db/client';
 
 type Rating = 'instant' | 'got_it' | 'hard' | 'forgot';
+
+/**
+ * Where the review came from. See ReviewSourceEnum in types/api.ts for why this
+ * matters: only 'review' is genuine delayed retrieval.
+ */
+export type ReviewSource = 'review' | 'scene' | 'tutor';
+
+/**
+ * Emit one row per scheduled review so retention can be bucketed by the
+ * interval the review actually happened at.
+ *
+ * This is written server-side rather than through /api/telemetry/pedagogy
+ * because the engine already holds userId and the pre-update SRS state, and
+ * because the HTTP route's event field is free-form. Fire-and-forget: a
+ * telemetry failure must never fail a learner's review.
+ */
+function emitReviewEvent(userId: string, payload: Record<string, unknown>): void {
+  void sql`
+    INSERT INTO pedagogy_events (user_id, event, payload)
+    VALUES (${userId}, 'srs_review_recorded', ${JSON.stringify(payload)}::jsonb)
+  `.catch(() => {});
+}
 
 function ratingToQuality(rating: Rating): number {
   switch (rating) {
@@ -33,7 +56,8 @@ export async function recordReview(
   userId: string,
   wordId: string,
   direction: 'recognition' | 'production',
-  rating: Rating
+  rating: Rating,
+  source: ReviewSource = 'scene'
 ): Promise<{ nextReviewAt: Date; newInterval: number }> {
   // recordIntroduction is the single owner of daily_usage.words_learned and is
   // idempotent, so a word counts exactly once regardless of where the learner
@@ -88,6 +112,19 @@ export async function recordReview(
     lastReviewedAt: now,
   });
 
+  emitReviewEvent(userId, {
+    kind: 'word',
+    wordId,
+    direction,
+    rating,
+    source,
+    priorIntervalDays: oldInterval,
+    priorEase: oldEF,
+    newIntervalDays: newInterval,
+    newEase: newEF,
+    timesReviewed: userWord.times_reviewed,
+  });
+
   // Update streak (fire-and-forget — don't block learning flow)
   updateUserStreak(userId).catch(() => {});
 
@@ -105,7 +142,8 @@ export async function getDuePhrases(
 export async function recordPhraseReview(
   userId: string,
   phraseId: string,
-  rating: Rating
+  rating: Rating,
+  source: ReviewSource = 'scene'
 ): Promise<{ nextReviewAt: Date; newInterval: number }> {
   const userPhrase = await getOrCreateUserPhrase(userId, phraseId);
 
@@ -139,6 +177,18 @@ export async function recordPhraseReview(
     timesCorrect: userPhrase.times_correct + (isCorrect ? 1 : 0),
     status: newStatus,
     lastReviewedAt: now,
+  });
+
+  emitReviewEvent(userId, {
+    kind: 'phrase',
+    phraseId,
+    rating,
+    source,
+    priorIntervalDays: oldInterval,
+    priorEase: oldEF,
+    newIntervalDays: newInterval,
+    newEase: newEF,
+    timesReviewed: userPhrase.times_reviewed,
   });
 
   updateUserStreak(userId).catch(() => {});
