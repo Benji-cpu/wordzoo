@@ -48,6 +48,10 @@ interface TutorChatProps {
   messages: ChatMessage[];
   isStreaming: boolean;
   error: string | null;
+  /** Text of a send that failed before it was persisted — offered for retry. */
+  failedSend?: string | null;
+  onRetryFailedSend?: () => void;
+  onDismissError?: () => void;
   onSendMessage: (text: string) => void;
   onStartSession: (mode: string, scenario?: string) => void;
   onEndSession: () => void;
@@ -100,6 +104,9 @@ export function TutorChat({
   messages,
   isStreaming,
   error,
+  failedSend,
+  onRetryFailedSend,
+  onDismissError,
   onSendMessage,
   onStartSession,
   onEndSession,
@@ -424,7 +431,34 @@ export function TutorChat({
               </div>
             ))}
             {error && (
-              <div className="text-center text-sm text-red-400 py-2">{error}</div>
+              // A failed send used to render as a bare red line with no way
+              // forward. Model-capacity failures are transient, so the primary
+              // action is retrying the exact message that didn't get through.
+              <div className="my-2 p-3 rounded-xl bg-red-500/10 border border-red-500/20">
+                <p className="text-sm text-red-400">{error}</p>
+                {failedSend && (
+                  <p className="mt-1 text-xs text-text-secondary truncate">
+                    Not sent: &ldquo;{failedSend}&rdquo;
+                  </p>
+                )}
+                <div className="mt-2 flex items-center gap-2">
+                  {failedSend && (
+                    <button
+                      onClick={onRetryFailedSend}
+                      disabled={isStreaming}
+                      className="px-3 py-1.5 text-sm font-medium rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 disabled:opacity-50 transition-colors"
+                    >
+                      Retry
+                    </button>
+                  )}
+                  <button
+                    onClick={onDismissError}
+                    className="px-3 py-1.5 text-sm text-text-secondary hover:text-foreground transition-colors"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              </div>
             )}
             <div ref={messagesEndRef} />
           </div>

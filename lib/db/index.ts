@@ -39,6 +39,7 @@ export {
   updateTutorSession,
   insertTutorMessage,
   getTutorMessages,
+  countTutorUserMessages,
   getUserKnownWords,
   getUserDueWords,
   getDueWordCount,

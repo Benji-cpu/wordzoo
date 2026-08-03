@@ -301,9 +301,19 @@ export function buildGuidedConversationPrompt(opts: GuidedConversationOptions): 
   // Language policy based on proficiency
   blocks.push(getLanguagePolicy(guidedTier, opts.languageName, opts.languageCode, opts.l1Name ?? 'English'));
 
-  // Student name
+  // Student name.
+  //
+  // The model dialogue below is acted by named characters, and the model was
+  // lifting their lines verbatim into [SUGGEST:] chips — telling a student
+  // called Ben to introduce himself as "Eu sou o Bruno". Suggestions are words
+  // the STUDENT is about to say, so any name in them must be the student's own.
   if (opts.userName) {
-    blocks.push(`The student's name is ${opts.userName}. Use their name occasionally in conversation.`);
+    blocks.push(
+      `The student's name is ${opts.userName}. Use their name occasionally in conversation.\n` +
+      `The model dialogue below features characters with their own names. NEVER put a character's ` +
+      `name where the student's name belongs. When a suggestion has the student introduce or refer ` +
+      `to themselves, it MUST use "${opts.userName}" — never a character name from the dialogue.`
+    );
   }
 
   // Learner profile (adaptive context)
@@ -382,7 +392,12 @@ export function buildGuidedConversationPrompt(opts: GuidedConversationOptions): 
         `- Include [SUGGEST:] chips using phrases the student just learned:\n` +
         `  [SUGGEST: target text :: english meaning | target text :: english meaning | target text :: english meaning]\n` +
         `  Each suggestion has the target-language text, then :: followed by the English meaning.\n` +
-        `  Do NOT use square brackets inside suggestion text (e.g. avoid [your name] — just write the actual text).`
+        `  Suggestions are things the STUDENT will say — write them in the student's voice, and answer\n` +
+        `  the question you just asked. They must be usable verbatim.\n` +
+        `  Do NOT use square brackets inside suggestion text (e.g. avoid [your name] — just write the actual text)` +
+        (opts.userName
+          ? `, and where the student names themselves write "${opts.userName}".`
+          : `.`)
       );
     }
   }

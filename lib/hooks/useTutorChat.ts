@@ -24,6 +24,9 @@ export function useTutorChat(sessionId: string | null, onAutoEnd?: () => void) {
   const [limitReached, setLimitReached] = useState(false);
   // null = unknown/unlimited; number = remaining tutor messages today
   const [messagesRemaining, setMessagesRemaining] = useState<number | null>(null);
+  // Text of a send that failed before anything was persisted, so it can be
+  // re-sent verbatim with one tap. null when there is nothing to retry.
+  const [failedSend, setFailedSend] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const autoEndRef = useRef(false);
 
@@ -46,11 +49,21 @@ export function useTutorChat(sessionId: string | null, onAutoEnd?: () => void) {
       if (!sessionId || isStreaming) return;
 
       setError(null);
+      setFailedSend(null);
       setMessages((prev) => [...prev, { role: 'user', content: text }]);
       setIsStreaming(true);
 
       // Add placeholder for model response
       setMessages((prev) => [...prev, { role: 'model', content: '' }]);
+
+      // Whether any reply bytes arrived. The server persists the learner's turn
+      // only once the model stream is live, so "nothing streamed" means nothing
+      // was saved — and re-sending the exact same text is safe. Once bytes have
+      // arrived the turn IS saved, and re-sending would duplicate it.
+      let streamed = false;
+      // Network/transport failures are worth retrying; the server overrides
+      // this with X-Tutor-Retryable when it knows better.
+      let retryable = true;
 
       try {
         abortRef.current = new AbortController();
@@ -62,6 +75,7 @@ export function useTutorChat(sessionId: string | null, onAutoEnd?: () => void) {
         });
 
         if (!response.ok) {
+          retryable = response.headers.get('X-Tutor-Retryable') !== 'false';
           const errorData = await response.json().catch(() => null);
           if (response.status === 403) {
             // Limit reached — remove the optimistic user message + empty model placeholder
@@ -99,6 +113,7 @@ export function useTutorChat(sessionId: string | null, onAutoEnd?: () => void) {
           if (done) break;
 
           accumulated += decoder.decode(value, { stream: true });
+          if (accumulated.length > 0) streamed = true;
           const current = accumulated;
           setMessages((prev) => {
             const updated = [...prev];
@@ -110,13 +125,21 @@ export function useTutorChat(sessionId: string | null, onAutoEnd?: () => void) {
         if (err instanceof Error && err.name === 'AbortError') return;
         const message = err instanceof Error ? err.message : 'Failed to send message';
         setError(message);
-        // Remove the empty model message on error
+
         setMessages((prev) => {
-          if (prev[prev.length - 1]?.content === '') {
-            return prev.slice(0, -1);
-          }
-          return prev;
+          const next = [...prev];
+          // The model reply is only persisted once it completes, so whatever is
+          // in the trailing bubble (empty placeholder or half a sentence) does
+          // not exist server-side — drop it rather than leave a bubble that
+          // vanishes on refresh.
+          if (next[next.length - 1]?.role === 'model') next.pop();
+          // Nothing streamed → the learner's turn was never saved either, so
+          // take it back out and offer it for retry instead of stranding it.
+          if (!streamed && next[next.length - 1]?.role === 'user') next.pop();
+          return next;
         });
+
+        if (!streamed && retryable) setFailedSend(text);
       } finally {
         setIsStreaming(false);
         abortRef.current = null;
@@ -129,5 +152,27 @@ export function useTutorChat(sessionId: string | null, onAutoEnd?: () => void) {
     [sessionId, isStreaming, onAutoEnd]
   );
 
-  return { messages, isStreaming, error, limitReached, messagesRemaining, sendMessage, addGreeting, loadMessages, setRemaining };
+  const retryFailedSend = useCallback(() => {
+    if (failedSend) sendMessage(failedSend);
+  }, [failedSend, sendMessage]);
+
+  const dismissError = useCallback(() => {
+    setError(null);
+    setFailedSend(null);
+  }, []);
+
+  return {
+    messages,
+    isStreaming,
+    error,
+    limitReached,
+    messagesRemaining,
+    failedSend,
+    sendMessage,
+    retryFailedSend,
+    dismissError,
+    addGreeting,
+    loadMessages,
+    setRemaining,
+  };
 }

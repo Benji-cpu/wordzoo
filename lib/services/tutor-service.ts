@@ -4,6 +4,7 @@ import {
   updateTutorSession,
   insertTutorMessage,
   getTutorMessages,
+  countTutorUserMessages,
   getUserKnownWords,
   getUserDueWords,
   getWordsByIds,
@@ -196,13 +197,23 @@ export async function sendMessage(
   if (session.user_id !== userId) throw new Error('Unauthorized');
   if (session.ended_at) throw new Error('Session has ended');
 
-  await insertTutorMessage(sessionId, 'user', userMessage);
-
-  const dbMessages = await getTutorMessages(sessionId);
-  const chatMessages: GeminiChatMessage[] = dbMessages.map((m) => ({
-    role: m.role,
-    content: m.content,
-  }));
+  // The learner's message is deliberately NOT persisted yet. It used to be
+  // written here, before the model call — so when Gemini failed (e.g. the
+  // quota 429 that produced "Failed to send message"), the turn was already in
+  // the database with no reply. Retrying appended a duplicate, which inflated
+  // the turn count, corrupted the alternation the model sees, and eventually
+  // auto-ended the session early. It is written below, once the stream is
+  // live, so a failed send leaves no trace and is safe to retry.
+  const [dbMessages, priorUserTurns] = await Promise.all([
+    getTutorMessages(sessionId),
+    countTutorUserMessages(sessionId),
+  ]);
+  const chatMessages: GeminiChatMessage[] = [
+    ...dbMessages.map((m) => ({ role: m.role, content: m.content })),
+    { role: 'user' as const, content: userMessage },
+  ];
+  // Turn numbering counts the message being sent right now.
+  const userTurnCount = priorUserTurns + 1;
 
   const language = await getLanguageById(session.language_id);
   if (!language) throw new Error('Language not found');
@@ -219,7 +230,6 @@ export async function sendMessage(
 
   let isLastTurn = false;
   if (session.mode === 'guided_conversation' && session.scene_id) {
-    const userTurnCount = dbMessages.filter(m => m.role === 'user').length;
     isLastTurn = userTurnCount >= MAX_GUIDED_TURNS;
     const [dialogues, phrases] = await Promise.all([
       getSceneDialogues(session.scene_id),
@@ -298,7 +308,6 @@ export async function sendMessage(
     const maxNewWords = 3;
 
     // Free chat phase + auto-end
-    const userTurnCount = dbMessages.filter(m => m.role === 'user').length;
     const budgetRemaining = Math.max(0, maxNewWords - newWordsUsed);
     const phase = getFreeChatPhase(userTurnCount, MAX_FREE_TURNS, budgetRemaining);
     if (userTurnCount >= MAX_FREE_TURNS) {
@@ -328,6 +337,11 @@ export async function sendMessage(
   // [EN: ...] translation line, and a [SUGGEST: ...] line, which adds up.
   const { stream, tokensPromise } = await generateChatStream(chatMessages, systemPrompt, { maxOutputTokens: 4096 });
 
+  // The model call succeeded and bytes are about to flow, so the learner's
+  // turn is now real. Awaited (not fire-and-forget) so it is ordered strictly
+  // before the model reply that follows it.
+  await insertTutorMessage(sessionId, 'user', userMessage);
+
   let fullResponse = '';
   const [clientStream, saveStream] = stream.tee();
 
@@ -339,6 +353,15 @@ export async function sendMessage(
       fullResponse += value;
     }
     const tokens = await tokensPromise;
+    // A stream that yields nothing (aborted mid-flight, or a thinking model
+    // that spent its whole budget reasoning) must not be saved: an empty row
+    // renders as a blank bubble and permanently poisons the history the model
+    // is replayed. Leaving it out lets the learner simply send again.
+    if (fullResponse.trim() === '') {
+      console.error(`[tutor-service] Empty model reply for session ${sessionId} — not saved`);
+      await updateTutorSession(sessionId, { tokensUsed: tokens });
+      return;
+    }
     await insertTutorMessage(sessionId, 'model', fullResponse);
     await updateTutorSession(sessionId, { tokensUsed: tokens });
     if (isLastTurn) {

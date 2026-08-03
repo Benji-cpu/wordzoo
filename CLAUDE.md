@@ -8,7 +8,7 @@ Language learning SaaS with AI-generated keyword mnemonics, spaced repetition, a
 - **Database**: Neon Postgres (serverless) via raw SQL (`@neondatabase/serverless`)
 - **Styling**: Tailwind CSS v4 + shadcn/ui
 - **Auth**: NextAuth v5 beta (Google OAuth, database sessions, `@auth/neon-adapter`)
-- **AI**: Google Gemini 2.0 Flash (`@google/genai`)
+- **AI**: Google Gemini 2.5 Flash, falling back to 2.5 Flash-Lite (`@google/genai`)
 - **Images**: Stability AI
 - **Payments**: Stripe (subscriptions + one-time purchases)
 - **Offline**: IndexedDB with sync queue
@@ -123,7 +123,15 @@ All projects require `/api/auth/test-login` for Playwright testing:
 
 ## AI Integration
 
-Gemini 2.0 Flash via `@google/genai` SDK (NOT `@google-ai/generativelanguage`). Client in `lib/ai/gemini.ts`. Prompt templates in `lib/ai/prompts.ts`, `tutor-prompts.ts`, `path-prompts.ts`.
+Gemini 2.5 Flash via `@google/genai` SDK (NOT `@google-ai/generativelanguage`). Client in `lib/ai/gemini.ts`. Prompt templates in `lib/ai/prompts.ts`, `tutor-prompts.ts`, `path-prompts.ts`.
+
+**Every Gemini call goes through `lib/ai/gemini.ts`** — never construct a `GoogleGenAI` client elsewhere. That module owns the model chain and the failure contract:
+
+- **Model chain**: `gemini-2.5-flash` → `gemini-2.5-flash-lite` on failure. They draw on separate quota pools, so the fallback survives primary exhaustion. Do not hardcode a model at a call site.
+- **Retry**: transient failures (429/5xx/timeout) retry once on the same model, honouring Gemini's own `retryDelay`. A backoff longer than 2s fails over to the next model instead of stalling the request — a user-facing call must never wait out a 40s quota window.
+- **Failures throw `AiUnavailableError`** with a client-safe `.message`, an HTTP `.status`, and `.retryable`. Routes should `if (isAiUnavailable(error))` and return those directly rather than collapsing everything into a generic 500. Raw upstream errors leak quota/project details — never echo them.
+- **Empty completions are treated as failures**, not valid answers. 2.5-flash is a thinking model and can spend its whole `maxOutputTokens` reasoning; conversational calls (`generateChat`, `generateChatStream`) therefore run with `thinkingBudget: 0`.
+- **Never persist user input before the model call succeeds.** See `sendMessage` in `lib/services/tutor-service.ts`: the learner's turn is written only once the stream is live, so a failed send leaves no orphan row and is safe to retry verbatim.
 
 ## Billing
 

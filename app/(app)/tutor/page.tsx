@@ -60,7 +60,10 @@ export default function TutorPage() {
     }
   }, [sessionId]);
 
-  const { messages, isStreaming, error, limitReached, messagesRemaining, sendMessage, addGreeting, loadMessages, setRemaining } = useTutorChat(sessionId, handleEndSession);
+  const {
+    messages, isStreaming, error, limitReached, messagesRemaining, failedSend,
+    sendMessage, retryFailedSend, dismissError, addGreeting, loadMessages, setRemaining,
+  } = useTutorChat(sessionId, handleEndSession);
 
   // Pre-fetch tutor message usage so the input can be gated BEFORE the user
   // composes the next message — fixes "blocker fires after send" feedback.
@@ -384,6 +387,9 @@ export default function TutorPage() {
         messages={messages}
         isStreaming={isStreaming}
         error={error}
+        failedSend={failedSend}
+        onRetryFailedSend={retryFailedSend}
+        onDismissError={dismissError}
         onSendMessage={sendMessage}
         onStartSession={handleStartSession}
         onEndSession={handleEndSession}

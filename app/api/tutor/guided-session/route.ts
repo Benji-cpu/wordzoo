@@ -4,6 +4,7 @@ import type { ApiResponse } from '@/types/api';
 import { auth } from '@/lib/auth';
 import { guardSpend } from '@/lib/spend-guard';
 import { startGuidedSession } from '@/lib/services/tutor-service';
+import { isAiUnavailable } from '@/lib/ai/gemini';
 import { getSceneWithLanguage, verifySceneAccess } from '@/lib/db/queries';
 import { readJson } from '@/lib/api/request';
 
@@ -48,6 +49,14 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     console.error('Guided session error:', error instanceof Error ? error.stack : error);
+    // Surface model capacity problems as their own status + message so the
+    // learner knows to wait a moment rather than assuming the scene is broken.
+    if (isAiUnavailable(error)) {
+      return NextResponse.json<ApiResponse<null>>(
+        { data: null, error: error.message },
+        { status: error.status }
+      );
+    }
     return NextResponse.json<ApiResponse<null>>(
       { data: null, error: 'Could not start conversation. Please try again.' },
       { status: 500 }
