@@ -6,6 +6,8 @@ import { sql } from '@/lib/db/client';
 interface OnboardingImportData {
   languageCode: string;
   userName?: string | null;
+  /** Why they're learning — see LearningGoal. Stored on users.preferences. */
+  goal?: string | null;
   words: Array<{
     text: string;
     romanization?: string;
@@ -29,6 +31,18 @@ export async function importOnboardingProgress(data: OnboardingImportData) {
   if (data.userName) {
     await sql`
       UPDATE users SET name = ${data.userName} WHERE id = ${userId} AND name IS NULL
+    `;
+  }
+
+  // Preferences is already a JSONB bag (learner_name, learner_gender), so the
+  // goal needs no schema change. Merged rather than replaced so a concurrent
+  // write can't drop the other keys.
+  if (data.goal) {
+    await sql`
+      UPDATE users
+      SET preferences = COALESCE(preferences, '{}'::jsonb)
+                        || jsonb_build_object('learning_goal', ${data.goal}::text)
+      WHERE id = ${userId}
     `;
   }
 

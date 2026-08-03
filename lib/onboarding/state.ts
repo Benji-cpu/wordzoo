@@ -2,9 +2,17 @@ import type { OnboardingLanguage, OnboardingWord } from './data';
 
 // --- Screen types (discriminated union) ---
 
+/**
+ * Why the learner is here. Onboarding never asked, and the only goal primitive
+ * in the app was a *trip* buried in settings — which silently excludes a
+ * partner, heritage, work, moving abroad, or an exam.
+ */
+export type LearningGoal = 'trip' | 'living' | 'family' | 'work' | 'curiosity';
+
 export type OnboardingScreen =
   | { type: 'name_input' }
   | { type: 'language_pick' }
+  | { type: 'goal_pick' }
   | { type: 'word_reveal'; wordIndex: number }
   | { type: 'quiz'; wordIndex: number }
   | { type: 'double_quiz'; phase: 'current' | 'surprise' }
@@ -22,6 +30,8 @@ export interface OnboardingState {
   screen: OnboardingScreen;
   userName: string | null;
   selectedLanguage: OnboardingLanguage | null;
+  /** Null on payloads saved before this screen existed — always read as `?? null`. */
+  goal: LearningGoal | null;
   words: OnboardingWord[];
   quizAnswers: QuizAnswer[];
   startedAt: number | null;
@@ -32,6 +42,7 @@ export const INITIAL_STATE: OnboardingState = {
   screen: { type: 'name_input' },
   userName: null,
   selectedLanguage: null,
+  goal: null,
   words: [],
   quizAnswers: [],
   startedAt: null,
@@ -43,6 +54,7 @@ export const INITIAL_STATE: OnboardingState = {
 export type OnboardingAction =
   | { type: 'SET_NAME'; name: string }
   | { type: 'SELECT_LANGUAGE'; language: OnboardingLanguage }
+  | { type: 'SET_GOAL'; goal: LearningGoal }
   | { type: 'ADVANCE_FROM_WORD'; wordIndex: number }
   | { type: 'ANSWER_QUIZ'; wordIndex: number; attempts: number }
   | { type: 'ADVANCE_FROM_QUIZ'; wordIndex: number }
@@ -52,7 +64,7 @@ export type OnboardingAction =
   | { type: 'RESET' };
 
 // --- Flow ---
-// name_input → language_pick → word_reveal(0) → quiz(0) → word_reveal(1) → double_quiz(current=word2) → double_quiz(surprise=word1) → word_reveal(2) → complete
+// name_input → language_pick → goal_pick → word_reveal(0) → quiz(0) → word_reveal(1) → double_quiz(current=word2) → double_quiz(surprise=word1) → word_reveal(2) → complete
 
 export function onboardingReducer(state: OnboardingState, action: OnboardingAction): OnboardingState {
   switch (action.type) {
@@ -69,6 +81,13 @@ export function onboardingReducer(state: OnboardingState, action: OnboardingActi
         selectedLanguage: action.language,
         words: [...action.language.words],
         startedAt: Date.now(),
+        screen: { type: 'goal_pick' },
+      };
+
+    case 'SET_GOAL':
+      return {
+        ...state,
+        goal: action.goal,
         screen: { type: 'word_reveal', wordIndex: 0 },
       };
 
@@ -144,6 +163,9 @@ export function getProgressStep(screen: OnboardingScreen): number {
   switch (screen.type) {
     case 'name_input': return 0;
     case 'language_pick': return 0;
+    // Shares a step with language_pick rather than adding a seventh dot — one
+    // extra question doesn't warrant restyling the whole progress indicator.
+    case 'goal_pick': return 0;
     case 'word_reveal':
       if (screen.wordIndex === 0) return 1;
       if (screen.wordIndex === 1) return 3;
@@ -170,7 +192,11 @@ export function loadOnboardingProgress(): OnboardingState | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
-    return JSON.parse(raw) as OnboardingState;
+    const parsed = JSON.parse(raw) as Partial<OnboardingState>;
+    // Payloads written before goal_pick existed have no `goal` key, and anyone
+    // mid-onboarding when this shipped is resuming from one. Normalising here
+    // means nothing downstream has to care.
+    return { ...INITIAL_STATE, ...parsed, goal: parsed.goal ?? null };
   } catch {
     return null;
   }

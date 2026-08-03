@@ -41,6 +41,7 @@ export function ImportOnboardingAfterAuth() {
           await importOnboardingProgress({
             languageCode: saved.selectedLanguage.code,
             userName: saved.userName,
+            goal: saved.goal ?? null,
             words: saved.words.map((w) => ({
               text: w.text,
               romanization: w.romanization,
@@ -56,8 +57,11 @@ export function ImportOnboardingAfterAuth() {
         }
       }
 
-      // 3. Always redirect
-      router.push('/dashboard');
+      // 3. Always redirect. A stated trip goal goes straight to the trip
+      //    planner rather than the dashboard — asking "why are you learning?"
+      //    and then ignoring the answer is worse than not asking, and the trip
+      //    goal is the one the app can act on immediately.
+      router.push(saved?.goal === 'trip' ? '/settings#trip' : '/dashboard');
     };
 
     run();

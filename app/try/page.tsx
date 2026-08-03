@@ -13,6 +13,7 @@ import {
 import ProgressDots from '@/components/onboarding/ProgressDots';
 import NameInput from '@/components/onboarding/NameInput';
 import LanguagePicker from '@/components/onboarding/LanguagePicker';
+import GoalPick from '@/components/onboarding/GoalPick';
 import WordReveal from '@/components/onboarding/WordReveal';
 import QuizCard from '@/components/onboarding/QuizCard';
 import OnboardingComplete from '@/components/onboarding/OnboardingComplete';
@@ -72,6 +73,15 @@ export default function OnboardingPage() {
           <LanguagePicker
             userName={state.userName}
             onSelect={(lang) => dispatch({ type: 'SELECT_LANGUAGE', language: lang })}
+          />
+        );
+
+      case 'goal_pick':
+        if (!state.selectedLanguage) return null;
+        return (
+          <GoalPick
+            languageName={state.selectedLanguage.name}
+            onSelect={(goal) => dispatch({ type: 'SET_GOAL', goal })}
           />
         );
 
@@ -145,7 +155,7 @@ export default function OnboardingPage() {
 
   return (
     <div className="flex flex-col min-h-screen max-w-lg mx-auto">
-      {screen.type !== 'name_input' && screen.type !== 'language_pick' && (
+      {screen.type !== 'name_input' && screen.type !== 'language_pick' && screen.type !== 'goal_pick' && (
         <ProgressDots totalSteps={7} currentStep={currentStep} />
       )}
 
