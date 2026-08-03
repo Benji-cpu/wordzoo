@@ -11,6 +11,8 @@ import {
   getEventVolume,
   getLearnerTotals,
   getLeechWords,
+  getConsolidationFunnel,
+  getScheduleHealth,
 } from '@/lib/db/pedagogy-queries';
 
 export const dynamic = 'force-dynamic';
@@ -41,6 +43,8 @@ export default async function AdminPedagogyPage() {
     overdue,
     eventVolume,
     leeches,
+    consolidation,
+    scheduleHealth,
   ] = await Promise.all([
     getLearnerTotals(),
     getCueAccuracy(365),
@@ -51,6 +55,8 @@ export default async function AdminPedagogyPage() {
     getOverdueQueue(),
     getEventVolume(365),
     getLeechWords(20),
+    getConsolidationFunnel(),
+    getScheduleHealth(),
   ]);
 
   const eventTotal = eventVolume.reduce((s, e) => s + e.n, 0);
@@ -148,6 +154,70 @@ export default async function AdminPedagogyPage() {
             }))}
           />
         )}
+      </section>
+
+      {/* ---- Consolidation funnel ---- */}
+      <section>
+        <SectionHeading>Consolidation funnel</SectionHeading>
+        <p className="text-xs text-text-secondary mb-2">
+          How many items reach N exposures. Cumulative, so each row is
+          &ldquo;reached at least this many&rdquo; — the exactly-N histogram reads
+          oddly, because an item sitting at five reviews is missing from the
+          &ldquo;3&rdquo; column. The drop between rows 1 and 4 is the number
+          that matters: an item that never gets a fourth spaced retrieval was
+          not learned. Much of the early drop was the scheduler parking items
+          past the horizon rather than learners quitting, so this should improve
+          now that in-scene taps no longer advance the interval.
+        </p>
+        {consolidation.length === 0 ? (
+          <EmptyNote>Nothing tracked yet.</EmptyNote>
+        ) : (
+          <BarList
+            rows={consolidation.map((c) => ({
+              label: `${c.exposure}+ exposures`,
+              pct: c.reached_pct,
+              detail: `${c.words} words · ${c.phrases} phrases`,
+              tone: 'good' as const,
+            }))}
+          />
+        )}
+      </section>
+
+      {/* ---- Schedule health ---- */}
+      <section>
+        <SectionHeading>Schedule health</SectionHeading>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <StatCard
+            label="Max interval"
+            value={`${scheduleHealth.max_interval_days}d`}
+            tone={scheduleHealth.max_interval_days > 365 ? 'warn' : 'default'}
+          />
+          <StatCard label="p95 interval" value={`${scheduleHealth.p95_interval_days}d`} />
+          <StatCard
+            label="Beyond 4× age"
+            value={scheduleHealth.items_over_4x_age}
+            tone={scheduleHealth.items_over_4x_age > 0 ? 'warn' : 'default'}
+          />
+          <StatCard
+            label="Leeches"
+            value={scheduleHealth.leeches}
+            tone={scheduleHealth.leeches > 0 ? 'warn' : 'default'}
+          />
+          <StatCard label="Mean ease" value={scheduleHealth.mean_ease} />
+          <StatCard label="At min ease" value={scheduleHealth.items_at_min_ease} />
+          <StatCard
+            label="Over 365d"
+            value={scheduleHealth.items_over_365d}
+            tone={scheduleHealth.items_over_365d > 0 ? 'warn' : 'default'}
+          />
+        </div>
+        <p className="text-xs text-text-secondary mt-2">
+          Nothing watched these until a word was scheduled 9,300 days out and a
+          phrase 145,313 days (398 years), because every in-scene drill tap was
+          multiplying the interval. <strong>Beyond 4× age</strong> is the honesty
+          check — an item predicted far past the time the learner has even owned
+          it cannot have earned that from its history. It should stay at 0.
+        </p>
       </section>
 
       {/* ---- Accuracy by cue ---- */}

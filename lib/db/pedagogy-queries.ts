@@ -227,7 +227,11 @@ export async function getRetentionCurve(days = 90): Promise<RetentionBucketRow[]
     )
     SELECT
       CASE
-        WHEN prior_interval <= 1  THEN '1d'
+        -- Learning-step answers arrive with priorIntervalDays = 0 and are
+        -- minutes apart, not days. Bucketing them as '1d' would dilute the
+        -- first real retention number with working-memory hits.
+        WHEN prior_interval = 0   THEN '<1d (learning)'
+        WHEN prior_interval = 1   THEN '1d'
         WHEN prior_interval <= 3  THEN '2-3d'
         WHEN prior_interval <= 7  THEN '4-7d'
         WHEN prior_interval <= 14 THEN '8-14d'
@@ -243,6 +247,90 @@ export async function getRetentionCurve(days = 90): Promise<RetentionBucketRow[]
     ORDER BY MIN(prior_interval)
   `;
   return rows as RetentionBucketRow[];
+}
+
+export interface ConsolidationRow {
+  exposure: number;
+  words: number;
+  phrases: number;
+  reached_pct: number;
+}
+
+/**
+ * How far items actually get. Cumulative "reached at least N exposures", which
+ * is the shape that shows the drop-off; the exactly-N histogram reads oddly
+ * because a word sitting at 5 reviews is absent from the "3" column.
+ *
+ * The first measurement of this was stark: 59 -> 38 -> 18 -> 9 words reaching
+ * exposures 1-4, i.e. ~85% never reached a fourth. Most of that turned out to
+ * be the in-scene inflation bug scheduling items past the horizon rather than
+ * learners quitting, so this is the number that should visibly improve now.
+ */
+export async function getConsolidationFunnel(): Promise<ConsolidationRow[]> {
+  const rows = await sql`
+    WITH items AS (
+      SELECT times_reviewed AS n, 'word' AS kind FROM user_words
+      UNION ALL
+      SELECT times_reviewed, 'phrase' FROM user_phrases
+    ),
+    steps AS (SELECT generate_series(1, 6) AS exposure)
+    SELECT
+      s.exposure::int AS exposure,
+      COUNT(*) FILTER (WHERE i.kind = 'word'   AND i.n >= s.exposure)::int AS words,
+      COUNT(*) FILTER (WHERE i.kind = 'phrase' AND i.n >= s.exposure)::int AS phrases,
+      ROUND(100.0 * COUNT(*) FILTER (WHERE i.n >= s.exposure)
+            / NULLIF(COUNT(*), 0), 1)::float AS reached_pct
+    FROM steps s CROSS JOIN items i
+    GROUP BY s.exposure
+    ORDER BY s.exposure
+  `;
+  return rows as ConsolidationRow[];
+}
+
+export interface ScheduleHealth {
+  max_interval_days: number;
+  p95_interval_days: number;
+  items_over_365d: number;
+  items_over_4x_age: number;
+  mean_ease: number;
+  items_at_min_ease: number;
+  leeches: number;
+}
+
+/**
+ * Whether the scheduler is producing sane numbers at all.
+ *
+ * This exists because nothing was watching. Every in-scene drill tap used to
+ * multiply interval_days, and it ran unnoticed until a word was scheduled
+ * 9,300 days out and a phrase 145,313 days out (398 years).
+ *
+ * `items_over_4x_age` is the honesty check: an item predicted far beyond the
+ * time the learner has even owned it cannot have earned that from its review
+ * history. It should sit at 0. If it starts climbing, something is compounding
+ * again.
+ */
+export async function getScheduleHealth(): Promise<ScheduleHealth> {
+  const rows = await sql`
+    WITH i AS (
+      SELECT interval_days, ease_factor, lapses,
+             GREATEST(1, (NOW()::date - created_at::date)) AS age_days
+      FROM user_words
+      UNION ALL
+      SELECT interval_days, ease_factor, lapses,
+             GREATEST(1, (NOW()::date - created_at::date))
+      FROM user_phrases
+    )
+    SELECT
+      COALESCE(MAX(interval_days), 0)::int AS max_interval_days,
+      COALESCE(percentile_cont(0.95) WITHIN GROUP (ORDER BY interval_days), 0)::int AS p95_interval_days,
+      COUNT(*) FILTER (WHERE interval_days > 365)::int          AS items_over_365d,
+      COUNT(*) FILTER (WHERE interval_days > 4 * age_days)::int AS items_over_4x_age,
+      COALESCE(ROUND(AVG(ease_factor)::numeric, 3), 0)::float   AS mean_ease,
+      COUNT(*) FILTER (WHERE ease_factor <= 1.31)::int          AS items_at_min_ease,
+      COUNT(*) FILTER (WHERE lapses >= 6)::int                  AS leeches
+    FROM i
+  `;
+  return rows[0] as ScheduleHealth;
 }
 
 export interface OverdueBucketRow {

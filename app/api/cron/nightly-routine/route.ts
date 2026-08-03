@@ -184,15 +184,42 @@ export async function GET(request: NextRequest) {
     // digests/*.json is what gives us a permanent, diffable retention history
     // in git without standing up a warehouse.
     safe('pedagogy', async () => {
-      const { getCueAccuracy, getCheckpointStats, getRetentionCurve, getOverdueQueue } =
-        await import('@/lib/db/pedagogy-queries');
-      const [cueAccuracy, checkpoints, retention, overdue] = await Promise.all([
+      const {
+        getCueAccuracy,
+        getCheckpointStats,
+        getRetentionCurve,
+        getOverdueQueue,
+        getConsolidationFunnel,
+        getScheduleHealth,
+      } = await import('@/lib/db/pedagogy-queries');
+      const [
+        cueAccuracy,
+        cueAccuracy30,
+        checkpoints,
+        retention,
+        overdue,
+        consolidation,
+        scheduleHealth,
+      ] = await Promise.all([
         getCueAccuracy(1),
+        // getCueAccuracy(1) is empty on a quiet day, which reads as "no data"
+        // rather than "no activity". The 30-day window is the diffable trend.
+        getCueAccuracy(30),
         getCheckpointStats(1),
         getRetentionCurve(30),
         getOverdueQueue(),
+        getConsolidationFunnel(),
+        getScheduleHealth(),
       ]);
-      return { cueAccuracy, checkpoints, retention, overdue };
+      return {
+        cueAccuracy,
+        cueAccuracy30,
+        checkpoints,
+        retention,
+        overdue,
+        consolidation,
+        scheduleHealth,
+      };
     }),
 
     safe('pendingRows', async () => {
