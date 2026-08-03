@@ -804,17 +804,44 @@ export async function insertTutorMessage(
   return rows[0] as TutorMessage;
 }
 
+/**
+ * Most recent `limit` messages, returned oldest-first.
+ *
+ * This used to be `ORDER BY created_at ASC LIMIT 20`, which returns the
+ * OLDEST 20 — so once a session passed 20 messages the tutor kept being fed
+ * the opening of the conversation and never saw what the learner had just
+ * said. The window now slides with the conversation.
+ */
 export async function getTutorMessages(
   sessionId: string,
-  limit: number = 20
+  limit: number = 40
 ): Promise<TutorMessage[]> {
   const rows = await sql`
-    SELECT * FROM tutor_messages
-    WHERE session_id = ${sessionId}
+    SELECT * FROM (
+      SELECT * FROM tutor_messages
+      WHERE session_id = ${sessionId}
+      ORDER BY created_at DESC
+      LIMIT ${limit}
+    ) recent
     ORDER BY created_at ASC
-    LIMIT ${limit}
   `;
   return rows as TutorMessage[];
+}
+
+/**
+ * Exact count of learner turns in a session.
+ *
+ * Turn-based logic (phase selection, the guided 6-turn cap, free-chat
+ * auto-end) must not be derived from the truncated context window above —
+ * a windowed count silently stops incrementing and the session never ends.
+ */
+export async function countTutorUserMessages(sessionId: string): Promise<number> {
+  const rows = await sql`
+    SELECT COUNT(*)::int AS count
+    FROM tutor_messages
+    WHERE session_id = ${sessionId} AND role = 'user'
+  `;
+  return (rows[0] as { count: number })?.count ?? 0;
 }
 
 export interface KnownWordRow {
@@ -1608,6 +1635,9 @@ export async function updateWordSRS(
   data: {
     easeFactor: number;
     intervalDays: number;
+    /** 0 = awaiting the 10-min step, 1 = awaiting graduation, 2 = graduated. */
+    learningStep: number;
+    lapses: number;
     nextReviewAt: Date;
     timesReviewed: number;
     timesCorrect: number;
@@ -1620,6 +1650,8 @@ export async function updateWordSRS(
     UPDATE user_words SET
       ease_factor = ${data.easeFactor},
       interval_days = ${data.intervalDays},
+      learning_step = ${data.learningStep},
+      lapses = ${data.lapses},
       next_review_at = ${data.nextReviewAt.toISOString()},
       times_reviewed = ${data.timesReviewed},
       times_correct = ${data.timesCorrect},
@@ -1643,11 +1675,31 @@ export async function getUserWord(
   return (rows[0] as { times_reviewed: number }) ?? null;
 }
 
+/**
+ * The SRS state `recordReview` needs. Named rather than inlined because the
+ * shape used to be written out twice (signature + cast), so adding a column
+ * meant editing it in two places and silently getting `undefined` if you
+ * missed one.
+ */
+export interface UserWordSrsState {
+  id: string;
+  ease_factor: number;
+  interval_days: number;
+  learning_step: number;
+  lapses: number;
+  times_reviewed: number;
+  times_correct: number;
+  status: string;
+  direction: string;
+  last_reviewed_at: Date | null;
+  next_review_at: Date | null;
+}
+
 export async function getOrCreateUserWord(
   userId: string,
   wordId: string,
   mnemonicId: string | null
-): Promise<{ id: string; ease_factor: number; interval_days: number; times_reviewed: number; times_correct: number; status: string; direction: string }> {
+): Promise<UserWordSrsState> {
   const rows = await sql`
     INSERT INTO user_words (user_id, word_id, current_mnemonic_id, status)
     VALUES (
@@ -1657,9 +1709,11 @@ export async function getOrCreateUserWord(
     )
     ON CONFLICT (user_id, word_id)
     DO UPDATE SET current_mnemonic_id = COALESCE(user_words.current_mnemonic_id, EXCLUDED.current_mnemonic_id)
-    RETURNING id, ease_factor, interval_days, times_reviewed, times_correct, status, direction
+    RETURNING id, ease_factor, interval_days, learning_step, lapses,
+              times_reviewed, times_correct, status, direction,
+              last_reviewed_at, next_review_at
   `;
-  return rows[0] as { id: string; ease_factor: number; interval_days: number; times_reviewed: number; times_correct: number; status: string; direction: string };
+  return rows[0] as UserWordSrsState;
 }
 
 export async function setCurrentMnemonic(

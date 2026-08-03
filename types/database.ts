@@ -72,12 +72,19 @@ export interface UserWord {
   status: 'new' | 'learning' | 'reviewing' | 'mastered';
   current_mnemonic_id: string | null;
   ease_factor: number;
+  /** The GRADUATED interval only — the 10-min learning step lives in
+   *  next_review_at, because this column is an INTEGER. */
   interval_days: number;
+  /** 0 = awaiting the 10-min step, 1 = awaiting graduation, 2 = graduated. */
+  learning_step: number;
+  /** Failures of an already-graduated item; drives leech capping. */
+  lapses: number;
   next_review_at: Date;
   times_reviewed: number;
   times_correct: number;
   last_reviewed_at: Date | null;
   direction: 'recognition' | 'production' | 'both';
+  mastery_stage: string | null;
   created_at: Date;
   updated_at: Date;
 }

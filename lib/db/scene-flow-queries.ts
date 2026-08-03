@@ -159,18 +159,34 @@ export async function updateSceneProgress(
 
 // --- User Phrases ---
 
+/** Mirrors UserWordSrsState in queries.ts, minus the mnemonic pointer. */
+export interface UserPhraseSrsState {
+  id: string;
+  ease_factor: number;
+  interval_days: number;
+  learning_step: number;
+  lapses: number;
+  times_reviewed: number;
+  times_correct: number;
+  status: string;
+  last_reviewed_at: Date | null;
+  next_review_at: Date | null;
+}
+
 export async function getOrCreateUserPhrase(
   userId: string,
   phraseId: string
-): Promise<{ id: string; ease_factor: number; interval_days: number; times_reviewed: number; times_correct: number; status: string }> {
+): Promise<UserPhraseSrsState> {
   const rows = await sql`
     INSERT INTO user_phrases (user_id, phrase_id, status)
     VALUES (${userId}, ${phraseId}, 'learning')
     ON CONFLICT (user_id, phrase_id)
     DO UPDATE SET updated_at = NOW()
-    RETURNING id, ease_factor, interval_days, times_reviewed, times_correct, status
+    RETURNING id, ease_factor, interval_days, learning_step, lapses,
+              times_reviewed, times_correct, status,
+              last_reviewed_at, next_review_at
   `;
-  return rows[0] as { id: string; ease_factor: number; interval_days: number; times_reviewed: number; times_correct: number; status: string };
+  return rows[0] as UserPhraseSrsState;
 }
 
 export async function updatePhraseSRS(
@@ -178,6 +194,9 @@ export async function updatePhraseSRS(
   data: {
     easeFactor: number;
     intervalDays: number;
+    /** 0 = awaiting the 10-min step, 1 = awaiting graduation, 2 = graduated. */
+    learningStep: number;
+    lapses: number;
     nextReviewAt: Date;
     timesReviewed: number;
     timesCorrect: number;
@@ -191,6 +210,8 @@ export async function updatePhraseSRS(
     UPDATE user_phrases SET
       ease_factor = ${data.easeFactor},
       interval_days = ${data.intervalDays},
+      learning_step = ${data.learningStep},
+      lapses = ${data.lapses},
       next_review_at = ${data.nextReviewAt.toISOString()},
       times_reviewed = ${data.timesReviewed},
       times_correct = ${data.timesCorrect},

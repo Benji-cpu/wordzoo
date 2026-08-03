@@ -290,6 +290,8 @@ export interface LeechRow {
   language_code: string;
   times_reviewed: number;
   times_correct: number;
+  /** Failures after graduating. The leech criterion — see LEECH_LAPSES. */
+  lapses: number;
   accuracy_pct: number;
   interval_days: number;
   ease_factor: number;
@@ -297,9 +299,13 @@ export interface LeechRow {
 }
 
 /**
- * Items the scheduler is now capping as leeches — many reviews, poor lifetime
- * accuracy. Must stay in sync with LEECH_MIN_REVIEWS / LEECH_ACCURACY in
- * lib/srs/engine.ts.
+ * Items the scheduler is now capping as leeches — items forgotten repeatedly
+ * *after* graduating. Must stay in sync with LEECH_LAPSES in lib/srs/engine.ts.
+ *
+ * This used to key off lifetime accuracy (>=8 reviews at <50%), which in
+ * practice never fired: the highest times_reviewed in the whole database is 10,
+ * on a single word. `lapses` counts the thing that actually matters — failing a
+ * word you had already learned — so the threshold is reachable.
  *
  * Deliberately surfaced rather than suspended. Burying a hard word is how a
  * learner ends up with a queue they can't clear and no idea why; and a leech
@@ -312,6 +318,7 @@ export async function getLeechWords(limit = 20): Promise<LeechRow[]> {
       w.id AS word_id, w.text, w.meaning_en, l.code AS language_code,
       MAX(uw.times_reviewed)::int AS times_reviewed,
       MAX(uw.times_correct)::int AS times_correct,
+      MAX(uw.lapses)::int AS lapses,
       ROUND(100.0 * SUM(uw.times_correct) / NULLIF(SUM(uw.times_reviewed), 0), 1)::float AS accuracy_pct,
       MAX(uw.interval_days)::int AS interval_days,
       ROUND(AVG(uw.ease_factor)::numeric, 2)::float AS ease_factor,
@@ -319,10 +326,9 @@ export async function getLeechWords(limit = 20): Promise<LeechRow[]> {
     FROM user_words uw
     JOIN words w ON w.id = uw.word_id
     JOIN languages l ON l.id = w.language_id
-    WHERE uw.times_reviewed >= 8
-      AND uw.times_correct::numeric / NULLIF(uw.times_reviewed, 0) < 0.5
+    WHERE uw.lapses >= 6
     GROUP BY w.id, w.text, w.meaning_en, l.code
-    ORDER BY accuracy_pct ASC, times_reviewed DESC
+    ORDER BY lapses DESC, accuracy_pct ASC
     LIMIT ${limit}
   `;
   return rows as LeechRow[];

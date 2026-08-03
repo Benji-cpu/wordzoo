@@ -114,12 +114,21 @@ CREATE TABLE IF NOT EXISTS user_words (
   status TEXT NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'learning', 'reviewing', 'mastered')),
   current_mnemonic_id UUID REFERENCES mnemonics(id) ON DELETE SET NULL,
   ease_factor REAL NOT NULL DEFAULT 2.5,
+  -- interval_days is strictly the GRADUATED interval. It is an INTEGER and so
+  -- cannot express the 10-minute learning step; next_review_at does the real
+  -- timing and learning_step carries the pre-graduation state.
   interval_days INTEGER NOT NULL DEFAULT 0,
+  -- 0 = awaiting the 10-min step, 1 = awaiting graduation, 2 = graduated.
+  learning_step SMALLINT NOT NULL DEFAULT 0,
+  -- Failures of an already-graduated item. Drives leech capping. A stumble
+  -- during the learning steps is not a lapse — see lib/srs/engine.ts.
+  lapses INTEGER NOT NULL DEFAULT 0,
   next_review_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   times_reviewed INTEGER NOT NULL DEFAULT 0,
   times_correct INTEGER NOT NULL DEFAULT 0,
   last_reviewed_at TIMESTAMPTZ,
   direction TEXT NOT NULL DEFAULT 'recognition' CHECK (direction IN ('recognition', 'production', 'both')),
+  mastery_stage TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   UNIQUE(user_id, word_id)
@@ -366,10 +375,13 @@ CREATE TABLE IF NOT EXISTS user_phrases (
   status TEXT NOT NULL DEFAULT 'new' CHECK (status IN ('new','learning','reviewing','mastered')),
   ease_factor REAL NOT NULL DEFAULT 2.5,
   interval_days INTEGER NOT NULL DEFAULT 0,
+  learning_step SMALLINT NOT NULL DEFAULT 0,
+  lapses INTEGER NOT NULL DEFAULT 0,
   next_review_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   times_reviewed INTEGER NOT NULL DEFAULT 0,
   times_correct INTEGER NOT NULL DEFAULT 0,
   last_reviewed_at TIMESTAMPTZ,
+  mastery_stage TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   UNIQUE(user_id, phrase_id)
@@ -819,6 +831,22 @@ BEGIN
       CHECK (direction IN ('recognition','production','both'));
   END IF;
 END $$;
+
+-- SRS learning steps + lapse counter. Mirrors lib/db/apply-srs-learning-steps.ts
+-- statement for statement; keeping the two in sync is what stops schema drift
+-- (mastery_stage below is a repair for exactly that — it has existed in
+-- production since apply-pedagogy-v2-tables.ts and was never back-ported).
+ALTER TABLE user_words   ADD COLUMN IF NOT EXISTS learning_step SMALLINT NOT NULL DEFAULT 0;
+ALTER TABLE user_words   ADD COLUMN IF NOT EXISTS lapses INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE user_phrases ADD COLUMN IF NOT EXISTS learning_step SMALLINT NOT NULL DEFAULT 0;
+ALTER TABLE user_phrases ADD COLUMN IF NOT EXISTS lapses INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE user_words   ADD COLUMN IF NOT EXISTS mastery_stage TEXT;
+ALTER TABLE user_phrases ADD COLUMN IF NOT EXISTS mastery_stage TEXT;
+
+-- Leeches are looked up by user; the predicate keeps the index tiny.
+-- Threshold must match LEECH_LAPSES in lib/srs/engine.ts.
+CREATE INDEX IF NOT EXISTS idx_user_words_leech   ON user_words(user_id)   WHERE lapses >= 6;
+CREATE INDEX IF NOT EXISTS idx_user_phrases_leech ON user_phrases(user_id) WHERE lapses >= 6;
 
 -- The capability layer.
 --

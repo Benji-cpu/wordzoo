@@ -239,14 +239,19 @@ export default async function AdminPedagogyPage() {
       <section>
         <SectionHeading>Leeches</SectionHeading>
         <p className="text-xs text-text-secondary mb-2">
-          Items the scheduler is capping at 21 days — 8+ reviews at under 50%
-          lifetime accuracy. They are surfaced rather than suspended on purpose:
+          Items the scheduler is capping at 21 days — forgotten 6+ times{' '}
+          <em>after</em> graduating. Lifetime accuracy used to be the criterion,
+          but it never fired: it needed 8 reviews and almost nothing reaches
+          that. Lapses count the thing that matters — failing a word you had
+          already learned. They are surfaced rather than suspended on purpose:
           burying a hard word is how a learner ends up with a queue they
           can&apos;t clear and no idea why. A leech that recurs across learners
           is a content bug, not a learner problem.
         </p>
         {leeches.length === 0 ? (
-          <EmptyNote>No leeches — nothing is stuck below 50% after 8+ reviews.</EmptyNote>
+          <EmptyNote>
+            No leeches — nothing has been forgotten 6+ times after graduating.
+          </EmptyNote>
         ) : (
           <ul className="divide-y divide-border">
             {leeches.map((w) => (
@@ -257,7 +262,8 @@ export default async function AdminPedagogyPage() {
                   <span className="text-text-secondary text-xs font-mono ml-2">{w.language_code}</span>
                 </span>
                 <span className="text-xs text-amber-600 dark:text-amber-400 shrink-0 tabular-nums">
-                  {w.accuracy_pct}% · {w.times_correct}/{w.times_reviewed} · EF {w.ease_factor}
+                  {w.lapses} lapses · {w.accuracy_pct}% · {w.times_correct}/{w.times_reviewed} · EF{' '}
+                  {w.ease_factor}
                   {w.learners > 1 && ` · ${w.learners} learners`}
                 </span>
               </li>
