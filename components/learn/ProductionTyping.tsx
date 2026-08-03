@@ -69,8 +69,20 @@ export function ProductionTyping({
       play('correct');
       trigger('success');
       void award('production_correct');
+      // A near-miss is scored as its own cue, not as a correct production.
+      // getCueAccuracy keys off the _correct/_wrong suffix, so filtering on
+      // payload.accuracy wouldn't work — an inexact spelling was landing in the
+      // same bucket as a perfect one, which is part of why production read
+      // 29 correct / 0 wrong. 'production_close_correct' still matches
+      // %_correct and CUE_FROM_EVENT strips the suffix, so it renders as its
+      // own row on /admin/pedagogy with no query change.
+      //
+      // The XP and the success sound are unchanged on purpose: this is a
+      // measurement fix, not a grading one. Docking a learner for a one-letter
+      // typo on an eight-letter word would be punitive and would generate
+      // feedback.
       fireTelemetry({
-        event: 'production_correct',
+        event: accuracy === 'close' ? 'production_close_correct' : 'production_correct',
         payload: { wordId, attempts: attempts + 1, accuracy },
       });
       onAnswer?.(true, attempts + 1, accuracy);

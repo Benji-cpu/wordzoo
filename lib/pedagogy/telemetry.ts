@@ -20,6 +20,9 @@ export type PedagogyEvent =
   | 'drill_correct'
   | 'drill_wrong'
   | 'production_correct'
+  /** Accepted within the fuzzy-match tolerance but not spelled exactly. Its own
+   *  event so it doesn't inflate the production accuracy it isn't evidence of. */
+  | 'production_close_correct'
   | 'production_wrong'
   | 'cloze_correct'
   | 'cloze_wrong'
