@@ -10,6 +10,7 @@ import {
   getOverdueQueue,
   getEventVolume,
   getLearnerTotals,
+  getLeechWords,
 } from '@/lib/db/pedagogy-queries';
 
 export const dynamic = 'force-dynamic';
@@ -39,6 +40,7 @@ export default async function AdminPedagogyPage() {
     retention,
     overdue,
     eventVolume,
+    leeches,
   ] = await Promise.all([
     getLearnerTotals(),
     getCueAccuracy(365),
@@ -48,6 +50,7 @@ export default async function AdminPedagogyPage() {
     getRetentionCurve(365),
     getOverdueQueue(),
     getEventVolume(365),
+    getLeechWords(20),
   ]);
 
   const eventTotal = eventVolume.reduce((s, e) => s + e.n, 0);
@@ -229,6 +232,37 @@ export default async function AdminPedagogyPage() {
               }));
             })()}
           />
+        )}
+      </section>
+
+      {/* ---- Leeches ---- */}
+      <section>
+        <SectionHeading>Leeches</SectionHeading>
+        <p className="text-xs text-text-secondary mb-2">
+          Items the scheduler is capping at 21 days — 8+ reviews at under 50%
+          lifetime accuracy. They are surfaced rather than suspended on purpose:
+          burying a hard word is how a learner ends up with a queue they
+          can&apos;t clear and no idea why. A leech that recurs across learners
+          is a content bug, not a learner problem.
+        </p>
+        {leeches.length === 0 ? (
+          <EmptyNote>No leeches — nothing is stuck below 50% after 8+ reviews.</EmptyNote>
+        ) : (
+          <ul className="divide-y divide-border">
+            {leeches.map((w) => (
+              <li key={w.word_id} className="py-2 flex items-baseline justify-between gap-3">
+                <span className="text-sm">
+                  <span className="font-medium">{w.text}</span>
+                  <span className="text-text-secondary"> — {w.meaning_en}</span>
+                  <span className="text-text-secondary text-xs font-mono ml-2">{w.language_code}</span>
+                </span>
+                <span className="text-xs text-amber-600 dark:text-amber-400 shrink-0 tabular-nums">
+                  {w.accuracy_pct}% · {w.times_correct}/{w.times_reviewed} · EF {w.ease_factor}
+                  {w.learners > 1 && ` · ${w.learners} learners`}
+                </span>
+              </li>
+            ))}
+          </ul>
         )}
       </section>
 

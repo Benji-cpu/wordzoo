@@ -283,6 +283,51 @@ export async function getOverdueQueue(): Promise<OverdueBucketRow[]> {
   return rows as OverdueBucketRow[];
 }
 
+export interface LeechRow {
+  word_id: string;
+  text: string;
+  meaning_en: string;
+  language_code: string;
+  times_reviewed: number;
+  times_correct: number;
+  accuracy_pct: number;
+  interval_days: number;
+  ease_factor: number;
+  learners: number;
+}
+
+/**
+ * Items the scheduler is now capping as leeches — many reviews, poor lifetime
+ * accuracy. Must stay in sync with LEECH_MIN_REVIEWS / LEECH_ACCURACY in
+ * lib/srs/engine.ts.
+ *
+ * Deliberately surfaced rather than suspended. Burying a hard word is how a
+ * learner ends up with a queue they can't clear and no idea why; and a leech
+ * that recurs across learners is a content bug — a bad mnemonic or a
+ * misleading gloss — which is the actionable version.
+ */
+export async function getLeechWords(limit = 20): Promise<LeechRow[]> {
+  const rows = await sql`
+    SELECT
+      w.id AS word_id, w.text, w.meaning_en, l.code AS language_code,
+      MAX(uw.times_reviewed)::int AS times_reviewed,
+      MAX(uw.times_correct)::int AS times_correct,
+      ROUND(100.0 * SUM(uw.times_correct) / NULLIF(SUM(uw.times_reviewed), 0), 1)::float AS accuracy_pct,
+      MAX(uw.interval_days)::int AS interval_days,
+      ROUND(AVG(uw.ease_factor)::numeric, 2)::float AS ease_factor,
+      COUNT(DISTINCT uw.user_id)::int AS learners
+    FROM user_words uw
+    JOIN words w ON w.id = uw.word_id
+    JOIN languages l ON l.id = w.language_id
+    WHERE uw.times_reviewed >= 8
+      AND uw.times_correct::numeric / NULLIF(uw.times_reviewed, 0) < 0.5
+    GROUP BY w.id, w.text, w.meaning_en, l.code
+    ORDER BY accuracy_pct ASC, times_reviewed DESC
+    LIMIT ${limit}
+  `;
+  return rows as LeechRow[];
+}
+
 export interface EventVolumeRow {
   event: string;
   n: number;
