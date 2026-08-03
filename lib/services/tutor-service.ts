@@ -5,6 +5,7 @@ import {
   insertTutorMessage,
   getTutorMessages,
   countTutorUserMessages,
+  claimTutorSessionEnd,
   getUserKnownWords,
   getUserDueWords,
   getWordsByIds,
@@ -17,8 +18,8 @@ import {
 import { getUserProfile } from '@/lib/db/queries';
 import { l1NameFromCode } from '@/lib/ai/tutor-prompts';
 
-const MAX_GUIDED_TURNS = 6;
-const MAX_FREE_TURNS = 10;
+// Single source of truth, shared with the client's turn indicator.
+import { MAX_GUIDED_TURNS, MAX_FREE_TURNS } from '@/lib/tutor/modes';
 import { generateChat, generateChatStream } from '@/lib/ai/gemini';
 import { buildTutorSystemPrompt, buildGuidedConversationPrompt, getGuidedPhase, getFreeChatPhase } from '@/lib/ai/tutor-prompts';
 import { buildAdaptiveContext } from '@/lib/services/learner-profile-service';
@@ -159,6 +160,7 @@ export async function startGuidedSession(
     userName,
     currentUserTurn: 0,
     isLastTurn: false,
+    maxTurns: MAX_GUIDED_TURNS,
     proficiencyTier,
   });
 
@@ -256,6 +258,7 @@ export async function sendMessage(
       isLastTurn,
       proficiencyTier: effectiveTier,
       phase,
+      maxTurns: MAX_GUIDED_TURNS,
     });
   } else if (session.mode === 'path_builder') {
     const draft = await getDraftBySessionId(sessionId);
@@ -398,6 +401,40 @@ export async function endSession(
   const startedAt = new Date(session.started_at);
   const durationMinutes = Math.round((Date.now() - startedAt.getTime()) / 60000);
 
+  // Everything here is derived from rows we already hold — no model call — so
+  // it is safe to build before knowing whether we won the claim below.
+  const baseSummary: Record<string, unknown> = {
+    messageCount: messages.length,
+    userMessageCount: userMessages.length,
+    modelMessageCount: modelMessages.length,
+    wordsUsed: Array.from(mentionedWords),
+    wordCount: mentionedWords.size,
+    durationMinutes,
+    mode: session.mode,
+  };
+
+  // Hitting the turn cap ends a session twice — once fire-and-forget from the
+  // stream, once from the client's POST. Claim first so only one caller pays
+  // for the evaluation; the loser returns what the winner wrote (or, if that
+  // hasn't landed yet, the deterministic summary above).
+  const claimed = await claimTutorSessionEnd(sessionId);
+  if (!claimed) {
+    // The winner is probably still waiting on the model. Give it a moment
+    // rather than returning immediately — whichever caller the learner is
+    // actually watching must still get the evaluation, or losing the race
+    // would silently strip the summary screen of its most useful section.
+    for (let attempt = 0; attempt < 20; attempt++) {
+      const current = await getTutorSessionById(sessionId);
+      const existing = current?.summary as Record<string, unknown> | null | undefined;
+      if (existing && Object.keys(existing).length > 0) return existing;
+      await new Promise((r) => setTimeout(r, 250));
+    }
+    // Winner is wedged or its evaluation threw. The deterministic summary is
+    // still true, just thinner.
+    console.warn(`[tutor-service] Timed out waiting for the session summary of ${sessionId}`);
+    return baseSummary;
+  }
+
   // Generate AI evaluation synchronously (adds ~1-2s, acceptable after a chat)
   let evaluation = null;
   try {
@@ -409,20 +446,12 @@ export async function endSession(
   }
 
   const summary: Record<string, unknown> = {
-    messageCount: messages.length,
-    userMessageCount: userMessages.length,
-    modelMessageCount: modelMessages.length,
-    wordsUsed: Array.from(mentionedWords),
-    wordCount: mentionedWords.size,
-    durationMinutes,
-    mode: session.mode,
+    ...baseSummary,
     ...(evaluation && { evaluation }),
   };
 
-  await updateTutorSession(sessionId, {
-    endedAt: new Date().toISOString(),
-    summary,
-  });
+  // `ended_at` was already stamped by the claim.
+  await updateTutorSession(sessionId, { summary });
 
   // Fire-and-forget: SRS bridge analysis + learner profile update
   (async () => {

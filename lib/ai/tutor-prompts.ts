@@ -285,6 +285,13 @@ interface GuidedConversationOptions {
   isLastTurn: boolean;
   proficiencyTier?: ProficiencyTier;
   phase?: GuidedPhase;
+  /**
+   * The session's turn cap, passed in rather than hardcoded here. It used to be
+   * a local `const MAX_TURNS = 6` duplicating the service's own constant, which
+   * only worked while the two happened to agree — the moment caps vary, the
+   * model starts telling the learner "exchange 8 of 6".
+   */
+  maxTurns?: number;
 }
 
 export function buildGuidedConversationPrompt(opts: GuidedConversationOptions): string {
@@ -341,7 +348,7 @@ export function buildGuidedConversationPrompt(opts: GuidedConversationOptions): 
     `If you need to refer to a concept outside the scene, keep it in English.`
   );
 
-  const MAX_TURNS = 6;
+  const MAX_TURNS = opts.maxTurns ?? 6;
 
   // Phase instructions
   const guidedPhase = opts.phase ?? (opts.isLastTurn ? 'close' : 'practice');

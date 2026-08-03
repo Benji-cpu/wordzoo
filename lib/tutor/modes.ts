@@ -49,6 +49,21 @@ export const TUTOR_MODES: TutorMode[] = [
 export type ChallengeMode = 'easy' | 'medium' | 'hard';
 export const CHALLENGE_MODE_KEY = 'wordzoo-tutor-challenge-mode';
 
+/**
+ * Turn caps. One definition, shared by the server that enforces them and the
+ * progress bar that shows them — a counter that disagrees with the auto-end is
+ * worse than no counter at all.
+ */
+export const MAX_GUIDED_TURNS = 6;
+export const MAX_FREE_TURNS = 10;
+
+/** null = uncapped (path_builder runs until the learner is done). */
+export function turnCapForMode(mode: string | null | undefined): number | null {
+  if (mode === 'guided_conversation') return MAX_GUIDED_TURNS;
+  if (mode === 'path_builder') return null;
+  return MAX_FREE_TURNS;
+}
+
 export const MODE_LABELS: Record<string, string> = {
   free_chat: 'Free Chat',
   role_play: 'Role Play',

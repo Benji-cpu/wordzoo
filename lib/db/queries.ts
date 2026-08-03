@@ -801,6 +801,28 @@ export async function updateTutorSession(
   }
 }
 
+/**
+ * Atomically claim the right to end a session.
+ *
+ * A session that hits its turn cap gets ended twice: once fire-and-forget by
+ * the server after the stream closes, and again by the client's
+ * POST /api/tutor/session/end. Both used to run a full AI evaluation, burning
+ * two calls of a 20-per-DAY Gemini quota for one session.
+ *
+ * Returns true for exactly one caller. `ended_at` is stamped here — before the
+ * expensive work — so the loser can't sneak past while the winner is waiting
+ * on the model.
+ */
+export async function claimTutorSessionEnd(sessionId: string): Promise<boolean> {
+  const rows = await sql`
+    UPDATE tutor_sessions
+    SET ended_at = NOW()
+    WHERE id = ${sessionId} AND ended_at IS NULL
+    RETURNING id
+  `;
+  return rows.length > 0;
+}
+
 export async function insertTutorMessage(
   sessionId: string,
   role: 'user' | 'model',
