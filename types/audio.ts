@@ -10,13 +10,35 @@ export interface LanguageVoiceConfig {
 
 export type PlaybackSpeed = 0.5 | 0.75 | 1.0;
 
-export type PronunciationScore = 'close_enough' | 'getting_there' | 'try_again';
+/**
+ * `not_scored` is NOT a pass. It means we never obtained a transcript — the
+ * browser can't do speech recognition, the mic was denied, nothing was heard,
+ * or recognition errored.
+ *
+ * Every one of those paths used to return `close_enough` with "Great
+ * pronunciation! Well done!", so a learner who never granted mic access was
+ * congratulated indefinitely and an all-unscoreable session reported 100%.
+ * Keep the two concepts apart: only a real transcript can earn a real score.
+ */
+export type PronunciationScore =
+  | 'close_enough'
+  | 'getting_there'
+  | 'try_again'
+  | 'not_scored';
+
+export type NotScoredReason =
+  | 'unsupported_browser'
+  | 'mic_denied'
+  | 'no_speech'
+  | 'recognition_error';
 
 export interface PronunciationResult {
   score: PronunciationScore;
   transcription: string;
   feedback: string;
   targetWord: string;
+  /** Set only when score === 'not_scored'. */
+  reason?: NotScoredReason;
 }
 
 export interface PronunciationChallenge {

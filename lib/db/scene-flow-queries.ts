@@ -183,6 +183,8 @@ export async function updatePhraseSRS(
     timesCorrect: number;
     status: string;
     lastReviewedAt: Date;
+    /** Direction of THIS review. Omitted leaves the stored value alone. */
+    direction?: 'recognition' | 'production';
   }
 ): Promise<void> {
   await sql`
@@ -193,6 +195,7 @@ export async function updatePhraseSRS(
       times_reviewed = ${data.timesReviewed},
       times_correct = ${data.timesCorrect},
       status = ${data.status},
+      direction = COALESCE(${data.direction ?? null}, direction),
       last_reviewed_at = ${data.lastReviewedAt.toISOString()},
       updated_at = NOW()
     WHERE id = ${userPhraseId}
@@ -214,6 +217,8 @@ export interface DuePhraseForReview {
   interval_days: number;
   times_reviewed: number;
   times_correct: number;
+  /** Direction of the LAST review — the queue flips it to alternate. */
+  direction: string;
 }
 
 export async function getDuePhrasesForReview(
@@ -227,7 +232,7 @@ export async function getDuePhrasesForReview(
       sp.literal_translation, sp.audio_url,
       sp.phrase_bridge_sentence, sp.composite_image_url, sp.composite_scene_description,
       up.id AS user_phrase_id, up.status, up.ease_factor,
-      up.interval_days, up.times_reviewed, up.times_correct
+      up.interval_days, up.times_reviewed, up.times_correct, up.direction
     FROM user_phrases up
     JOIN scene_phrases sp ON sp.id = up.phrase_id
     JOIN scenes s ON s.id = sp.scene_id

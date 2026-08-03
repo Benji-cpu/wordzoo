@@ -95,16 +95,19 @@ export function RepeatAfterMe({ wordId, languageCode, onResult, className = '' }
 }
 
 function ScoreDisplay({ result }: { result: PronunciationResult }) {
-  const config = {
+  const config: Record<PronunciationResult['score'], { icon: string; color: string; bg: string }> = {
     close_enough: { icon: '✓', color: 'text-green-400', bg: 'bg-green-500/20' },
     getting_there: { icon: '◐', color: 'text-amber-400', bg: 'bg-amber-500/20' },
     try_again: { icon: '↻', color: 'text-orange-400', bg: 'bg-orange-500/20' },
-  }[result.score];
+    // Neutral on purpose — we never heard them, so this is not a verdict.
+    not_scored: { icon: '–', color: 'text-text-secondary', bg: 'bg-surface-inset' },
+  };
+  const tone = config[result.score];
 
   return (
-    <div className={`flex items-center gap-2 rounded-lg px-3 py-1.5 ${config.bg}`}>
-      <span className={`text-lg font-bold ${config.color}`}>{config.icon}</span>
-      <span className={`text-sm ${config.color}`}>{result.feedback}</span>
+    <div className={`flex items-center gap-2 rounded-lg px-3 py-1.5 ${tone.bg}`}>
+      <span className={`text-lg font-bold ${tone.color}`}>{tone.icon}</span>
+      <span className={`text-sm ${tone.color}`}>{result.feedback}</span>
     </div>
   );
 }

@@ -110,25 +110,46 @@ export function SpeakingSession({
   }
 
   if (summary) {
-    const total = Math.max(1, summary.wordsAttempted);
     const great = summary.pronunciationScores.close_enough;
     const close = summary.pronunciationScores.getting_there;
     const tryAgain = summary.pronunciationScores.try_again;
+    const notScored = summary.pronunciationScores.not_scored;
+    // Denominator is what we actually heard, NOT everything attempted. Dividing
+    // by wordsAttempted meant a session where the mic never worked reported
+    // "100% great" — every unscoreable attempt used to come back close_enough.
+    const scored = great + close + tryAgain;
     return (
       <div className="space-y-4">
         <div className="rounded-2xl bg-[var(--surface-inset)] p-5">
           <h2 className="text-xl font-extrabold mb-1">Session done</h2>
           <p className="text-sm text-[color:var(--text-secondary)]">
             {summary.wordsAttempted} word{summary.wordsAttempted === 1 ? '' : 's'} ·{' '}
-            {Math.round(summary.duration / 1000)}s ·{' '}
-            <span className="text-[color:var(--accent-indonesian)] font-bold">
-              {formatPercent(great, total)} great
-            </span>
+            {Math.round(summary.duration / 1000)}s
+            {scored > 0 && (
+              <>
+                {' · '}
+                <span className="text-[color:var(--accent-indonesian)] font-bold">
+                  {formatPercent(great, scored)} great
+                </span>
+                {notScored > 0 && ` of ${scored} scored`}
+              </>
+            )}
           </p>
-          <div className="mt-4 grid grid-cols-3 gap-2 text-center">
+          {scored === 0 && (
+            <p className="mt-2 text-sm text-[color:var(--text-secondary)]">
+              We couldn&apos;t score this session — check mic access, or try a
+              different browser. Nothing here counted against you.
+            </p>
+          )}
+          <div
+            className={`mt-4 grid gap-2 text-center ${
+              notScored > 0 ? 'grid-cols-4' : 'grid-cols-3'
+            }`}
+          >
             <ScoreChip count={great} label="Great" tone="green" />
             <ScoreChip count={close} label="Almost" tone="amber" />
             <ScoreChip count={tryAgain} label="Retry" tone="red" />
+            {notScored > 0 && <ScoreChip count={notScored} label="Not scored" tone="neutral" />}
           </div>
         </div>
         <div className="flex gap-2">
@@ -260,13 +281,24 @@ function labelForState(state: string): string {
   }
 }
 
-function ScoreChip({ count, label, tone }: { count: number; label: string; tone: 'green' | 'amber' | 'red' }) {
+function ScoreChip({
+  count,
+  label,
+  tone,
+}: {
+  count: number;
+  label: string;
+  tone: 'green' | 'amber' | 'red' | 'neutral';
+}) {
   const toneClass =
     tone === 'green'
       ? 'bg-emerald-100 text-emerald-700'
       : tone === 'amber'
       ? 'bg-amber-100 text-amber-700'
-      : 'bg-rose-100 text-rose-700';
+      : tone === 'red'
+      ? 'bg-rose-100 text-rose-700'
+      // Deliberately colourless: "not scored" is neither a win nor a failure.
+      : 'bg-[var(--surface-inset)] text-[color:var(--text-secondary)]';
   return (
     <div className={`rounded-xl py-2 ${toneClass}`}>
       <div className="text-xl font-extrabold leading-none">{count}</div>

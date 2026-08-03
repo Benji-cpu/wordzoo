@@ -25,8 +25,8 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { phraseId, rating, source } = parsed.data;
-  const result = await recordPhraseReview(session.user.id, phraseId, rating, source);
+  const { phraseId, rating, source, direction } = parsed.data;
+  const result = await recordPhraseReview(session.user.id, phraseId, rating, source, direction);
 
   return NextResponse.json<ApiResponse<{ nextReviewAt: Date; newInterval: number }>>(
     { data: result, error: null }

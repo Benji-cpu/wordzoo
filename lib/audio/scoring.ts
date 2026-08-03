@@ -67,9 +67,10 @@ export async function startPronunciationChallenge(
 
   if (!isScoringAvailable(word.language_code)) {
     challenge.result = {
-      score: 'close_enough',
+      score: 'not_scored',
+      reason: 'unsupported_browser',
       transcription: '',
-      feedback: 'Pronunciation scoring is not available in this browser. Keep practicing!',
+      feedback: "This browser can't score pronunciation, so nothing was checked.",
       targetWord: word.text,
     };
     return challenge;
@@ -125,16 +126,18 @@ function listenAndScore(
 
       if (event.error === 'not-allowed') {
         challenge.result = {
-          score: 'close_enough',
+          score: 'not_scored',
+          reason: 'mic_denied',
           transcription: '',
-          feedback: 'Microphone access is needed for pronunciation practice. Please allow mic access and try again.',
+          feedback: 'Mic access is off, so nothing was scored. Allow the mic and try again.',
           targetWord,
         };
       } else {
         challenge.result = {
-          score: 'close_enough',
+          score: 'not_scored',
+          reason: 'recognition_error',
           transcription: '',
-          feedback: 'Could not hear you clearly. Keep practicing!',
+          feedback: "We couldn't hear you, so nothing was scored. Try again.",
           targetWord,
         };
       }
@@ -150,9 +153,10 @@ function listenAndScore(
       if (!resolved) {
         challenge.isListening = false;
         challenge.result = {
-          score: 'close_enough',
+          score: 'not_scored',
+          reason: 'no_speech',
           transcription: '',
-          feedback: 'No speech detected. Tap the mic and try again!',
+          feedback: 'No speech detected — nothing was scored. Tap the mic and try again.',
           targetWord,
         };
         resolved = true;
@@ -166,9 +170,10 @@ function listenAndScore(
       clearTimeout(timeout);
       challenge.isListening = false;
       challenge.result = {
-        score: 'close_enough',
+        score: 'not_scored',
+        reason: 'recognition_error',
         transcription: '',
-        feedback: 'Pronunciation scoring is not available. Keep practicing!',
+        feedback: "Pronunciation scoring didn't start, so nothing was checked.",
         targetWord,
       };
       if (!resolved) {

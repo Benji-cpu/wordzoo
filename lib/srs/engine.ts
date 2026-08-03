@@ -143,7 +143,8 @@ export async function recordPhraseReview(
   userId: string,
   phraseId: string,
   rating: Rating,
-  source: ReviewSource = 'scene'
+  source: ReviewSource = 'scene',
+  direction?: 'recognition' | 'production'
 ): Promise<{ nextReviewAt: Date; newInterval: number }> {
   const userPhrase = await getOrCreateUserPhrase(userId, phraseId);
 
@@ -176,6 +177,7 @@ export async function recordPhraseReview(
     timesReviewed: userPhrase.times_reviewed + 1,
     timesCorrect: userPhrase.times_correct + (isCorrect ? 1 : 0),
     status: newStatus,
+    direction,
     lastReviewedAt: now,
   });
 
@@ -184,6 +186,7 @@ export async function recordPhraseReview(
     phraseId,
     rating,
     source,
+    direction: direction ?? null,
     priorIntervalDays: oldInterval,
     priorEase: oldEF,
     newIntervalDays: newInterval,

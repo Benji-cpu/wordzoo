@@ -120,8 +120,10 @@ export class HandsFreeEngine {
     if (result) {
       await this.speakEnglish(result.feedback);
 
-      // Give one retry if not close_enough
-      if (result.score !== 'close_enough') {
+      // Give one retry if they were heard but missed. Deliberately NOT on
+      // 'not_scored' — retrying against a mic we can't read just makes the
+      // learner repeat themselves into silence.
+      if (result.score === 'getting_there' || result.score === 'try_again') {
         await pauseMs(500);
         await this.speakEnglish('Try one more time:');
         await this.checkAbortAndPause();
@@ -138,9 +140,10 @@ export class HandsFreeEngine {
 
       this.results.push(result);
     } else {
-      await this.speakEnglish('Good effort! Moving on.');
+      await this.speakEnglish('Moving on.');
       this.results.push({
-        score: 'close_enough',
+        score: 'not_scored',
+        reason: 'unsupported_browser',
         transcription: '',
         feedback: 'Scoring unavailable',
         targetWord: word.text,
@@ -256,6 +259,7 @@ export class HandsFreeEngine {
       close_enough: 0,
       getting_there: 0,
       try_again: 0,
+      not_scored: 0,
     };
     for (const r of this.results) {
       scores[r.score]++;

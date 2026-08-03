@@ -804,4 +804,19 @@ CREATE INDEX IF NOT EXISTS idx_user_phrases_next_review
   ON user_phrases(next_review_at) WHERE status <> 'new';
 CREATE INDEX IF NOT EXISTS idx_user_scene_progress_completed
   ON user_scene_progress(completed_at) WHERE completed_at IS NOT NULL;
+
+-- Phrase review direction. user_words has always had this; user_phrases never
+-- did, so the review queue could not alternate a phrase between recognition and
+-- production even though PhraseReviewCard already renders both modes.
+ALTER TABLE user_phrases ADD COLUMN IF NOT EXISTS direction TEXT NOT NULL
+  DEFAULT 'recognition';
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'user_phrases_direction_check'
+  ) THEN
+    ALTER TABLE user_phrases ADD CONSTRAINT user_phrases_direction_check
+      CHECK (direction IN ('recognition','production','both'));
+  END IF;
+END $$;
 `;

@@ -161,14 +161,29 @@ export function ReviewClient({ dueWords, duePhrases, practiceWords = [], wordFam
     const next = items.slice(currentIndex, currentIndex + 4);
     const urls: Array<string | null | undefined> = [];
     for (const it of next) {
-      if (it.type === 'word') urls.push(it.data.pronunciation_audio_url);
-      else urls.push(it.data.audio_url);
+      // Exhaustive switch rather than if/else: the old `else` branch read
+      // `.audio_url` off whatever wasn't a word, which silently breaks the
+      // moment a third item type joins the queue.
+      switch (it.type) {
+        case 'word':
+          urls.push(it.data.pronunciation_audio_url);
+          break;
+        case 'phrase':
+          urls.push(it.data.audio_url);
+          break;
+      }
     }
     preloadAudioUrls(urls);
   }, [currentIndex, items]);
 
-  const wordMode = 'production' as 'recognition' | 'production';
-  const phraseMode = 'production' as 'recognition' | 'production';
+  // Direction alternates per item instead of being pinned to production
+  // forever. user_words.direction / user_phrases.direction record the direction
+  // of the LAST review, so flipping it tests each item both ways over time.
+  // Recognition-only learners can't speak; production-only learners can't
+  // follow a reply — both directions matter.
+  const modeForItem = useCallback((item: ReviewItem): 'recognition' | 'production' => {
+    return item.data.direction === 'production' ? 'recognition' : 'production';
+  }, []);
 
   const handleReveal = useCallback(() => {
     setRevealed(true);
@@ -193,13 +208,15 @@ export function ReviewClient({ dueWords, duePhrases, practiceWords = [], wordFam
       );
     };
 
+    const ratedMode = modeForItem(current);
+
     if (current.type === 'word') {
       fetch('/api/reviews/record', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           wordId: current.data.word_id,
-          direction: wordMode,
+          direction: ratedMode,
           rating,
           // The review queue is the only genuine delayed-retrieval surface in
           // the app; in-scene drills re-ask within seconds. The SRS treats the
@@ -216,6 +233,7 @@ export function ReviewClient({ dueWords, duePhrases, practiceWords = [], wordFam
         body: JSON.stringify({
           phraseId: current.data.phrase_id,
           rating,
+          direction: ratedMode,
           source: 'review',
         }),
       })
@@ -234,7 +252,7 @@ export function ReviewClient({ dueWords, duePhrases, practiceWords = [], wordFam
       setCurrentIndex(nextIndex);
       setRevealed(false);
     }
-  }, [currentIndex, current, items.length, wordMode]);
+  }, [currentIndex, current, items.length, modeForItem]);
 
   const handleRevisionMnemonicContinue = useCallback(() => {
     setRevisionStep('quiz');
@@ -423,6 +441,10 @@ export function ReviewClient({ dueWords, duePhrases, practiceWords = [], wordFam
             key={`revision-${revisionItem.word_id}`}
             word={toWord(revisionItem)}
             mnemonic={toMnemonic(revisionItem)}
+            // Deliberately production, not the alternating mode. The revision
+            // round only happens after a `forgot`, and recognition here would
+            // be trivially easy — the word was just on screen. This is an
+            // intentional exception, not a missed refactor.
             mode="production"
             onReveal={handleReveal}
             revealed={revealed}
@@ -439,8 +461,7 @@ export function ReviewClient({ dueWords, duePhrases, practiceWords = [], wordFam
     return <ReviewComplete totalReviewed={0} correctCount={0} />;
   }
 
-  const typeLabel = current.type === 'phrase' ? 'Phrase' : 'Word';
-  const activeMode = current.type === 'word' ? wordMode : phraseMode;
+  const activeMode = modeForItem(current);
   const modeLabel = activeMode === 'recognition' ? 'Recognize' : 'Produce';
 
   return (
@@ -458,40 +479,54 @@ export function ReviewClient({ dueWords, duePhrases, practiceWords = [], wordFam
         </div>
       )}
 
-      {current.type === 'word' ? (
-        <ReviewCard
-          key={current.data.word_id}
-          word={toWord(current.data)}
-          mnemonic={toMnemonic(current.data)}
-          mode={wordMode}
-          onReveal={handleReveal}
-          revealed={revealed}
-          onRate={handleRate}
-          wordFamilies={wordFamiliesMap[current.data.word_id]}
-        />
-      ) : (
-        <>
-          <PhraseReviewCard
-            key={current.data.phrase_id}
-            textTarget={current.data.text_target}
-            textEn={current.data.text_en}
-            literalTranslation={current.data.literal_translation}
-            phraseBridgeSentence={current.data.phrase_bridge_sentence}
-            compositeImageUrl={current.data.composite_image_url}
-            words={phraseWordMap[current.data.phrase_id] ?? []}
-            audioUrl={current.data.audio_url}
-            languageCode={languageCode}
-            mode={phraseMode}
-            onReveal={handleReveal}
-            revealed={revealed}
-          />
-          {revealed && (
-            <div className="mt-4">
-              <RatingButtons onRate={handleRate} />
-            </div>
-          )}
-        </>
-      )}
+      {renderItem()}
     </>
   );
+
+  // Switch rather than a ternary so a new item type is a compile-time
+  // exhaustiveness decision instead of silently falling into the phrase arm.
+  function renderItem() {
+    if (!current) return null;
+    switch (current.type) {
+      case 'word':
+        return (
+          <ReviewCard
+            key={current.data.word_id}
+            word={toWord(current.data)}
+            mnemonic={toMnemonic(current.data)}
+            mode={activeMode}
+            onReveal={handleReveal}
+            revealed={revealed}
+            onRate={handleRate}
+            wordFamilies={wordFamiliesMap[current.data.word_id]}
+          />
+        );
+      case 'phrase':
+        return (
+          <>
+            <PhraseReviewCard
+              key={current.data.phrase_id}
+              textTarget={current.data.text_target}
+              textEn={current.data.text_en}
+              literalTranslation={current.data.literal_translation}
+              phraseBridgeSentence={current.data.phrase_bridge_sentence}
+              compositeImageUrl={current.data.composite_image_url}
+              words={phraseWordMap[current.data.phrase_id] ?? []}
+              audioUrl={current.data.audio_url}
+              languageCode={languageCode}
+              mode={activeMode}
+              onReveal={handleReveal}
+              revealed={revealed}
+            />
+            {revealed && (
+              <div className="mt-4">
+                {/* Phrase cards don't self-render ratings the way ReviewCard
+                    does — the buttons live here instead. */}
+                <RatingButtons onRate={handleRate} />
+              </div>
+            )}
+          </>
+        );
+    }
+  }
 }
