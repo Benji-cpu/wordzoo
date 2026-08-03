@@ -103,12 +103,19 @@ interface ReviewClientProps {
   wordFamiliesMap?: Record<string, LearnWordFamily[]>;
   phraseWordMap?: Record<string, PhraseWordMnemonic[]>;
   languageCode?: string | null;
+  /**
+   * Total items due in this language, UNCAPPED. The queue itself is capped at
+   * 20 words + 20 phrases so a sitting stays short, so this is usually larger
+   * than `items.length` — and without it the session would end on
+   * "All caught up!" with a hundred items still waiting.
+   */
+  dueTotal?: number;
   /** Due counts in languages other than the active one — never say "all caught up" while these exist. */
   otherLanguagesDue?: { code: string; name: string; count: number }[];
   insightState?: { seenIds: string[]; shownToday: number };
 }
 
-export function ReviewClient({ dueWords, duePhrases, dueCanDos = [], practiceWords = [], wordFamiliesMap = {}, phraseWordMap = {}, languageCode = null, otherLanguagesDue = [], insightState }: ReviewClientProps) {
+export function ReviewClient({ dueWords, duePhrases, dueCanDos = [], practiceWords = [], wordFamiliesMap = {}, phraseWordMap = {}, languageCode = null, dueTotal, otherLanguagesDue = [], insightState }: ReviewClientProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
@@ -165,6 +172,13 @@ export function ReviewClient({ dueWords, duePhrases, dueCanDos = [], practiceWor
     if (wi < wLen) { items.push({ type: 'word', data: effectiveWords[wi++] }); }
     if (pi < pLen) { items.push({ type: 'phrase', data: effectivePhrases[pi++] }); }
   }
+
+  // Items still due that this sitting won't reach. Compared against words +
+  // phrases only: `items` also carries can-dos, which aren't part of the SRS
+  // due count. Practice mode has no queue to run down, so nothing is "left".
+  const dueRemaining = practiceMode
+    ? 0
+    : Math.max(0, (dueTotal ?? wLen + pLen) - (wLen + pLen));
 
   const current = items[currentIndex];
 
@@ -405,6 +419,7 @@ export function ReviewClient({ dueWords, duePhrases, dueCanDos = [], practiceWor
         revisionCorrectCount={revisionCorrectCount}
         reviewedWordIds={items.filter((i) => i.type === 'word').map((i) => i.data.word_id)}
         otherLanguagesDue={otherLanguagesDue}
+        remaining={dueRemaining}
       />
     );
   }
@@ -490,7 +505,7 @@ export function ReviewClient({ dueWords, duePhrases, dueCanDos = [], practiceWor
 
   // --- Main review phase ---
   if (!current) {
-    return <ReviewComplete totalReviewed={0} correctCount={0} />;
+    return <ReviewComplete totalReviewed={0} correctCount={0} remaining={dueRemaining} />;
   }
 
   const activeMode = modeForItem(current);
@@ -505,7 +520,10 @@ export function ReviewClient({ dueWords, duePhrases, dueCanDos = [], practiceWor
     <>
       <HeaderPortal>
         <span className="text-sm text-text-secondary truncate">
-          {practiceMode ? 'Practice' : 'Review'} &middot; {currentIndex + 1}/{items.length} &middot; {modeLabel}
+          {practiceMode ? 'Practice' : 'Review'} &middot; {currentIndex + 1}/{items.length}
+          {/* The dashboard shows the uncapped due count, so a bare "3/20" here
+              reads as the app losing items. Name the batch instead. */}
+          {dueRemaining > 0 && ` of ${items.length + dueRemaining}`} &middot; {modeLabel}
         </span>
       </HeaderPortal>
       <ProgressBarPortal current={currentIndex + 1} total={items.length} />

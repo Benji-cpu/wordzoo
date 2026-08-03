@@ -16,6 +16,12 @@ interface ReviewCompleteProps {
   revisionCorrectCount?: number;
   reviewedWordIds?: string[];
   otherLanguagesDue?: { code: string; name: string; count: number }[];
+  /**
+   * Items still due that this sitting didn't reach (the queue is capped at 20
+   * words + 20 phrases). Greater than zero means this is NOT the end of the
+   * work, and the screen must not say or celebrate otherwise.
+   */
+  remaining?: number;
 }
 
 export function ReviewComplete({
@@ -25,8 +31,10 @@ export function ReviewComplete({
   revisionCorrectCount = 0,
   reviewedWordIds = [],
   otherLanguagesDue = [],
+  remaining = 0,
 }: ReviewCompleteProps) {
   const didRevision = revisionCount > 0;
+  const moreWaiting = remaining > 0;
   // Carry the just-reviewed words into the tutor so the word_review session
   // practices them instead of the (now empty) due queue
   const tutorHref = reviewedWordIds.length > 0
@@ -37,8 +45,14 @@ export function ReviewComplete({
   const { award, sessionEarned } = useXP();
 
   useEffect(() => {
-    play('scene-complete');
-    trigger('celebrate');
+    // Confetti and a fanfare for clearing 20 of 148 is the dishonesty the
+    // learner reported as "it doesn't say I'm done, it just restarts". Only
+    // celebrate an actually-empty queue. The XP is still earned either way —
+    // they did the work.
+    if (!moreWaiting) {
+      play('scene-complete');
+      trigger('celebrate');
+    }
     if (totalReviewed > 0) void award('review_session');
     // intentional: award once on mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -46,19 +60,41 @@ export function ReviewComplete({
 
   return (
     <div className="flex flex-col items-stretch justify-center flex-1 min-h-[60vh] animate-spring-in relative pt-4 pb-6 gap-4">
-      <Celebration active variant="scene-complete" />
+      {!moreWaiting && <Celebration active variant="scene-complete" />}
 
-      <EmptyStateCard
-        foxPose="celebrating"
-        title="All caught up!"
-        subtitle={
-          didRevision
-            ? 'Great job reinforcing those tricky words — keep the habit going.'
-            : 'Nice work on your reviews. The best time to learn a new word is right now.'
-        }
-        primary={{ label: 'Practice in conversation →', href: tutorHref }}
-        secondary={{ label: 'Back to home', href: '/dashboard' }}
-      />
+      {moreWaiting ? (
+        <EmptyStateCard
+          foxPose="wave"
+          title={`${remaining} more waiting`}
+          subtitle={
+            <>
+              You cleared {totalReviewed}. Reviews come in batches of 20 so a
+              sitting stays under a couple of minutes — keep going, or come back
+              to the rest later.
+            </>
+          }
+          primary={{
+            label: `Review ${Math.min(remaining, 20)} more →`,
+            // Full navigation, not <Link>. A soft nav back to /review keeps the
+            // mounted ReviewClient — including phase='done' — so the learner
+            // would just land back on this same screen.
+            onClick: () => window.location.assign('/review'),
+          }}
+          secondary={{ label: 'Back to home', href: '/dashboard' }}
+        />
+      ) : (
+        <EmptyStateCard
+          foxPose="celebrating"
+          title="All caught up!"
+          subtitle={
+            didRevision
+              ? 'Great job reinforcing those tricky words — keep the habit going.'
+              : 'Nice work on your reviews. The best time to learn a new word is right now.'
+          }
+          primary={{ label: 'Practice in conversation →', href: tutorHref }}
+          secondary={{ label: 'Back to home', href: '/dashboard' }}
+        />
+      )}
 
       {otherLanguagesDue.length > 0 && (
         <Link

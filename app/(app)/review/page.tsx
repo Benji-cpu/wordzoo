@@ -1,8 +1,8 @@
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { getDueWords, getDuePhrases } from '@/lib/srs/engine';
-import { getAllLearnedWordsForPractice, getWordFamilies, getUserActivePath, getLanguageById, getDueCountsByOtherLanguages } from '@/lib/db/queries';
-import { getPhraseWordsWithMnemonics } from '@/lib/db/scene-flow-queries';
+import { getAllLearnedWordsForPractice, getWordFamilies, getUserActivePath, getLanguageById, getDueCountsByOtherLanguages, getDueWordCount } from '@/lib/db/queries';
+import { getPhraseWordsWithMnemonics, getDuePhraseCount } from '@/lib/db/scene-flow-queries';
 import { getInsightState } from '@/lib/db/insight-queries';
 import { getDueCanDos } from '@/lib/db/can-do-queries';
 import { getUserProfile } from '@/lib/db/queries';
@@ -27,7 +27,11 @@ export default async function ReviewPage() {
   const activePath = await getUserActivePath(session.user.id);
   const languageId = activePath?.path_language_id ?? null;
 
-  const [dueWords, rawDuePhrases, dueCanDos, practiceWords, insightState, language, otherLanguagesDue, profile] = await Promise.all([
+  // getDueWords/getDuePhrases cap at 20 each so a sitting stays short. The
+  // uncapped totals come along too, or the session ends on "All caught up!"
+  // while 100+ items are still waiting — the single most-reported bug in the
+  // review flow ("34 words to review but it took me through 12").
+  const [dueWords, rawDuePhrases, dueCanDos, practiceWords, insightState, language, otherLanguagesDue, profile, dueWordTotal, duePhraseTotal] = await Promise.all([
     getDueWords(session.user.id, undefined, undefined, languageId),
     getDuePhrases(session.user.id, undefined, languageId),
     getDueCanDos(session.user.id, 5, languageId),
@@ -36,6 +40,8 @@ export default async function ReviewPage() {
     languageId ? getLanguageById(languageId) : Promise.resolve(null),
     getDueCountsByOtherLanguages(session.user.id, languageId),
     getUserProfile(session.user.id),
+    getDueWordCount(session.user.id, languageId),
+    getDuePhraseCount(session.user.id, languageId),
   ]);
 
   // Personalize learner-facing phrase fields (same rules as the learn page —
@@ -98,7 +104,7 @@ export default async function ReviewPage() {
 
   return (
     <div className="max-w-lg mx-auto -mt-2">
-      <ReviewClient dueWords={dueWords} duePhrases={duePhrases} dueCanDos={dueCanDos} practiceWords={practiceWords} wordFamiliesMap={wordFamiliesMap} phraseWordMap={phraseWordMap} languageCode={language?.code ?? null} otherLanguagesDue={otherLanguagesDue.map(o => ({ code: o.code, name: o.name, count: o.due_count }))} insightState={{ seenIds: Array.from(insightState.seenIds), shownToday: insightState.shownToday }} />
+      <ReviewClient dueWords={dueWords} duePhrases={duePhrases} dueCanDos={dueCanDos} practiceWords={practiceWords} wordFamiliesMap={wordFamiliesMap} phraseWordMap={phraseWordMap} languageCode={language?.code ?? null} dueTotal={dueWordTotal + duePhraseTotal} otherLanguagesDue={otherLanguagesDue.map(o => ({ code: o.code, name: o.name, count: o.due_count }))} insightState={{ seenIds: Array.from(insightState.seenIds), shownToday: insightState.shownToday }} />
     </div>
   );
 }
