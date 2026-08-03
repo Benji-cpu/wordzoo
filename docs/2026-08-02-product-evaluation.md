@@ -183,11 +183,27 @@ The Leitner queue working exactly as designed, and reading as infinite.
 recognition MCQ, labelling it *"hear & type"*, and crediting the learner for a
 modality they were never tested in.
 
-### 4.5 Operations
+### 4.5 Operations — FIXED 2026-08-03
 
-The nightly pipeline has self-diagnosed the identical failure ~50 times without a
-fix, generating commit noise that drowns the real history — while measuring a
-userbase of one.
+The nightly pipeline self-diagnosed the identical failure ~50 times without a
+fix, generating commit noise that drowned the real history.
+
+**Every one of those stubs blamed the wrong thing.** They said
+`GITHUB_PAT_REPO_WRITE missing/expired` — the cause CLAUDE.md's playbook lists
+first. The PAT was fine (verified: valid, `push: true` on `Benji-cpu/wordzoo`).
+
+The real cause: `/api/cron/nightly-routine` had **no `maxDuration`**, so it ran
+on the default ~10s budget while doing six sequential Neon round-trips plus two
+GitHub API calls. It timed out before writing `digests/YYYY-MM-DD.json`, and the
+agent — finding no digest — committed a stub. The tell was that failures were
+*sporadic* (2026-07-18, 07-29 and 07-31 succeeded): an expired credential fails
+every single day; a timeout doesn't.
+
+Fixed in `1bbe394`: `maxDuration = 60`, and the six independent reads now run
+under one `Promise.all`.
+
+This also unblocks `health.spendLast24h` — the spend signal added in `bdbc49d`
+rides on this digest, so until now it could never actually have been delivered.
 
 ---
 
@@ -199,6 +215,7 @@ userbase of one.
 | `ba66be6` | `verifySceneAccess` honours purchases; learn-page IDOR closed; 4 missing route gates; Stripe callback hardened |
 | `bd5c9a9` | Public mnemonic leak; account-deletion transaction; test-login gated on `VERCEL`; activity-feed Bearer-only; share-image IP limit; `words_learned` double-count; XP/hands-free caps |
 | `46830ec` | Timeouts on every external call; `readJson` across 29 routes; guarded model-output `JSON.parse`; `sharp` declared; security headers; webhook retry |
+| `1bbe394` | Nightly digest root cause (timeout, not the PAT); 39 handlers no longer return raw `error.message` to clients |
 
 **The spend guard is the load-bearing piece.** It claims budget with a single
 atomic conditional INSERT, so N concurrent lambdas serialize through Postgres
@@ -233,23 +250,24 @@ Blob.**
 
 ---
 
-## 6. Phase 7 — owner actions, in this order
+## 6. Phase 7 — owner actions
 
-1. **Now, no prerequisites:** set `RESEND_API_KEY` in Vercel. The retention email
-   system is fully wired and silently no-ops without it.
+Status verified 2026-08-03 via `vercel env ls production`.
 
-2. **Now that the spend guard is live:** un-suspend the Vercel Blob store. Check
-   whether it's a usage cap or a payment failure; `lib/db/cleanup-orphan-blobs.ts`
-   and `recompress-blob-images.ts` already exist for reclaiming space. Then watch
-   `health.spendLast24h` in the digest for 48h.
-
-3. **Only after that reads sane:** set `PEDAGOGY_V2_SLICES`. Start with
-   `restructure,production,cloze` — **not `*`**. `restructure` activates
-   `IntroduceBatch`, whose parallel mnemonic generation is exactly what filled
-   Blob. It must also come *after* the Blob unblock, or v2 renders entirely
-   imageless.
-
-4. **Re-enrich** any path left `partial` while Blob was down.
+- [x] **Blob store un-suspended.** Spot-checked several `mnemonics/*.webp` and
+      `audio/words/*.mp3` URLs from the DB — all **200**. The visual-mnemonic
+      differentiator is live again.
+- [ ] **`RESEND_API_KEY` — still unset.** No prerequisites; the retention email
+      system is fully wired and silently no-ops without it.
+- [ ] **`PEDAGOGY_V2_SLICES` — still unset.** Every real user is still on the
+      legacy `word → mnemonic → quiz` loop. The Blob precondition is now met.
+      Set it to `restructure,production,cloze` — **not `*`**.
+- [ ] **`GOOGLE_CLOUD_TTS_API_KEY` — missing from production entirely.** It is in
+      CLAUDE.md's required list but absent from the Vercel env. Existing audio is
+      pre-seeded so playback works, but any *new* TTS generation fails — which
+      silently degrades every AI-generated path.
+- [ ] **Re-enrich** any path left `partial` during the outage. Must run behind
+      the spend guard; watch `health.spendLast24h`.
 
 ---
 
