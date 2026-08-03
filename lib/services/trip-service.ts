@@ -1,5 +1,6 @@
 import { getUserTrip, setUserTrip, clearUserTrip, type UserTrip } from '@/lib/db/queries';
 import { getUserActivePath, getPathWordStats } from '@/lib/db/queries';
+import { getCanDoInventory } from '@/lib/db/can-do-queries';
 
 export type TripStatus = 'none' | 'on_track' | 'ahead' | 'slipping' | 'behind' | 'past';
 
@@ -14,6 +15,19 @@ export interface TripContext {
   wordsRemaining: number;
   paceNeeded: number | null;
   status: TripStatus;
+  /**
+   * Capability, which is what the learner actually wants: "I can ask a driver
+   * how much a ride costs" beats "217 words mastered". Certified means it
+   * passed a delayed, unaided production test.
+   *
+   * These drive the meter whenever `canDosTotal > 0`; otherwise it falls back
+   * to the word count, because a learner who hasn't finished a scene yet has
+   * no can-dos unlocked and an empty bar would tell them nothing.
+   */
+  canDosCertified: number;
+  canDosTotal: number;
+  /** True when the meter is reading capability rather than word count. */
+  measuresCapability: boolean;
 }
 
 function todayISODate(): string {
@@ -46,11 +60,18 @@ export async function getTripContext(userId: string): Promise<TripContext> {
   const daysRemaining = diffDays(todayISODate(), trip.trip_date);
 
   let mastered = 0;
+  let canDosCertified = 0;
+  let canDosTotal = 0;
   try {
     const activePath = await getUserActivePath(userId);
     if (activePath) {
-      const stats = await getPathWordStats(userId, activePath.id);
+      const [stats, inventory] = await Promise.all([
+        getPathWordStats(userId, activePath.id),
+        getCanDoInventory(userId, activePath.path_language_id ?? null),
+      ]);
       mastered = stats.words_mastered ?? 0;
+      canDosCertified = inventory.certified;
+      canDosTotal = inventory.certified + inventory.unlocked;
     }
   } catch {
     // Soft-fail; trip context should never break the dashboard.
@@ -58,8 +79,16 @@ export async function getTripContext(userId: string): Promise<TripContext> {
 
   const target = trip.trip_target_word_count ?? 200;
   const remaining = Math.max(0, target - mastered);
-  const paceNeeded = daysRemaining > 0 ? Math.ceil(remaining / daysRemaining) : null;
-  const status = deriveStatus(daysRemaining, mastered, target);
+
+  // Capability is the headline whenever there is any to report. Words stay as
+  // the secondary line — they were never a bad number, just a bad *headline*:
+  // "mastered" was reachable in about four self-graded taps.
+  const measuresCapability = canDosTotal > 0;
+  const paceUnit = measuresCapability ? canDosTotal - canDosCertified : remaining;
+  const paceNeeded = daysRemaining > 0 ? Math.ceil(paceUnit / daysRemaining) : null;
+  const status = measuresCapability
+    ? deriveStatus(daysRemaining, canDosCertified, canDosTotal)
+    : deriveStatus(daysRemaining, mastered, target);
 
   return {
     hasTrip: true,
@@ -72,6 +101,9 @@ export async function getTripContext(userId: string): Promise<TripContext> {
     wordsRemaining: remaining,
     paceNeeded,
     status,
+    canDosCertified,
+    canDosTotal,
+    measuresCapability,
   };
 }
 
@@ -87,6 +119,9 @@ function emptyContext(trip: UserTrip | null): TripContext {
     wordsRemaining: 0,
     paceNeeded: null,
     status: 'none',
+    canDosCertified: 0,
+    canDosTotal: 0,
+    measuresCapability: false,
   };
 }
 

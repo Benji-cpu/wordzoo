@@ -470,7 +470,17 @@ export async function getPathWordStats(
     SELECT
       COUNT(DISTINCT pw.word_id)::int AS total_words,
       COUNT(DISTINCT CASE WHEN uw.status IN ('learning', 'reviewing', 'mastered') THEN pw.word_id END)::int AS words_learned,
-      COUNT(DISTINCT CASE WHEN uw.status = 'mastered' THEN pw.word_id END)::int AS words_mastered
+      -- "Mastered" used to be status = 'mastered', i.e. interval_days >= 30,
+      -- which was reachable in about four self-graded taps with the mnemonic
+      -- on screen. It now has to look like actual retention: a real interval,
+      -- enough spaced attempts to mean something, a passing hit rate, and not
+      -- a leech. This also moves the path progress bars, deliberately.
+      COUNT(DISTINCT CASE
+        WHEN uw.interval_days >= 21
+         AND uw.times_reviewed >= 4
+         AND uw.times_correct::numeric / NULLIF(uw.times_reviewed, 0) >= 0.75
+         AND uw.lapses <= 2
+        THEN pw.word_id END)::int AS words_mastered
     FROM path_words pw
     LEFT JOIN user_words uw ON uw.word_id = pw.word_id AND uw.user_id = ${userId}
     WHERE pw.path_id = ${pathId}

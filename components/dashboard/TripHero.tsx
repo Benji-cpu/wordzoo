@@ -28,28 +28,33 @@ export function TripHero({ trip, ctaHref, ctaLabel = 'Resume session' }: TripHer
 
   const tone = STATUS_TONE[trip.status];
   const days = trip.daysRemaining;
-  const progress = trip.targetWordCount > 0
-    ? Math.min(1, trip.wordsMastered / trip.targetWordCount)
-    : 0;
+  // Capability, not throughput — see TripContext.canDosCertified. Falls back to
+  // words when no can-dos are unlocked yet, so an early learner still sees a
+  // meaningful bar instead of an empty one.
+  const capable = trip.measuresCapability;
+  const done = capable ? trip.canDosCertified : trip.wordsMastered;
+  const goal = capable ? trip.canDosTotal : trip.targetWordCount;
+  const unit = capable ? 'things you can do' : 'words mastered';
+  const progress = goal > 0 ? Math.min(1, done / goal) : 0;
 
   let title: string;
   let subtitle: string;
 
   if (trip.status === 'past') {
     title = `${trip.destination} — how was it?`;
-    subtitle = `${trip.wordsMastered} of ${trip.targetWordCount} words mastered. Plan your next trip?`;
+    subtitle = `${done} of ${goal} ${unit}. Plan your next trip?`;
   } else if (days === 0) {
     title = `${trip.destination} — today!`;
-    subtitle = `${trip.wordsMastered} of ${trip.targetWordCount} words mastered. Have a great trip.`;
+    subtitle = `${done} of ${goal} ${unit}. Have a great trip.`;
   } else {
     const dayWord = days === 1 ? 'day' : 'days';
     title = `${days} ${dayWord} until ${trip.destination}`;
-    if (trip.wordsRemaining === 0) {
-      subtitle = `Goal hit: ${trip.targetWordCount} words mastered ✓`;
+    if (done >= goal && goal > 0) {
+      subtitle = `Goal hit: ${goal} ${unit} ✓`;
     } else if (trip.paceNeeded !== null) {
-      subtitle = `${trip.wordsMastered} of ${trip.targetWordCount} mastered · ~${trip.paceNeeded}/day to stay on track`;
+      subtitle = `${done} of ${goal} ${unit} · ~${trip.paceNeeded}/day to stay on track`;
     } else {
-      subtitle = `${trip.wordsMastered} of ${trip.targetWordCount} words mastered`;
+      subtitle = `${done} of ${goal} ${unit}`;
     }
   }
 

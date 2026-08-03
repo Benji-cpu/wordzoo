@@ -24,19 +24,38 @@ const STATUS_BAR: Record<TripStatus, string> = {
   past: '#8b5cf6',
 };
 
-function paceCaption(trip: TripContext): string {
-  if (trip.status === 'past') {
+/**
+ * The headline the learner is actually chasing.
+ *
+ * Words used to be it, and it flattered: "mastered" meant interval >= 30 days,
+ * reachable in about four self-graded taps with the mnemonic on screen. A
+ * certified can-do is one communicative act that survived a delayed, unaided
+ * production test — which is the thing someone means by "will I cope in Bali?".
+ *
+ * Words stay on as the secondary line; they were never a bad number, just a bad
+ * headline.
+ */
+function headlineCaption(trip: TripContext): string {
+  if (!trip.measuresCapability) {
+    // No can-dos unlocked yet (no completed scenes), so fall back to words
+    // rather than showing an empty bar that says nothing.
+    if (trip.wordsRemaining === 0) return `Goal hit: ${trip.targetWordCount} words mastered ✓`;
+    if (trip.paceNeeded !== null && trip.daysRemaining !== null && trip.daysRemaining > 0) {
+      return `${trip.wordsMastered} of ${trip.targetWordCount} mastered · ~${trip.paceNeeded}/day to stay on track`;
+    }
     return `${trip.wordsMastered} of ${trip.targetWordCount} words mastered`;
   }
-  if (trip.daysRemaining === 0) {
-    return `${trip.wordsMastered} of ${trip.targetWordCount} words mastered · today!`;
-  }
-  if (trip.wordsRemaining === 0) {
-    return `Goal hit: ${trip.targetWordCount} words mastered ✓`;
-  }
-  if (trip.paceNeeded !== null) {
-    return `${trip.wordsMastered} of ${trip.targetWordCount} mastered · ~${trip.paceNeeded}/day to stay on track`;
-  }
+
+  const base = `${trip.canDosCertified} of ${trip.canDosTotal} things you can do`;
+  if (trip.status === 'past') return base;
+  if (trip.daysRemaining === 0) return `${base} · today!`;
+  if (trip.canDosCertified >= trip.canDosTotal) return `All ${trip.canDosTotal} certified ✓`;
+  if (trip.paceNeeded !== null) return `${base} · ~${trip.paceNeeded}/day to stay on track`;
+  return base;
+}
+
+function wordsSubCaption(trip: TripContext): string | null {
+  if (!trip.measuresCapability) return null;
   return `${trip.wordsMastered} of ${trip.targetWordCount} words mastered`;
 }
 
@@ -77,9 +96,12 @@ export function GoalProgressCard({ tripContext }: GoalProgressCardProps) {
     );
   }
 
-  const progress = tripContext.targetWordCount > 0
-    ? Math.min(1, tripContext.wordsMastered / tripContext.targetWordCount)
-    : 0;
+  const progress = tripContext.measuresCapability
+    ? Math.min(1, tripContext.canDosCertified / Math.max(1, tripContext.canDosTotal))
+    : tripContext.targetWordCount > 0
+      ? Math.min(1, tripContext.wordsMastered / tripContext.targetWordCount)
+      : 0;
+  const subCaption = wordsSubCaption(tripContext);
   const eyebrow = STATUS_EYEBROW[tripContext.status];
   const barColor = STATUS_BAR[tripContext.status];
 
@@ -107,8 +129,11 @@ export function GoalProgressCard({ tripContext }: GoalProgressCardProps) {
           />
         </div>
         <div className="text-[12px] font-medium text-text-secondary">
-          {paceCaption(tripContext)}
+          {headlineCaption(tripContext)}
         </div>
+        {subCaption && (
+          <div className="text-[11px] text-text-secondary/80">{subCaption}</div>
+        )}
       </div>
     </Card>
   );
