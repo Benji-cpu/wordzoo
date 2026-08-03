@@ -25,6 +25,8 @@ Language learning SaaS with AI-generated keyword mnemonics, spaced repetition, a
 - `npm run db:seed-expanded` — seed expanded Indonesian content (Units 1-5, 19 scenes, ~231 words)
 - No automated test framework is configured. Do not create test files, test scripts, or test dependencies. Playwright MCP is for interactive browser testing during development via Claude Code, not for automated test suites.
 
+**One-off migrations** are `npx tsx lib/db/apply-<name>.ts` — never an npm script. `npm run db:migrate` runs the whole of `schema.ts` as one statement and aborts on a pre-existing constraint conflict, so it is effectively unrunnable against an existing DB. Add new DDL to the bottom of `schema.ts` (with a why-comment) *and* write a targeted, idempotent `apply-*.ts`.
+
 ## Deployment
 
 - **Platform**: Vercel
@@ -62,6 +64,27 @@ Failure playbook (look in `feedback-log/*.md` and Vercel runtime logs):
 - **401 from `/api/cron/*`** — `CRON_SECRET` mismatch between Vercel envs and (for the prepare route) the Vercel cron caller — Vercel auto-supplies its own header for crons it owns, so this only matters for manual curls.
 - **5xx from the prepare route** — Neon down or query change broke. The route uses `safe()` wrappers; partial failures return 200 with non-empty `errors[]`. Hard 500 means a top-level throw — check Vercel logs.
 - **Sandbox can't push to GitHub** — git identity wasn't configured (the trigger prompt and agent file both set `user.name` / `user.email` before commit; verify those `git config` lines are still present after edits).
+
+## Capability Layer (can-dos)
+
+Progress is measured as capability, not throughput. A **can-do** is one communicative act ("I can ask a driver how much a ride costs"), certified by a single **delayed (≥48h), unaided** production test.
+
+- **Tables**: `can_dos` (content) + `user_can_dos` (per-user state). `user_can_dos.eligible_at` carries both the 48h gate and the post-failure cooldown; it is anchored to `user_scene_progress.completed_at`, never `NOW()`, so replaying a scene can't push a learner's own test out.
+- **Content pipeline** — the statements live in git, not just the DB:
+  1. `npx tsx lib/db/generate-can-dos.ts --language=id --append` — AI-drafts into `lib/db/content/can-dos/<lang>.ts`. Refuses to overwrite without `--force`; `--append` only fills scenes with no can-dos yet.
+  2. **Hand-edit the file.** This is the point of the pipeline. Check `prompt_en` never contains the target-language answer, and opt into `must_include` deliberately (it ships empty — a wrong lemma rejects a valid answer before the grader runs, with no appeal).
+  3. `npx tsx lib/db/seed-can-dos.ts --language=id` — idempotent upsert on deterministic ids.
+- **Grading**: `POST /api/can-dos/[canDoId]/certify` is **STRICT** and is deliberately a separate route from `/api/scenes/[sceneId]/conversation-grade`, which is ACCEPT-AND-COACH. Do not merge them behind a flag — one function with two contradictory failure semantics is how a silently lenient certifier ships. Ambiguity and every error path resolve to `unclear`, never `pass`; `unclear` costs no strike and no cooldown.
+- **`CanDoTest` must stay unaided**: no hints, chips, reveal, audio, romanization, autocomplete or spellcheck. `ConversationBlock` ships hints on purpose — that's practice. The absence of scaffolding *is* the measurement.
+
+## Measurement (`/admin/pedagogy`)
+
+The only surface that reads `pedagogy_events` and divides `times_correct / times_reviewed`. Queries live in `lib/db/pedagogy-queries.ts` (full-path import — not in the `lib/db/index.ts` barrel).
+
+- `srs_review_recorded` is emitted **server-side** from `lib/srs/engine.ts`, not via `fireTelemetry`. Lifetime counters can't be bucketed by the interval a review happened at, so the retention curve needs a per-review event.
+- `PedagogyEvent` in `lib/pedagogy/telemetry.ts` must stay in exact sync with the actual `fireTelemetry` call sites — the admin page renders one row per event name, so a declared-but-never-emitted member is a permanent zero that reads as a real measurement.
+- Leech thresholds on the admin page must match `LEECH_MIN_REVIEWS` / `LEECH_ACCURACY` in `lib/srs/engine.ts`.
+- `pedagogy_events` is unbounded (the telemetry route has no rate limit); `/api/cron/reset-usage` prunes it at 90 days, and the nightly digest keeps a permanent summary in `digests/*.json`.
 
 ## Feedback Module
 
