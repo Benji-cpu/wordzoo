@@ -216,6 +216,10 @@ rides on this digest, so until now it could never actually have been delivered.
 | `bd5c9a9` | Public mnemonic leak; account-deletion transaction; test-login gated on `VERCEL`; activity-feed Bearer-only; share-image IP limit; `words_learned` double-count; XP/hands-free caps |
 | `46830ec` | Timeouts on every external call; `readJson` across 29 routes; guarded model-output `JSON.parse`; `sharp` declared; security headers; webhook retry |
 | `1bbe394` | Nightly digest root cause (timeout, not the PAT); 39 handlers no longer return raw `error.message` to clients |
+| `6712580` | Typo tolerance scaled to word length — a flat 2 edits was a free pass on short words ("voice" passed for "noite") |
+| `e7622ab` | Measurement layer: `/admin/pedagogy`, nine aggregates, `srs_review_recorded` events (Phase 8 item 1) |
+| `528c0a4` | Pronunciation stopped returning `close_enough` on mic-denied/unsupported/no-speech; review now alternates both directions |
+| `72e8320` | SRS lapses cost ease, leeches capped, interval fuzz; phantom `listening` cue removed (Phase 8 items 3 and 6) |
 
 **The spend guard is the load-bearing piece.** It claims budget with a single
 atomic conditional INSERT, so N concurrent lambdas serialize through Postgres
@@ -271,30 +275,53 @@ Status verified 2026-08-03 via `vercel env ls production`.
 
 ---
 
-## 7. Phase 8 — the pedagogy backlog (open)
+## 7. Phase 8 — the pedagogy backlog
 
-Ranked by what actually moves the product:
+Ranked by what actually moves the product. Status as of 2026-08-03.
 
-1. **Measure retention.** One query over `times_correct / times_reviewed`, and a
-   first `SELECT` against `pedagogy_events`, answers "does this work?" It is
-   currently unanswerable — which means every pedagogy decision is being made
-   blind.
-2. **Fix the mobile keyboard on cloze and production typing.** The dominant real
-   feedback cluster, landing on the only two productive-retrieval modes.
-3. **Penalise lapses in the SRS.** Apply an EF penalty on `forgot`, add a lapse
-   counter and leech handling, add interval fuzz and a max cap. This is why
-   overdue reviews only ever climb.
-4. **Make "mastered" mean something.** Wire `lib/pedagogy/mastery.ts` (it needs a
-   `mastery_stage` column) or delete it.
-5. **Stop discarding drill granularity.** In-scene drills are objectively graded
-   and collapse to `got_it | forgot`; they could feed a real 4-point quality.
-6. **Fix or remove the phantom `listening` cue,** and delete
-   `ListeningExercise.tsx` if it isn't going to be wired.
+1. [x] **Measure retention.** `e7622ab` — nine aggregates in
+   `lib/db/pedagogy-queries.ts` and an `/admin/pedagogy` page, plus a
+   server-emitted `srs_review_recorded` event so retention can be bucketed by
+   the interval a review actually happened at. First numbers: 84.1% mean item
+   accuracy against 94.2% drill accuracy, and all 209 overdue items in the 8d+
+   bucket.
+2. [ ] **Fix the mobile keyboard on cloze and production typing.** The dominant
+   real feedback cluster, landing on the only two productive-retrieval modes.
+   **Blocked on browser verification** — this is a viewport/layout fix that
+   cannot be validated by reading code, and shipping speculative CSS to the
+   exercises that carry the learning would be worse than leaving it.
+3. [x] **Penalise lapses in the SRS.** `72e8320` — the SM-2 ease penalty now
+   applies to `forgot`, but only from the review queue; in-scene and tutor
+   misses are first-exposure stumbles and spare the ease. Leeches (>=8 reviews
+   at <50% lifetime accuracy) are capped at 21 days instead of graduating.
+   Added ±5% interval fuzz from 4 days up and a 365-day ceiling.
+4. [ ] **Make "mastered" mean something.** `lib/pedagogy/mastery.ts` is still
+   orphaned (zero importers, no `mastery_stage` column). Note that the
+   `mastery` *flag* does gate something real — `recordIntroduce` in
+   `VocabularyBlock` — so the flag and the module are unrelated. The in-flight
+   can-do capability layer is the more likely home for this idea than reviving
+   the module.
+5. [ ] **Stop discarding drill granularity.** In-scene drills are objectively
+   graded and collapse to `got_it | forgot`. Lower priority now that in-scene
+   misses no longer charge ease (item 3), so the lost granularity costs much
+   less than it did.
+6. [x] **Fix the phantom `listening` cue.** `72e8320` — the picker could assign
+   `listening`, which `DrillBlock` has no branch for, so it rendered a
+   recognition MCQ under a "hear & type" header and credited the learner for a
+   modality never tested. Root cause was `DrillBlock` flattening its
+   `enabledCueTypes` prop to one boolean; the picker now takes the list and
+   intersects it with `RENDERABLE_CUE_TYPES`. Same flattening also meant the
+   `production` slice flag had no effect on the picker.
+
+   `ListeningExercise.tsx` stays unwired on purpose: it carries its own local
+   Levenshtein with a flat edit allowance, which would reintroduce the
+   short-word free-pass fixed in `6712580`. Wiring it means moving it onto
+   `fuzzyMatchAnswer` first.
 
 ## 8. Smaller known debt
 
-- `recordPhraseReview` is a verbatim copy-paste of `recordReview` — any SRS
-  change has to be made twice.
+- [x] `recordPhraseReview` was a verbatim copy-paste of `recordReview` — both
+  now share one `schedule()` in `lib/srs/engine.ts` (`72e8320`).
 - 202 `scene_pattern_exercises` rows are seeded and never rendered (the phase was
   cut; the seed data wasn't).
 - `lib/db/expanded/` is a byte-for-byte duplicate of `lib/db/content/id/`.
