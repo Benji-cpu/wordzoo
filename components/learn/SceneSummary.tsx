@@ -115,9 +115,15 @@ export function SceneSummary({
         )}
       </div>
 
+      {/* `words` is what the server actually SAVED, not the scene's authored
+          list — it used to be the latter, so a free learner who hit the daily
+          limit at word 5 of 25 was still told "25 words learned". A scene can
+          legitimately save nothing when every word was already known. */}
       <Card className="mb-2 py-2.5">
         <div className="text-[11px] font-extrabold tracking-[0.14em] uppercase text-[color:var(--text-secondary)] mb-1.5">
-          {words.length} {words.length === 1 ? 'word' : 'words'} learned
+          {words.length === 0
+            ? 'You already knew these — nice'
+            : `${words.length} ${words.length === 1 ? 'word' : 'words'} learned`}
         </div>
         <div className="flex flex-wrap gap-1.5 max-h-[20vh] overflow-y-auto pr-1">
           {words.map(({ word }) => {

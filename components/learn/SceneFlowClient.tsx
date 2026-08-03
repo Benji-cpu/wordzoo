@@ -12,7 +12,10 @@ import { MnemonicCard } from '@/components/learn/MnemonicCard';
 import { QuizOptions } from '@/components/learn/QuizOptions';
 import { CollapsibleWordFamily } from '@/components/learn/WordFamilyCard';
 import { SceneSummary } from '@/components/learn/SceneSummary';
+import { DailyLimitReached } from '@/components/learn/DailyLimitReached';
 import { VocabularyBlock } from '@/components/learn/VocabularyBlock';
+import { useWordLimit } from '@/lib/hooks/useWordLimit';
+import { toastError } from '@/lib/ui/toast';
 import { PhraseBlock } from '@/components/learn/PhraseBlock';
 import { ConversationBlock } from '@/components/learn/ConversationBlock';
 import { getSceneConversation } from '@/lib/learn/conversation-data';
@@ -228,6 +231,50 @@ export function SceneFlowClient({
   const words = learnedWordIds
     ? allWords.filter(w => !learnedWordIds.has(w.word.id))
     : allWords;
+
+  // Free-tier daily new-word limit. Every word answer goes through this so a
+  // 403 is surfaced instead of swallowed, and so the summary can report what
+  // was actually SAVED rather than what happened to be on screen.
+  const limit = useWordLimit();
+  const [savedWordIds, setSavedWordIds] = useState<Set<string>>(() => new Set());
+
+  const recordWordAnswer = useCallback(
+    async (wordId: string, direction: 'recognition' | 'production', correct: boolean) => {
+      const ok = await limit.recordWord('/api/reviews/record', {
+        wordId,
+        direction,
+        rating: correct ? 'got_it' : 'forgot',
+        source: 'scene',
+      });
+      if (ok) {
+        setSavedWordIds((prev) => (prev.has(wordId) ? prev : new Set(prev).add(wordId)));
+      }
+    },
+    [limit],
+  );
+
+  // Phrases are never gated (only /api/reviews/record enforces new_word), so
+  // this only needs to distinguish "saved" from "network died".
+  const recordPhraseAnswer = useCallback(
+    (phraseId: string, correct: boolean) => {
+      fetch('/api/reviews/record-phrase', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phraseId, rating: correct ? 'got_it' : 'forgot', source: 'scene' }),
+      })
+        .then((res) => {
+          if (!res.ok) toastError("Couldn't save that answer — check your connection.");
+        })
+        .catch(() => toastError("Couldn't save that answer — check your connection."));
+    },
+    [],
+  );
+
+  // Words in THIS scene the server actually accepted. `allWords` is the raw
+  // authored list — it counts words the learner already knew and words the
+  // daily limit rejected, which is how "25 words learned" was shown after five
+  // were saved.
+  const savedWords = allWords.filter((w) => savedWordIds.has(w.word.id));
 
   const [state, setState] = useState<FlowState>(() =>
     initialStateFromProgress(initialProgress, dialogues.length, phrases.length, allWords.length, hasAnchorImage, conversationCount)
@@ -467,11 +514,7 @@ export function SceneFlowClient({
     // Record phrase review for SRS tracking
     const phrase = phrases[state.phraseIndex];
     if (phrase) {
-      fetch('/api/reviews/record-phrase', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phraseId: phrase.id, rating: 'got_it' }),
-      }).catch(() => {});
+      recordPhraseAnswer(phrase.id, true);
     }
     const next = state.phraseIndex + 1;
     if (next < phrases.length) {
@@ -484,7 +527,7 @@ export function SceneFlowClient({
     } else {
       goToConversationOrSummary('phrases');
     }
-  }, [state, phrases, words.length, saveProgress, goToConversationOrSummary]);
+  }, [state, phrases, words.length, saveProgress, goToConversationOrSummary, recordPhraseAnswer]);
 
   // --- Vocabulary Phase (reuses existing word/mnemonic/quiz components) ---
   const handleWordContinue = useCallback(() => {
@@ -512,16 +555,8 @@ export function SceneFlowClient({
     if (state.phase !== 'vocabulary') return;
     const word = words[state.wordIndex];
     if (!word) return;
-    fetch('/api/reviews/record', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        wordId: word.word.id,
-        direction: 'recognition',
-        rating: correct ? 'got_it' : 'forgot',
-      }),
-    }).catch(() => {});
-  }, [state, words]);
+    void recordWordAnswer(word.word.id, 'recognition', correct);
+  }, [state, words, recordWordAnswer]);
 
   const handleVocabQuizCorrect = useCallback(() => {
     if (state.phase !== 'vocabulary') return;
@@ -631,6 +666,38 @@ export function SceneFlowClient({
     }
   })();
 
+  // The daily word limit is terminal for this sitting, so it replaces the flow
+  // rather than sitting alongside it. It can land mid-scene: the scene (20-32
+  // words) is still a far larger unit than the free daily allowance (5), which
+  // is a structural mismatch this doesn't fix — it just stops the app pretending
+  // the work was saved.
+  if (limit.limitReached) {
+    return (
+      <SceneShell
+        top={
+          <SceneFlowHeader
+            title={sceneTitle}
+            description={sceneDescription}
+            currentPhase={state.phase}
+            phaseProgress={phaseProgress}
+            onBack={handleBack}
+            sceneNumber={sceneNumber}
+            totalScenes={totalScenes}
+            languageCode={languageCode}
+            hasConversation={hasConversation}
+          />
+        }
+        className="max-w-lg mx-auto"
+      >
+        <DailyLimitReached
+          limit={5}
+          message={limit.upgradeMessage}
+          savedThisScene={savedWords.length}
+        />
+      </SceneShell>
+    );
+  }
+
   return (
     <SceneShell
       top={
@@ -695,13 +762,7 @@ export function SceneFlowClient({
           flags={pedagogyFlags!}
           onProgress={handleV2PhrasesProgress}
           initialState={v2InitialFromProgress(initialProgress, 'phrases')}
-          onItemAnswered={(phraseId, correct) => {
-            fetch('/api/reviews/record-phrase', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ phraseId, rating: correct ? 'got_it' : 'forgot' }),
-            }).catch(() => {});
-          }}
+          onItemAnswered={recordPhraseAnswer}
           onComplete={() => {
             // Leaving phrases — clear v2 sub-state for the next phase.
             if (words.length > 0) {
@@ -743,16 +804,9 @@ export function SceneFlowClient({
           flags={pedagogyFlags!}
           onProgress={handleV2VocabProgress}
           initialState={v2InitialFromProgress(initialProgress, 'vocabulary')}
+          onIntroduceBlocked={limit.markBlocked}
           onItemAnswered={(wordId, correct, direction) => {
-            fetch('/api/reviews/record', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                wordId,
-                direction,
-                rating: correct ? 'got_it' : 'forgot',
-              }),
-            }).catch(() => {});
+            void recordWordAnswer(wordId, direction, correct);
           }}
           onComplete={() => {
             // Leaving vocabulary — into conversation if present, else summary.
@@ -858,7 +912,7 @@ export function SceneFlowClient({
               Progress not saved — tap to retry
             </button>
           )}
-          <SceneSummary sceneTitle={sceneTitle} sceneDescription={sceneDescription} words={allWords} canDos={canDos} nextScene={nextScene} pathId={pathId} sceneId={sceneId} sceneNumber={sceneNumber} totalScenes={totalScenes} wordsLearnedToday={dailyStats.words_learned} scenesCompletedToday={dailyStats.scenes_completed} insight={activeInsight && activeInsightContext === 'scene_summary' ? activeInsight : undefined} onInsightDismiss={dismissInsight} />
+          <SceneSummary sceneTitle={sceneTitle} sceneDescription={sceneDescription} words={savedWords} canDos={canDos} nextScene={nextScene} pathId={pathId} sceneId={sceneId} sceneNumber={sceneNumber} totalScenes={totalScenes} wordsLearnedToday={dailyStats.words_learned} scenesCompletedToday={dailyStats.scenes_completed} insight={activeInsight && activeInsightContext === 'scene_summary' ? activeInsight : undefined} onInsightDismiss={dismissInsight} />
         </>
       )}
     </SceneShell>

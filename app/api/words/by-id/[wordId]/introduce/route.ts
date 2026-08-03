@@ -51,14 +51,25 @@ export async function POST(
 
   const { alreadyIntroduced } = await recordIntroduction(session.user.id, wordId);
 
-  return NextResponse.json<ApiResponse<IntroduceResponse>>({
-    data: {
-      allowed: true,
-      alreadyIntroduced,
-      upgradeMessage: null,
-      currentUsage: null,
-      limit: null,
+  // Absent header means unlimited (premium/admin), matching the convention
+  // X-Tutor-Messages-Remaining already uses. Only a brand-new introduction
+  // consumes quota, so a repeat leaves the count where it was.
+  const remaining =
+    typeof access.limit === 'number' && typeof access.currentUsage === 'number'
+      ? Math.max(0, access.limit - access.currentUsage - (alreadyIntroduced ? 0 : 1))
+      : null;
+
+  return NextResponse.json<ApiResponse<IntroduceResponse>>(
+    {
+      data: {
+        allowed: true,
+        alreadyIntroduced,
+        upgradeMessage: null,
+        currentUsage: null,
+        limit: null,
+      },
+      error: null,
     },
-    error: null,
-  });
+    remaining === null ? undefined : { headers: { 'X-Words-Remaining': String(remaining) } },
+  );
 }

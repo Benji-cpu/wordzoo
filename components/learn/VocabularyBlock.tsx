@@ -28,6 +28,13 @@ interface VocabularyBlockProps {
   onProgress?: (progress: V2BlockProgress) => void;
   /** Restore prior sub-state when the user re-enters a scene mid-phase. */
   initialState?: V2InitialState;
+  /**
+   * Fired when the introduce endpoint refuses a new word (free-tier daily
+   * limit). IntroduceBatch has always detected this and called the callback;
+   * until now nothing passed one, so the signal went nowhere and the learner
+   * kept meeting words that were never saved.
+   */
+  onIntroduceBlocked?: (upgradeMessage: string | null) => void;
   /** Fired after the end-of-vocab checkpoint resolves. */
   onComplete: () => void;
 }
@@ -45,6 +52,7 @@ export function VocabularyBlock({
   onItemAnswered,
   onProgress,
   initialState,
+  onIntroduceBlocked,
   onComplete,
 }: VocabularyBlockProps) {
   const batches = useMemo(() => {
@@ -202,6 +210,7 @@ export function VocabularyBlock({
         languageName={languageName}
         languageCode={languageCode}
         recordIntroduce={flags.mastery}
+        onIntroduceBlocked={onIntroduceBlocked}
         onComplete={advanceFromIntro}
       />
     );

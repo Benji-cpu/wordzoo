@@ -14,6 +14,7 @@ import { Fox } from '@/components/mascot/Fox';
 import Link from 'next/link';
 import { InsightCard } from '@/components/insights/InsightCard';
 import { getEligibleInsight } from '@/lib/insights/engine';
+import { toastError } from '@/lib/ui/toast';
 import type { InsightDefinition } from '@/lib/insights/data';
 import { CanDoTest, type CertifyResult } from '@/components/learn/CanDoTest';
 import type { DueWordForReview } from '@/lib/db/queries';
@@ -258,10 +259,18 @@ export function ReviewClient({ dueWords, duePhrases, dueCanDos = [], practiceWor
       setMissedItems(missedItemsRef.current);
     }
 
-    const recordFailure = () => {
-      import('sonner').then(({ toast }) =>
-        toast.error("Couldn't save that rating. Check your connection — we'll retry on next submit.")
-      );
+    // A 403 here means the free-tier daily word limit, not a network problem,
+    // and telling the learner to "check your connection" sends them to fix the
+    // wrong thing. After the record route's gate moved to `!existing`, this
+    // should now be unreachable from the review queue — every item in the queue
+    // already has a user_words row — so it doubles as a canary for that gate
+    // regressing.
+    const recordFailure = (res?: Response) => {
+      if (res?.status === 403) {
+        toastError("That was a new word and you've hit today's free limit — it wasn't saved.");
+        return;
+      }
+      toastError("Couldn't save that rating. Check your connection — we'll retry on next submit.");
     };
 
     const ratedMode = modeForItem(current);
@@ -280,8 +289,8 @@ export function ReviewClient({ dueWords, duePhrases, dueCanDos = [], practiceWor
           source: 'review',
         }),
       })
-        .then((res) => { if (!res.ok) recordFailure(); })
-        .catch(recordFailure);
+        .then((res) => { if (!res.ok) recordFailure(res); })
+        .catch(() => recordFailure());
     } else {
       fetch('/api/reviews/record-phrase', {
         method: 'POST',
@@ -293,8 +302,8 @@ export function ReviewClient({ dueWords, duePhrases, dueCanDos = [], practiceWor
           source: 'review',
         }),
       })
-        .then((res) => { if (!res.ok) recordFailure(); })
-        .catch(recordFailure);
+        .then((res) => { if (!res.ok) recordFailure(res); })
+        .catch(() => recordFailure());
     }
 
     advance();
