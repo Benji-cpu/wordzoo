@@ -58,7 +58,8 @@ export async function PATCH(
       error: null,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to update feedback';
+    console.error('[app/api/admin/app-feedback/[id]/route.ts]', error);
+    const message = 'Failed to update feedback';
     return NextResponse.json<ApiResponse<null>>(
       { data: null, error: message },
       { status: 500 }

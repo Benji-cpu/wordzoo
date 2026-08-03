@@ -24,7 +24,8 @@ export async function GET() {
     });
   } catch (error) {
     console.error('[billing/status] Error:', error);
-    const message = error instanceof Error ? error.message : 'Failed to get billing status';
+    console.error('[app/api/billing/status/route.ts]', error);
+    const message = 'Failed to get billing status';
     return NextResponse.json<ApiResponse<null>>(
       { data: null, error: message },
       { status: 500 }

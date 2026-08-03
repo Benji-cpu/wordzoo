@@ -55,7 +55,8 @@ export async function POST(request: NextRequest) {
         { status: 429 }
       );
     }
-    const message = error instanceof Error ? error.message : 'Failed to submit feedback';
+    console.error('[app/api/feedback/route.ts]', error);
+    const message = 'Failed to submit feedback';
     return NextResponse.json<ApiResponse<null>>(
       { data: null, error: message },
       { status: 500 }

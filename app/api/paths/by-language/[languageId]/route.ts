@@ -59,7 +59,8 @@ export async function GET(
       error: null,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to fetch paths';
+    console.error('[app/api/paths/by-language/[languageId]/route.ts]', error);
+    const message = 'Failed to fetch paths';
     return NextResponse.json<ApiResponse<null>>(
       { data: null, error: message },
       { status: 500 }

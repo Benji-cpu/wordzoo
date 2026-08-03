@@ -78,7 +78,8 @@ export async function POST(request: NextRequest) {
       error: null,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to generate trip preview';
+    console.error('[app/api/trip/preview/route.ts]', error);
+    const message = 'Failed to generate trip preview';
     return NextResponse.json<ApiResponse<null>>(
       { data: null, error: message },
       { status: 500 }

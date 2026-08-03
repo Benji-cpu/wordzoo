@@ -32,7 +32,8 @@ export async function POST(request: NextRequest) {
       error: null,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to check access';
+    console.error('[app/api/billing/check-access/route.ts]', error);
+    const message = 'Failed to check access';
     return NextResponse.json<ApiResponse<null>>(
       { data: null, error: message },
       { status: 500 }

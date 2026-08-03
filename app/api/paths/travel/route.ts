@@ -60,7 +60,8 @@ export async function POST(request: NextRequest) {
       error: null,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to generate travel pack';
+    console.error('[app/api/paths/travel/route.ts]', error);
+    const message = 'Failed to generate travel pack';
     return NextResponse.json<ApiResponse<null>>(
       { data: null, error: message },
       { status: 500 }

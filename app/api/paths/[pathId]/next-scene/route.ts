@@ -42,7 +42,8 @@ export async function GET(
       error: null,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to fetch next scene';
+    console.error('[app/api/paths/[pathId]/next-scene/route.ts]', error);
+    const message = 'Failed to fetch next scene';
     return NextResponse.json<ApiResponse<null>>(
       { data: null, error: message },
       { status: 500 }

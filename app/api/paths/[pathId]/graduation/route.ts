@@ -43,7 +43,8 @@ export async function GET(
       error: null,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to check graduation';
+    console.error('[app/api/paths/[pathId]/graduation/route.ts]', error);
+    const message = 'Failed to check graduation';
     return NextResponse.json<ApiResponse<null>>(
       { data: null, error: message },
       { status: 500 }
@@ -102,7 +103,8 @@ export async function POST(
       error: null,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to complete graduation';
+    console.error('[app/api/paths/[pathId]/graduation/route.ts]', error);
+    const message = 'Failed to complete graduation';
     return NextResponse.json<ApiResponse<null>>(
       { data: null, error: message },
       { status: 500 }

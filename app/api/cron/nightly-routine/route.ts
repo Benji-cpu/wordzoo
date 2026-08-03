@@ -88,6 +88,14 @@ async function writeDigestToRepo(
   return { ok: true };
 }
 
+// Six Neon round-trips plus two GitHub API calls. On the default (~10s) budget
+// this intermittently timed out before writing the digest, which is what
+// produced the long run of `triage: missing digest` stubs — the agent found no
+// digests/YYYY-MM-DD.json and committed a stub instead. Failures were sporadic
+// (a few days succeeded) which is the signature of a timeout, not of an expired
+// GITHUB_PAT_REPO_WRITE.
+export const maxDuration = 60;
+
 export async function GET(request: NextRequest) {
   const authHeader = request.headers.get('authorization');
   const cronSecret = process.env.CRON_SECRET;
@@ -108,71 +116,81 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  const feedbackByStatus = await safe('feedbackByStatus', async () => {
-    const rows = (await sql`
-      SELECT status, COUNT(*)::int AS count
-      FROM app_feedback
-      GROUP BY status
-    `) as Array<{ status: string; count: number }>;
-    return rows.reduce<Record<string, number>>((acc, r) => {
-      acc[r.status] = r.count;
-      return acc;
-    }, {});
-  });
+  // All six reads are independent — run them concurrently rather than as six
+  // sequential Neon round-trips. safe() still isolates each failure.
+  const [
+    feedbackByStatus,
+    newFeedbackLast24h,
+    stuckMnemonicsLast72h,
+    overdueReviews,
+    spendLast24h,
+    pendingRows,
+  ] = await Promise.all([
+    safe('feedbackByStatus', async () => {
+      const rows = (await sql`
+        SELECT status, COUNT(*)::int AS count
+        FROM app_feedback
+        GROUP BY status
+      `) as Array<{ status: string; count: number }>;
+      return rows.reduce<Record<string, number>>((acc, r) => {
+        acc[r.status] = r.count;
+        return acc;
+      }, {});
+    }),
 
-  const newFeedbackLast24h = await safe('newFeedbackLast24h', async () => {
-    const rows = (await sql`
-      SELECT COUNT(*)::int AS count
-      FROM app_feedback
-      WHERE status = 'new' AND created_at >= now() - interval '24 hours'
-    `) as Array<{ count: number }>;
-    return rows[0]?.count ?? 0;
-  });
+    safe('newFeedbackLast24h', async () => {
+      const rows = (await sql`
+        SELECT COUNT(*)::int AS count
+        FROM app_feedback
+        WHERE status = 'new' AND created_at >= now() - interval '24 hours'
+      `) as Array<{ count: number }>;
+      return rows[0]?.count ?? 0;
+    }),
 
-  const stuckMnemonicsLast72h = await safe('stuckMnemonicsLast72h', async () => {
-    const rows = (await sql`
-      SELECT COUNT(*)::int AS count
-      FROM mnemonics
-      WHERE audio_url IS NULL AND created_at < now() - interval '72 hours'
-    `) as Array<{ count: number }>;
-    return rows[0]?.count ?? 0;
-  });
+    safe('stuckMnemonicsLast72h', async () => {
+      const rows = (await sql`
+        SELECT COUNT(*)::int AS count
+        FROM mnemonics
+        WHERE audio_url IS NULL AND created_at < now() - interval '72 hours'
+      `) as Array<{ count: number }>;
+      return rows[0]?.count ?? 0;
+    }),
 
-  const overdueReviews = await safe('overdueReviews', async () => {
-    const rows = (await sql`
-      SELECT COUNT(*)::int AS count
-      FROM user_words
-      WHERE next_review_at < now() - interval '2 days'
-    `) as Array<{ count: number }>;
-    return rows[0]?.count ?? 0;
-  });
+    safe('overdueReviews', async () => {
+      const rows = (await sql`
+        SELECT COUNT(*)::int AS count
+        FROM user_words
+        WHERE next_review_at < now() - interval '2 days'
+      `) as Array<{ count: number }>;
+      return rows[0]?.count ?? 0;
+    }),
 
-  // Spend rollup: what the AI/image/TTS/Blob endpoints actually cost in the
-  // last 24h, per kind. This is the signal that says whether it's safe to
-  // un-suspend the Blob store, and the early warning if a client starts
-  // looping a generation endpoint.
-  const spendLast24h = await safe('spendLast24h', async () => {
-    return (await sql`
-      SELECT kind, SUM(units)::int AS units, COUNT(*)::int AS calls
-      FROM spend_events
-      WHERE created_at > now() - interval '24 hours'
-      GROUP BY kind
-      ORDER BY units DESC
-    `) as Array<{ kind: string; units: number; calls: number }>;
-  });
+    // Spend rollup: what the AI/image/TTS/Blob endpoints actually cost in the
+    // last 24h, per kind. Early warning if a client starts looping a
+    // generation endpoint, and the signal to watch after any bulk re-enrich.
+    safe('spendLast24h', async () => {
+      return (await sql`
+        SELECT kind, SUM(units)::int AS units, COUNT(*)::int AS calls
+        FROM spend_events
+        WHERE created_at > now() - interval '24 hours'
+        GROUP BY kind
+        ORDER BY units DESC
+      `) as Array<{ kind: string; units: number; calls: number }>;
+    }),
 
-  const pendingRows = await safe('pendingRows', async () => {
-    return (await sql`
-      SELECT af.id, af.user_id, af.message, af.page_url, af.page_title,
-        af.viewport_width, af.viewport_height, af.user_agent,
-        af.activity_trail, af.status, af.created_at,
-        u.email AS user_email, u.name AS user_name
-      FROM app_feedback af
-      JOIN users u ON u.id = af.user_id
-      WHERE af.status = 'new'
-      ORDER BY af.created_at DESC
-    `) as PendingRow[];
-  });
+    safe('pendingRows', async () => {
+      return (await sql`
+        SELECT af.id, af.user_id, af.message, af.page_url, af.page_title,
+          af.viewport_width, af.viewport_height, af.user_agent,
+          af.activity_trail, af.status, af.created_at,
+          u.email AS user_email, u.name AS user_name
+        FROM app_feedback af
+        JOIN users u ON u.id = af.user_id
+        WHERE af.status = 'new'
+        ORDER BY af.created_at DESC
+      `) as PendingRow[];
+    }),
+  ]);
 
   const today = todayBali();
   const payload = {

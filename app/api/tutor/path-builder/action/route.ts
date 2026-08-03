@@ -102,7 +102,8 @@ export async function POST(request: NextRequest) {
       { status: 400 }
     );
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Action failed';
+    console.error('[app/api/tutor/path-builder/action/route.ts]', error);
+    const message = 'Action failed';
     return NextResponse.json<ApiResponse<null>>(
       { data: null, error: message },
       { status: 500 }

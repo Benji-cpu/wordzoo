@@ -51,7 +51,8 @@ export async function POST(request: NextRequest) {
       error: null,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to regenerate mnemonic';
+    console.error('[app/api/mnemonics/regenerate-feedback/route.ts]', error);
+    const message = 'Failed to regenerate mnemonic';
     return NextResponse.json<ApiResponse<null>>(
       { data: null, error: message },
       { status: 500 }

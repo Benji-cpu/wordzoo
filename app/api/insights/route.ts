@@ -25,7 +25,8 @@ export async function GET() {
       error: null,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to fetch insight state';
+    console.error('[app/api/insights/route.ts]', error);
+    const message = 'Failed to fetch insight state';
     return NextResponse.json<ApiResponse<null>>(
       { data: null, error: message },
       { status: 500 }
@@ -72,7 +73,8 @@ export async function POST(request: NextRequest) {
       error: null,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to update insight';
+    console.error('[app/api/insights/route.ts]', error);
+    const message = 'Failed to update insight';
     return NextResponse.json<ApiResponse<null>>(
       { data: null, error: message },
       { status: 500 }

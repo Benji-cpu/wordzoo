@@ -37,7 +37,8 @@ export async function POST(request: NextRequest) {
       error: null,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to submit feedback';
+    console.error('[app/api/mnemonics/feedback/route.ts]', error);
+    const message = 'Failed to submit feedback';
     return NextResponse.json<ApiResponse<null>>(
       { data: null, error: message },
       { status: 500 }

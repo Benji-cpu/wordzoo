@@ -31,8 +31,15 @@ export async function POST(request: NextRequest) {
       { data: summary, error: null }
     );
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to end session';
-    const status = message === 'Unauthorized' ? 403 : message === 'Session not found' ? 404 : 500;
+    console.error('[app/api/tutor/session/end/route.ts]', error);
+    // Branch on the thrown message to pick a status, but never return it —
+    // only these two known sentinels map to a client-safe response.
+    const raw = error instanceof Error ? error.message : '';
+    const status = raw === 'Unauthorized' ? 403 : raw === 'Session not found' ? 404 : 500;
+    const message =
+      status === 403 ? 'Unauthorized'
+      : status === 404 ? 'Session not found'
+      : 'Failed to end session';
     return NextResponse.json<ApiResponse<null>>(
       { data: null, error: message },
       { status }

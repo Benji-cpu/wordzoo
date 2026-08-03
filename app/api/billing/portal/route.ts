@@ -19,7 +19,8 @@ export async function POST() {
       error: null,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to create portal session';
+    console.error('[app/api/billing/portal/route.ts]', error);
+    const message = 'Failed to create portal session';
     return NextResponse.json<ApiResponse<null>>(
       { data: null, error: message },
       { status: 500 }

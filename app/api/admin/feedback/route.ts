@@ -58,7 +58,8 @@ export async function GET(request: NextRequest) {
       error: null,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to fetch feedback data';
+    console.error('[app/api/admin/feedback/route.ts]', error);
+    const message = 'Failed to fetch feedback data';
     return NextResponse.json<ApiResponse<null>>(
       { data: null, error: message },
       { status: 500 }

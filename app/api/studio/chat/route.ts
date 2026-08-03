@@ -37,7 +37,8 @@ export async function POST(request: NextRequest) {
         error: null,
       });
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to start studio session';
+      console.error('[app/api/studio/chat/route.ts]', error);
+      const message = 'Failed to start studio session';
       return NextResponse.json<ApiResponse<null>>(
         { data: null, error: message },
         { status: 500 }
@@ -62,7 +63,8 @@ export async function POST(request: NextRequest) {
         error: null,
       });
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to send studio message';
+      console.error('[app/api/studio/chat/route.ts]', error);
+      const message = 'Failed to send studio message';
       return NextResponse.json<ApiResponse<null>>(
         { data: null, error: message },
         { status: 500 }

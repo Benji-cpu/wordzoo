@@ -74,7 +74,8 @@ export async function GET(
       error: null,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error('[app/api/words/by-id/[wordId]/route.ts]', error);
+    const message = 'Unknown error';
     return NextResponse.json<ApiResponse<null>>(
       { data: null, error: message },
       { status: 500 }
