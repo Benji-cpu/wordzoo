@@ -1,6 +1,11 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
+import {
+  isSpeechServiceBlocked,
+  markSpeechServiceBlocked,
+  speechUnavailableMessage,
+} from '@/lib/audio/speech-support';
 
 interface SpeechRecognitionEvent {
   results: SpeechRecognitionResultList;
@@ -82,18 +87,11 @@ export function useSpeechInput(langCode: string) {
 
   const startListening = useCallback(async () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      // Brave disables Web Speech API by default. Surface a clear hint instead of
-      // failing silently — most users won't know to flip the brave://settings flag.
-      const ua = navigator.userAgent;
-      const isBrave = !!(navigator as unknown as { brave?: { isBrave?: () => Promise<boolean> } }).brave;
-      setError(
-        isBrave
-          ? 'Brave blocks speech recognition by default. Enable it at brave://settings/privacy → "Use Google services for push messaging" or use Chrome.'
-          : ua.includes('Firefox')
-            ? 'Firefox does not support speech recognition. Please use Chrome, Edge, or Safari.'
-            : 'Speech recognition is not available in this browser.'
-      );
+    // A missing constructor is only one of the ways this can be unavailable.
+    // Brave ships `webkitSpeechRecognition` and has nothing behind it, so also
+    // honour a service failure we've already watched happen this session.
+    if (!SpeechRecognition || isSpeechServiceBlocked()) {
+      setError(speechUnavailableMessage());
       return;
     }
     setError(null);
@@ -114,12 +112,15 @@ export function useSpeechInput(langCode: string) {
     recognition.onerror = (event: { error: string }) => {
       // 'no-speech' is non-fatal when continuous — ignore it
       if (event.error === 'no-speech') return;
-      if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+      if (event.error === 'not-allowed') {
         setError('Microphone access is blocked. Allow it in your browser settings to dictate, or just type below.');
       } else if (event.error === 'audio-capture') {
         setError('No microphone found. Check your device and try again, or just type below.');
-      } else if (event.error === 'network') {
-        setError('Speech recognition needs a network connection. Try again, or just type below.');
+      } else if (event.error === 'service-not-allowed' || event.error === 'network') {
+        // Not the user's connection: the browser has no speech service to reach.
+        // Blaming the network sends people to re-check wifi that is working fine.
+        markSpeechServiceBlocked();
+        setError(speechUnavailableMessage());
       } else if (event.error !== 'aborted') {
         setError('Voice input stopped unexpectedly. Tap the mic to try again.');
       }

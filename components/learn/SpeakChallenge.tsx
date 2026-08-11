@@ -32,6 +32,15 @@ type Stage = 'idle' | 'listening' | 'result';
 /** Two consecutive silent/blocked attempts and we stop asking. */
 const MAX_NOT_SCORED = 2;
 
+/**
+ * Reasons no amount of trying again will fix: the browser has no speech service
+ * to talk to. Offering "Try again" here is a lie — Brave in particular ends
+ * recognition a fraction of a second after it starts, so the learner taps, sees
+ * the mic switch itself off, and concludes the app is broken. These get the
+ * explanation and a single way forward instead of a retry.
+ */
+const TERMINAL_REASONS = new Set(['service_blocked', 'unsupported_browser']);
+
 interface SpeakChallengeProps {
   /** The line the learner should say. */
   target: string;
@@ -111,6 +120,10 @@ export function SpeakChallenge({
       if (r.score === 'not_scored') {
         notScoredCount.current += 1;
         onNotScored?.(r);
+        // A dead speech service is terminal, but don't yank the screen away
+        // before they've read why — the explanation is the whole point. The
+        // controls drop to a single "Type it instead", which is what advances.
+        if (TERMINAL_REASONS.has(r.reason ?? '')) return;
         if (notScoredCount.current >= MAX_NOT_SCORED) {
           onOutcome({ kind: 'fallback', reason: 'not_scored' });
         }
@@ -140,12 +153,20 @@ export function SpeakChallenge({
       ? `We heard: “${result.transcription.trim()}”`
       : null;
 
+  const terminal = stage === 'result' && !!result && TERMINAL_REASONS.has(result.reason ?? '');
+
   const info = (
     <>
       {heardLine ? (
         <p className="mt-3 text-sm text-[color:var(--text-secondary)]">{heardLine}</p>
       ) : null}
-      {stage === 'result' && result ? (
+      {terminal && result ? (
+        // Prose, not the score pill: the pill is shaped for verdicts on the
+        // learner, and this is a statement about their browser.
+        <p className="mt-3 mx-auto max-w-sm text-sm text-[color:var(--text-secondary)]">
+          {result.feedback}
+        </p>
+      ) : stage === 'result' && result ? (
         <div className="mt-2 flex justify-center">
           <ScoreDisplay result={result} />
         </div>
@@ -184,6 +205,17 @@ export function SpeakChallenge({
               Type it instead
             </button>
           </>
+        ) : terminal ? (
+          // No retry offered on purpose — there is nothing on the other end of
+          // it. `not_scored` (not `user`) so the parent stops picking the speak
+          // cue for the rest of the batch.
+          <button
+            type="button"
+            onClick={() => onOutcome({ kind: 'fallback', reason: 'not_scored' })}
+            className="w-full rounded-xl bg-[color:var(--color-fox-primary)] text-white font-bold py-3 active:scale-[0.98] transition"
+          >
+            Type it instead
+          </button>
         ) : result?.score === 'not_scored' ? (
           <div className="w-full flex flex-col gap-2">
             <button
@@ -222,9 +254,11 @@ export function SpeakChallenge({
           </div>
         ) : null}
 
-        <p className="text-[11px] text-[color:var(--text-secondary)] px-4 text-center">
-          Your browser does the listening — in Chrome that means the audio goes to Google.
-        </p>
+        {!terminal ? (
+          <p className="text-[11px] text-[color:var(--text-secondary)] px-4 text-center">
+            Your browser does the listening — in Chrome that means the audio goes to Google.
+          </p>
+        ) : null}
     </div>
   );
 

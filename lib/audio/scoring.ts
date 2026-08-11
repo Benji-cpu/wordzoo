@@ -5,6 +5,11 @@ import type {
 } from '@/types/audio';
 import { LANGUAGE_VOICE_MAP } from './voice-map';
 import { playWordPronunciation, fetchWord } from './pronunciation';
+import {
+  isSpeechServiceBlocked,
+  markSpeechServiceBlocked,
+  speechUnavailableMessage,
+} from './speech-support';
 
 // Minimal Web Speech API types (not in TypeScript's DOM lib)
 interface WebSpeechRecognition extends EventTarget {
@@ -42,7 +47,10 @@ function getSpeechRecognition(): SpeechRecognitionCtor | null {
 export function isScoringAvailable(languageCode: SupportedLanguageCode): boolean {
   const config = LANGUAGE_VOICE_MAP[languageCode];
   if (!config.speechRecognitionSupported) return false;
-  return getSpeechRecognition() !== null;
+  if (getSpeechRecognition() === null) return false;
+  // The constructor is present in Brave too, but the service behind it is not.
+  // Once we've actually watched it fail, stop claiming the capability.
+  return !isSpeechServiceBlocked();
 }
 
 const LISTEN_TIMEOUT_MS = 5000;
@@ -78,8 +86,8 @@ export function startSpeechAttempt(
     return {
       promise: Promise.resolve(
         notScored(
-          'unsupported_browser',
-          "This browser can't listen, so nothing was scored.",
+          isSpeechServiceBlocked() ? 'service_blocked' : 'unsupported_browser',
+          speechUnavailableMessage(),
           target,
         ),
       ),
@@ -121,18 +129,33 @@ export function startSpeechAttempt(
     };
 
     recognition.onerror = (event: WebSpeechRecognitionErrorEvent) => {
+      if (event.error === 'not-allowed') {
+        settle(
+          notScored(
+            'mic_denied',
+            'Mic access is off, so nothing was scored. Allow the mic and try again.',
+            target,
+          ),
+        );
+        return;
+      }
+
+      // The browser has no working speech service — Brave holds no licence for
+      // one, and both codes also cover a blocked or unreachable service. The
+      // learner did nothing wrong and retrying cannot help, so remember it and
+      // say so instead of asking them to speak up.
+      if (event.error === 'service-not-allowed' || event.error === 'network') {
+        markSpeechServiceBlocked();
+        settle(notScored('service_blocked', speechUnavailableMessage(), target));
+        return;
+      }
+
       settle(
-        event.error === 'not-allowed'
-          ? notScored(
-              'mic_denied',
-              'Mic access is off, so nothing was scored. Allow the mic and try again.',
-              target,
-            )
-          : notScored(
-              'recognition_error',
-              "We couldn't hear you, so nothing was scored. Try again.",
-              target,
-            ),
+        notScored(
+          'recognition_error',
+          "We couldn't hear you, so nothing was scored. Try again.",
+          target,
+        ),
       );
     };
 

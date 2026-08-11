@@ -26,8 +26,15 @@ export type PronunciationScore =
   | 'try_again'
   | 'not_scored';
 
+/**
+ * `service_blocked` is distinct from `recognition_error` on purpose. It means
+ * the browser has no working speech service at all (Brave holds no licence for
+ * Google's), so recognition ends the instant it starts. Retrying can never
+ * succeed, so the UI must stop offering the mic rather than invite another go.
+ */
 export type NotScoredReason =
   | 'unsupported_browser'
+  | 'service_blocked'
   | 'mic_denied'
   | 'no_speech'
   | 'recognition_error';
