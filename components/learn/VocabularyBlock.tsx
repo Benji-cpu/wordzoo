@@ -119,6 +119,16 @@ export function VocabularyBlock({
     [onItemAnswered],
   );
 
+  // Where a freshly mounted IntroduceBatch should open: 'start' when we arrive
+  // forwards, 'end' when the learner backs out of the drill into it.
+  const [introEntry, setIntroEntry] = useState<'start' | 'end'>('start');
+  // Step-back closure registered by the mounted IntroduceBatch, so the block's
+  // back walks its cards rather than skipping the whole batch.
+  const introBackRef = useRef<(() => boolean) | null>(null);
+  const registerIntroBack = useCallback((fn: (() => boolean) | null) => {
+    introBackRef.current = fn;
+  }, []);
+
   const advanceFromIntro = useCallback(() => {
     setPhase((p) =>
       p.kind === 'intro' ? { kind: 'drill', batchIndex: p.batchIndex } : p,
@@ -128,6 +138,7 @@ export function VocabularyBlock({
   }, []);
 
   const advanceFromDrill = useCallback(() => {
+    setIntroEntry('start');
     setPhase((p) => {
       if (p.kind !== 'drill') return p;
       // Talk before moving on: use what was just drilled (plus everything
@@ -141,6 +152,7 @@ export function VocabularyBlock({
   }, [batches.length, interludeFor]);
 
   const advanceFromConverse = useCallback(() => {
+    setIntroEntry('start');
     setPhase((p) => {
       if (p.kind !== 'converse') return p;
       const next = p.batchIndex + 1;
@@ -192,12 +204,16 @@ export function VocabularyBlock({
       return true;
     }
     if (phase.kind === 'drill') {
+      // Land on the batch handoff ("You've met them all"), which is the screen
+      // the learner actually came from — not word 1 of the batch.
+      setIntroEntry('end');
       setPhase({ kind: 'intro', batchIndex: phase.batchIndex });
       setDrillFraction(0);
       drillInitialSize.current = 0;
       return true;
     }
-    // intro
+    // intro: walk the cards first, and only leave the batch once at card 1.
+    if (introBackRef.current?.()) return true;
     if (phase.batchIndex > 0) {
       setPhase(tailOf(phase.batchIndex - 1));
       return true;
@@ -290,6 +306,8 @@ export function VocabularyBlock({
         languageCode={languageCode}
         recordIntroduce={flags.mastery}
         onIntroduceBlocked={onIntroduceBlocked}
+        startAtEnd={introEntry === 'end'}
+        registerBack={registerIntroBack}
         onComplete={advanceFromIntro}
       />
     );

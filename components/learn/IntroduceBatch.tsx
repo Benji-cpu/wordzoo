@@ -19,6 +19,18 @@ interface IntroduceBatchProps {
   /** Pedagogy v2 introduce hook (fired by WordCard on first mount). */
   recordIntroduce?: boolean;
   onIntroduceBlocked?: (upgradeMessage: string | null) => void;
+  /**
+   * Enter on the last screen instead of the first. Set when the learner backs
+   * out of the drill: the screen before the drill is the handoff, not word 1.
+   */
+  startAtEnd?: boolean;
+  /**
+   * Hands the parent a closure that steps back one card, returning false once
+   * there is nothing left to step back to. Without it the parent's back button
+   * can only skip the whole batch, which is what made "back" feel like it threw
+   * you to the start of the section.
+   */
+  registerBack?: (goBack: (() => boolean) | null) => void;
   onComplete: () => void;
 }
 
@@ -40,6 +52,8 @@ export function IntroduceBatch({
   languageCode,
   recordIntroduce,
   onIntroduceBlocked,
+  startAtEnd,
+  registerBack,
   onComplete,
 }: IntroduceBatchProps) {
   // Every word gets a mnemonic step. Words that arrive without one (AI-
@@ -54,8 +68,10 @@ export function IntroduceBatch({
     return out;
   }, [words]);
 
-  const [stepIdx, setStepIdx] = useState(0);
-  const [readyToDrill, setReadyToDrill] = useState(false);
+  // `startAtEnd` is only read on mount — the parent remounts this component
+  // (keyed by batch) whenever it wants a different entry point.
+  const [stepIdx, setStepIdx] = useState(() => (startAtEnd ? Math.max(0, steps.length - 1) : 0));
+  const [readyToDrill, setReadyToDrill] = useState(Boolean(startAtEnd));
   const introducedRef = useRef<Set<string>>(new Set());
 
   // Lazy mnemonic generation for words missing one.
@@ -96,6 +112,31 @@ export function IntroduceBatch({
     }
     setStepIdx((i) => i + 1);
   }, [stepIdx, steps.length]);
+
+  /** Exact reverse of `advance`: handoff → last card → … → first card. */
+  const goBack = useCallback((): boolean => {
+    if (readyToDrill) {
+      setReadyToDrill(false);
+      return true;
+    }
+    if (stepIdx > 0) {
+      setStepIdx((i) => i - 1);
+      return true;
+    }
+    return false;
+  }, [readyToDrill, stepIdx]);
+
+  // Register a stable wrapper once; the ref keeps it pointed at the current
+  // step so the parent never holds a stale closure.
+  const goBackRef = useRef(goBack);
+  useEffect(() => {
+    goBackRef.current = goBack;
+  }, [goBack]);
+  useEffect(() => {
+    if (!registerBack) return;
+    registerBack(() => goBackRef.current());
+    return () => registerBack(null);
+  }, [registerBack]);
 
   // Introduce gate: when `recordIntroduce` is on (Pedagogy v2 mastery slice),
   // ping the introduce endpoint the first time we land on each word's card.

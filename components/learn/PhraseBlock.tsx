@@ -102,6 +102,14 @@ export function PhraseBlock({
     return out;
   }, [flags.production, flags.cloze]);
 
+  // Where a freshly mounted PhraseIntroBatch should open: 'start' arriving
+  // forwards, 'end' when the learner backs out of the drill into it.
+  const [introEntry, setIntroEntry] = useState<'start' | 'end'>('start');
+  const introBackRef = useRef<(() => boolean) | null>(null);
+  const registerIntroBack = useCallback((fn: (() => boolean) | null) => {
+    introBackRef.current = fn;
+  }, []);
+
   const advanceFromIntro = useCallback(() => {
     setPhase((p) =>
       p.kind === 'intro' ? { kind: 'drill', batchIndex: p.batchIndex } : p,
@@ -111,6 +119,7 @@ export function PhraseBlock({
   }, []);
 
   const advanceFromDrill = useCallback(() => {
+    setIntroEntry('start');
     setPhase((p) => {
       if (p.kind !== 'drill') return p;
       if (interludeFor(p.batchIndex)) return { kind: 'converse', batchIndex: p.batchIndex };
@@ -121,6 +130,7 @@ export function PhraseBlock({
   }, [batches.length, interludeFor]);
 
   const advanceFromConverse = useCallback(() => {
+    setIntroEntry('start');
     setPhase((p) => {
       if (p.kind !== 'converse') return p;
       const next = p.batchIndex + 1;
@@ -168,11 +178,16 @@ export function PhraseBlock({
       return true;
     }
     if (phase.kind === 'drill') {
+      // Land on the batch handoff ("You've seen the breakdown"), the screen the
+      // learner actually came from — not phrase 1 of the batch.
+      setIntroEntry('end');
       setPhase({ kind: 'intro', batchIndex: phase.batchIndex });
       setDrillFraction(0);
       drillInitialSize.current = 0;
       return true;
     }
+    // intro: walk the cards first, and only leave the batch once at card 1.
+    if (introBackRef.current?.()) return true;
     if (phase.batchIndex > 0) {
       setPhase(tailOf(phase.batchIndex - 1));
       return true;
@@ -252,6 +267,8 @@ export function PhraseBlock({
         totalPhrases={phrases.length}
         globalIndexStart={phase.batchIndex * PHRASE_BATCH_SIZE}
         languageCode={languageCode}
+        startAtEnd={introEntry === 'end'}
+        registerBack={registerIntroBack}
         onComplete={advanceFromIntro}
       />
     );
@@ -286,6 +303,10 @@ interface PhraseIntroBatchProps {
   totalPhrases: number;
   globalIndexStart: number;
   languageCode?: SupportedLanguageCode;
+  /** Enter on the handoff screen instead of card 1 (backing out of the drill). */
+  startAtEnd?: boolean;
+  /** Hands the parent a closure that steps back one card; false when at card 1. */
+  registerBack?: (goBack: (() => boolean) | null) => void;
   onComplete: () => void;
 }
 
@@ -295,6 +316,8 @@ function PhraseIntroBatch({
   totalPhrases,
   globalIndexStart,
   languageCode,
+  startAtEnd,
+  registerBack,
   onComplete,
 }: PhraseIntroBatchProps) {
   const steps = useMemo<IntroStep[]>(() => {
@@ -307,8 +330,10 @@ function PhraseIntroBatch({
     return out;
   }, [batch]);
 
-  const [stepIdx, setStepIdx] = useState(0);
-  const [readyToDrill, setReadyToDrill] = useState(false);
+  // `startAtEnd` is read on mount only — the parent remounts this component
+  // (keyed by batch) whenever it wants a different entry point.
+  const [stepIdx, setStepIdx] = useState(() => (startAtEnd ? Math.max(0, steps.length - 1) : 0));
+  const [readyToDrill, setReadyToDrill] = useState(Boolean(startAtEnd));
 
   const advance = useCallback(() => {
     if (stepIdx + 1 >= steps.length) {
@@ -317,6 +342,29 @@ function PhraseIntroBatch({
     }
     setStepIdx((i) => i + 1);
   }, [stepIdx, steps.length]);
+
+  /** Exact reverse of `advance`: handoff → last card → … → first card. */
+  const goBack = useCallback((): boolean => {
+    if (readyToDrill) {
+      setReadyToDrill(false);
+      return true;
+    }
+    if (stepIdx > 0) {
+      setStepIdx((i) => i - 1);
+      return true;
+    }
+    return false;
+  }, [readyToDrill, stepIdx]);
+
+  const goBackRef = useRef(goBack);
+  useEffect(() => {
+    goBackRef.current = goBack;
+  }, [goBack]);
+  useEffect(() => {
+    if (!registerBack) return;
+    registerBack(() => goBackRef.current());
+    return () => registerBack(null);
+  }, [registerBack]);
 
   if (batch.length === 0) {
     onComplete();
