@@ -339,10 +339,12 @@ export function DrillBlock({
           audioUrl={word.word.pronunciation_audio_url}
           onCorrect={handleCorrect}
           onAnswer={(correct, attempts) => {
-            // ProductionTyping handles its own retry UX. We mark the queue
-            // item as wrong on the second wrong attempt so it re-queues
-            // even though the user will eventually type the revealed answer.
-            if (!correct && attempts === 2) handleWrong();
+            // ProductionTyping handles its own retry UX and only reports a
+            // miss once the learner has read the revealed answer — marking it
+            // wrong re-queues the item and remounts this component, which is
+            // why the child defers the call rather than firing it at reveal
+            // time. `>= 2` so a straight "I don't remember" lands here too.
+            if (!correct && attempts >= 2) handleWrong();
           }}
         />
       </>

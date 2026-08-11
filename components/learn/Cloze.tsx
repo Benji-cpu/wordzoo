@@ -21,17 +21,30 @@ interface ClozeProps {
   /** English meaning of the target word, used as a hint after a wrong attempt. */
   meaningEn?: string | null;
   onCorrect: () => void;
+  /**
+   * Fired once, when the item resolves. A learner who needed the answer shown
+   * resolves as `onAnswer(false, REVEAL_ATTEMPTS)` and never fires `onCorrect`
+   * — the call site's wrong-handling is what advances the drill. See
+   * `resolveRevealed`.
+   */
   onAnswer?: (correct: boolean, attempts: number) => void;
 }
 
 const BLANK = '_____';
 
 /**
+ * Attempts reported when the learner needed the answer shown — either they
+ * burned both tries or they pressed "I don't remember". Mirrors
+ * ProductionTyping so both typed cues report the same way.
+ */
+const REVEAL_ATTEMPTS = 2;
+
+/**
  * Render a phrase from the same scene with the target word blanked out.
  * The learner types the missing word; we fuzzy-match (accent-insensitive,
  * with a length-scaled typo tolerance — see `allowedEditsFor`). Wrong →
- * reveal English meaning as hint, retry. Wrong twice → reveal full word,
- * type-to-dismiss.
+ * reveal English meaning as hint, retry. Wrong twice, or "I don't remember" →
+ * reveal the full word, type it to lock it in (or continue).
  */
 export function Cloze({
   correctTarget,
@@ -48,6 +61,7 @@ export function Cloze({
   const [revealed, setRevealed] = useState(false);
   const [celebrate, setCelebrate] = useState(false);
   const [done, setDone] = useState(false);
+  const [passed, setPassed] = useState(false);
   const [shake, setShake] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const { play } = useSound();
@@ -78,6 +92,7 @@ export function Cloze({
   const finalize = useCallback(() => {
     if (done) return;
     setDone(true);
+    setPassed(true);
     setCelebrate(true);
     play('correct');
     trigger('success');
@@ -90,10 +105,61 @@ export function Cloze({
     setTimeout(onCorrect, 1100);
   }, [done, play, trigger, award, wordId, attempts, onAnswer, onCorrect]);
 
+  /** Show the answer in the blank and switch to type-it-to-continue. */
+  const reveal = useCallback(() => {
+    setRevealed(true);
+    setTyped('');
+    play('reveal');
+    inputRef.current?.focus();
+  }, [play]);
+
+  /**
+   * The learner has seen the answer and is moving on. Report the miss NOW —
+   * not when the answer was revealed.
+   *
+   * Both call sites (DrillBlock, PhraseDrillBlock) react to any
+   * `onAnswer(false, …)` by calling `applyWrong`, which re-keys this component
+   * and remounts it. Reporting a wrong the moment it happened meant neither the
+   * meaning hint nor the reveal ever reached the screen: the item silently
+   * re-queued and came back at attempt 0, so a learner who didn't know the word
+   * could cycle on it indefinitely with no way to find out what it was.
+   *
+   * No XP and no `onCorrect`: transcribing an answer you were just shown is
+   * re-encoding, not retrieval, and the item stays owed.
+   */
+  const resolveRevealed = useCallback(() => {
+    if (done) return;
+    setDone(true);
+    play('soft-tap');
+    trigger('tap');
+    onAnswer?.(false, REVEAL_ATTEMPTS);
+  }, [done, play, trigger, onAnswer]);
+
+  /**
+   * "I don't remember" — an honest blank, not a wrong guess. Scores as a failed
+   * retrieval (it is one) but skips the error sound and the shake: punishing
+   * the honest answer just teaches learners to type noise instead.
+   */
+  const handleDontKnow = useCallback(() => {
+    if (done || revealed) return;
+    const nextAttempts = attempts + 1;
+    setAttempts(nextAttempts);
+    fireTelemetry({
+      event: 'cloze_wrong',
+      payload: { wordId, attempts: nextAttempts, reason: 'dont_know' },
+    });
+    reveal();
+  }, [done, revealed, attempts, wordId, reveal]);
+
   const handleSubmit = useCallback(
     (e: FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       if (done || !phrase) return;
+      // Enter in the revealed state means "continue", same as the button.
+      if (revealed) {
+        resolveRevealed();
+        return;
+      }
       const guess = typed.trim();
       if (!guess) return;
       const result = fuzzyMatchAnswer(guess, correctTarget);
@@ -109,34 +175,49 @@ export function Cloze({
       trigger('error');
       setShake(true);
       setTimeout(() => setShake(false), 400);
-      onAnswer?.(false, nextAttempts);
       fireTelemetry({
         event: 'cloze_wrong',
         payload: { wordId, attempts: nextAttempts, distance: result.distance },
       });
 
-      if (nextAttempts === 1) {
+      if (nextAttempts < REVEAL_ATTEMPTS) {
         setHint(meaningEn ?? null);
         setTyped('');
         inputRef.current?.focus();
         return;
       }
-      setRevealed(true);
-      setTyped('');
-      inputRef.current?.focus();
+      // The miss is reported by resolveRevealed, once the learner has actually
+      // had the answer in front of them.
+      reveal();
     },
-    [typed, correctTarget, attempts, done, phrase, meaningEn, play, trigger, finalize, onAnswer, wordId],
+    [
+      typed,
+      correctTarget,
+      attempts,
+      done,
+      revealed,
+      phrase,
+      meaningEn,
+      play,
+      trigger,
+      finalize,
+      reveal,
+      resolveRevealed,
+      wordId,
+    ],
   );
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setTyped(e.target.value);
+      // Typing the revealed answer auto-continues — the encoding rep is the
+      // point, so it shouldn't also cost a button press.
       if (revealed) {
         const r = fuzzyMatchAnswer(e.target.value, correctTarget, 0);
-        if (r.kind === 'exact') finalize();
+        if (r.kind === 'exact') resolveRevealed();
       }
     },
-    [revealed, correctTarget, finalize],
+    [revealed, correctTarget, resolveRevealed],
   );
 
   // Defensive: caller should have filtered cloze when no phrases exist;
@@ -177,18 +258,18 @@ export function Cloze({
         ) : null}
         {revealed ? (
           <p className="mt-3 text-sm text-[color:var(--text-secondary)]">
-            Type <span className="font-bold text-[color:var(--color-fox-primary)]">{correctTarget}</span> to continue
+            The word is <span className="font-bold text-[color:var(--color-fox-primary)]">{correctTarget}</span> · type it to lock it in
           </p>
         ) : null}
 
-        {done ? (
+        {passed ? (
           <div className="mt-5 animate-spring-in">
             <Fox pose="celebrating" size="sm" aria-label="Correct" />
           </div>
         ) : null}
         <Celebration active={celebrate} variant="correct" />
 
-        {done ? (
+        {passed ? (
           <span
             aria-hidden
             className="absolute top-10 right-6 animate-xp-tick text-base font-bold text-[var(--color-fox-primary)]"
@@ -200,7 +281,7 @@ export function Cloze({
 
       <form
         onSubmit={handleSubmit}
-        className={`pb-2 flex flex-col gap-3 transition-[padding] duration-150 ${shake ? 'animate-shake' : ''}`}
+        className={`pb-2 flex flex-col gap-2 transition-[padding] duration-150 ${shake ? 'animate-shake' : ''}`}
         style={keyboardHeight > 0 ? { paddingBottom: keyboardHeight } : undefined}
       >
         <input
@@ -214,17 +295,39 @@ export function Cloze({
           autoComplete="off"
           autoCorrect="off"
           spellCheck={false}
-          placeholder="Type the missing word…"
+          placeholder={revealed ? 'Type the word above…' : 'Type the missing word…'}
           aria-label="Type the missing word"
           className={`w-full rounded-xl border px-4 py-3 text-base bg-surface-inset border-card-border text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-default disabled:opacity-60 ${revealed && !done ? 'border-amber-500/60' : ''}`}
         />
-        <button
-          type="submit"
-          disabled={done || typed.trim().length === 0}
-          className="rounded-xl bg-[color:var(--color-fox-primary)] text-white font-bold py-3 disabled:opacity-40 active:scale-[0.98] transition"
-        >
-          {revealed ? 'Type the answer above' : 'Check'}
-        </button>
+        {revealed ? (
+          // Always enabled: the reveal must never be a place you can get stuck.
+          <button
+            type="button"
+            onClick={resolveRevealed}
+            disabled={done}
+            className="rounded-xl bg-[color:var(--color-fox-primary)] text-white font-bold py-3 disabled:opacity-40 active:scale-[0.98] transition"
+          >
+            Continue
+          </button>
+        ) : (
+          <>
+            <button
+              type="submit"
+              disabled={done || typed.trim().length === 0}
+              className="rounded-xl bg-[color:var(--color-fox-primary)] text-white font-bold py-3 disabled:opacity-40 active:scale-[0.98] transition"
+            >
+              Check
+            </button>
+            <button
+              type="button"
+              onClick={handleDontKnow}
+              disabled={done}
+              className="rounded-xl border border-card-border text-[color:var(--text-secondary)] font-semibold py-2.5 text-sm disabled:opacity-40 active:scale-[0.98] transition"
+            >
+              I don&apos;t remember
+            </button>
+          </>
+        )}
       </form>
     </div>
   );

@@ -12,6 +12,14 @@ import { fuzzyMatchAnswer, allowedEditsFor } from '@/lib/pedagogy/normalize';
 import { fireTelemetry } from '@/lib/pedagogy/telemetry';
 import type { SupportedLanguageCode } from '@/types/audio';
 
+/**
+ * Attempts reported when the learner needed the answer shown — either they
+ * burned both tries or they pressed "I don't remember". Every call site keys
+ * on `attempts >= REVEAL_ATTEMPTS` to mark the item wrong, so a straight-away
+ * "I don't remember" resolves at 2 even though it only cost one press.
+ */
+const REVEAL_ATTEMPTS = 2;
+
 interface ProductionTypingProps {
   /** English meaning shown as the prompt the learner translates from. */
   promptEn: string;
@@ -27,9 +35,13 @@ interface ProductionTypingProps {
   maxEdits?: number;
   onCorrect: () => void;
   /**
-   * Fired on every submission (not just final). `attempts` counts how many
-   * tries this word took (1-indexed: 1 = first try). `accuracy` is 'exact'
-   * for distance-0 and 'close' for distance 1-2.
+   * Fired when the item resolves, and on the first wrong attempt. `attempts`
+   * counts how many tries this word took (1-indexed: 1 = first try).
+   * `accuracy` is 'exact' for distance-0 and 'close' for distance 1-2.
+   *
+   * A learner who needed the answer shown resolves as
+   * `onAnswer(false, REVEAL_ATTEMPTS)` and never fires `onCorrect` — the call
+   * site's wrong-handling is what advances the drill. See `resolveRevealed`.
    */
   onAnswer?: (correct: boolean, attempts: number, accuracy?: 'exact' | 'close') => void;
 }
@@ -37,6 +49,7 @@ interface ProductionTypingProps {
 export function ProductionTyping({
   promptEn,
   correctTarget,
+  targetLanguageCode,
   wordId,
   audioUrl,
   maxEdits,
@@ -50,6 +63,7 @@ export function ProductionTyping({
   const [revealed, setRevealed] = useState(false);
   const [closeMatch, setCloseMatch] = useState(false);
   const [done, setDone] = useState(false);
+  const [passed, setPassed] = useState(false);
   const [shake, setShake] = useState(false);
   const [celebrate, setCelebrate] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -65,6 +79,7 @@ export function ProductionTyping({
     (accuracy: 'exact' | 'close') => {
       if (done) return;
       setDone(true);
+      setPassed(true);
       setCelebrate(true);
       play('correct');
       trigger('success');
@@ -91,10 +106,64 @@ export function ProductionTyping({
     [done, play, trigger, award, wordId, attempts, onAnswer, onCorrect],
   );
 
+  /** Show the answer and switch to type-it-to-continue. Notifies nobody. */
+  const reveal = useCallback(() => {
+    setRevealed(true);
+    setHint(correctTarget);
+    setTyped('');
+    play('reveal');
+    inputRef.current?.focus();
+  }, [correctTarget, play]);
+
+  /**
+   * The learner has seen the answer and is moving on. Report the miss NOW —
+   * not when the answer was revealed.
+   *
+   * Every call site reacts to `onAnswer(false, 2)` by mutating its drill queue,
+   * which re-keys this component and remounts it with a fresh attempt counter.
+   * Reporting at reveal time therefore tore the reveal off the screen in the
+   * same tick it appeared: the answer was never actually readable, the item
+   * came back later at attempt 0, and a learner who didn't know the word could
+   * loop on it forever with no way to find out what it was. Reported here, the
+   * reveal survives until it's dismissed.
+   *
+   * No XP and no `onCorrect`: transcribing an answer you were just shown is
+   * re-encoding, not retrieval, and the item stays owed.
+   */
+  const resolveRevealed = useCallback(() => {
+    if (done) return;
+    setDone(true);
+    play('soft-tap');
+    trigger('tap');
+    onAnswer?.(false, REVEAL_ATTEMPTS);
+  }, [done, play, trigger, onAnswer]);
+
+  /**
+   * "I don't remember" — an honest blank, not a wrong guess. It scores as a
+   * failed retrieval (it is one) but skips the error sound and the shake:
+   * punishing the honest answer just teaches learners to type noise instead,
+   * which is exactly what it exists to replace.
+   */
+  const handleDontKnow = useCallback(() => {
+    if (done || revealed) return;
+    const nextAttempts = attempts + 1;
+    setAttempts(nextAttempts);
+    fireTelemetry({
+      event: 'production_wrong',
+      payload: { wordId, attempts: nextAttempts, reason: 'dont_know' },
+    });
+    reveal();
+  }, [done, revealed, attempts, wordId, reveal]);
+
   const handleSubmit = useCallback(
     (e: FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       if (done) return;
+      // Enter in the revealed state means "continue", same as the button.
+      if (revealed) {
+        resolveRevealed();
+        return;
+      }
       const guess = typed;
       if (!guess.trim()) return;
       const result = fuzzyMatchAnswer(guess, correctTarget, ALLOWED_EDITS);
@@ -116,43 +185,56 @@ export function ProductionTyping({
       trigger('error');
       setShake(true);
       setTimeout(() => setShake(false), 400);
-      onAnswer?.(false, nextAttempts);
       fireTelemetry({
         event: 'production_wrong',
         payload: { wordId, attempts: nextAttempts, distance: result.distance },
       });
 
-      if (nextAttempts === 1) {
-        // First wrong: surface the first letter as a hint, clear input
+      if (nextAttempts < REVEAL_ATTEMPTS) {
+        // First wrong: surface the first letter as a hint, clear input. Safe to
+        // report — call sites ignore anything below REVEAL_ATTEMPTS, so the
+        // hint stays on screen.
+        onAnswer?.(false, nextAttempts);
         setHint(correctTarget.charAt(0));
         setTyped('');
         inputRef.current?.focus();
         return;
       }
 
-      // Second wrong: reveal full answer; learner must type it correctly
-      // to dismiss (typing-as-encoding).
-      setRevealed(true);
-      setHint(correctTarget);
-      setTyped('');
-      inputRef.current?.focus();
+      // Second wrong: show the answer. The miss is reported by
+      // resolveRevealed, once the learner has actually had it in front of them.
+      reveal();
     },
-    [typed, correctTarget, ALLOWED_EDITS, attempts, done, play, trigger, finalize, onAnswer, wordId],
+    [
+      typed,
+      correctTarget,
+      ALLOWED_EDITS,
+      attempts,
+      done,
+      revealed,
+      play,
+      trigger,
+      finalize,
+      reveal,
+      resolveRevealed,
+      onAnswer,
+      wordId,
+    ],
   );
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setTyped(e.target.value);
-      // If we've revealed the answer and the learner has typed it correctly,
-      // auto-finalize as a "transcription" pass (counts as production credit).
+      // Typing the revealed answer auto-continues — the encoding rep is the
+      // point, so it shouldn't also cost a button press.
       if (revealed) {
         const result = fuzzyMatchAnswer(e.target.value, correctTarget, 0);
         if (result.kind === 'exact') {
-          finalize('exact');
+          resolveRevealed();
         }
       }
     },
-    [revealed, correctTarget, finalize],
+    [revealed, correctTarget, resolveRevealed],
   );
 
   const inputDisabled = done;
@@ -178,7 +260,7 @@ export function ProductionTyping({
         ) : null}
         {revealed ? (
           <p className="mt-3 text-sm text-[color:var(--text-secondary)]">
-            Answer: <span className="font-bold text-[color:var(--color-fox-primary)]">{correctTarget}</span> · type it to continue
+            Answer: <span className="font-bold text-[color:var(--color-fox-primary)]">{correctTarget}</span> · type it to lock it in
           </p>
         ) : null}
         {closeMatch && done ? (
@@ -187,7 +269,22 @@ export function ProductionTyping({
           </p>
         ) : null}
 
-        {done ? (
+        {revealed && !passed ? (
+          // Hearing the word you couldn't retrieve is the whole value of the
+          // reveal. `text`/`languageCode` are passed so this still speaks for
+          // phrase drills, where `wordId` is a phrase id with no audio row.
+          <div className="mt-4">
+            <PronunciationButton
+              wordId={wordId}
+              audioUrl={audioUrl}
+              text={correctTarget}
+              languageCode={targetLanguageCode}
+              size={22}
+            />
+          </div>
+        ) : null}
+
+        {passed ? (
           <div className="mt-5 flex items-center gap-2 animate-spring-in">
             <Fox pose="celebrating" size="sm" aria-label="Correct" />
             <PronunciationButton wordId={wordId} size={22} />
@@ -196,7 +293,7 @@ export function ProductionTyping({
 
         <Celebration active={celebrate} variant="correct" />
 
-        {done ? (
+        {passed ? (
           <span
             aria-hidden
             className="absolute top-10 right-6 animate-xp-tick text-base font-bold text-[var(--color-fox-primary)]"
@@ -208,7 +305,7 @@ export function ProductionTyping({
 
       <form
         onSubmit={handleSubmit}
-        className={`pb-2 flex flex-col gap-3 ${shake ? 'animate-shake' : ''}`}
+        className={`pb-2 flex flex-col gap-2 ${shake ? 'animate-shake' : ''}`}
       >
         <input
           ref={inputRef}
@@ -221,17 +318,39 @@ export function ProductionTyping({
           autoComplete="off"
           autoCorrect="off"
           spellCheck={false}
-          placeholder="Type your answer…"
+          placeholder={revealed ? 'Type the answer above…' : 'Type your answer…'}
           aria-label="Type the foreign-language word"
           className={`w-full rounded-xl border px-4 py-3 text-base bg-surface-inset border-card-border text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-default disabled:opacity-60 ${revealed && !done ? 'border-amber-500/60' : ''}`}
         />
-        <button
-          type="submit"
-          disabled={buttonDisabled}
-          className="rounded-xl bg-[color:var(--color-fox-primary)] text-white font-bold py-3 disabled:opacity-40 active:scale-[0.98] transition"
-        >
-          {revealed ? 'Type the answer above' : 'Check'}
-        </button>
+        {revealed ? (
+          // Always enabled: the reveal must never be a place you can get stuck.
+          <button
+            type="button"
+            onClick={resolveRevealed}
+            disabled={done}
+            className="rounded-xl bg-[color:var(--color-fox-primary)] text-white font-bold py-3 disabled:opacity-40 active:scale-[0.98] transition"
+          >
+            Continue
+          </button>
+        ) : (
+          <>
+            <button
+              type="submit"
+              disabled={buttonDisabled}
+              className="rounded-xl bg-[color:var(--color-fox-primary)] text-white font-bold py-3 disabled:opacity-40 active:scale-[0.98] transition"
+            >
+              Check
+            </button>
+            <button
+              type="button"
+              onClick={handleDontKnow}
+              disabled={done}
+              className="rounded-xl border border-card-border text-[color:var(--text-secondary)] font-semibold py-2.5 text-sm disabled:opacity-40 active:scale-[0.98] transition"
+            >
+              I don&apos;t remember
+            </button>
+          </>
+        )}
       </form>
     </div>
   );

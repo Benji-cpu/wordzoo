@@ -145,12 +145,13 @@ export function SceneCheckpoint({
 
   const handleAnswer = useCallback(
     (correct: boolean, attempts: number) => {
-      // Production component fires this on every attempt. We only care about
-      // the FINAL outcome of the item, which arrives via onCorrect. But we
-      // do mark wrong-on-second-attempt as a "failed" item so it goes into
-      // remediation even though the component will eventually call onCorrect
-      // once the answer is typed.
-      if (!correct && attempts === 2) {
+      // A correct retrieval arrives via onCorrect. A miss arrives here, once
+      // the learner has read the revealed answer (or pressed "I don't
+      // remember") — the component defers that call precisely because handling
+      // it advances the cursor and remounts it. It does NOT also fire
+      // onCorrect afterwards, so this records the item exactly once.
+      // `>= 2` so a straight "I don't remember" lands here too.
+      if (!correct && attempts >= 2) {
         const wordId = activeIds[cursor];
         if (!wordId) return;
         onItemAnswered?.(wordId, false);

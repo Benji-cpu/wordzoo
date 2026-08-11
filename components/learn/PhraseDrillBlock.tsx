@@ -245,11 +245,12 @@ export function PhraseDrillBlock({
           audioUrl={phrase.audio_url}
           onCorrect={handleCorrect}
           onAnswer={(correct, attempts) => {
-            // Mark wrong on the second wrong attempt — matches DrillBlock's
-            // word-level production handling. The component still reveals
-            // the answer and self-resolves; we just need the queue state
-            // updated before that happens.
-            if (!correct && attempts === 2) handleWrong();
+            // Mark wrong once the learner has read the revealed answer —
+            // matches DrillBlock's word-level production handling. The child
+            // defers this call until then, because handling it re-queues the
+            // item and remounts the child, which would tear the reveal off
+            // screen. `>= 2` so a straight "I don't remember" lands here too.
+            if (!correct && attempts >= 2) handleWrong();
           }}
         />
       </>
