@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { PronunciationResult, SupportedLanguageCode } from '@/types/audio';
 import { startSpeechAttempt, playPhraseAudio } from '@/lib/audio';
-import { MicIcon, ScoreDisplay } from '@/components/audio/mic-ui';
+import { MicIcon, ScoreDisplay, Waveform } from '@/components/audio/mic-ui';
 
 /**
  * "Say it out loud" — the speaking cue, in the drill and in conversation.
@@ -85,6 +85,8 @@ export function SpeakChallenge({
   const notScoredCount = useRef(0);
   const stopRef = useRef<() => void>(() => {});
   const aliveRef = useRef(true);
+  /** Mic loudness for the meter. A ref so a 60 Hz signal never re-renders. */
+  const micLevelRef = useRef(0);
 
   useEffect(() => {
     aliveRef.current = true;
@@ -109,7 +111,12 @@ export function SpeakChallenge({
     setStage('listening');
     setResult(null);
 
-    const attempt = startSpeechAttempt(target, languageCode, { romanization });
+    const attempt = startSpeechAttempt(target, languageCode, {
+      romanization,
+      onLevel: (level) => {
+        micLevelRef.current = level;
+      },
+    });
     stopRef.current = attempt.stop;
 
     void attempt.promise.then((r) => {
@@ -172,7 +179,16 @@ export function SpeakChallenge({
         </div>
       ) : null}
       {stage === 'listening' ? (
-        <p className="mt-3 text-sm font-medium text-red-400">Listening…</p>
+        <>
+          <p className="mt-3 text-sm font-medium text-red-400">Listening…</p>
+          {/* "Listening…" is an assertion; the meter is evidence. Without it a
+              dead mic and a working one look identical until the verdict. */}
+          <Waveform
+            levelRef={micLevelRef}
+            active
+            className="mt-2 mx-auto block w-40 h-6 text-red-400"
+          />
+        </>
       ) : null}
     </>
   );

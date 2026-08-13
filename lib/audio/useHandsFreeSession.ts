@@ -11,25 +11,43 @@ const INITIAL_SESSION: HandsFreeSession = {
   currentWord: null,
   isPaused: false,
   results: [],
+  listenDeadline: null,
+  error: null,
 };
 
 export function useHandsFreeSession() {
   const [session, setSession] = useState<HandsFreeSession>(INITIAL_SESSION);
   const engineRef = useRef<HandsFreeEngine | null>(null);
+  /**
+   * Mic loudness lives in a ref, not in state. It updates every animation
+   * frame, and routing that through React would re-render the whole session
+   * view ~60 times a second to move a few bars. The waveform reads it from its
+   * own rAF loop instead.
+   */
+  const micLevelRef = useRef(0);
 
   const getEngine = useCallback(() => {
     if (!engineRef.current) {
-      engineRef.current = new HandsFreeEngine(setSession);
+      engineRef.current = new HandsFreeEngine(setSession, (level) => {
+        micLevelRef.current = level;
+      });
     }
     return engineRef.current;
   }, []);
 
   const start = useCallback(
     (wordIds: string[]) => {
-      getEngine().start(wordIds);
+      // Nothing awaits this. Before it was caught, a rejection here left the
+      // engine silent and the screen frozen mid-session — the engine now
+      // reports failures through session.error, so this is belt and braces.
+      void getEngine().start(wordIds).catch(() => {});
     },
     [getEngine]
   );
+
+  const replay = useCallback(() => {
+    void engineRef.current?.replay();
+  }, []);
 
   const pause = useCallback(() => {
     engineRef.current?.pause();
@@ -49,5 +67,5 @@ export function useHandsFreeSession() {
     };
   }, []);
 
-  return { session, start, pause, resume, stop };
+  return { session, micLevelRef, start, pause, resume, stop, replay };
 }

@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef, type RefObject } from 'react';
 import type { PronunciationResult } from '@/types/audio';
 
 /**
@@ -31,6 +32,93 @@ export function MicIcon({ size }: { size: number }) {
       <line x1="8" y1="23" x2="16" y2="23" />
     </svg>
   );
+}
+
+const BARS = 32;
+
+/**
+ * Live mic level, drawn as a scrolling bar meter.
+ *
+ * The point is answering "is it hearing me?" — a question the Web Speech API
+ * never answers on its own, and which a "Listening…" label only asserts. Bars
+ * that move when you speak are the difference between trusting the mic and
+ * assuming the feature is broken.
+ *
+ * Reads the level from a ref inside its own rAF loop, so a 60 Hz signal never
+ * re-renders React. Drawing stops entirely when the mic is shut, leaving the
+ * resting row on screen — a canvas that goes blank reads as broken, which is
+ * the exact impression this component exists to prevent.
+ */
+export function Waveform({
+  levelRef,
+  active,
+  className = '',
+}: {
+  levelRef: RefObject<number>;
+  active: boolean;
+  className?: string;
+}) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const historyRef = useRef<number[]>(new Array(BARS).fill(0));
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext('2d');
+    if (!canvas || !ctx) return;
+
+    const history = historyRef.current;
+    let raf = 0;
+
+    const draw = () => {
+      const dpr = window.devicePixelRatio || 1;
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
+      if (canvas.width !== Math.round(w * dpr) || canvas.height !== Math.round(h * dpr)) {
+        canvas.width = Math.round(w * dpr);
+        canvas.height = Math.round(h * dpr);
+      }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+      // Inherit whatever colour the parent set, so the meter matches the state
+      // it is drawn inside without the caller passing hex around.
+      ctx.fillStyle = getComputedStyle(canvas).color;
+
+      const gap = 3;
+      const barW = Math.max(2, (w - gap * (BARS - 1)) / BARS);
+      const mid = h / 2;
+      for (let i = 0; i < BARS; i++) {
+        // A floor keeps a resting dot visible: a flat row still says "open and
+        // hearing silence", where nothing at all says "dead".
+        const barH = Math.max(barW, Math.min(h, history[i] * h));
+        const x = i * (barW + gap);
+        const y = mid - barH / 2;
+        if (typeof ctx.roundRect === 'function') {
+          ctx.beginPath();
+          ctx.roundRect(x, y, barW, barH, Math.min(barW, barH) / 2);
+          ctx.fill();
+        } else {
+          ctx.fillRect(x, y, barW, barH);
+        }
+      }
+    };
+
+    if (!active) {
+      history.fill(0);
+      draw();
+      return;
+    }
+
+    const tick = () => {
+      history.push(levelRef.current);
+      history.shift();
+      draw();
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [active, levelRef]);
+
+  return <canvas ref={canvasRef} className={className} aria-hidden="true" />;
 }
 
 export function ScoreDisplay({ result }: { result: PronunciationResult }) {

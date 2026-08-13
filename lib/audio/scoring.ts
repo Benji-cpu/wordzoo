@@ -53,7 +53,66 @@ export function isScoringAvailable(languageCode: SupportedLanguageCode): boolean
   return !isSpeechServiceBlocked();
 }
 
-const LISTEN_TIMEOUT_MS = 5000;
+export const LISTEN_TIMEOUT_MS = 5000;
+
+/**
+ * Open a second mic stream purely to measure loudness while recognition runs.
+ *
+ * The Web Speech API tells us nothing until it is finished — no "I can hear
+ * you", no level, not even confirmation the mic opened. So a UI built on
+ * recognition alone can only *claim* to be listening, which is exactly what the
+ * speaking session did: a text chip and nothing else. The learner had no way to
+ * tell a working mic from a dead one until the session ended.
+ *
+ * Entirely best-effort. Browsers hand both consumers the same device, but if
+ * this stream is refused or the AudioContext won't start, recognition carries on
+ * untouched — a missing waveform must never cost someone their attempt.
+ */
+function startLevelMeter(onLevel: (level: number) => void): () => void {
+  let stopped = false;
+  let raf = 0;
+  let ctx: AudioContext | null = null;
+  let stream: MediaStream | null = null;
+
+  navigator.mediaDevices
+    ?.getUserMedia({ audio: true })
+    .then((s) => {
+      if (stopped) {
+        s.getTracks().forEach((t) => t.stop());
+        return;
+      }
+      stream = s;
+      ctx = new AudioContext();
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 256;
+      ctx.createMediaStreamSource(s).connect(analyser);
+      const data = new Uint8Array(analyser.frequencyBinCount);
+
+      const tick = () => {
+        if (stopped) return;
+        analyser.getByteTimeDomainData(data);
+        let sum = 0;
+        for (let i = 0; i < data.length; i++) {
+          const v = (data[i] - 128) / 128;
+          sum += v * v;
+        }
+        // RMS of speech at a normal distance sits around 0.05-0.15, which is
+        // invisible drawn raw. Scaled so ordinary talking fills the meter.
+        onLevel(Math.min(1, Math.sqrt(sum / data.length) * 4));
+        raf = requestAnimationFrame(tick);
+      };
+      raf = requestAnimationFrame(tick);
+    })
+    .catch(() => {});
+
+  return () => {
+    stopped = true;
+    if (raf) cancelAnimationFrame(raf);
+    stream?.getTracks().forEach((t) => t.stop());
+    void ctx?.close().catch(() => {});
+    onLevel(0);
+  };
+}
 
 function notScored(
   reason: NonNullable<PronunciationResult['reason']>,
@@ -78,9 +137,14 @@ function notScored(
 export function startSpeechAttempt(
   target: string,
   languageCode: SupportedLanguageCode,
-  options: { romanization?: string | null; timeoutMs?: number } = {},
+  options: {
+    romanization?: string | null;
+    timeoutMs?: number;
+    /** Mic loudness 0-1 while the window is open, then 0 once. Best-effort. */
+    onLevel?: (level: number) => void;
+  } = {},
 ): { promise: Promise<PronunciationResult>; stop: () => void } {
-  const { romanization = null, timeoutMs = LISTEN_TIMEOUT_MS } = options;
+  const { romanization = null, timeoutMs = LISTEN_TIMEOUT_MS, onLevel } = options;
 
   if (!isScoringAvailable(languageCode)) {
     return {
@@ -108,11 +172,13 @@ export function startSpeechAttempt(
 
     let resolved = false;
     const timer = setTimeout(() => recognition.stop(), timeoutMs);
+    const stopMeter = onLevel ? startLevelMeter(onLevel) : () => {};
 
     const settle = (result: PronunciationResult) => {
       if (resolved) return;
       resolved = true;
       clearTimeout(timer);
+      stopMeter();
       resolve(result);
     };
 

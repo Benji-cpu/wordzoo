@@ -7,11 +7,17 @@ import type {
 } from '@/types/audio';
 import { getVoiceForLanguage, getEnglishVoice, speakWithPromise, pauseMs } from './voice-map';
 import { fetchWord, getPlaybackSpeed } from './pronunciation';
-import { isScoringAvailable, startPronunciationChallenge } from './scoring';
+import { isScoringAvailable, startSpeechAttempt, LISTEN_TIMEOUT_MS } from './scoring';
 import { narrateMnemonic, stopNarration } from './narration';
+
+/** Thrown by `checkAbortAndPause` when the learner ends the session. Expected. */
+function isAbortError(err: unknown): boolean {
+  return err instanceof DOMException && err.name === 'AbortError';
+}
 
 export class HandsFreeEngine {
   private onStateChange: (session: HandsFreeSession) => void;
+  private onLevel: (level: number) => void;
   private abortController: AbortController | null = null;
   private silentAudio: HTMLAudioElement | null = null;
 
@@ -19,13 +25,24 @@ export class HandsFreeEngine {
   private currentWordIndex = 0;
   private totalWords = 0;
   private currentWord: { text: string; meaning: string } | null = null;
+  /** Kept whole (not just text + meaning) so `replay()` can re-speak it. */
+  private currentWordFull: WordWithMnemonic | null = null;
   private isPaused = false;
   private results: PronunciationResult[] = [];
   private wordIds: string[] = [];
   private startTime = 0;
+  private listenDeadline: number | null = null;
+  private error: string | null = null;
+  private stopListening: (() => void) | null = null;
+  /** Set by `stop()` so in-flight awaits don't emit state over 'idle'. */
+  private stopped = false;
 
-  constructor(onStateChange: (session: HandsFreeSession) => void) {
+  constructor(
+    onStateChange: (session: HandsFreeSession) => void,
+    onLevel: (level: number) => void = () => {},
+  ) {
     this.onStateChange = onStateChange;
+    this.onLevel = onLevel;
   }
 
   async start(wordIds: string[]): Promise<void> {
@@ -36,13 +53,57 @@ export class HandsFreeEngine {
     this.currentWordIndex = 0;
     this.results = [];
     this.isPaused = false;
+    this.error = null;
+    this.stopped = false;
     this.startTime = Date.now();
     this.abortController = new AbortController();
 
     this.setupMediaSession();
     this.startSilentAudio();
 
-    await this.processWord(0);
+    await this.run();
+  }
+
+  /**
+   * Drive the queue, and absorb anything one word throws.
+   *
+   * This used to be recursion inside `processWord` with no handler anywhere up
+   * the chain — `start()` rejected into a caller that didn't catch, the engine
+   * stopped emitting state, and the screen froze on whatever chip was last set
+   * with the buttons still live and nothing happening. `speakWithPromise`
+   * rejecting on a synthesis failure, or a mnemonic's `audio_url` 404ing, was
+   * enough to do it. One bad word now costs that word, not the session.
+   */
+  private async run(): Promise<void> {
+    for (let index = 0; index < this.wordIds.length; index++) {
+      try {
+        await this.processWord(index);
+      } catch (err) {
+        if (isAbortError(err)) return;
+        this.error = 'Some words could not be played — they were skipped.';
+        this.emitState();
+      }
+    }
+    this.setState('session_complete');
+    this.cleanup();
+  }
+
+  /**
+   * Say the current word again, on demand.
+   *
+   * The session is otherwise a fixed timeline: miss the word and the only way
+   * to hear it again was to end the run and start over. Deliberately does not
+   * touch the state machine — it interrupts what is being said, says the word,
+   * and the timeline carries on from wherever it was.
+   */
+  async replay(): Promise<void> {
+    const word = this.currentWordFull;
+    if (!word) return;
+    try {
+      await this.playWordTTS(word);
+    } catch {
+      // A convenience control must not be able to take the session down.
+    }
   }
 
   pause(): void {
@@ -58,6 +119,7 @@ export class HandsFreeEngine {
   }
 
   stop(): SessionSummary {
+    this.stopped = true;
     const summary = this.buildSummary();
     this.cleanup();
     this.setState('idle');
@@ -65,21 +127,12 @@ export class HandsFreeEngine {
   }
 
   private async processWord(index: number): Promise<void> {
-    if (index >= this.wordIds.length) {
-      this.setState('session_complete');
-      this.cleanup();
-      return;
-    }
-
     this.currentWordIndex = index;
     const word = await fetchWord(this.wordIds[index]);
-    if (!word) {
-      // Skip missing words
-      await this.processWord(index + 1);
-      return;
-    }
+    if (!word) return; // Missing word — the loop moves on.
 
     this.currentWord = { text: word.text, meaning: word.meaning_en };
+    this.currentWordFull = word;
 
     // 1. Play word pronunciation
     this.setState('playing_word');
@@ -108,9 +161,7 @@ export class HandsFreeEngine {
 
     let result: PronunciationResult | null = null;
     if (isScoringAvailable(word.language_code)) {
-      this.setState('scoring');
-      const challenge = await startPronunciationChallenge(this.wordIds[index]);
-      result = challenge.result;
+      result = await this.listen(word);
     }
 
     // 4. Give feedback
@@ -129,12 +180,14 @@ export class HandsFreeEngine {
         await this.checkAbortAndPause();
         await this.playWordTTS(word);
 
-        if (isScoringAvailable(word.language_code)) {
-          const retry = await startPronunciationChallenge(this.wordIds[index]);
-          if (retry.result) {
-            result = retry.result;
-            await this.speakEnglish(retry.result.feedback);
-          }
+        const retry = await this.listen(word);
+        this.setState('giving_feedback');
+        await this.checkAbortAndPause();
+        // A silent retry is not a downgrade. Keep the verdict they actually
+        // earned rather than replacing it with "we heard nothing".
+        if (retry.score !== 'not_scored') {
+          result = retry;
+          await this.speakEnglish(retry.feedback);
         }
       }
 
@@ -154,7 +207,39 @@ export class HandsFreeEngine {
     this.setState('next_word');
     await pauseMs(500);
     await this.checkAbortAndPause();
-    await this.processWord(index + 1);
+  }
+
+  /**
+   * The one place the microphone is open.
+   *
+   * Two things used to be wrong here. The state was set to `scoring` *before*
+   * a helper that replayed the word first, so the screen read "listening to
+   * you" while the app was still talking — and the word was spoken twice
+   * running, because step 3 had just played it. And the retry listen ran with
+   * the state left on `giving_feedback`, so the mic was live while the screen
+   * said "Feedback". `listening` is now set immediately before `start()` and
+   * cleared the moment there is a verdict, with a deadline and a live level so
+   * the UI can show the window rather than describe it.
+   */
+  private async listen(word: WordWithMnemonic): Promise<PronunciationResult> {
+    const attempt = startSpeechAttempt(word.text, word.language_code, {
+      romanization: word.romanization,
+      onLevel: this.onLevel,
+    });
+    this.stopListening = attempt.stop;
+    this.listenDeadline = Date.now() + LISTEN_TIMEOUT_MS;
+    this.setState('listening');
+    try {
+      return await attempt.promise;
+    } finally {
+      this.stopListening = null;
+      this.listenDeadline = null;
+      this.onLevel(0);
+      // Ending mid-listen settles this promise a microtask after stop() has
+      // already set 'idle'; emitting here would flash a stage that is no
+      // longer running over the top of it.
+      if (!this.stopped) this.setState('scoring');
+    }
   }
 
   private async playWordTTS(word: WordWithMnemonic): Promise<void> {
@@ -200,6 +285,8 @@ export class HandsFreeEngine {
       currentWord: this.currentWord,
       isPaused: this.isPaused,
       results: [...this.results],
+      listenDeadline: this.listenDeadline,
+      error: this.error,
     });
   }
 
@@ -239,6 +326,12 @@ export class HandsFreeEngine {
   private cleanup(): void {
     this.abortController?.abort();
     this.abortController = null;
+    // Ending mid-listen has to close the mic, not just stop caring about it —
+    // otherwise the recording light stays on for the rest of the timeout.
+    this.stopListening?.();
+    this.stopListening = null;
+    this.listenDeadline = null;
+    this.onLevel(0);
     speechSynthesis.cancel();
     stopNarration();
 
@@ -268,6 +361,7 @@ export class HandsFreeEngine {
       wordsAttempted: this.results.length,
       pronunciationScores: scores,
       duration: Date.now() - this.startTime,
+      error: this.error,
     };
   }
 }

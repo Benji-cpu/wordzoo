@@ -57,11 +57,20 @@ export interface PronunciationChallenge {
   stop: () => void;
 }
 
+/**
+ * `listening` is the only state in which the microphone is open, and it exists
+ * because the previous states lied about that. `scoring` was set before a
+ * helper that replayed the word first, so the screen said "listening to you"
+ * while the app was still talking; the retry listen ran under `giving_feedback`,
+ * so the mic was live while the screen said "Feedback". The learner has no other
+ * signal that they are being recorded, so this one has to be true.
+ */
 export type HandsFreeState =
   | 'idle'
   | 'playing_word'
   | 'playing_mnemonic'
   | 'waiting_for_repeat'
+  | 'listening'
   | 'scoring'
   | 'giving_feedback'
   | 'next_word'
@@ -74,12 +83,25 @@ export interface HandsFreeSession {
   currentWord: { text: string; meaning: string } | null;
   isPaused: boolean;
   results: PronunciationResult[];
+  /**
+   * `Date.now()` at which the open listen window closes, or null when the mic
+   * is shut. Emitted once per window so the UI can run a countdown off a CSS
+   * transition rather than re-rendering on a timer.
+   */
+  listenDeadline: number | null;
+  /**
+   * Set when a word failed to play or score for a reason that is ours, not the
+   * learner's. Surfaced rather than thrown: this used to reject out of `start()`
+   * with nothing catching it, which froze the screen mid-session.
+   */
+  error: string | null;
 }
 
 export interface SessionSummary {
   wordsAttempted: number;
   pronunciationScores: Record<PronunciationScore, number>;
   duration: number;
+  error: string | null;
 }
 
 export interface AudioCapabilities {

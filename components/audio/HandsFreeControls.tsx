@@ -15,6 +15,7 @@ const STATE_LABELS: Record<HandsFreeState, string> = {
   playing_word: 'Listen carefully...',
   playing_mnemonic: 'Here\'s the meaning...',
   waiting_for_repeat: 'Your turn!',
+  listening: 'Speak now — recording',
   scoring: 'Checking...',
   giving_feedback: 'Feedback',
   next_word: 'Moving on...',

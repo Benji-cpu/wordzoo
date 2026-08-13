@@ -1,9 +1,11 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type RefObject } from 'react';
 import Link from 'next/link';
 import { useHandsFreeSession } from '@/lib/audio/useHandsFreeSession';
-import type { SessionSummary } from '@/types/audio';
+import { LISTEN_TIMEOUT_MS } from '@/lib/audio/scoring';
+import { MicIcon, Waveform } from '@/components/audio/mic-ui';
+import type { HandsFreeState, SessionSummary } from '@/types/audio';
 
 interface SpeakingSessionProps {
   wordIds: string[];
@@ -25,7 +27,7 @@ export function SpeakingSession({
   freeLimitSeconds,
   isPremium,
 }: SpeakingSessionProps) {
-  const { session, start, pause, resume, stop } = useHandsFreeSession();
+  const { session, micLevelRef, start, pause, resume, stop, replay } = useHandsFreeSession();
   const [started, setStarted] = useState(false);
   const [summary, setSummary] = useState<SessionSummary | null>(null);
   const [completing, setCompleting] = useState(false);
@@ -141,6 +143,9 @@ export function SpeakingSession({
               different browser. Nothing here counted against you.
             </p>
           )}
+          {summary.error && (
+            <p className="mt-2 text-sm text-[color:var(--text-secondary)]">{summary.error}</p>
+          )}
           <div
             className={`mt-4 grid gap-2 text-center ${
               notScored > 0 ? 'grid-cols-4' : 'grid-cols-3'
@@ -214,6 +219,8 @@ export function SpeakingSession({
     );
   }
 
+  const listening = session.state === 'listening' && !session.isPaused;
+
   return (
     <div className="space-y-4">
       <div className="rounded-2xl bg-[var(--surface-inset)] p-5 text-center">
@@ -228,10 +235,30 @@ export function SpeakingSession({
             {session.currentWord.meaning}
           </p>
         )}
-        <div className="mt-4 inline-flex rounded-full bg-[color:var(--accent-indonesian)]/10 text-[color:var(--accent-indonesian)] px-3 py-1 text-xs font-bold">
-          {labelForState(session.state)}
-        </div>
+        {/* Missing the word used to mean restarting the whole run to hear it
+            again. Disabled while the mic is open, or the browser transcribes
+            our own playback as the learner's attempt. */}
+        <button
+          type="button"
+          onClick={replay}
+          disabled={listening || !session.currentWord}
+          className="mt-4 inline-flex items-center gap-2 rounded-full bg-[var(--background)] border border-[var(--card-border)] px-4 py-2 text-sm font-bold disabled:opacity-40"
+        >
+          <PlayIcon /> Hear it again
+        </button>
       </div>
+
+      <MicPanel
+        listening={listening}
+        state={session.state}
+        paused={session.isPaused}
+        levelRef={micLevelRef}
+        deadline={session.listenDeadline}
+      />
+
+      {session.error && (
+        <p className="text-xs text-center text-[color:var(--text-secondary)]">{session.error}</p>
+      )}
 
       <div className="flex gap-2">
         {session.isPaused ? (
@@ -260,16 +287,136 @@ export function SpeakingSession({
   );
 }
 
-function labelForState(state: string): string {
+/**
+ * The recording indicator.
+ *
+ * Sized and coloured to be unmissable, because the only signal this screen used
+ * to give was a small text chip — and that chip was wrong, reading "Feedback"
+ * while the mic was open. Everything here keys off `listening`, which is now the
+ * one state in which the microphone is actually recording.
+ */
+function MicPanel({
+  listening,
+  state,
+  paused,
+  levelRef,
+  deadline,
+}: {
+  listening: boolean;
+  state: HandsFreeState;
+  paused: boolean;
+  levelRef: RefObject<number>;
+  deadline: number | null;
+}) {
+  return (
+    <div
+      className={`rounded-2xl p-5 transition-colors ${
+        listening
+          ? 'bg-red-500/10 ring-1 ring-red-500/40'
+          : 'bg-[var(--surface-inset)]'
+      }`}
+    >
+      <div className="flex items-center gap-4">
+        <div
+          className={`relative shrink-0 grid place-items-center w-14 h-14 rounded-full transition-colors ${
+            listening
+              ? 'bg-red-500 text-white'
+              : 'bg-[var(--background)] text-[color:var(--text-secondary)]'
+          }`}
+        >
+          {listening && (
+            <span className="absolute inset-0 rounded-full bg-red-500/40 animate-ping" />
+          )}
+          <span className="relative">
+            <MicIcon size={24} />
+          </span>
+        </div>
+        <div className="min-w-0 flex-1">
+          <p
+            className={`text-sm font-bold ${
+              listening ? 'text-red-400' : 'text-[color:var(--text-secondary)]'
+            }`}
+          >
+            {paused ? 'Paused' : labelForState(state)}
+          </p>
+          <Waveform
+            levelRef={levelRef}
+            active={listening}
+            className={`mt-2 block w-full h-8 ${
+              listening ? 'text-red-400' : 'text-[color:var(--text-secondary)] opacity-30'
+            }`}
+          />
+        </div>
+      </div>
+      <ListenCountdown deadline={listening ? deadline : null} />
+    </div>
+  );
+}
+
+/**
+ * How long is left to speak.
+ *
+ * The listen window is a fixed 5s that closes silently, so someone who paused
+ * to think just found their turn gone. Driven by a CSS transition keyed on the
+ * deadline rather than a React timer — no re-render per frame, and a new window
+ * restarts it because the key changed.
+ */
+function ListenCountdown({ deadline }: { deadline: number | null }) {
+  const barRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const bar = barRef.current;
+    if (!bar || !deadline) return;
+    // Driven straight through the DOM rather than React state: it is one CSS
+    // transition, and modelling it as state costs a render to reset the width
+    // and another to start it. The reset also has to land as its own style
+    // commit, or the browser coalesces the two and the bar never moves — two
+    // frames apart is what makes it animate.
+    bar.style.transition = 'none';
+    bar.style.width = '100%';
+    let inner = 0;
+    const outer = requestAnimationFrame(() => {
+      inner = requestAnimationFrame(() => {
+        bar.style.transition = `width ${LISTEN_TIMEOUT_MS}ms linear`;
+        bar.style.width = '0%';
+      });
+    });
+    return () => {
+      cancelAnimationFrame(outer);
+      cancelAnimationFrame(inner);
+    };
+  }, [deadline]);
+
+  if (!deadline) return null;
+
+  return (
+    <div className="mt-3 h-1 rounded-full bg-red-500/20 overflow-hidden">
+      <div ref={barRef} className="h-full rounded-full bg-red-400" style={{ width: '100%' }} />
+    </div>
+  );
+}
+
+function PlayIcon() {
+  return (
+    <svg width={14} height={14} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <polygon points="6 3 20 12 6 21 6 3" />
+    </svg>
+  );
+}
+
+function labelForState(state: HandsFreeState): string {
   switch (state) {
     case 'playing_word':
       return 'Listen…';
     case 'playing_mnemonic':
       return 'Hint…';
     case 'waiting_for_repeat':
-      return 'Now you say it';
+      return 'Get ready to say it';
+    case 'listening':
+      // The only label that promises recording, on the only state that does it.
+      return 'Speak now — recording';
     case 'scoring':
-      return 'Listening to you';
+      return 'Checking what we heard';
     case 'giving_feedback':
       return 'Feedback';
     case 'next_word':
