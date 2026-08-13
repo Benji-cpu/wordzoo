@@ -506,6 +506,7 @@ export function ReviewClient({ dueWords, duePhrases, dueCanDos = [], practiceWor
             revealed={revealed}
             onRate={handleRevisionRate}
             wordFamilies={wordFamiliesMap[revisionItem.word_id]}
+            languageCode={languageCode}
             // No taper here, deliberately — this is the scaffold-on-failure
             // path. The learner is in the revision round precisely because they
             // missed the word, which is exactly when re-encoding is wanted.
@@ -569,6 +570,7 @@ export function ReviewClient({ dueWords, duePhrases, dueCanDos = [], practiceWor
             revealed={revealed}
             onRate={handleRate}
             wordFamilies={wordFamiliesMap[current.data.word_id]}
+            languageCode={languageCode}
             // Taper the picture once the word has survived a 7-day gap.
             // `status` is interval-bucketed by the SRS ('learning' < 7d,
             // 'reviewing' >= 7d, 'mastered' >= 30d) and already rides along on

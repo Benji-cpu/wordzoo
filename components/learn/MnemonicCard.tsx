@@ -184,6 +184,7 @@ export function MnemonicCard({
           variant="card"
           keyword={keyword}
           zoomCaption={bridgeSentence ?? sceneDescription}
+          speech={wordId ? { text: wordText, wordId } : null}
           fallback={
             <div
               className="w-full rounded-[18px] flex flex-col items-center justify-center py-10 px-6"

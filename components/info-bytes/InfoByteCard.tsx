@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { speakText, stopPlayback } from '@/lib/audio/pronunciation';
+import { SpeakBack } from '@/components/audio/SpeakBack';
 import type { SupportedLanguageCode } from '@/types/audio';
 import type { InfoByteDifficulty } from '@/types/database';
 
@@ -180,6 +181,20 @@ export function InfoByteCard({
               {englishText}
             </p>
           )}
+        </div>
+      )}
+
+      {/* Read it aloud yourself. The first sentence only — a daily dose is a
+          paragraph, and holding the mic open for all of it turns a 20-second
+          card into a recital. */}
+      {languageCode && targetSentences[0] && (
+        <div className="mt-3 pt-3 border-t border-card-border">
+          <SpeakBack
+            key={targetSentences[0]}
+            target={targetSentences[0]}
+            languageCode={languageCode}
+            label="Read the first line out loud"
+          />
         </div>
       )}
 

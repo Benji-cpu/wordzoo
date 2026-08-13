@@ -27,7 +27,8 @@ export type SpendKind =
   | 'screenshot_upload'
   | 'share_image'
   | 'can_do_certify'
-  | 'xp_award';
+  | 'xp_award'
+  | 'tts_synthesize';
 
 export interface SpendLimit {
   /** Max units allowed inside the window. */
@@ -64,6 +65,11 @@ export const SPEND_LIMITS: Record<SpendKind, SpendLimit> = {
   // honest use and caps the cost of someone hammering the endpoint.
   can_do_certify: { limit: 40, windowMinutes: 1440 },
   xp_award: { limit: 3000, windowMinutes: 1440 },
+  // Only charged on a cache MISS — the app speaks a small fixed vocabulary of
+  // phrasings, so after the first few sessions almost every line is a free blob
+  // lookup. 200/day is far above the number of genuinely new sentences one
+  // learner can generate, and caps the damage if a caller ever loops.
+  tts_synthesize: { limit: 200, windowMinutes: 1440 },
 };
 
 /**

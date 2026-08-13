@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Card } from '@/components/ui/Card';
 import { SwipeIndicators, getSwipeBorderStyle } from '@/components/learn/SwipeIndicators';
+import { SpeakBack } from '@/components/audio/SpeakBack';
+import type { SupportedLanguageCode } from '@/types/audio';
 import { MnemonicImage } from '@/components/shared/MnemonicImage';
 import { playPhraseAudio, stopPlayback, isAudioUnlocked } from '@/lib/audio';
 import type { PhraseWordMnemonic } from '@/types/database';
@@ -89,6 +91,21 @@ export function PhraseReviewCard({
       document.removeEventListener('touchend', onTouchEnd);
     };
   }, [revealed]);
+
+  // A phrase is the thing most worth saying out loud — it is where rhythm and
+  // linking live, and neither survives being practised one word at a time.
+  // Deliberately not wired to the rating: the SRS grade is about recall, and a
+  // misheard syllable must not reschedule a phrase the learner knew.
+  const speakBackSection = revealed && languageCode ? (
+    <div className="mt-3 px-1" onClick={(e) => e.stopPropagation()}>
+      <SpeakBack
+        key={textTarget}
+        target={textTarget}
+        languageCode={languageCode as SupportedLanguageCode}
+        label="Say it back"
+      />
+    </div>
+  ) : null;
 
   const wordBreakdown = words.length > 0 && revealed ? (
     <div className="mt-3">
@@ -196,6 +213,7 @@ export function PhraseReviewCard({
                       src={compositeImageUrl}
                       alt={`Illustration for phrase: ${textEn}`}
                       variant="phrase-composite"
+                      speech={{ text: textTarget, lang: languageCode, audioUrl }}
                       zoomCaption={phraseBridgeSentence ?? literalTranslation ?? null}
                     />
                   </div>
@@ -204,6 +222,7 @@ export function PhraseReviewCard({
                     <p className="text-xs text-text-secondary">Visual coming soon</p>
                   </div>
                 ) : null}
+                {speakBackSection}
                 {wordBreakdown}
               </div>
             )}
@@ -242,6 +261,7 @@ export function PhraseReviewCard({
                       src={compositeImageUrl}
                       alt={`Illustration for phrase: ${textEn}`}
                       variant="phrase-composite"
+                      speech={{ text: textTarget, lang: languageCode, audioUrl }}
                       zoomCaption={phraseBridgeSentence ?? literalTranslation ?? null}
                     />
                   </div>
@@ -250,6 +270,7 @@ export function PhraseReviewCard({
                     <p className="text-xs text-text-secondary">Visual coming soon</p>
                   </div>
                 ) : null}
+                {speakBackSection}
                 {wordBreakdown}
               </div>
             )}

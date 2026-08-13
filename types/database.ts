@@ -15,6 +15,12 @@ export interface UserPreferences {
   audio_speed: number;
   absurdity_level: 'mild' | 'medium' | 'wild';
   hands_free_mode: boolean;
+  /**
+   * Play target-language audio by itself when a card or image appears, rather
+   * than waiting to be asked. Optional because it post-dates the column's
+   * default, so existing rows simply don't have the key yet.
+   */
+  audio_autoplay?: boolean;
 }
 
 export interface Language {

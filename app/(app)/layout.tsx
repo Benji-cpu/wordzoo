@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation';
 import { Toaster } from 'sonner';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { UnregisterServiceWorker } from '@/components/system/UnregisterServiceWorker';
+import { AudioPreferencesProvider } from '@/components/audio/AudioPreferences';
+import { getUserProfile } from '@/lib/db/queries';
 import { AppShell } from './AppShell';
 
 export default async function AppLayout({
@@ -15,7 +17,13 @@ export default async function AppLayout({
     redirect('/login');
   }
 
+  // Read here rather than in each speaking surface: a card should already know
+  // whether it may make a sound by the time it paints.
+  const profile = session.user.id ? await getUserProfile(session.user.id) : null;
+  const autoplay = profile?.preferences?.audio_autoplay === true;
+
   return (
+    <AudioPreferencesProvider initialAutoplay={autoplay}>
     <div className="h-dvh flex flex-col bg-background text-foreground">
       <UnregisterServiceWorker />
       {/* Top bar */}
@@ -48,5 +56,6 @@ export default async function AppLayout({
       <AppShell>{children}</AppShell>
       <Toaster position="top-center" richColors closeButton theme="system" />
     </div>
+    </AudioPreferencesProvider>
   );
 }

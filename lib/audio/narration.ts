@@ -1,5 +1,6 @@
 import type { Mnemonic } from '@/types/database';
-import { getEnglishVoice, speakWithPromise, pauseMs } from './voice-map';
+import { pauseMs } from './voice-map';
+import { speak } from './voice';
 
 let currentAudio: HTMLAudioElement | null = null;
 
@@ -9,29 +10,20 @@ export async function narrateMnemonic(
   stopNarration();
 
   if (mnemonic.audio_url) {
-    return playNarrationAudio(mnemonic.audio_url);
+    try {
+      return await playNarrationAudio(mnemonic.audio_url);
+    } catch {
+      // Blob outage or a stale URL — fall through and synthesize it instead of
+      // dropping the hint entirely.
+    }
   }
 
-  const voice = await getEnglishVoice();
-
-  // Keyword introduction
-  const keywordUtterance = new SpeechSynthesisUtterance(
-    `It sounds like ${mnemonic.keyword_text}...`
-  );
-  if (voice) keywordUtterance.voice = voice;
-  keywordUtterance.rate = 0.95;
-  keywordUtterance.pitch = 1.1;
-  await speakWithPromise(keywordUtterance);
-
-  await pauseMs(500);
-
-  // Scene description — split long text to avoid Chrome's ~15s cutoff
-  const sentences = splitIntoChunks(mnemonic.scene_description);
-  for (const sentence of sentences) {
-    const sceneUtterance = new SpeechSynthesisUtterance(sentence);
-    if (voice) sceneUtterance.voice = voice;
-    sceneUtterance.rate = 0.9;
-    await speakWithPromise(sceneUtterance);
+  // Chunked because the browser fallback at the end of `speak()` still has
+  // Chrome's ~15s utterance cutoff; a real clip does not care either way.
+  await speak(`It sounds like ${mnemonic.keyword_text}...`, 'en');
+  await pauseMs(400);
+  for (const sentence of splitIntoChunks(mnemonic.scene_description)) {
+    await speak(sentence, 'en');
   }
 }
 

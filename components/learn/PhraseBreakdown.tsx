@@ -67,6 +67,11 @@ export function PhraseBreakdown({ phrase, onContinue, languageCode, embedded = f
           alt={phrase.text_en}
           variant="phrase-word"
           className={expandedWord ? 'max-h-[72px]' : 'max-h-[140px]'}
+          speech={{
+            text: phrase.text_target,
+            lang: languageCode,
+            audioUrl: phrase.audio_url,
+          }}
           fallback={
             <div className="rounded-lg bg-gradient-to-br from-accent-id/15 to-surface-inset py-4 px-4 mx-auto max-w-sm">
               <p className="text-lg font-bold text-accent-id">{phrase.text_target}</p>
@@ -127,6 +132,11 @@ export function PhraseBreakdown({ phrase, onContinue, languageCode, embedded = f
                   variant="phrase-word"
                   keyword={expandedWord.keyword_text}
                   className="max-h-[110px]"
+                  speech={{
+                    text: expandedWord.word_text,
+                    lang: languageCode,
+                    wordId: expandedWord.word_id,
+                  }}
                   fallback={
                     <div className="rounded-lg bg-gradient-to-br from-accent-id/10 to-surface-inset py-3 px-3 mx-auto">
                       <p className="text-lg font-bold text-accent-id">&ldquo;{expandedWord.keyword_text}&rdquo;</p>

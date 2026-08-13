@@ -1,6 +1,8 @@
 'use client';
 
-import { useEffect, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { speak, playWordPronunciation } from '@/lib/audio';
+import { useAutoSpeak } from '@/components/audio/AudioPreferences';
 
 type Variant = 'card' | 'review' | 'phrase-composite' | 'phrase-word' | 'thumb' | 'community';
 
@@ -61,7 +63,36 @@ interface MnemonicImageProps {
   skeleton?: boolean;
   /** Override how this image opens its lightbox. Defaults per variant — see VARIANT_ZOOM_MODE. */
   zoom?: ZoomMode;
+  /**
+   * What this picture says when you ask it to. Supplying it puts a speaker on
+   * the image and, for learners who asked to be spoken to, plays it on arrival.
+   *
+   * The speaker is a corner button rather than the image's own tap, which is
+   * already spoken for everywhere it matters: on `card` and `review` the
+   * surrounding card advances or reveals, and on the phrase variants the image
+   * zooms. Taking that tap would trade the biggest target on the screen for a
+   * gesture nobody can see is available.
+   */
+  speech?: ImageSpeech | null;
   onLoad?: () => void;
+}
+
+/**
+ * What to say, in whichever terms the caller actually has.
+ *
+ * Surfaces differ in what they hold: a review card has a `Word` (which carries
+ * a `language_id`, not a code), a phrase block has raw text and a language
+ * code, and a mnemonic card has a word id and little else. Rather than push a
+ * language code down through every tree, take what is available and let the
+ * existing ladder resolve the rest.
+ */
+export interface ImageSpeech {
+  /** Shown in the label; also what gets synthesized when `lang` is known. */
+  text: string;
+  lang?: string | null;
+  audioUrl?: string | null;
+  /** Resolves language and audio via the API when the caller has neither. */
+  wordId?: string | null;
 }
 
 function DefaultFallback({ keyword, variant }: { keyword?: string; variant: Variant }) {
@@ -91,7 +122,7 @@ function DefaultFallback({ keyword, variant }: { keyword?: string; variant: Vari
   );
 }
 
-function ZoomOverlay({ src, alt, caption, onClose }: { src: string; alt: string; caption?: string | null; onClose: () => void }) {
+function ZoomOverlay({ src, alt, caption, onClose, onSpeak }: { src: string; alt: string; caption?: string | null; onClose: () => void; onSpeak?: (() => void) | null }) {
   const [showCaption, setShowCaption] = useState(false);
 
   useEffect(() => {
@@ -128,6 +159,25 @@ function ZoomOverlay({ src, alt, caption, onClose }: { src: string; alt: string;
           <line x1="6" y1="6" x2="18" y2="18" />
         </svg>
       </button>
+      {onSpeak && (
+        // Fixed, next to the close button: the overlay's own tap closes it, so
+        // the full-screen view would otherwise be the one place you cannot hear
+        // the thing you are looking at.
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onSpeak();
+          }}
+          aria-label="Hear this"
+          className="fixed top-3 right-16 w-10 h-10 rounded-full bg-white text-black flex items-center justify-center shadow-lg active:scale-95"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+          </svg>
+        </button>
+      )}
       <div className="relative max-w-3xl w-full">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={src} alt={alt} className="w-full max-h-[85vh] object-contain rounded-xl" />
@@ -153,6 +203,41 @@ function ZoomOverlay({ src, alt, caption, onClose }: { src: string; alt: string;
         )}
       </div>
     </div>
+  );
+}
+
+/**
+ * Say-it button, mirroring ExpandButton across the image.
+ *
+ * Deliberately the same shape and weight as the expand control: they are two
+ * things you can do to a picture, and making one of them louder would suggest
+ * a hierarchy that isn't there.
+ */
+function SpeakButton({ onClick, busy }: { onClick: () => void; busy: boolean }) {
+  return (
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
+      aria-label="Hear this"
+      className="absolute top-2 left-2 w-9 h-9 rounded-full bg-black/45 backdrop-blur-md text-white/85 flex items-center justify-center active:scale-95 hover:text-white transition-[transform,color] z-10"
+    >
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+        <path d="M15.54 8.46a5 5 0 0 1 0 7.07" className={busy ? 'animate-pulse' : ''} />
+        <path d="M19.07 4.93a10 10 0 0 1 0 14.14" className={busy ? 'animate-pulse' : ''} />
+      </svg>
+    </button>
   );
 }
 
@@ -193,17 +278,40 @@ export function MnemonicImage({
   zoomCaption,
   skeleton = true,
   zoom,
+  speech,
   onLoad,
 }: MnemonicImageProps) {
   const [loaded, setLoaded] = useState(false);
   const [errored, setErrored] = useState(false);
   const [prevSrc, setPrevSrc] = useState(src);
   const [zoomed, setZoomed] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
   if (src !== prevSrc) {
     setPrevSrc(src);
     setLoaded(false);
     setErrored(false);
   }
+
+  const say = useCallback(async () => {
+    if (!speech) return;
+    setSpeaking(true);
+    try {
+      if (speech.lang) {
+        await speak(speech.text, speech.lang, { audioUrl: speech.audioUrl, kind: 'word' });
+      } else if (speech.wordId) {
+        // No language code here — this path fetches it along with the clip.
+        await playWordPronunciation(speech.wordId, { audioUrl: speech.audioUrl ?? undefined });
+      }
+    } catch {
+      // A picture that cannot speak is still a picture.
+    } finally {
+      setSpeaking(false);
+    }
+  }, [speech]);
+
+  // Keyed on what is said rather than on `src`, so a picture that changes while
+  // the word stays put (a regenerated mnemonic) doesn't announce itself again.
+  useAutoSpeak(speech ? `${speech.lang ?? speech.wordId ?? ''}:${speech.text}` : null, say);
 
   if (!src || errored) {
     if (fallback === null) return null;
@@ -236,12 +344,18 @@ export function MnemonicImage({
         onClick={zoomMode === 'tap' ? (e) => { e.stopPropagation(); setZoomed(true); } : undefined}
       />
       {zoomMode === 'button' && loaded && <ExpandButton onClick={() => setZoomed(true)} />}
+      {/* Thumbnails and community tiles are too small to carry a control, and
+          are decoration rather than the thing being learned. */}
+      {speech && loaded && variant !== 'thumb' && variant !== 'community' && (
+        <SpeakButton onClick={say} busy={speaking} />
+      )}
       {zoomed && (
         <ZoomOverlay
           src={src}
           alt={alt}
           caption={zoomCaption ?? null}
           onClose={() => setZoomed(false)}
+          onSpeak={speech ? say : null}
         />
       )}
     </>

@@ -1,9 +1,18 @@
 import type { PlaybackSpeed, SupportedLanguageCode, WordWithMnemonic } from '@/types/audio';
-import { getVoiceForLanguage, speakWithPromise } from './voice-map';
+import {
+  getPlaybackSpeed,
+  setPlaybackSpeed,
+  playAudioUrl,
+  playAudioDirect,
+  stopPlayback,
+} from './player';
+import { speak } from './voice';
 
-const STORAGE_KEY = 'wordzoo_playback_speed';
+// Re-exported so the many components importing these from here keep working;
+// the implementations moved to player.ts to break the cycle with voice.ts.
+export { getPlaybackSpeed, setPlaybackSpeed, playAudioDirect, stopPlayback };
+
 const wordCache = new Map<string, WordWithMnemonic>();
-let currentAudio: HTMLAudioElement | null = null;
 
 // ---- Audio Unlock (browser autoplay policy) ----
 // Browsers block HTMLAudioElement.play() and speechSynthesis until a user gesture.
@@ -92,17 +101,6 @@ export function attachAudioUnlockListener(): void {
   events.forEach((e) => window.addEventListener(e, onInteraction, { capture: true, once: false }));
 }
 
-export function getPlaybackSpeed(): PlaybackSpeed {
-  if (typeof window === 'undefined') return 1.0;
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored === '0.5' || stored === '0.75' || stored === '1') return parseFloat(stored) as PlaybackSpeed;
-  return 1.0;
-}
-
-export function setPlaybackSpeed(speed: PlaybackSpeed): void {
-  localStorage.setItem(STORAGE_KEY, String(speed));
-}
-
 async function fetchWord(wordId: string): Promise<WordWithMnemonic | null> {
   const cached = wordCache.get(wordId);
   if (cached) return cached;
@@ -142,7 +140,7 @@ export async function playWordPronunciation(
 
   // 2. Try direct TTS (no API call needed)
   if (options?.text && options?.languageCode) {
-    return playViaTTS(options.text, options.languageCode, speed);
+    return playViaTTS(options.text, options.languageCode);
   }
 
   // 3. Last resort: fetch from API (slow path)
@@ -157,55 +155,24 @@ export async function playWordPronunciation(
     }
   }
 
-  return playViaTTS(word.text, word.language_code, speed);
+  return playViaTTS(word.text, word.language_code);
 }
 
 /**
- * Play an audio URL directly without needing a word ID or API call.
- * Useful when the audio URL is already available from server-rendered data.
+ * Say text in the target language.
+ *
+ * Named "viaTTS" from when it meant the browser synthesiser and nothing else.
+ * It now goes through the shared voice ladder, so the fallback path — a phrase
+ * with no seeded clip, an info byte, a word added since the last seed run —
+ * gets the same Neural voice as everything that was pre-generated, instead of
+ * dropping to the robotic one.
  */
-export async function playAudioDirect(url: string): Promise<void> {
-  stopPlayback();
-  const speed = getPlaybackSpeed();
-  return playAudioUrl(url, speed);
-}
-
-function playAudioUrl(url: string, speed: PlaybackSpeed): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const audio = new Audio();
-    // Brave's Shields can block cross-origin blob fetches; explicitly opting
-    // into anonymous CORS lets the browser fetch the response with the same
-    // headers our blob storage already serves. Safe for same-origin URLs too.
-    audio.crossOrigin = 'anonymous';
-    audio.src = url;
-    currentAudio = audio;
-    audio.playbackRate = speed;
-    audio.onended = () => {
-      currentAudio = null;
-      resolve();
-    };
-    audio.onerror = () => {
-      currentAudio = null;
-      reject(new Error('Audio playback failed'));
-    };
-    audio.play().catch((e) => {
-      currentAudio = null;
-      reject(e);
-    });
-  });
-}
-
 async function playViaTTS(
   text: string,
   langCode: SupportedLanguageCode,
-  speed: PlaybackSpeed
+  kind: 'word' | 'sentence' = 'word'
 ): Promise<void> {
-  speechSynthesis.cancel();
-  const voice = await getVoiceForLanguage(langCode);
-  const utterance = new SpeechSynthesisUtterance(text);
-  if (voice) utterance.voice = voice;
-  utterance.rate = speed;
-  return speakWithPromise(utterance);
+  return speak(text, langCode, { kind });
 }
 
 interface PlayPhraseOptions {
@@ -215,49 +182,40 @@ interface PlayPhraseOptions {
 }
 
 /**
- * Play a phrase: pre-generated audio URL first, falling back to browser TTS
- * when the URL is missing or fails to load (e.g. blob storage outage).
+ * Play a phrase: pre-generated audio URL first, then the voice ladder. The
+ * phrases table is largely unseeded, so this fallback is the common path — it
+ * is where most of the app's connected speech actually comes from.
  */
 export async function playPhraseAudio(
   url: string | null | undefined,
   options: PlayPhraseOptions
 ): Promise<void> {
   stopPlayback();
-  const speed = options.rate ?? getPlaybackSpeed();
 
   if (url) {
     try {
-      return await playAudioUrl(url, speed);
+      return await playAudioUrl(url, options.rate ?? getPlaybackSpeed());
     } catch {
       // URL failed, fall through to TTS
     }
   }
 
   if (options.languageCode) {
-    return playViaTTS(options.text, options.languageCode as SupportedLanguageCode, speed);
+    return playViaTTS(options.text, options.languageCode as SupportedLanguageCode, 'sentence');
   }
 }
 
 /**
- * Speak arbitrary target-language text via the browser's speech synthesis.
- * Used by surfaces without pre-seeded audio (e.g. the daily info byte).
+ * Speak arbitrary target-language text. Used by surfaces without pre-seeded
+ * audio (e.g. the daily info byte), which is exactly where the robotic voice
+ * used to show up.
  */
 export async function speakText(
   text: string,
   langCode: SupportedLanguageCode
 ): Promise<void> {
   stopPlayback();
-  const speed = getPlaybackSpeed();
-  return playViaTTS(text, langCode, speed);
-}
-
-export function stopPlayback(): void {
-  speechSynthesis.cancel();
-  if (currentAudio) {
-    currentAudio.pause();
-    currentAudio.currentTime = 0;
-    currentAudio = null;
-  }
+  return playViaTTS(text, langCode, 'sentence');
 }
 
 /**

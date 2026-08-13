@@ -12,6 +12,8 @@ import { SwipeIndicators, getSwipeBorderStyle } from '@/components/learn/SwipeIn
 import { CollapsibleWordFamily } from '@/components/learn/WordFamilyCard';
 import type { LearnWordFamily } from '@/types/learn';
 import type { Word, Mnemonic } from '@/types/database';
+import type { SupportedLanguageCode } from '@/types/audio';
+import { SpeakBack } from '@/components/audio/SpeakBack';
 
 type Rating = 'instant' | 'got_it' | 'hard' | 'forgot';
 
@@ -40,9 +42,11 @@ interface ReviewCardProps {
    * bridge sentence are never hidden, only the image.
    */
   showMnemonicImage?: boolean;
+  /** Target language code. Enables the speak-back strip on reveal. */
+  languageCode?: string | null;
 }
 
-export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, wordFamilies, showMnemonicImage = true }: ReviewCardProps) {
+export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, wordFamilies, showMnemonicImage = true, languageCode = null }: ReviewCardProps) {
   const [swipeX, setSwipeX] = useState(0);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageRevealed, setImageRevealed] = useState(false);
@@ -145,6 +149,11 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, w
         variant="review"
         keyword={mnemonic.keyword_text ?? undefined}
         zoomCaption={mnemonic.bridge_sentence ?? mnemonic.scene_description}
+        speech={{
+          text: word.text,
+          audioUrl: word.pronunciation_audio_url,
+          wordId: word.id,
+        }}
         onLoad={() => setImageLoaded(true)}
       />
       {imageLoaded && (
@@ -162,6 +171,23 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, w
           />
         </div>
       )}
+    </div>
+  );
+
+  // Offered after the answer is showing, never before: asked to pronounce a
+  // word you have not been told yet, the mic is a test rather than practice.
+  // Deliberately does not feed `onRate` — the SRS grade is about whether you
+  // recalled the word, and letting a misheard syllable reschedule it would
+  // punish people for their microphone.
+  const speakBackSection = revealed && languageCode && (
+    <div className="mt-3 px-1" onClick={(e) => e.stopPropagation()}>
+      <SpeakBack
+        key={word.id}
+        target={word.text}
+        languageCode={languageCode as SupportedLanguageCode}
+        romanization={word.romanization}
+        label="Say it back"
+      />
     </div>
   );
 
@@ -254,6 +280,7 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, w
                 )}
                 {mnemonicImage}
                 {imageTapThrough}
+                {speakBackSection}
                 {ratingSection}
                 {wordFamilySection}
               </div>
@@ -316,6 +343,7 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, w
                     </span>
                   </p>
                 )}
+                {speakBackSection}
                 {ratingSection}
                 {wordFamilySection}
               </div>

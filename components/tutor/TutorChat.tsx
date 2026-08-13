@@ -17,6 +17,7 @@ import { TutorOnboarding, TUTOR_ONBOARDED_KEY } from '@/components/tutor/TutorOn
 import type { ChallengeMode } from '@/lib/tutor/modes';
 import { CHALLENGE_MODE_KEY } from '@/lib/tutor/modes';
 import { useSpeechInput } from '@/lib/hooks/useSpeechInput';
+import { speak } from '@/lib/audio';
 import { useViewportInsets } from '@/lib/hooks/useKeyboardVisible';
 import type { TutorRecommendation } from '@/app/api/tutor/recommendation/route';
 
@@ -86,16 +87,18 @@ type ViewState = 'mode_select' | 'chatting' | 'summary';
 
 const TUTOR_TTS_KEY = 'tutor_tts_on';
 
-/** Speak target-language text with the browser voice (matches the app's
- * existing dynamic-text TTS path — tutor replies are generated, so there's no
- * pre-rendered audio to play). */
+/**
+ * Speak a tutor reply.
+ *
+ * The comment here used to say this "matches the app's existing dynamic-text
+ * TTS path", and it did — both were the browser synthesiser. Tutor replies are
+ * generated, so there is no pre-rendered clip, which is exactly the case the
+ * runtime TTS route exists for: it synthesizes once with the same Neural voice
+ * the seeded audio uses and caches the result, so a stock phrase the tutor
+ * reaches for often costs nothing after the first time anyone hears it.
+ */
 function speakTutorText(text: string, lang: string) {
-  if (typeof window === 'undefined' || !window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = lang;
-  u.rate = 0.92;
-  window.speechSynthesis.speak(u);
+  void speak(text, lang, { kind: 'sentence' });
 }
 
 export function TutorChat({
@@ -213,8 +216,11 @@ export function TutorChat({
       .join(' ')
       .replace(/\s+/g, ' ')
       .trim();
-    if (spoken) speakTutorText(spoken, speechLangCode);
-  }, [messages, isStreaming, ttsOn, speechLangCode]);
+    // `langCode`, not `speechLangCode`: the voice map is keyed on the short
+    // code, and handing it 'pt-BR' would 400 and drop silently back to the
+    // browser voice — the exact regression this change exists to remove.
+    if (spoken) speakTutorText(spoken, langCode);
+  }, [messages, isStreaming, ttsOn, langCode]);
 
   // Stop any speech when turning TTS off or leaving the chat.
   useEffect(() => {

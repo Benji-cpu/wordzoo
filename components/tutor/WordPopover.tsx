@@ -74,6 +74,11 @@ export function WordPopover({ data, anchorRect, languageCode, onClose }: WordPop
                 alt={`Mnemonic for ${data.text}`}
                 variant="community"
                 fallback={null}
+                speech={{
+                  text: data.text,
+                  lang: languageCode,
+                  audioUrl: data.pronunciation_audio_url,
+                }}
               />
             </div>
           )}

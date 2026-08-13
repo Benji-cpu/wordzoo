@@ -5,10 +5,21 @@ import type {
   PronunciationResult,
   WordWithMnemonic,
 } from '@/types/audio';
-import { getVoiceForLanguage, getEnglishVoice, speakWithPromise, pauseMs } from './voice-map';
-import { fetchWord, getPlaybackSpeed } from './pronunciation';
+import { pauseMs } from './voice-map';
+import { fetchWord, stopPlayback } from './pronunciation';
+import { speak, prewarm } from './voice';
 import { isScoringAvailable, startSpeechAttempt, LISTEN_TIMEOUT_MS } from './scoring';
 import { narrateMnemonic, stopNarration } from './narration';
+
+/**
+ * The gap between beats of the loop.
+ *
+ * Was a flat second everywhere, which reads as the app having stalled — long
+ * enough to wonder whether something broke, not long enough to do anything
+ * with. 450ms is a breath: it separates the phrases without inviting you to
+ * check the screen.
+ */
+const BEAT = 450;
 
 /** Thrown by `checkAbortAndPause` when the learner ends the session. Expected. */
 function isAbortError(err: unknown): boolean {
@@ -60,6 +71,15 @@ export class HandsFreeEngine {
 
     this.setupMediaSession();
     this.startSilentAudio();
+    // Every session says these, and the first play of a line is the only one
+    // that costs a round-trip. Fetching them while the first word is still
+    // being introduced keeps the gaps quiet.
+    prewarm([
+      { text: 'Listen, then say it back.', lang: 'en' },
+      { text: 'Great pronunciation! Well done!', lang: 'en' },
+      { text: 'Almost there! Try listening again and repeating.', lang: 'en' },
+      { text: 'Moving on.', lang: 'en' },
+    ]);
 
     await this.run();
   }
@@ -134,28 +154,28 @@ export class HandsFreeEngine {
     this.currentWord = { text: word.text, meaning: word.meaning_en };
     this.currentWordFull = word;
 
-    // 1. Play word pronunciation
+    // 1. Hear it. The instruction is said once, on the first word — repeating
+    // "Next word. Listen:" eight times is most of what made this drag, and by
+    // word two the learner knows the shape of the loop.
     this.setState('playing_word');
     await this.checkAbortAndPause();
-    await this.speakEnglish('Next word. Listen:');
+    if (index === 0) await this.speakEnglish('Listen, then say it back.');
     await this.checkAbortAndPause();
     await this.playWordTTS(word);
-    await pauseMs(1000);
+    await pauseMs(BEAT);
 
-    // 2. Play mnemonic / meaning
+    // 2. What it means — the bare gloss. "This means:" on every word is three
+    // syllables of scaffolding around one of content.
     this.setState('playing_mnemonic');
     await this.checkAbortAndPause();
-    await this.speakEnglish(`This means: ${word.meaning_en}`);
-    if (word.mnemonic) {
-      await this.checkAbortAndPause();
-      await narrateMnemonic(word.mnemonic);
-    }
-    await pauseMs(1000);
+    await this.speakEnglish(word.meaning_en);
+    await pauseMs(BEAT);
 
-    // 3. Listen for repeat
+    // 3. Say it back. The word is replayed rather than announced: a second
+    // hearing immediately before speaking is what actually helps, where "Now
+    // you say it" is a sentence to sit through. The screen says whose turn it
+    // is, and the mic panel makes it unmissable.
     this.setState('waiting_for_repeat');
-    await this.checkAbortAndPause();
-    await this.speakEnglish('Now you say it:');
     await this.checkAbortAndPause();
     await this.playWordTTS(word);
 
@@ -175,8 +195,17 @@ export class HandsFreeEngine {
       // 'not_scored' — retrying against a mic we can't read just makes the
       // learner repeat themselves into silence.
       if (result.score === 'getting_there' || result.score === 'try_again') {
-        await pauseMs(500);
-        await this.speakEnglish('Try one more time:');
+        await pauseMs(BEAT);
+        // The mnemonic lands here rather than before every word. It is a hint,
+        // and a hint offered before the attempt is just a longer lesson —
+        // narrating a whole scene ahead of all eight words was the single
+        // biggest reason the session dragged.
+        if (word.mnemonic) {
+          this.setState('playing_mnemonic');
+          await this.checkAbortAndPause();
+          await narrateMnemonic(word.mnemonic);
+          this.setState('giving_feedback');
+        }
         await this.checkAbortAndPause();
         await this.playWordTTS(word);
 
@@ -205,7 +234,7 @@ export class HandsFreeEngine {
 
     // 5. Next word
     this.setState('next_word');
-    await pauseMs(500);
+    await pauseMs(BEAT);
     await this.checkAbortAndPause();
   }
 
@@ -242,22 +271,26 @@ export class HandsFreeEngine {
     }
   }
 
+  /**
+   * Say the target word.
+   *
+   * This used to build a `SpeechSynthesisUtterance` and hand it to the browser
+   * — while a Google Neural clip sat in Blob storage for every single word in
+   * the database. That was one of the two robotic voices: the app owned good
+   * audio and never played it.
+   */
   private async playWordTTS(word: WordWithMnemonic): Promise<void> {
-    speechSynthesis.cancel();
-    const voice = await getVoiceForLanguage(word.language_code);
-    const utterance = new SpeechSynthesisUtterance(word.text);
-    if (voice) utterance.voice = voice;
-    utterance.rate = getPlaybackSpeed();
-    await speakWithPromise(utterance);
+    stopPlayback();
+    await speak(word.text, word.language_code, {
+      audioUrl: word.pronunciation_audio_url,
+      kind: 'word',
+    });
   }
 
+  /** The other robotic voice: narration had no path to a real one at all. */
   private async speakEnglish(text: string): Promise<void> {
-    speechSynthesis.cancel();
-    const voice = await getEnglishVoice();
-    const utterance = new SpeechSynthesisUtterance(text);
-    if (voice) utterance.voice = voice;
-    utterance.rate = 1.0;
-    await speakWithPromise(utterance);
+    stopPlayback();
+    await speak(text, 'en');
   }
 
   private async checkAbortAndPause(): Promise<void> {

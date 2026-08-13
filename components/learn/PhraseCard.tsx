@@ -93,6 +93,11 @@ export function PhraseCard({ phrase, onContinue, languageCode }: PhraseCardProps
           alt={phrase.text_en}
           variant="phrase-word"
           className="max-h-[28vh]"
+          speech={{
+            text: phrase.text_target,
+            lang: languageCode,
+            audioUrl: phrase.audio_url,
+          }}
           fallback={
             <div className="rounded-lg bg-gradient-to-br from-accent-id/15 to-surface-inset py-6 px-4 mx-auto max-w-sm">
               <p className="text-lg font-bold text-accent-id">{phrase.text_target}</p>
