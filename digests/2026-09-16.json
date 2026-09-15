@@ -1,0 +1,176 @@
+{
+  "project": "wordzoo",
+  "today": "2026-09-16",
+  "startedAt": "2026-09-15T19:44:00.871Z",
+  "finishedAt": "2026-09-15T19:44:02.087Z",
+  "feedback": {
+    "byStatus": {
+      "actioned": 138,
+      "dismissed": 1
+    },
+    "newLast24h": 0,
+    "pendingRows": []
+  },
+  "health": {
+    "stuckMnemonicsLast72h": 1,
+    "overdueReviews": 183,
+    "spendLast24h": [
+      {
+        "kind": "xp_award",
+        "units": 70,
+        "calls": 14
+      }
+    ],
+    "pedagogy": {
+      "cueAccuracy": [
+        {
+          "cue_type": "phrase_production",
+          "attempts": 34,
+          "correct": 0,
+          "first_try": 0,
+          "accuracy_pct": 0
+        },
+        {
+          "cue_type": "production",
+          "attempts": 34,
+          "correct": 0,
+          "first_try": 0,
+          "accuracy_pct": 0
+        },
+        {
+          "cue_type": "phrase_recognition",
+          "attempts": 26,
+          "correct": 13,
+          "first_try": 11,
+          "accuracy_pct": 50
+        },
+        {
+          "cue_type": "phrase_cloze",
+          "attempts": 21,
+          "correct": 0,
+          "first_try": 0,
+          "accuracy_pct": 0
+        },
+        {
+          "cue_type": "cloze",
+          "attempts": 21,
+          "correct": 0,
+          "first_try": 0,
+          "accuracy_pct": 0
+        }
+      ],
+      "cueAccuracy30": [
+        {
+          "cue_type": "phrase_production",
+          "attempts": 34,
+          "correct": 0,
+          "first_try": 0,
+          "accuracy_pct": 0
+        },
+        {
+          "cue_type": "production",
+          "attempts": 34,
+          "correct": 0,
+          "first_try": 0,
+          "accuracy_pct": 0
+        },
+        {
+          "cue_type": "phrase_recognition",
+          "attempts": 26,
+          "correct": 13,
+          "first_try": 11,
+          "accuracy_pct": 50
+        },
+        {
+          "cue_type": "phrase_cloze",
+          "attempts": 21,
+          "correct": 0,
+          "first_try": 0,
+          "accuracy_pct": 0
+        },
+        {
+          "cue_type": "cloze",
+          "attempts": 21,
+          "correct": 0,
+          "first_try": 0,
+          "accuracy_pct": 0
+        }
+      ],
+      "checkpoints": {
+        "started": 1,
+        "passed": 0,
+        "failed": 1,
+        "pass_rate_pct": 0,
+        "avg_remediation_loops": 2
+      },
+      "retention": [
+        {
+          "interval_bucket": "<1d (learning)",
+          "reviews": 143,
+          "correct": 34,
+          "retention_pct": 23.8
+        }
+      ],
+      "overdue": [
+        {
+          "bucket": "due now",
+          "words": 7,
+          "phrases": 15
+        },
+        {
+          "bucket": "8d+ late",
+          "words": 183,
+          "phrases": 81
+        }
+      ],
+      "consolidation": [
+        {
+          "exposure": 1,
+          "words": 188,
+          "phrases": 101,
+          "reached_pct": 95.1
+        },
+        {
+          "exposure": 2,
+          "words": 125,
+          "phrases": 76,
+          "reached_pct": 66.1
+        },
+        {
+          "exposure": 3,
+          "words": 87,
+          "phrases": 55,
+          "reached_pct": 46.7
+        },
+        {
+          "exposure": 4,
+          "words": 36,
+          "phrases": 29,
+          "reached_pct": 21.4
+        },
+        {
+          "exposure": 5,
+          "words": 27,
+          "phrases": 24,
+          "reached_pct": 16.8
+        },
+        {
+          "exposure": 6,
+          "words": 12,
+          "phrases": 24,
+          "reached_pct": 11.8
+        }
+      ],
+      "scheduleHealth": {
+        "max_interval_days": 365,
+        "p95_interval_days": 90,
+        "items_over_365d": 0,
+        "items_over_4x_age": 0,
+        "mean_ease": 2.52,
+        "items_at_min_ease": 0,
+        "leeches": 0
+      }
+    }
+  },
+  "errors": []
+}
