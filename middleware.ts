@@ -78,7 +78,6 @@ export const config = {
     '/review/:path*',
     '/tutor/:path*',
     '/settings/:path*',
-    '/gallery/:path*',
     '/admin/:path*',
     '/community/:path*',
   ],
