@@ -35,7 +35,7 @@ yarn-error.log*
 
 # claude code
 .claude/settings.local.json
-MEMORY.md
+# MEMORY.md is committed since 2026-09-16 — institutional memory was machine-local.
 .mcp.json
 .playwright-mcp/
 .superpowers/
@@ -60,3 +60,7 @@ next-env.d.ts
 
 # local-only image archive (originals from generateImage during backfill)
 /backups/
+
+# Playwright
+test-results/
+playwright-report/

@@ -22,7 +22,10 @@
     "db:recompress-blob-images": "npx tsx lib/db/recompress-blob-images.ts",
     "db:cleanup-orphan-blobs": "npx tsx lib/db/cleanup-orphan-blobs.ts",
     "db:backfill-images": "npm run db:seed-orphan-mnemonics -- --limit=500 && npm run db:seed-missing-images -- --type=all --limit=500 && npm run db:seed-scene-anchors -- --limit=100",
-    "db:audit-mnemonics": "npx tsx scripts/audit-mnemonics.ts"
+    "db:audit-mnemonics": "npx tsx scripts/audit-mnemonics.ts",
+    "test": "VITE_CONFIG_NATIVE_IGNORE_WARNING=true vitest run",
+    "test:watch": "VITE_CONFIG_NATIVE_IGNORE_WARNING=true vitest",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@auth/neon-adapter": "^1.11.1",
@@ -47,6 +50,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
@@ -57,6 +61,7 @@
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.11"
   }
 }
