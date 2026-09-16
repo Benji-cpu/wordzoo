@@ -133,7 +133,12 @@ export async function playWordPronunciation(
   if (options?.audioUrl) {
     try {
       return await playAudioUrl(options.audioUrl, speed);
-    } catch {
+    } catch (e) {
+      // Our own stopPlayback() interrupting this clip (a re-render, a second
+      // tap, React's dev double-effect) is not a failed clip — falling through
+      // would fetch a Neural clip for a word that already has one, and on the
+      // unauthenticated demo that fetch is a guaranteed 401 + robot voice.
+      if (e instanceof Error && e.name === 'AbortError') return;
       // URL failed, continue to fallbacks
     }
   }

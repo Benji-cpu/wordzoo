@@ -28,6 +28,7 @@ export default function WordReveal({ word, wordNumber, speedMultiplier, onComple
     // Auto-play pronunciation (guarded by unlock state)
     if (isAudioUnlocked()) {
       playWordPronunciation(word.text, {
+        audioUrl: word.audioUrl,
         text: word.romanization || word.text,
         languageCode: languageCode as import('@/types/audio').SupportedLanguageCode | undefined,
       }).catch(() => {});
@@ -75,6 +76,7 @@ export default function WordReveal({ word, wordNumber, speedMultiplier, onComple
         )}
         <PronunciationButton
           wordId={word.text}
+          audioUrl={word.audioUrl}
           text={word.romanization || word.text}
           languageCode={languageCode}
         />

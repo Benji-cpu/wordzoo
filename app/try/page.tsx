@@ -28,7 +28,7 @@ export default function OnboardingPage() {
   useEffect(() => {
     const saved = loadOnboardingProgress();
     if (saved?.selectedLanguage && saved.screen.type !== 'complete') {
-      dispatch({ type: 'SELECT_LANGUAGE', language: saved.selectedLanguage });
+      dispatch({ type: 'RESTORE', state: saved });
     }
   }, []);
 

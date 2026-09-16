@@ -43,6 +43,7 @@ export default function MnemonicReveal({ word, phase }: MnemonicRevealProps) {
             fill
             className="object-cover"
             priority
+            unoptimized
           />
         </motion.div>
       )}

@@ -75,6 +75,7 @@ export default function QuizCard({ word, languageName, onAnswer, promptText, lan
 
       <PronunciationButton
         wordId={word.text}
+        audioUrl={word.audioUrl}
         text={word.romanization || word.text}
         languageCode={languageCode}
         className="-mt-4"

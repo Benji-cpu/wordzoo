@@ -61,6 +61,7 @@ export type OnboardingAction =
   | { type: 'ANSWER_DOUBLE_QUIZ'; phase: 'current' | 'surprise'; attempts: number }
   | { type: 'ADVANCE_FROM_DOUBLE_QUIZ'; phase: 'current' | 'surprise' }
   | { type: 'ADVANCE_TO_COMPLETE' }
+  | { type: 'RESTORE'; state: OnboardingState }
   | { type: 'RESET' };
 
 // --- Flow ---
@@ -148,6 +149,12 @@ export function onboardingReducer(state: OnboardingState, action: OnboardingActi
 
     case 'ADVANCE_TO_COMPLETE':
       return { ...state, screen: { type: 'complete' }, completedAt: Date.now() };
+
+    case 'RESTORE':
+      // Resume from localStorage. This used to re-dispatch SELECT_LANGUAGE,
+      // which reset the words, the clock, the name and the goal and dropped the
+      // learner back at goal_pick — a "resume" that forgot who they were.
+      return { ...INITIAL_STATE, ...action.state };
 
     case 'RESET':
       return INITIAL_STATE;

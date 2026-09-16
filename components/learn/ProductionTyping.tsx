@@ -7,6 +7,7 @@ import { Celebration } from '@/components/ui/Celebration';
 import { Fox } from '@/components/mascot/Fox';
 import { useSound } from '@/lib/hooks/useSound';
 import { useHaptic } from '@/lib/hooks/useHaptic';
+import { useViewportInsets } from '@/lib/hooks/useKeyboardVisible';
 import { useXP, XP_AMOUNTS } from '@/lib/hooks/useXP';
 import { fuzzyMatchAnswer, allowedEditsFor } from '@/lib/pedagogy/normalize';
 import { fireTelemetry } from '@/lib/pedagogy/telemetry';
@@ -69,6 +70,10 @@ export function ProductionTyping({
   const inputRef = useRef<HTMLInputElement | null>(null);
   const { play } = useSound();
   const { trigger } = useHaptic();
+  // Tracks the mobile keyboard's top edge, exactly as Cloze does. Without it
+  // the input and the Check button sit under the keyboard on a phone — the
+  // dominant real-feedback complaint on the only productive-retrieval turn.
+  const { keyboardHeight } = useViewportInsets();
   const { award } = useXP();
 
   useEffect(() => {
@@ -305,7 +310,8 @@ export function ProductionTyping({
 
       <form
         onSubmit={handleSubmit}
-        className={`pb-2 flex flex-col gap-2 ${shake ? 'animate-shake' : ''}`}
+        className={`pb-2 flex flex-col gap-2 transition-[padding] duration-150 ${shake ? 'animate-shake' : ''}`}
+        style={keyboardHeight > 0 ? { paddingBottom: keyboardHeight } : undefined}
       >
         <input
           ref={inputRef}
