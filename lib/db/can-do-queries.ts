@@ -7,8 +7,8 @@
 
 import { sql } from './client';
 
-/** How long after finishing a scene before its can-dos can be certified. */
-export const CAN_DO_DELAY_HOURS = 48;
+export { CAN_DO_DELAY_HOURS } from './can-do-delay';
+import { CAN_DO_DELAY_HOURS } from './can-do-delay';
 
 export interface DueCanDo {
   can_do_id: string;

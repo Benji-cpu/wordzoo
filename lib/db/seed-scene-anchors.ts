@@ -9,6 +9,7 @@
  *   --limit=N   (default 5)
  *   --delay=ms  (default 2500)
  *   --only=sceneTitleSubstring
+ *   --lang=pt   (language code; the other seeders take the same flag)
  */
 import dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
@@ -20,6 +21,7 @@ import { SCENE_ANCHOR_DATA } from './scene-anchor-data';
 const limitArg = parseInt(process.argv.find((a) => a.startsWith('--limit='))?.replace('--limit=', '') ?? '5', 10);
 const delayMs = parseInt(process.argv.find((a) => a.startsWith('--delay='))?.replace('--delay=', '') ?? '2500', 10);
 const onlyFilter = process.argv.find((a) => a.startsWith('--only='))?.replace('--only=', '');
+const langFilter = process.argv.find((a) => a.startsWith('--lang='))?.replace('--lang=', '');
 const isDryRun = process.argv.includes('--dry-run');
 
 const STYLE_SUFFIX = 'digital illustration, warm colors, atmospheric lighting, wide composition, establishing shot';
@@ -47,15 +49,21 @@ async function main() {
   console.log(`=== Backfilling scene anchor images${isDryRun ? ' [DRY RUN]' : ''} ===`);
   console.log(`  limit=${limitArg} delay=${delayMs}ms`);
   if (onlyFilter) console.log(`  only=${onlyFilter}`);
+  if (langFilter) console.log(`  lang=${langFilter}`);
   console.log('');
 
   let scenes = (await sql`
-    SELECT s.id, s.title, s.description, p.title AS path_title
+    SELECT s.id, s.title, s.description, p.title AS path_title, l.code AS language_code
     FROM scenes s
     JOIN paths p ON p.id = s.path_id
+    JOIN languages l ON l.id = p.language_id
     WHERE s.anchor_image_url IS NULL
     ORDER BY p.title, s.sort_order
-  `) as Array<{ id: string; title: string; description: string | null; path_title: string }>;
+  `) as Array<{ id: string; title: string; description: string | null; path_title: string; language_code: string }>;
+
+  if (langFilter) {
+    scenes = scenes.filter((s) => s.language_code === langFilter);
+  }
 
   if (onlyFilter) {
     scenes = scenes.filter((s) => s.title.toLowerCase().includes(onlyFilter.toLowerCase()));

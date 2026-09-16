@@ -20,6 +20,12 @@ const SUGGESTIONS_BY_LANG: Record<string, Array<{ label: string; countryCode: st
     { label: 'Tokyo', countryCode: 'JP' },
     { label: 'Kyoto', countryCode: 'JP' },
   ],
+  pt: [
+    { label: 'Rio de Janeiro', countryCode: 'BR' },
+    { label: 'São Paulo', countryCode: 'BR' },
+    { label: 'Salvador', countryCode: 'BR' },
+    { label: 'Florianópolis', countryCode: 'BR' },
+  ],
 };
 
 interface TripSectionProps {

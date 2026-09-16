@@ -22,7 +22,9 @@ Language learning SaaS with AI-generated keyword mnemonics, spaced repetition, a
 - `npm run db:seed` — seed base data
 - `npm run db:seed-mnemonics` — seed AI-generated mnemonics
 - `npm run db:seed-audio` — generate TTS audio (`--mode=words|narrations|dialogues|phrases|all`, `--only=word1,word2`, `--force`)
-- `npm run db:seed-expanded` — seed expanded Indonesian content (Units 1-5, 19 scenes, ~231 words)
+- `npm run db:seed-expanded` — seed expanded Indonesian content (Units 1-5, 19 scenes, ~231 words).
+  Pass `--lang=` for the others: `npx tsx lib/db/seed-expanded.ts --lang=pt` (Portuguese, Units 1-5,
+  20 scenes, 233 words), `--lang=es`. Idempotent — it upserts on the ids in `lib/db/content/<lang>/`.
 - `npm test` — Vitest unit tests (`lib/**/*.test.ts`): `lib/srs/engine.test.ts` (the scheduler), `lib/pedagogy/leitner.test.ts` (the drill queue), `lib/pedagogy/normalize.test.ts` (typo tolerance). Pure modules only — `engine.test.ts` mocks the DB layer.
 - `npm run test:e2e` — Playwright smoke (`tests/e2e/learn-loop.spec.ts`): the `/try` demo and the first scene as a non-admin, on a phone viewport. Needs `npm run dev` already on :8000 (it never starts one). Launches the installed Google Chrome headless (`channel: 'chrome'`) because the Playwright browser download is blocked on this machine; `PW_CHROME=<binary>` overrides.
 - **Tests are required for `lib/srs/`, `lib/pedagogy/` and anything touching access control.** The old "no tests" rule was reversed on 2026-09-16 — it had already cost a paywall bypass, a public-mnemonic leak and a preview-deploy auth bypass. Playwright MCP is still the tool for exploratory checks during development; the spec file is the regression net.
@@ -76,8 +78,10 @@ Progress is measured as capability, not throughput. A **can-do** is one communic
 - **Tables**: `can_dos` (content) + `user_can_dos` (per-user state). `user_can_dos.eligible_at` carries both the 48h gate and the post-failure cooldown; it is anchored to `user_scene_progress.completed_at`, never `NOW()`, so replaying a scene can't push a learner's own test out.
 - **Content pipeline** — the statements live in git, not just the DB:
   1. `npx tsx lib/db/generate-can-dos.ts --language=id --append` — AI-drafts into `lib/db/content/can-dos/<lang>.ts`. Refuses to overwrite without `--force`; `--append` only fills scenes with no can-dos yet.
+     Portuguese skipped this step: its 60 statements are hand-authored one file per unit (`can-dos/pt-unit1.ts` … `pt-unit5.ts`), with `can-dos/pt.ts` doing nothing but concatenating them in path order. Drafting is a convenience, not the contract — a hand-written unit file is the same shape and seeds identically.
   2. **Hand-edit the file.** This is the point of the pipeline. Check `prompt_en` never contains the target-language answer, and opt into `must_include` deliberately (it ships empty — a wrong lemma rejects a valid answer before the grader runs, with no appeal).
-  3. `npx tsx lib/db/seed-can-dos.ts --language=id` — idempotent upsert on deterministic ids.
+  3. `npx tsx lib/db/seed-can-dos.ts --language=id` — idempotent upsert on deterministic ids. It also **backfills `user_can_dos` for scenes a learner already finished**, anchored to that scene's own `completed_at` exactly as the live unlock is. Without it, can-dos authored after someone completed a scene would never reach them: the only other unlock path fires at scene completion, which has already happened.
+- **`CAN_DO_DELAY_HOURS` lives in `lib/db/can-do-delay.ts`, not in `can-do-queries.ts`.** A seeder runs `dotenv.config()` in its body, but ES imports are hoisted above it — so importing anything that reaches `lib/db/client.ts` (which reads `DATABASE_URL` at module load) kills the script before its own first line. Keep constants a seeder needs in a module with no DB import.
 - **Grading**: `POST /api/can-dos/[canDoId]/certify` is **STRICT** and is deliberately a separate route from `/api/scenes/[sceneId]/conversation-grade`, which is ACCEPT-AND-COACH. Do not merge them behind a flag — one function with two contradictory failure semantics is how a silently lenient certifier ships. Ambiguity and every error path resolve to `unclear`, never `pass`; `unclear` costs no strike and no cooldown.
 - **`CanDoTest` must stay unaided**: no hints, chips, reveal, audio, romanization, autocomplete or spellcheck. `ConversationBlock` ships hints on purpose — that's practice. The absence of scaffolding *is* the measurement.
 

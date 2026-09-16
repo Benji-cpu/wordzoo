@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
 import { neon } from '@neondatabase/serverless';
 import { getCanDosForLanguage } from './content/can-dos';
+import { CAN_DO_DELAY_HOURS } from './can-do-delay';
 
 /**
  * Seeds can_dos from the committed, hand-edited content files. Idempotent —
@@ -74,6 +75,23 @@ async function main() {
 
   const total = (await sql`SELECT COUNT(*)::int AS n FROM can_dos`) as { n: number }[];
   console.log(`Upserted ${inserted}. can_dos now holds ${total[0].n} row(s).`);
+
+  // Can-dos normally unlock at scene completion (unlockCanDosForScene in the
+  // progress route). A learner who completed a scene BEFORE its can-dos were
+  // authored would otherwise never see them, so mirror that insert for every
+  // completed (user, scene) pair the file touches. Anchored to the scene's own
+  // completed_at, exactly like the live path, and idempotent.
+  const backfilled = (await sql`
+    INSERT INTO user_can_dos (user_id, can_do_id, unlocked_at, eligible_at)
+    SELECT usp.user_id, cd.id, usp.completed_at,
+           usp.completed_at + (${CAN_DO_DELAY_HOURS} || ' hours')::interval
+    FROM can_dos cd
+    JOIN user_scene_progress usp ON usp.scene_id = cd.scene_id
+    WHERE cd.scene_id = ANY(${sceneIds}::uuid[]) AND usp.completed_at IS NOT NULL
+    ON CONFLICT (user_id, can_do_id) DO NOTHING
+    RETURNING id
+  `) as { id: string }[];
+  console.log(`Unlocked ${backfilled.length} can-do(s) for learners who had already completed a scene.`);
 }
 
 main().catch((err) => {

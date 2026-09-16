@@ -1,5 +1,13 @@
 // Pre-generated mnemonic data for all words.
 // Keyed by "{language_name}:{word_text}" for lookup.
+//
+// Portuguese Units 3-5 live in their own files under content/pt/ — the inline
+// block below predates them and stops at Unit 2. They import MnemonicEntry from
+// here, but type-only, so the cycle is erased at compile time.
+
+import { PT_UNIT3_MNEMONICS } from './content/pt/mnemonics-unit3';
+import { PT_UNIT4_MNEMONICS } from './content/pt/mnemonics-unit4';
+import { PT_UNIT5_MNEMONICS } from './content/pt/mnemonics-unit5';
 
 export interface MnemonicEntry {
   keyword: string;
@@ -1072,4 +1080,9 @@ export const MNEMONIC_DATA: Record<string, MnemonicEntry> = {
     sceneDescription: 'Everything in Hawaii is adorably CUTE: the volcanoes have blushing cheeks, the palm trees wear tiny bows, and the waves have big puppy eyes.',
     imagePrompt: 'A Hawaiian beach scene where everything is adorably cute, a volcano with blushing rosy cheeks, palm trees wearing tiny pink bows, ocean waves with big sparkling puppy eyes, sunset, bold text overlay reading KAWAII, digital illustration, vibrant colors, slightly surreal, centered composition, single focal point',
   },
+
+  // ── Portuguese Units 3-5 (144 words: A familia, Viajando, Festas) ────
+  ...PT_UNIT3_MNEMONICS,
+  ...PT_UNIT4_MNEMONICS,
+  ...PT_UNIT5_MNEMONICS,
 };
