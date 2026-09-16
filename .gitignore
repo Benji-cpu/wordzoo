@@ -50,6 +50,10 @@ yarn-error.log*
 !app/apple-icon.png
 !app/opengraph-image.png
 
+# audit evidence — the shots docs/audit-2026-09.md argues from. The full walk
+# (65 screenshots) stays local; this is the curated set.
+!docs/audit-2026-09/evidence/*.png
+
 # vercel
 .vercel
 
