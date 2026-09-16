@@ -1,51 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# WordZoo
 
-## Getting Started
+Language learning that makes words stick. Every word gets an AI keyword mnemonic — a sound-alike
+word, a scene, an illustration and a Neural voice clip — and is then drilled (recognition,
+typing, cloze), practised in a scripted conversation, and scheduled by a spaced-repetition
+engine so it comes back right before it is forgotten. Indonesian first; Spanish, Portuguese and
+a Japanese demo.
 
-First, run the development server:
+Live: https://wordzoo.vercel.app · Try it without an account: https://wordzoo.vercel.app/try
+
+## Stack
+
+Next.js 16 (App Router, React 19, TypeScript) · Neon Postgres via raw SQL · NextAuth v5 (Google)
+· Tailwind v4 + shadcn/ui · Gemini 2.5 Flash · Stability AI · Google Cloud TTS · Vercel Blob ·
+Stripe · Vercel.
+
+## Run it
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env.local     # fill in DATABASE_URL, AUTH_*, GOOGLE_GEMINI_API_KEY at least
+npm install
+npm run dev                    # http://localhost:8000  (port 8000, not 3000)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Sign in without Google in development: `http://localhost:8000/api/auth/test-login?email=you@example.com`
+(404s on Vercel). Admin pages need the email in `ADMIN_EMAILS`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Check it
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run lint          # ESLint
+npx tsc --noEmit      # types
+npm test              # Vitest: lib/srs/engine, lib/pedagogy/leitner, lib/pedagogy/normalize
+npm run test:e2e      # Playwright smoke of /try and the learn loop (needs `npm run dev` on :8000)
+```
 
-## Learn More
+## Where things are
 
-To learn more about Next.js, take a look at the following resources:
+| Path | What |
+|---|---|
+| `app/try/` | The public demo — three words, no account, static data |
+| `app/(app)/learn/[sceneId]/` + `components/learn/SceneFlowClient.tsx` | A scene: dialogue → phrases → drill → vocabulary → drill → conversation → summary |
+| `lib/pedagogy/` | Leitner drill queue, exercise pickers, typo tolerance, feature flags |
+| `lib/srs/engine.ts` | The scheduler (SM-2 derived; only the review queue lengthens intervals) |
+| `lib/spend-guard.ts`, `lib/spend-ledger.ts` | Every AI / image / TTS / Blob route claims budget first |
+| `lib/services/` | Billing, tutor, mnemonics, paths, email |
+| `lib/db/` | Raw SQL queries, schema, seed scripts, hand-authored content |
+| `app/api/cron/` | Vercel crons; `digests/` is written nightly and read by the Claude triage agent |
+| `docs/` | Audits, curriculum, product evaluations |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+`CLAUDE.md` is the working manual (conventions, cron table, spend guard, access control, the
+nightly routine). `docs/audit-2026-09.md` is the latest full audit.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Content pipeline
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
-## Operations
-
-WordZoo runs three Vercel Crons (project-specific, sub-daily) and one GitHub Actions nightly job (cross-project standardised digest). All cron routes require `Authorization: Bearer ${CRON_SECRET}`.
-
-| Job | Backend | Schedule (UTC) | Bali (WITA) | Endpoint |
-|-----|---------|----------------|-------------|----------|
-| `reset-usage` | Vercel Cron | `0 0 * * *` | 08:00 | `/api/cron/reset-usage` |
-| `generate-info-byte` | Vercel Cron | `0 1 * * *` | 09:00 | `/api/cron/generate-info-byte` |
-| `check-subscriptions` | Vercel Cron | `0 3 * * *` | 11:00 | `/api/cron/check-subscriptions` |
-| `nightly-routine` | GitHub Actions | `32 19 * * *` | 03:32 | `/api/cron/nightly-routine` |
-
-The nightly routine returns a JSON digest of feedback counts, new feedback in the last 24h, stuck mnemonics missing audio (>72h old), and overdue SRS reviews. The GitHub Actions workflow at `.github/workflows/nightly-routine.yml` calls the endpoint with `CRON_SECRET` and dumps the JSON into the workflow step summary. Resend isn't wired up yet — once it is, the workflow can append `?digest=true` to email the summary to `ADMIN_EMAIL`.
-
-To run the nightly digest manually: GitHub → Actions → `nightly-routine` → "Run workflow".
+Scene content is authored in `lib/db/content/<lang>/` and seeded with `npm run db:seed-expanded`.
+Mnemonics, audio and images are generated by the `db:seed-*` scripts — read the Gemini quota note
+in `CLAUDE.md` first; the free tier is shared with the live tutor.

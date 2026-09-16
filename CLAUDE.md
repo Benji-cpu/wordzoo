@@ -23,7 +23,9 @@ Language learning SaaS with AI-generated keyword mnemonics, spaced repetition, a
 - `npm run db:seed-mnemonics` — seed AI-generated mnemonics
 - `npm run db:seed-audio` — generate TTS audio (`--mode=words|narrations|dialogues|phrases|all`, `--only=word1,word2`, `--force`)
 - `npm run db:seed-expanded` — seed expanded Indonesian content (Units 1-5, 19 scenes, ~231 words)
-- No automated test framework is configured. Do not create test files, test scripts, or test dependencies. Playwright MCP is for interactive browser testing during development via Claude Code, not for automated test suites.
+- `npm test` — Vitest unit tests (`lib/**/*.test.ts`): `lib/srs/engine.test.ts` (the scheduler), `lib/pedagogy/leitner.test.ts` (the drill queue), `lib/pedagogy/normalize.test.ts` (typo tolerance). Pure modules only — `engine.test.ts` mocks the DB layer.
+- `npm run test:e2e` — Playwright smoke (`tests/e2e/learn-loop.spec.ts`): the `/try` demo and the first scene as a non-admin, on a phone viewport. Needs `npm run dev` already on :8000 (it never starts one). Launches the installed Google Chrome headless (`channel: 'chrome'`) because the Playwright browser download is blocked on this machine; `PW_CHROME=<binary>` overrides.
+- **Tests are required for `lib/srs/`, `lib/pedagogy/` and anything touching access control.** The old "no tests" rule was reversed on 2026-09-16 — it had already cost a paywall bypass, a public-mnemonic leak and a preview-deploy auth bypass. Playwright MCP is still the tool for exploratory checks during development; the spec file is the regression net.
 
 **One-off migrations** are `npx tsx lib/db/apply-<name>.ts` — never an npm script. `npm run db:migrate` runs the whole of `schema.ts` as one statement and aborts on a pre-existing constraint conflict, so it is effectively unrunnable against an existing DB. Add new DDL to the bottom of `schema.ts` (with a why-comment) *and* write a targeted, idempotent `apply-*.ts`.
 
@@ -44,8 +46,10 @@ The nightly feedback triage runs as a **two-stage pipeline** with `digests/YYYY-
 | `generate-info-byte` | Vercel Cron | `0 1 * * *` | `/api/cron/generate-info-byte` |
 | `check-subscriptions` | Vercel Cron | `0 3 * * *` | `/api/cron/check-subscriptions` |
 | `daily-reminders` | Vercel Cron | `0 9 * * *` (≈17:00 Bali) | `/api/cron/daily-reminders` — retention emails (streak nudges weekdays, weekly recap Sundays); no-ops without `RESEND_API_KEY` |
-| `nightly-routine` (prepare) | Vercel Cron | `27 19 * * *` (≈03:27 Bali) | `/api/cron/nightly-routine` |
+| `nightly-routine` (prepare) | Vercel Cron | `0 18 * * *` (runs 18:00–19:00 UTC, ≈02:xx Bali — see note) | `/api/cron/nightly-routine` |
 | `nightly-routine` (synth) | Claude Code remote agent | `32 19 * * *` (≈03:32 Bali) | `.claude/agents/nightly-routine.md` |
+
+**Hobby-plan crons fire at an unspecified minute inside their hour.** For 14 straight nights the prepare route ran at 19:44 UTC against a `27 19` schedule, 12 minutes AFTER the 19:32 trigger, and 12 of 14 mornings were `triage: missing digest` stubs. It is scheduled at `0 18` so its worst case (18:59) still lands before the trigger. Do not move it back into the 19:xx hour, and do not read a stub as a PAT failure until you have checked `digests/` for a file written after the trigger fired.
 
 The Vercel prepare step queries Neon, builds the digest payload (status counts + last-24h count + full pending feedback rows + health metrics), and writes it to `digests/YYYY-MM-DD.json` on `main` via the GitHub Contents API. It also marks the bundled rows as `status='reviewed'` so they don't recur. The Claude trigger fires 5 min later, clones the repo, reads today's JSON, synthesizes a markdown triage report (priority/standard/noise buckets + clustering), and commits `feedback-log/YYYY-MM-DD.md` plus an optional single-file low-risk fix directly to `main`. Vercel auto-deploys on push. Trigger registered in claude.ai (https://claude.ai/code/scheduled).
 
@@ -76,6 +80,13 @@ Progress is measured as capability, not throughput. A **can-do** is one communic
   3. `npx tsx lib/db/seed-can-dos.ts --language=id` — idempotent upsert on deterministic ids.
 - **Grading**: `POST /api/can-dos/[canDoId]/certify` is **STRICT** and is deliberately a separate route from `/api/scenes/[sceneId]/conversation-grade`, which is ACCEPT-AND-COACH. Do not merge them behind a flag — one function with two contradictory failure semantics is how a silently lenient certifier ships. Ambiguity and every error path resolve to `unclear`, never `pass`; `unclear` costs no strike and no cooldown.
 - **`CanDoTest` must stay unaided**: no hints, chips, reveal, audio, romanization, autocomplete or spellcheck. `ConversationBlock` ships hints on purpose — that's practice. The absence of scaffolding *is* the measurement.
+
+## Pedagogy invariants
+
+- **The drill has an exit.** `lib/pedagogy/leitner.ts` parks an item after `MAX_TRIES_PER_ITEM` (6) presentations as a *wrong* completion instead of re-queueing it; the review queue owns it from there. Before this a learner who needed the reveal every time was re-queued forever (80 presentations, 0 locked in — the "learning stopped" feedback). Do not raise the cap without a reason measured in `pedagogy_events`.
+- **A late correct review is credited for the whole gap** (`schedule()` in `lib/srs/engine.ts`): Hard `(interval + delay/4) × 1.2`, Good `(interval + delay/2) × ease`, Easy `(interval + delay) × ease × 1.3`, Anki's rule. With no delay it is the old formula exactly. This is what lets a backlog drain; without it every late success came straight back at `interval × ease`.
+- **The due queue is ordered by likelihood of retention**, not by due date: lateness relative to the item's own interval, ascending (`getDueWordsForReview`, `getDuePhrasesForReview`). A returning learner meets the probable wins first.
+- Typed cues own their reveal timing (see MEMORY.md) — report a miss only after the learner dismisses the reveal.
 
 ## Measurement (`/admin/pedagogy`)
 
@@ -168,11 +179,12 @@ if (!guard.ok) return guard.response;                       // pre-built 401 / 4
 - **Port 8000**: Dev server and `AUTH_URL`/`NEXTAUTH_URL` use port 8000
 - **No ORM**: All DB access is raw SQL via `sql` tagged templates from `lib/db/client.ts`
 - **NextAuth v5 beta**: Uses `auth()` not `getServerSession()`. Middleware wraps `auth()` callback pattern. Adapter is `@auth/neon-adapter`.
-- **No tests**: No test runner or test files exist. Don't add test scripts or dependencies.
 
 ## Environment Variables
 
-`DATABASE_URL`, `AUTH_SECRET`, `AUTH_URL`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`, `GOOGLE_GEMINI_API_KEY`, `GOOGLE_CLOUD_TTS_API_KEY`, `STABILITY_AI_API_KEY`, `BLOB_READ_WRITE_TOKEN`, `STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_PRICE_MONTHLY`, `STRIPE_PRICE_YEARLY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_APP_URL`, `CRON_SECRET` (also set as GitHub repo secret), `ADMIN_EMAILS`, `GITHUB_PAT_REPO_WRITE` (fine-grained PAT scoped to `Benji-cpu/wordzoo` with `Contents: write` — used by `/api/cron/nightly-routine` to write `digests/YYYY-MM-DD.json`)
+`DATABASE_URL`, `AUTH_SECRET`, `AUTH_URL`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`, `GOOGLE_GEMINI_API_KEY`, `GOOGLE_CLOUD_TTS_API_KEY`, `STABILITY_AI_API_KEY`, `BLOB_READ_WRITE_TOKEN`, `STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_PRICE_MONTHLY`, `STRIPE_PRICE_YEARLY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_APP_URL`, `CRON_SECRET` (also set as GitHub repo secret), `ADMIN_EMAILS`, `GITHUB_PAT_REPO_WRITE` (fine-grained PAT scoped to `Benji-cpu/wordzoo` with `Contents: write` — used by `/api/cron/nightly-routine` to write `digests/YYYY-MM-DD.json`). `.env.example` documents all of them.
+
+**`PEDAGOGY_V2_SLICES`** only gates `conversation`, `tutor` and `speech` now. The five drill slices (`distractors`, `production`, `mastery`, `restructure`, `cloze`) are permanently on in `lib/pedagogy/flags.ts` and the legacy word → mnemonic → quiz loop was deleted from `SceneFlowClient` on 2026-09-16; there is no env value that brings it back. Set `PEDAGOGY_V2_SLICES=conversation` to turn the AI-graded conversation interludes on for everyone (capped by the `conversation_grade` spend budget).
 
 **Optional:** `RESEND_API_KEY`, `EMAIL_FROM` — the retention email system (`/api/cron/daily-reminders`, `lib/services/email-service.ts`) is fully wired but skips every send (cron stays green) until `RESEND_API_KEY` is set in Vercel. `EMAIL_FROM` defaults to Resend's test sender (`onboarding@resend.dev`, delivers only to the Resend account owner) until a sending domain is verified. `ADMIN_EMAIL` — reserved for the nightly digest email.
 
