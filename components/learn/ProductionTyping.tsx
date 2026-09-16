@@ -12,6 +12,7 @@ import { useXP, XP_AMOUNTS } from '@/lib/hooks/useXP';
 import { fuzzyMatchAnswer, allowedEditsFor } from '@/lib/pedagogy/normalize';
 import { fireTelemetry } from '@/lib/pedagogy/telemetry';
 import type { SupportedLanguageCode } from '@/types/audio';
+import { usePace } from '@/lib/hooks/usePace';
 
 /**
  * Attempts reported when the learner needed the answer shown — either they
@@ -57,6 +58,7 @@ export function ProductionTyping({
   onCorrect,
   onAnswer,
 }: ProductionTypingProps) {
+  const { beat } = usePace();
   const ALLOWED_EDITS = maxEdits ?? allowedEditsFor(correctTarget);
   const [typed, setTyped] = useState('');
   const [attempts, setAttempts] = useState(0);
@@ -106,9 +108,9 @@ export function ProductionTyping({
         payload: { wordId, attempts: attempts + 1, accuracy },
       });
       onAnswer?.(true, attempts + 1, accuracy);
-      setTimeout(onCorrect, 1100);
+      setTimeout(onCorrect, beat('dwellCorrect'));
     },
-    [done, play, trigger, award, wordId, attempts, onAnswer, onCorrect],
+    [done, play, trigger, award, wordId, attempts, onAnswer, onCorrect, beat],
   );
 
   /** Show the answer and switch to type-it-to-continue. Notifies nobody. */
@@ -189,7 +191,7 @@ export function ProductionTyping({
       play('incorrect');
       trigger('error');
       setShake(true);
-      setTimeout(() => setShake(false), 400);
+      setTimeout(() => setShake(false), beat('shake'));
       fireTelemetry({
         event: 'production_wrong',
         payload: { wordId, attempts: nextAttempts, distance: result.distance },
@@ -224,6 +226,7 @@ export function ProductionTyping({
       resolveRevealed,
       onAnswer,
       wordId,
+      beat,
     ],
   );
 

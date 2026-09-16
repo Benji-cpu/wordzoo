@@ -211,6 +211,7 @@ export function IntroduceBatch({
         audioUrl={word.word.pronunciation_audio_url}
         languageCode={languageCode}
         informalText={word.word.informal_text}
+        unitIndex={globalIndexStart + step.wordIdx}
         onContinue={advance}
       />
     );

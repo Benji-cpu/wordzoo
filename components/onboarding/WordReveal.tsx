@@ -1,70 +1,57 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import type { OnboardingWord } from '@/lib/onboarding/data';
 import MnemonicReveal, { type MnemonicPhase } from './MnemonicReveal';
 import { PronunciationButton } from '@/components/audio/SpeakerButton';
 import { playWordPronunciation, isAudioUnlocked } from '@/lib/audio';
+import { useReveal, RevealStep } from '@/components/ui/Reveal';
 
 interface WordRevealProps {
   word: OnboardingWord;
   wordNumber: number;
+  /**
+   * The demo's own hand-tuned curve, passed straight through rather than derived
+   * from `paceFor`. Three words is too short a run for the general acceleration to
+   * read as anything but uneven, and this is the one sequence a stranger is judged
+   * on — so it keeps the pacing it was tuned to.
+   */
   speedMultiplier: number;
   onComplete: () => void;
   languageCode?: string;
 }
 
-type RevealPhase = 'word' | 'meaning' | 'bridge' | 'keyword' | 'image' | 'caption' | 'ready';
-
-export default function WordReveal({ word, wordNumber, speedMultiplier, onComplete, languageCode }: WordRevealProps) {
-  const [phase, setPhase] = useState<RevealPhase>('word');
-  const continueRef = useRef<HTMLButtonElement>(null);
-
-  const t = useCallback((ms: number) => ms * speedMultiplier, [speedMultiplier]);
+export default function WordReveal({
+  word,
+  wordNumber,
+  speedMultiplier,
+  onComplete,
+  languageCode,
+}: WordRevealProps) {
+  const { beat, ready, containerProps, affordanceRef } = useReveal<HTMLButtonElement>({
+    scale: speedMultiplier,
+    resetKey: word,
+  });
 
   useEffect(() => {
-    const timers: ReturnType<typeof setTimeout>[] = [];
+    if (!isAudioUnlocked()) return;
+    playWordPronunciation(word.text, {
+      audioUrl: word.audioUrl,
+      text: word.romanization || word.text,
+      languageCode: languageCode as import('@/types/audio').SupportedLanguageCode | undefined,
+    }).catch(() => {});
+  }, [word, languageCode]);
 
-    // Auto-play pronunciation (guarded by unlock state)
-    if (isAudioUnlocked()) {
-      playWordPronunciation(word.text, {
-        audioUrl: word.audioUrl,
-        text: word.romanization || word.text,
-        languageCode: languageCode as import('@/types/audio').SupportedLanguageCode | undefined,
-      }).catch(() => {});
-    }
-
-    timers.push(setTimeout(() => setPhase('meaning'), t(1000)));
-    timers.push(setTimeout(() => setPhase('bridge'), t(2000)));
-    timers.push(setTimeout(() => setPhase('keyword'), t(2500)));
-    timers.push(setTimeout(() => setPhase('image'), t(3500)));
-    timers.push(setTimeout(() => setPhase('caption'), t(4000)));
-    timers.push(setTimeout(() => setPhase('ready'), t(4500)));
-
-    return () => timers.forEach(clearTimeout);
-  }, [word, t]);
-
-  // The reveal grows downwards as the image and caption land, so on a phone
-  // the continue affordance ends up under the fold. Bring it to the learner.
-  useEffect(() => {
-    if (phase !== 'ready') return;
-    requestAnimationFrame(() =>
-      continueRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-    );
-  }, [phase]);
-
-  const showMeaning = phase !== 'word';
-  const showBridge = phase !== 'word' && phase !== 'meaning';
-
+  // Six beats: meaning, bridge, keyword, image, caption, ready.
   const mnemonicPhase: MnemonicPhase | null =
-    phase === 'keyword' ? 'keyword' :
-    phase === 'image' ? 'image' :
-    phase === 'caption' || phase === 'ready' ? 'complete' :
+    beat >= 5 ? 'complete' :
+    beat === 4 ? 'image' :
+    beat === 3 ? 'keyword' :
     null;
 
   return (
-    <div className="flex flex-col items-center px-6 gap-6 w-full">
+    <div className="flex flex-col items-center px-6 gap-6 w-full" {...containerProps}>
       {/* Word number badge */}
       <motion.div
         initial={{ opacity: 0, scale: 0.5 }}
@@ -93,34 +80,24 @@ export default function WordReveal({ word, wordNumber, speedMultiplier, onComple
       </motion.div>
 
       {/* English meaning */}
-      {showMeaning && (
-        <motion.p
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-2xl text-foreground/80"
-        >
-          = &ldquo;{word.meaningEn}&rdquo;
-        </motion.p>
-      )}
+      <RevealStep show={beat >= 1}>
+        <p className="text-2xl text-foreground/80">= &ldquo;{word.meaningEn}&rdquo;</p>
+      </RevealStep>
 
       {/* Bridge text */}
-      {showBridge && (
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-sm text-text-secondary uppercase tracking-widest"
-        >
+      <RevealStep show={beat >= 2} from="fade">
+        <p className="text-sm text-text-secondary uppercase tracking-widest">
           Here&apos;s how you&apos;ll remember it:
-        </motion.p>
-      )}
+        </p>
+      </RevealStep>
 
       {/* Mnemonic reveal */}
       {mnemonicPhase && <MnemonicReveal word={word} phase={mnemonicPhase} />}
 
       {/* Tap to continue */}
-      {phase === 'ready' && (
+      {ready && (
         <motion.button
-          ref={continueRef}
+          ref={affordanceRef}
           initial={{ opacity: 0 }}
           animate={{ opacity: [0.4, 1, 0.4] }}
           transition={{ repeat: Infinity, duration: 2 }}

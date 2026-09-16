@@ -668,6 +668,7 @@ export function SceneFlowClient({
         />
       }
       className="max-w-lg mx-auto"
+      stageKey={state.phase}
     >
       {/* Scene Intro Phase */}
       {state.phase === 'scene-intro' && (

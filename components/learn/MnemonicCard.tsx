@@ -6,6 +6,7 @@ import { PronunciationButton } from '@/components/audio/SpeakerButton';
 import { MnemonicImage } from '@/components/shared/MnemonicImage';
 import { playWordPronunciation, isAudioUnlocked } from '@/lib/audio/pronunciation';
 import { requestMnemonicRegen } from '@/lib/learn/regen-request';
+import { usePace } from '@/lib/hooks/usePace';
 
 function renderBridgeSentence(sentence: string) {
   // Split on ALL-CAPS words (2+ letters) and render them highlighted
@@ -46,6 +47,7 @@ export function MnemonicCard({
   languageName,
   onContinue,
 }: MnemonicCardProps) {
+  const { beat } = usePace();
   const hasAutoPlayed = useRef(false);
   const [showLabel, setShowLabel] = useState(true);
   const [feedbackRating, setFeedbackRating] = useState<'thumbs_up' | 'thumbs_down' | null>(null);
@@ -79,7 +81,7 @@ export function MnemonicCard({
 
   useEffect(() => {
     if (!feedbackSubmitted) return;
-    const timer = setTimeout(() => setFeedbackSubmitted(false), 2000);
+    const timer = setTimeout(() => setFeedbackSubmitted(false), beat('toast'));
     return () => clearTimeout(timer);
   }, [feedbackSubmitted]);
 

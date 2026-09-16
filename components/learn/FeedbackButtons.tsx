@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { requestMnemonicRegen } from '@/lib/learn/regen-request';
+import { usePace } from '@/lib/hooks/usePace';
 
 interface FeedbackButtonsProps {
   mnemonicId: string;
@@ -13,6 +14,7 @@ interface FeedbackButtonsProps {
 type Rating = 'thumbs_up' | 'thumbs_down';
 
 export function FeedbackButtons({ mnemonicId, context, compact = false, overlay = false }: FeedbackButtonsProps) {
+  const { beat } = usePace();
   const [selectedRating, setSelectedRating] = useState<Rating | null>(null);
   const [showComment, setShowComment] = useState(false);
   const [commentText, setCommentText] = useState('');
@@ -59,7 +61,7 @@ export function FeedbackButtons({ mnemonicId, context, compact = false, overlay 
   // Auto-hide the "Thanks!" message after 2 seconds
   useEffect(() => {
     if (!submitted) return;
-    const timer = setTimeout(() => setSubmitted(false), 2000);
+    const timer = setTimeout(() => setSubmitted(false), beat('toast'));
     return () => clearTimeout(timer);
   }, [submitted]);
 

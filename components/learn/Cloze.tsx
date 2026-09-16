@@ -11,6 +11,7 @@ import { fuzzyMatchAnswer } from '@/lib/pedagogy/normalize';
 import { fireTelemetry } from '@/lib/pedagogy/telemetry';
 import { useViewportInsets } from '@/lib/hooks/useKeyboardVisible';
 import type { ClozePhraseForWord } from '@/lib/db/queries';
+import { usePace } from '@/lib/hooks/usePace';
 
 interface ClozeProps {
   /** The target word the learner must produce. */
@@ -54,6 +55,7 @@ export function Cloze({
   onCorrect,
   onAnswer,
 }: ClozeProps) {
+  const { beat } = usePace();
   const phrase = phrases[0] ?? null;
   const [typed, setTyped] = useState('');
   const [attempts, setAttempts] = useState(0);
@@ -102,8 +104,8 @@ export function Cloze({
       payload: { wordId, attempts: attempts + 1 },
     });
     onAnswer?.(true, attempts + 1);
-    setTimeout(onCorrect, 1100);
-  }, [done, play, trigger, award, wordId, attempts, onAnswer, onCorrect]);
+    setTimeout(onCorrect, beat('dwellCorrect'));
+  }, [done, play, trigger, award, wordId, attempts, onAnswer, onCorrect, beat]);
 
   /** Show the answer in the blank and switch to type-it-to-continue. */
   const reveal = useCallback(() => {
@@ -174,7 +176,7 @@ export function Cloze({
       play('incorrect');
       trigger('error');
       setShake(true);
-      setTimeout(() => setShake(false), 400);
+      setTimeout(() => setShake(false), beat('shake'));
       fireTelemetry({
         event: 'cloze_wrong',
         payload: { wordId, attempts: nextAttempts, distance: result.distance },
@@ -204,6 +206,7 @@ export function Cloze({
       reveal,
       resolveRevealed,
       wordId,
+      beat,
     ],
   );
 

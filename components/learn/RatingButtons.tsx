@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useHaptic } from '@/lib/hooks/useHaptic';
+import { usePace } from '@/lib/hooks/usePace';
 
 type Rating = 'instant' | 'got_it' | 'hard' | 'forgot';
 
@@ -49,6 +50,7 @@ const RATINGS: { value: Rating; label: string }[] = [
 ];
 
 export function RatingButtons({ onRate }: RatingButtonsProps) {
+  const { beat } = usePace();
   const [pressed, setPressed] = useState<Rating | null>(null);
   const { trigger } = useHaptic();
 
@@ -56,7 +58,7 @@ export function RatingButtons({ onRate }: RatingButtonsProps) {
     if (pressed) return;
     setPressed(rating);
     trigger('tap');
-    setTimeout(() => onRate(rating), 220);
+    setTimeout(() => onRate(rating), beat('tapAdvance'));
   }
 
   return (

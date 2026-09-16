@@ -1,6 +1,8 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { MOTION } from '@/lib/ui/pace';
 
 type Props = {
   /** Pinned top zone — progress + exit. Optional. */
@@ -12,6 +14,17 @@ type Props = {
   /** Whole-shell background override. */
   background?: string;
   className?: string;
+  /**
+   * Identifies which stage of the flow is showing. When given, a change to it
+   * carries the middle zone out and the next one in, instead of swapping the
+   * contents between two frames.
+   *
+   * Opt-in: a caller that does not pass it renders exactly as before. Pass
+   * something that changes once per stage — the phase name — and NOT something
+   * that changes per item, or every word in a batch cross-fades and the scene
+   * reads as slower than it is.
+   */
+  stageKey?: string;
 };
 
 /**
@@ -35,14 +48,34 @@ export function SceneShell({
   children,
   background,
   className = '',
+  stageKey,
 }: Props) {
+  const reduced = useReducedMotion();
+
   return (
     <div
       className={`flex flex-col w-full h-full min-h-full overflow-x-hidden ${className}`.trim()}
       style={background ? { background } : undefined}
     >
       {top ? <div className="shrink-0 pb-2">{top}</div> : null}
-      <div className="flex-1 min-h-0 flex flex-col overflow-y-auto overscroll-contain pb-3">{children}</div>
+      <div className="flex-1 min-h-0 flex flex-col overflow-y-auto overscroll-contain pb-3">
+        {stageKey === undefined ? (
+          children
+        ) : (
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={stageKey}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: reduced ? 0 : MOTION.transition / 1000 }}
+              className="flex-1 min-h-0 flex flex-col"
+            >
+              {children}
+            </motion.div>
+          </AnimatePresence>
+        )}
+      </div>
       {bottom ? (
         <div className="shrink-0 pt-3 thumb-zone">{bottom}</div>
       ) : null}

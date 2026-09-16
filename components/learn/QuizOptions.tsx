@@ -8,6 +8,7 @@ import { Fox } from '@/components/mascot/Fox';
 import { useSound } from '@/lib/hooks/useSound';
 import { useHaptic } from '@/lib/hooks/useHaptic';
 import { useXP, XP_AMOUNTS } from '@/lib/hooks/useXP';
+import { usePace } from '@/lib/hooks/usePace';
 
 interface QuizOptionsProps {
   wordText: string;
@@ -30,6 +31,7 @@ export function QuizOptions({
   onAnswer,
   revealMaskMs = 900,
 }: QuizOptionsProps) {
+  const { beat } = usePace();
   const [selected, setSelected] = useState<string | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [celebrate, setCelebrate] = useState(false);
@@ -54,7 +56,7 @@ export function QuizOptions({
         play('correct');
         trigger('success');
         void award('correct_answer');
-        setTimeout(onCorrect, 1100);
+        setTimeout(onCorrect, beat('dwellCorrect'));
       } else {
         play('incorrect');
         trigger('error');
@@ -63,11 +65,11 @@ export function QuizOptions({
           setIsCorrect(true);
           setCelebrate(true);
           play('reveal');
-          setTimeout(onCorrect, 1300);
+          setTimeout(onCorrect, beat('dwellReveal'));
         }, revealMaskMs);
       }
     },
-    [selected, correctAnswer, onCorrect, onAnswer, play, trigger, award, revealMaskMs],
+    [selected, correctAnswer, onCorrect, onAnswer, play, trigger, award, revealMaskMs, beat],
   );
 
   return (

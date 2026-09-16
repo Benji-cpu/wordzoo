@@ -7,6 +7,7 @@ import { tokenizeDialogueLine } from '@/lib/utils/dialogue-tokenizer';
 import { stopPlayback, isAudioUnlocked } from '@/lib/audio';
 import type { SceneDialogue } from '@/types/database';
 import type { LearnWord } from '@/types/learn';
+import { usePace } from '@/lib/hooks/usePace';
 
 interface DialoguePlayerProps {
   dialogues: SceneDialogue[];
@@ -77,6 +78,7 @@ function LineAudioButton({ audioUrl, size = 16 }: { audioUrl: string; size?: num
 }
 
 export function DialoguePlayer({ dialogues, onComplete, onLineAdvance, vocabWords, initialVisibleCount = 1 }: DialoguePlayerProps) {
+  const { beat } = usePace();
   const [visibleCount, setVisibleCount] = useState(initialVisibleCount);
   const [showCasual, setShowCasual] = useState(false);
   const [isPlayingAll, setIsPlayingAll] = useState(false);
@@ -132,14 +134,14 @@ export function DialoguePlayer({ dialogues, onComplete, onLineAdvance, vocabWord
       try {
         await playAudioAtRate(line.audio_url, 1.0);
         // Small pause between lines
-        await new Promise(r => setTimeout(r, 400));
+        await new Promise(r => setTimeout(r, beat('linePause')));
       } catch {
         // ignore
       }
     }
 
     setIsPlayingAll(false);
-  }, [isPlayingAll, dialogues]);
+  }, [isPlayingAll, dialogues, beat]);
 
   const getDisplayText = (line: SceneDialogue) => {
     if (showCasual && line.text_target_informal) {
