@@ -36,7 +36,23 @@ Language learning SaaS with AI-generated keyword mnemonics, spaced repetition, a
 - **Platform**: Vercel
 - **Project**: `wordzoo`
 - **Production URL**: https://wordzoo.vercel.app
-- **Shipping mode**: direct-to-production for everything — interactive sessions AND scheduled routines. Commit on `main`, push, Vercel auto-deploys. No PRs. See master `Code/CLAUDE.md` "Shipping Standard."
+- **Shipping mode**: direct-to-production for everything — interactive sessions AND scheduled routines. Commit on `main` and push. No PRs. See master `Code/CLAUDE.md` "Shipping Standard."
+- **⚠️ Pushing does NOT deploy this project.** Its Vercel git link is `sourceless: true` — Vercel
+  knows the repo but is not subscribed to its pushes, so a commit on `main` sits there indefinitely
+  (verified 2026-09-16: three pushes, four hours, no build). `npx vercel --prod` is not the
+  fallback either — it hangs at "Deploying" with no error and creates nothing. **Trigger the build
+  from git via the API**, which uploads nothing:
+
+  ```
+  T=$(grep -m1 '^VERCEL_TOKEN=' <a `vercel env pull` file> | cut -d= -f2-)   # then delete the file
+  curl -s -X POST "https://api.vercel.com/v13/deployments?teamId=team_x4F7Q3Fuz3eKjGWMK6RR7z2l&forceNew=1" \
+    -H "Authorization: Bearer $T" -H 'Content-Type: application/json' \
+    -d '{"name":"wordzoo","target":"production","gitSource":{"type":"github","repoId":1175653928,"ref":"main"}}'
+  ```
+
+  **Always confirm after pushing**: `npx vercel ls wordzoo` — the newest Ready production
+  deployment must be newer than your last commit, and `GET /v13/deployments/<id>` reports the
+  `githubCommitSha` it actually built. Committed is not deployed here.
 
 ## Cron Jobs
 
