@@ -12,6 +12,18 @@
 
 export type CueType = 'recognition' | 'production' | 'cloze' | 'speak' | 'listening' | 'pattern';
 
+/**
+ * Presentations of one item within a drill before it is parked for the
+ * review queue instead of re-asked. Six is three full reveal → copy cycles
+ * (each cycle is a wrong answer plus a typed copy that counts as nothing).
+ */
+export const MAX_TRIES_PER_ITEM = 6;
+
+/** True when the item left the drill through the cap rather than by passing. */
+export function wasParked(item: DrillItem, requiredCueTypes: number): boolean {
+  return !isPassed(item, requiredCueTypes) && item.tries >= MAX_TRIES_PER_ITEM;
+}
+
 export interface DrillItem {
   itemId: string;                  // wordId, phraseId, or scene_pattern_exercise.id
   itemType: 'word' | 'phrase' | 'pattern';
@@ -125,6 +137,23 @@ export function applyWrong(q: DrillQueue, cueType: CueType, gap: number = 2): Dr
     // before, they keep that — no demotion within the session.
   };
   const without = q.items.filter((_, i) => i !== q.cursor);
+
+  // The exit. An item the learner cannot yet produce is not going to be
+  // produced on the seventh reveal either; before this cap a learner who
+  // pressed "I don't remember" and copied the answer was re-queued forever
+  // (80 presentations, 0 locked in, in the 2026-09 audit) — the mechanism
+  // behind "we seem to have hit an era where the learning stopped". The item
+  // leaves the drill as a WRONG completion: every miss was already recorded
+  // against the SRS, so the review queue owns it from here.
+  if (updated.tries >= MAX_TRIES_PER_ITEM) {
+    return {
+      ...q,
+      items: without,
+      cursor: without.length === 0 ? 0 : Math.min(q.cursor, without.length - 1),
+      completed: [...q.completed, updated],
+    };
+  }
+
   const insertAt = Math.min(q.cursor + gap, without.length);
   const items = [...without.slice(0, insertAt), updated, ...without.slice(insertAt)];
   // Cursor stays at q.cursor — that's now the *next* item

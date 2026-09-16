@@ -1621,7 +1621,13 @@ export async function getDueWordsForReview(
       AND uw.next_review_at <= NOW()
       AND uw.status != 'new'
       AND (${languageId ?? null}::uuid IS NULL OR w.language_id = ${languageId ?? null}::uuid)
-    ORDER BY uw.next_review_at ASC
+    -- Most-likely-still-known first: lateness relative to the item's own
+    -- interval. A 90-day word 20 days late is a probable win; a 1-day word 100
+    -- days late is a probable Again. A returning learner meets the wins first,
+    -- so the 10-minute re-asks cluster at the END of a sitting, not the start.
+    ORDER BY
+      EXTRACT(EPOCH FROM (NOW() - uw.next_review_at)) / 86400.0 / GREATEST(uw.interval_days, 1) ASC,
+      uw.next_review_at ASC
     LIMIT ${limit}
   `;
   return rows as DueWordForReview[];

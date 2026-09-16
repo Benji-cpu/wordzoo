@@ -7,9 +7,10 @@
  *   1. URL override: `?p2=1` enables all slices for the request.
  *      `?p2.distractors=1&p2.production=0` toggles individual slices.
  *   2. Admin-email allowlist (Benji's accounts) — every slice enabled.
- *   3. Env-var rollout: `PEDAGOGY_V2_SLICES=distractors,production` enables
+ *   3. Env-var rollout: `PEDAGOGY_V2_SLICES=conversation,speech` enables
  *      those slices for everyone.
- *   4. Default: every slice off.
+ *   4. Default: the drill slices on (they are the product), the paid / mic
+ *      ones off.
  */
 
 import { isAdminEmail } from '@/lib/auth/admin';
@@ -37,12 +38,19 @@ const ALL_SLICES: readonly PedagogySlice[] = [
   'speech',
 ];
 
+/**
+ * The baseline. The five drill slices shipped as the product on 2026-09-16
+ * (see docs/audit-2026-09.md): the legacy word → mnemonic → quiz loop they
+ * replaced has been deleted from SceneFlowClient, so they cannot be turned
+ * off by env any more. `PEDAGOGY_V2_SLICES` still gates the three that spend
+ * money or need a mic: `conversation`, `tutor`, `speech`.
+ */
 const OFF: PedagogyFlags = {
-  distractors: false,
-  production: false,
-  mastery: false,
-  restructure: false,
-  cloze: false,
+  distractors: true,
+  production: true,
+  mastery: true,
+  restructure: true,
+  cloze: true,
   tutor: false,
   conversation: false,
   speech: false,

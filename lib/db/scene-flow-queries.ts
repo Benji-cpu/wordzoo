@@ -262,7 +262,10 @@ export async function getDuePhrasesForReview(
       AND up.next_review_at <= NOW()
       AND up.status != 'new'
       AND (${languageId ?? null}::uuid IS NULL OR p.language_id = ${languageId ?? null}::uuid)
-    ORDER BY up.next_review_at ASC
+    -- Same retention-first order as getDueWordsForReview (see the note there).
+    ORDER BY
+      EXTRACT(EPOCH FROM (NOW() - up.next_review_at)) / 86400.0 / GREATEST(up.interval_days, 1) ASC,
+      up.next_review_at ASC
     LIMIT ${limit}
   `;
   return rows as DuePhraseForReview[];

@@ -5,12 +5,6 @@ import { useRouter } from 'next/navigation';
 import { SceneFlowHeader } from '@/components/learn/SceneFlowHeader';
 import { SceneShell } from '@/components/learn/SceneShell';
 import { DialoguePlayer } from '@/components/learn/DialoguePlayer';
-import { PhraseCard } from '@/components/learn/PhraseCard';
-import { PhraseQuiz } from '@/components/learn/PhraseQuiz';
-import { WordCard } from '@/components/learn/WordCard';
-import { MnemonicCard } from '@/components/learn/MnemonicCard';
-import { QuizOptions } from '@/components/learn/QuizOptions';
-import { CollapsibleWordFamily } from '@/components/learn/WordFamilyCard';
 import { SceneSummary } from '@/components/learn/SceneSummary';
 import { DailyLimitReached } from '@/components/learn/DailyLimitReached';
 import { VocabularyBlock } from '@/components/learn/VocabularyBlock';
@@ -229,7 +223,6 @@ export function SceneFlowClient({
   canDos = [],
 }: SceneFlowClientProps) {
   const hasAnchorImage = !!anchorImageUrl;
-  const useV2Vocab = pedagogyFlags?.restructure === true;
 
   // Filter out already-learned words so users don't re-learn duplicates across
   // scenes. Memoized because the conversation plan below keys off it — an
@@ -410,7 +403,6 @@ export function SceneFlowClient({
   );
   const [insightsShownToday, setInsightsShownToday] = useState(insightState?.shownToday ?? 0);
   const [mnemonicsViewedInSession, setMnemonicsViewedInSession] = useState(0);
-  const [firstQuizCorrect, setFirstQuizCorrect] = useState(false);
   const [activeInsight, setActiveInsight] = useState<InsightDefinition | null>(null);
   const [activeInsightContext, setActiveInsightContext] = useState<TriggerContext | null>(null);
 
@@ -552,8 +544,8 @@ export function SceneFlowClient({
     // In v2 mode, ask the active block to step back inside its own state
     // first. If it returns false (already at the start of its block) fall
     // through to the parent's phase-level computePreviousState.
-    if (state.phase === 'vocabulary' && useV2Vocab && v2Vocab?.goBack()) return;
-    if (state.phase === 'phrases' && useV2Vocab && v2Phrases?.goBack()) return;
+    if (state.phase === 'vocabulary' && v2Vocab?.goBack()) return;
+    if (state.phase === 'phrases' && v2Phrases?.goBack()) return;
     if (state.phase === 'conversation' && convGoBackRef.current()) return;
     const ctx: FlowContext & { hasAnchorImage: boolean } = { dialogues, phrases, words, conversationExchangeCount: conversationCount, hasAnchorImage };
     const prev = computePreviousState(state, ctx);
@@ -562,7 +554,7 @@ export function SceneFlowClient({
     } else {
       router.push(pathId ? `/paths/${pathId}` : '/dashboard');
     }
-  }, [state, dialogues, phrases, words, conversationCount, hasAnchorImage, pathId, router, useV2Vocab, v2Vocab, v2Phrases]);
+  }, [state, dialogues, phrases, words, conversationCount, hasAnchorImage, pathId, router, v2Vocab, v2Phrases]);
 
   // --- Dialogue Phase ---
   const handleDialogueComplete = useCallback(() => {
@@ -580,93 +572,6 @@ export function SceneFlowClient({
   const handleDialogueLineAdvance = useCallback((lineIndex: number) => {
     saveProgress('dialogue', lineIndex);
   }, [saveProgress]);
-
-  // --- Phrases Phase ---
-  const handlePhraseContinue = useCallback(() => {
-    if (state.phase !== 'phrases') return;
-    // show → quiz. Any breakdown is revealed inline inside PhraseQuiz after a correct answer.
-    setState({ phase: 'phrases', phraseIndex: state.phraseIndex, step: 'quiz' });
-  }, [state]);
-
-  const handlePhraseQuizCorrect = useCallback(() => {
-    if (state.phase !== 'phrases') return;
-    // Record phrase review for SRS tracking
-    const phrase = phrases[state.phraseIndex];
-    if (phrase) {
-      recordPhraseAnswer(phrase.id, true);
-    }
-    const next = state.phraseIndex + 1;
-    if (next < phrases.length) {
-      saveProgress('phrases', next);
-      setState({ phase: 'phrases', phraseIndex: next, step: 'show' });
-    } else if (words.length > 0) {
-      // Move to vocabulary (only unlearned words remain after filtering)
-      saveProgress('vocabulary', 0, 'phrases');
-      setState({ phase: 'vocabulary', wordIndex: 0, step: 'word' });
-    } else {
-      goToConversationOrSummary('phrases');
-    }
-  }, [state, phrases, words.length, saveProgress, goToConversationOrSummary, recordPhraseAnswer]);
-
-  // --- Vocabulary Phase (reuses existing word/mnemonic/quiz components) ---
-  const handleWordContinue = useCallback(() => {
-    if (state.phase !== 'vocabulary') return;
-    const word = words[state.wordIndex];
-    if (word?.mnemonic) {
-      const newCount = mnemonicsViewedInSession + 1;
-      setMnemonicsViewedInSession(newCount);
-      setState({ phase: 'vocabulary', wordIndex: state.wordIndex, step: 'mnemonic' });
-      // Check for mnemonic or word_family insight
-      if (!activeInsight) {
-        checkInsight('mnemonic_card', { totalMnemonicsViewed: newCount });
-      }
-    } else {
-      setState({ phase: 'vocabulary', wordIndex: state.wordIndex, step: 'quiz' });
-    }
-  }, [state, words, mnemonicsViewedInSession, activeInsight, checkInsight]);
-
-  const handleMnemonicContinue = useCallback(() => {
-    if (state.phase !== 'vocabulary') return;
-    setState({ phase: 'vocabulary', wordIndex: state.wordIndex, step: 'quiz' });
-  }, [state]);
-
-  const handleVocabQuizAnswer = useCallback((correct: boolean) => {
-    if (state.phase !== 'vocabulary') return;
-    const word = words[state.wordIndex];
-    if (!word) return;
-    void recordWordAnswer(word.word.id, 'recognition', correct);
-  }, [state, words, recordWordAnswer]);
-
-  const handleVocabQuizCorrect = useCallback(() => {
-    if (state.phase !== 'vocabulary') return;
-    // Check for testing_effect insight on first correct quiz
-    if (!firstQuizCorrect && !activeInsight) {
-      setFirstQuizCorrect(true);
-      checkInsight('quiz_correct');
-    }
-    const next = state.wordIndex + 1;
-    if (next < words.length) {
-      saveProgress('vocabulary', next);
-      setState({ phase: 'vocabulary', wordIndex: next, step: 'word' });
-    } else {
-      goToConversationOrSummary('vocabulary');
-    }
-  }, [state, words.length, saveProgress, firstQuizCorrect, activeInsight, checkInsight, goToConversationOrSummary]);
-
-  // Check for word_family insight when a word family is first displayed
-  const wordFamilyInsightChecked = useRef(false);
-  useEffect(() => {
-    if (
-      state.phase === 'vocabulary' &&
-      state.step === 'mnemonic' &&
-      !wordFamilyInsightChecked.current &&
-      !activeInsight &&
-      words[state.wordIndex]?.wordFamilies?.length
-    ) {
-      wordFamilyInsightChecked.current = true;
-      checkInsight('word_family');
-    }
-  }, [state, words, activeInsight, checkInsight]);
 
   // Check for scene_summary insight when entering summary phase
   const summaryInsightChecked = useRef(false);
@@ -692,36 +597,6 @@ export function SceneFlowClient({
     }
   }, [state.phase, sceneId]);
 
-  // Swipe to advance for card-based phases
-  useEffect(() => {
-    let startX = 0;
-    function onTouchStart(e: TouchEvent) {
-      startX = e.touches[0].clientX;
-    }
-    function onTouchEnd(e: TouchEvent) {
-      const diff = e.changedTouches[0].clientX - startX;
-      if (diff > 60) {
-        if (state.phase === 'vocabulary' && state.step === 'word') handleWordContinue();
-        else if (state.phase === 'vocabulary' && state.step === 'mnemonic') handleMnemonicContinue();
-        else if (state.phase === 'phrases' && state.step === 'show') handlePhraseContinue();
-      }
-    }
-    document.addEventListener('touchstart', onTouchStart, { passive: true });
-    document.addEventListener('touchend', onTouchEnd, { passive: true });
-    return () => {
-      document.removeEventListener('touchstart', onTouchStart);
-      document.removeEventListener('touchend', onTouchEnd);
-    };
-  }, [state, handleWordContinue, handleMnemonicContinue, handlePhraseContinue]);
-
-  // Generate phrase distractors from other phrases in the same scene
-  const getPhraseDistractors = useCallback((targetPhrase: string): string[] => {
-    return phrases
-      .filter((p) => p.text_target !== targetPhrase)
-      .map((p) => p.text_target)
-      .slice(0, 3);
-  }, [phrases]);
-
   const phaseProgress = (() => {
     const substepFraction = (step: string, steps: string[]) => steps.indexOf(step) / steps.length;
 
@@ -731,11 +606,11 @@ export function SceneFlowClient({
       case 'dialogue':
         return dialogues.length > 1 ? state.lineIndex / (dialogues.length - 1) : 0;
       case 'phrases':
-        if (useV2Vocab && v2Phrases) return v2Phrases.fraction;
+        if (v2Phrases) return v2Phrases.fraction;
         if (phrases.length === 0) return 0;
         return (state.phraseIndex + substepFraction(state.step, ['show', 'quiz'])) / phrases.length;
       case 'vocabulary':
-        if (useV2Vocab && v2Vocab) return v2Vocab.fraction;
+        if (v2Vocab) return v2Vocab.fraction;
         if (words.length === 0) return 0;
         return (state.wordIndex + substepFraction(state.step, ['word', 'mnemonic', 'quiz'])) / words.length;
       case 'conversation':
@@ -834,7 +709,7 @@ export function SceneFlowClient({
       )}
 
       {/* Phrases Phase — Pedagogy v2 (batched intros + breakdown + drill + checkpoint) */}
-      {state.phase === 'phrases' && useV2Vocab && phrases.length > 0 && (
+      {state.phase === 'phrases' && phrases.length > 0 && (
         <PhraseBlock
           phrases={phrases}
           languageCode={languageCode}
@@ -856,28 +731,8 @@ export function SceneFlowClient({
         />
       )}
 
-      {/* Phrases Phase — legacy linear show → quiz */}
-      {state.phase === 'phrases' && !useV2Vocab && phrases[state.phraseIndex] && (
-        state.step === 'show' ? (
-          <PhraseCard
-            phrase={phrases[state.phraseIndex]}
-            languageCode={languageCode}
-            onContinue={handlePhraseContinue}
-          />
-        ) : (
-          <PhraseQuiz
-            key={phrases[state.phraseIndex].id}
-            promptText={phrases[state.phraseIndex].text_en}
-            correctAnswer={phrases[state.phraseIndex].text_target}
-            distractors={getPhraseDistractors(phrases[state.phraseIndex].text_target)}
-            phrase={phrases[state.phraseIndex]}
-            onCorrect={handlePhraseQuizCorrect}
-          />
-        )
-      )}
-
       {/* Vocabulary Phase — Pedagogy v2 (batched intros + retrieval drill + checkpoint) */}
-      {state.phase === 'vocabulary' && useV2Vocab && (
+      {state.phase === 'vocabulary' && (
         <VocabularyBlock
           words={words}
           languageName={languageName}
@@ -896,78 +751,6 @@ export function SceneFlowClient({
             goToConversationOrSummary('vocabulary');
           }}
         />
-      )}
-
-      {/* Vocabulary Phase — legacy linear word/mnemonic/quiz loop */}
-      {state.phase === 'vocabulary' && !useV2Vocab && words[state.wordIndex] && (
-        <>
-          {state.step === 'word' && (
-            <WordCard
-              text={words[state.wordIndex].word.text}
-              romanization={words[state.wordIndex].word.romanization}
-              meaningEn={words[state.wordIndex].word.meaning_en}
-              partOfSpeech={words[state.wordIndex].word.part_of_speech}
-              wordId={words[state.wordIndex].word.id}
-              audioUrl={words[state.wordIndex].word.pronunciation_audio_url}
-              languageCode={languageCode}
-              informalText={words[state.wordIndex].word.informal_text}
-              onContinue={handleWordContinue}
-            />
-          )}
-          {state.step === 'mnemonic' && words[state.wordIndex].mnemonic && (
-            <>
-              <MnemonicCard
-                wordText={words[state.wordIndex].word.text}
-                keyword={words[state.wordIndex].mnemonic!.keyword_text}
-                sceneDescription={words[state.wordIndex].mnemonic!.scene_description}
-                bridgeSentence={words[state.wordIndex].mnemonic!.bridge_sentence}
-                imageUrl={words[state.wordIndex].mnemonic!.image_url}
-                mnemonicId={words[state.wordIndex].mnemonic!.id}
-                wordId={words[state.wordIndex].word.id}
-                meaningEn={words[state.wordIndex].word.meaning_en}
-                languageName={languageName}
-                onContinue={handleMnemonicContinue}
-              />
-              {activeInsight && activeInsightContext === 'mnemonic_card' && (
-                <div className="mt-3">
-                  <InsightCard insight={activeInsight} onDismiss={dismissInsight} />
-                </div>
-              )}
-              {words[state.wordIndex].wordFamilies && words[state.wordIndex].wordFamilies!.length > 0 && (
-                <CollapsibleWordFamily
-                  rootWord={{
-                    text: words[state.wordIndex].word.text,
-                    meaning: words[state.wordIndex].word.meaning_en,
-                  }}
-                  derivedForms={words[state.wordIndex].wordFamilies!}
-                />
-              )}
-              {activeInsight && activeInsightContext === 'word_family' && (
-                <div className="mt-3">
-                  <InsightCard insight={activeInsight} onDismiss={dismissInsight} />
-                </div>
-              )}
-            </>
-          )}
-          {state.step === 'quiz' && (
-            <>
-              <QuizOptions
-                key={words[state.wordIndex].word.id}
-                wordText={words[state.wordIndex].word.text}
-                wordId={words[state.wordIndex].word.id}
-                correctAnswer={words[state.wordIndex].word.meaning_en}
-                distractors={words[state.wordIndex].distractors}
-                onCorrect={handleVocabQuizCorrect}
-                onAnswer={handleVocabQuizAnswer}
-              />
-              {activeInsight && activeInsightContext === 'quiz_correct' && (
-                <div className="mt-3">
-                  <InsightCard insight={activeInsight} onDismiss={dismissInsight} />
-                </div>
-              )}
-            </>
-          )}
-        </>
       )}
 
       {/* Conversation Phase — in-scene progressive two-sided practice */}

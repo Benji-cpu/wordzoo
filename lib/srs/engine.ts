@@ -106,7 +106,7 @@ function fuzzInterval(days: number): number {
   return Math.max(FUZZ_FROM_DAYS, days + offset);
 }
 
-interface ScheduleInput {
+export interface ScheduleInput {
   rating: Rating;
   /** Only 'review' is genuine delayed retrieval — see ReviewSource. */
   source: ReviewSource;
@@ -129,7 +129,7 @@ type ScheduleReason =
   | 'lapse'
   | 'practice_no_advance';
 
-interface ScheduleResult {
+export interface ScheduleResult {
   easeFactor: number;
   intervalDays: number;
   learningStep: number;
@@ -181,7 +181,7 @@ function daysFromNow(now: Date, days: number): Date {
  *    graduated interval*, `learning_step` carries the pre-graduation state, and
  *    `next_review_at` (already TIMESTAMPTZ) does the actual timing.
  */
-function schedule(input: ScheduleInput): ScheduleResult {
+export function schedule(input: ScheduleInput): ScheduleResult {
   const { rating, source, now } = input;
   const isCorrect = rating !== 'forgot';
   const oldEF = input.easeFactor;
@@ -275,13 +275,24 @@ function schedule(input: ScheduleInput): ScheduleResult {
   }
 
   // --- Graduated: a real spaced-retrieval success. ---
+  //
+  // Late-review credit (Anki's rule). A correct answer on an item that is
+  // overdue is evidence of retention across the WHOLE gap, not just the
+  // scheduled interval: a 6-day word remembered 111 days late has been
+  // retained for 111 days. Ignoring that gave it 6 × 2.5 = 15 days and made a
+  // backlog undrainable — every late success came straight back. With
+  // `delay = 0` this is byte-for-byte the old formula.
+  const elapsedDays = input.lastReviewedAt
+    ? Math.floor((now.getTime() - input.lastReviewedAt.getTime()) / DAY_MS)
+    : oldInterval;
+  const delay = Math.max(0, elapsedDays - oldInterval);
   let advanced: number;
   if (rating === 'hard') {
-    advanced = Math.max(1, Math.round(oldInterval * HARD_INTERVAL_MULTIPLIER));
+    advanced = Math.max(1, Math.round((oldInterval + delay / 4) * HARD_INTERVAL_MULTIPLIER));
   } else if (rating === 'instant') {
-    advanced = Math.max(oldInterval + 1, Math.round(oldInterval * newEF * EASY_INTERVAL_BONUS));
+    advanced = Math.max(oldInterval + 1, Math.round((oldInterval + delay) * newEF * EASY_INTERVAL_BONUS));
   } else {
-    advanced = Math.max(oldInterval + 1, Math.round(oldInterval * newEF));
+    advanced = Math.max(oldInterval + 1, Math.round((oldInterval + delay / 2) * newEF));
   }
 
   const capped = applyCaps(fuzzInterval(advanced), input.lapses);
