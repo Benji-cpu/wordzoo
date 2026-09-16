@@ -4,13 +4,26 @@ import { createHash } from 'crypto';
 const TTS_API_URL = 'https://texttospeech.googleapis.com/v1/text:synthesize';
 
 // Voice config per language code
-const VOICE_CONFIG: Record<string, { languageCode: string; name: string }> = {
-  id: { languageCode: 'id-ID', name: 'id-ID-Wavenet-A' },
-  es: { languageCode: 'es-US', name: 'es-US-Neural2-A' },
-  ja: { languageCode: 'ja-JP', name: 'ja-JP-Neural2-B' },
-  pt: { languageCode: 'pt-BR', name: 'pt-BR-Neural2-A' },
-  en: { languageCode: 'en-US', name: 'en-US-Neural2-C' },
+const VOICE_CONFIG: Record<string, { languageCode: string; name: string; label: string }> = {
+  id: { languageCode: 'id-ID', name: 'id-ID-Wavenet-A', label: 'Indonesian' },
+  es: { languageCode: 'es-US', name: 'es-US-Neural2-A', label: 'Spanish' },
+  ja: { languageCode: 'ja-JP', name: 'ja-JP-Neural2-B', label: 'Japanese' },
+  pt: { languageCode: 'pt-BR', name: 'pt-BR-Neural2-A', label: 'Portuguese' },
+  en: { languageCode: 'en-US', name: 'en-US-Neural2-C', label: 'English' },
 };
+
+/**
+ * The free voice, used when Cloud TTS cannot be reached.
+ *
+ * Cloud TTS is billing-gated and that billing has never been enabled, so every
+ * runtime call to it has failed since the route was written and the browser's
+ * built-in synthesiser spoke instead. Gemini's TTS model needs no billing and
+ * runs on the key the app already has, so the fallback below is what actually
+ * speaks today. Cloud TTS stays first: if billing is ever switched on, the
+ * better voice comes back with no code change.
+ */
+const GEMINI_TTS_MODEL = 'gemini-2.5-flash-preview-tts';
+const GEMINI_VOICE = 'Kore';
 
 export function hasTtsVoice(langCode: string): boolean {
   return Boolean(VOICE_CONFIG[langCode]);
@@ -56,12 +69,18 @@ export async function synthesizeCached(
     .slice(0, 32);
   const blobPath = `tts/${langCode}/${key}.mp3`;
 
-  try {
-    const existing = await head(blobPath);
-    if (existing?.url) return { url: existing.url, cached: true };
-  } catch {
-    // Not found (or the store is briefly unreachable) — synthesize below. A
-    // failed lookup costs one extra generation, never a wrong clip.
+  // Two containers, because two voices can produce this clip: Cloud TTS writes
+  // MP3, the free Gemini fallback writes WAV. Whichever spoke it first wins the
+  // cache; checking only one extension would re-synthesise every hit from the
+  // other.
+  for (const candidate of [blobPath, blobPath.replace(/\.mp3$/, '.wav')]) {
+    try {
+      const existing = await head(candidate);
+      if (existing?.url) return { url: existing.url, cached: true };
+    } catch {
+      // Not found (or the store is briefly unreachable) — synthesize below. A
+      // failed lookup costs one extra generation, never a wrong clip.
+    }
   }
 
   const url = await synthesizeSpeech(text, langCode, blobPath, rate, true);
@@ -81,16 +100,45 @@ export async function synthesizeSpeech(
    */
   deterministicPath = false
 ): Promise<string> {
-  const apiKey = process.env.GOOGLE_CLOUD_TTS_API_KEY;
-  if (!apiKey) {
-    throw new Error('GOOGLE_CLOUD_TTS_API_KEY environment variable is not set');
-  }
-
   const voice = VOICE_CONFIG[langCode];
   if (!voice) {
     throw new Error(`No TTS voice configured for language: ${langCode}`);
   }
 
+  const apiKey = process.env.GOOGLE_CLOUD_TTS_API_KEY;
+  const clip = apiKey
+    ? await synthesizeViaCloudTts(text, voice, rate, apiKey).catch((err) => {
+        console.warn(`[tts] Cloud TTS unavailable, falling back to Gemini — ${err}`);
+        return null;
+      })
+    : null;
+
+  const audio = clip ?? (await synthesizeViaGemini(text, voice, rate));
+
+  // The container follows the voice that produced it, so a WAV is never served
+  // under an .mp3 path — Safari refuses the mismatch.
+  const path = audio.contentType === 'audio/wav'
+    ? blobPath.replace(/\.mp3$/, '.wav')
+    : blobPath;
+
+  const blob = await put(path, audio.buffer, {
+    access: 'public',
+    contentType: audio.contentType,
+    ...(deterministicPath ? { addRandomSuffix: false, allowOverwrite: true } : {}),
+  });
+
+  return blob.url;
+}
+
+type Clip = { buffer: Buffer; contentType: string };
+type Voice = (typeof VOICE_CONFIG)[string];
+
+async function synthesizeViaCloudTts(
+  text: string,
+  voice: Voice,
+  rate: number,
+  apiKey: string,
+): Promise<Clip> {
   const response = await fetch(`${TTS_API_URL}?key=${apiKey}`, {
     method: 'POST',
     // Without this a stalled TTS call hangs the enclosing lambda indefinitely.
@@ -116,14 +164,68 @@ export async function synthesizeSpeech(
 
   const data = await response.json();
   const audioContent = data.audioContent as string; // base64-encoded MP3
+  return { buffer: Buffer.from(audioContent, 'base64'), contentType: 'audio/mpeg' };
+}
 
-  // Decode base64 → upload to Vercel Blob
-  const audioBuffer = Buffer.from(audioContent, 'base64');
-  const blob = await put(blobPath, audioBuffer, {
-    access: 'public',
-    contentType: 'audio/mpeg',
-    ...(deterministicPath ? { addRandomSuffix: false, allowOverwrite: true } : {}),
-  });
+/**
+ * The free path: Gemini's TTS model, on the key the app already uses.
+ *
+ * It takes no speakingRate, so pace is asked for in words instead — that is the
+ * documented way to steer this model, and the instruction is not spoken. It
+ * returns headerless PCM, which no browser will play, so a RIFF header is added
+ * here rather than anywhere further down.
+ */
+async function synthesizeViaGemini(text: string, voice: Voice, rate: number): Promise<Clip> {
+  const apiKey = process.env.GOOGLE_GEMINI_API_KEY;
+  if (!apiKey) throw new Error('No TTS voice available: GOOGLE_GEMINI_API_KEY is not set');
 
-  return blob.url;
+  const pace = rate <= RATE_WORD ? 'slowly and very clearly' : 'clearly, at a natural pace';
+  const prompt = `Read the following ${voice.label} aloud ${pace}. Read only the text itself, nothing else:\n\n${text}`;
+
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_TTS_MODEL}:generateContent?key=${apiKey}`,
+    {
+      method: 'POST',
+      signal: AbortSignal.timeout(20_000),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          responseModalities: ['AUDIO'],
+          speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: GEMINI_VOICE } } },
+        },
+      }),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(`Gemini TTS error (${response.status}): ${await response.text()}`);
+  }
+
+  const data = await response.json();
+  const part = data?.candidates?.[0]?.content?.parts?.[0]?.inlineData;
+  if (!part?.data) throw new Error('Gemini TTS returned no audio');
+
+  const rateHz = Number(/rate=(\d+)/.exec(part.mimeType ?? '')?.[1] ?? 24000);
+  return { buffer: pcmToWav(Buffer.from(part.data, 'base64'), rateHz), contentType: 'audio/wav' };
+}
+
+/** Wrap raw 16-bit mono PCM in the 44-byte RIFF header browsers expect. */
+function pcmToWav(pcm: Buffer, sampleRate: number): Buffer {
+  const header = Buffer.alloc(44);
+  const byteRate = sampleRate * 2;
+  header.write('RIFF', 0);
+  header.writeUInt32LE(36 + pcm.length, 4);
+  header.write('WAVE', 8);
+  header.write('fmt ', 12);
+  header.writeUInt32LE(16, 16);        // PCM chunk size
+  header.writeUInt16LE(1, 20);         // format: PCM
+  header.writeUInt16LE(1, 22);         // channels: mono
+  header.writeUInt32LE(sampleRate, 24);
+  header.writeUInt32LE(byteRate, 28);
+  header.writeUInt16LE(2, 32);         // block align
+  header.writeUInt16LE(16, 34);        // bits per sample
+  header.write('data', 36);
+  header.writeUInt32LE(pcm.length, 40);
+  return Buffer.concat([header, pcm]);
 }
