@@ -125,6 +125,28 @@ The only surface that reads `pedagogy_events` and divides `times_correct / times
 - **Route handlers**: Validate with Zod → delegate to service layer → return `ApiResponse`
 - **Imports**: Use `@/` path alias for all project imports
 
+## Pacing and reveals
+
+**Never write a bare `setTimeout(fn, 900)` in a component.** Every timed beat comes from
+`lib/ui/pace.ts` through the `usePace()` hook — `beat('dwellCorrect')`, `beat('shake')`,
+`beat('tapAdvance')`, `beat('toast')`, `beat('linePause')`. Three separate ideas of how long a
+moment is (CSS tokens, framer-motion literals, loose integers) is what this replaced.
+
+- **`useReveal()`** (`components/ui/Reveal.tsx`) is how information arrives: staged beats, a pace
+  that quickens with `unitIndex`, a tap that lands every remaining beat, and auto-scroll to
+  `affordanceRef`. Use it instead of writing another phase state machine. **Destructure its
+  return** (`const { beat, ready } = useReveal(...)`) — the react-hooks/refs rule flags property
+  access on the object because it carries a ref.
+- **`ladder(...gaps)`** builds a reveal from the gaps between beats, not absolute times, so
+  inserting a beat does not mean retyping every number after it.
+- **`MOTION`** mirrors the `--duration-*` tokens in `globals.css`. Change one, change both —
+  `lib/ui/pace.test.ts` parses the CSS and fails if they drift.
+- **Reduced motion is handled in the hook**, not only in CSS: `usePace` returns 0 for every
+  duration. The `@media (prefers-reduced-motion)` block only flattens animations.
+- **The `/try` demo keeps its own hand-tuned multipliers** and must stay exactly as it is — it is
+  the one sequence a stranger is judged on. Verify any change to `WordReveal` by sampling the
+  beats in a browser; they land at 1000/2000/2500/3500/4000/4500ms.
+
 ## Auth
 
 Google OAuth via NextAuth v5 beta (`next-auth@5.0.0-beta.30`) with Neon adapter. Session strategy is `database` (not JWT). Auth config is in `lib/auth.ts`. Middleware (`middleware.ts`) protects API routes only — page protection uses `auth()` server-side.
