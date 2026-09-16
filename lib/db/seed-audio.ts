@@ -3,6 +3,30 @@ dotenv.config({ path: '.env.local' });
 import { neon } from '@neondatabase/serverless';
 import { synthesizeSpeech } from '../ai/google-tts';
 
+/**
+ * The free Gemini TTS tier allows 100 requests per day per model, and the
+ * counter is shared by every mode below. Once it is spent, every remaining
+ * call 429s with the same "retry in ~14h" body — so continuing is not slow,
+ * it is pointless: one run burned 175 doomed requests after the cap and
+ * buried the real result under 175 identical stack dumps.
+ *
+ * Detecting it aborts the whole run instead of the current item. Nothing is
+ * lost: every seeder here skips rows that already have audio, so tomorrow's
+ * run resumes exactly where this one stopped.
+ */
+class DailyQuotaExhausted extends Error {}
+
+function rethrowIfDailyQuota(error: unknown): void {
+  const msg = error instanceof Error ? error.message : String(error);
+  if (msg.includes('429') && /per_model_per_day|PerProjectPerModel/.test(msg)) {
+    // "14h33m56.326729008s" — the seconds are noise at this scale.
+    const retry = /retry in (\d+h\d+m|\d+m)/i.exec(msg)?.[1];
+    throw new DailyQuotaExhausted(
+      `Gemini TTS daily quota (100/model/day) is spent${retry ? `, resets in ~${retry}` : ''}.`
+    );
+  }
+}
+
 // Parse CLI flags
 const args = process.argv.slice(2);
 const mode = args.find(a => a.startsWith('--mode='))?.replace('--mode=', '') ?? 'words';
@@ -80,6 +104,7 @@ async function seedWordAudio(sql: any) {
       // Rate limit: 250ms between requests
       await delay(250);
     } catch (error) {
+      rethrowIfDailyQuota(error);
       console.error(`  FAIL: ${error instanceof Error ? error.message : error}`);
       failCount++;
     }
@@ -156,6 +181,7 @@ async function seedNarrationAudio(sql: any) {
       // Rate limit: 250ms between requests
       await delay(250);
     } catch (error) {
+      rethrowIfDailyQuota(error);
       console.error(`  FAIL: ${error instanceof Error ? error.message : error}`);
       failCount++;
     }
@@ -210,6 +236,7 @@ async function seedPhraseAudio(sql: any) {
       successCount++;
       await delay(250);
     } catch (error) {
+      rethrowIfDailyQuota(error);
       console.error(`  FAIL: ${error instanceof Error ? error.message : error}`);
       failCount++;
     }
@@ -264,6 +291,7 @@ async function seedDialogueAudio(sql: any) {
       successCount++;
       await delay(250);
     } catch (error) {
+      rethrowIfDailyQuota(error);
       console.error(`  FAIL: ${error instanceof Error ? error.message : error}`);
       failCount++;
     }
@@ -309,4 +337,13 @@ async function main() {
   }
 }
 
-main();
+main().catch((err) => {
+  if (err instanceof DailyQuotaExhausted) {
+    // An expected daily boundary, not a failure. Re-run tomorrow; every mode
+    // skips what already has audio, so it picks up from here.
+    console.log(`\n=== Stopped: ${err.message} Re-run to resume. ===`);
+    process.exit(0);
+  }
+  console.error(err);
+  process.exit(1);
+});
