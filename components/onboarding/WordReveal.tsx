@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import type { OnboardingWord } from '@/lib/onboarding/data';
 import MnemonicReveal, { type MnemonicPhase } from './MnemonicReveal';
@@ -19,6 +19,7 @@ type RevealPhase = 'word' | 'meaning' | 'bridge' | 'keyword' | 'image' | 'captio
 
 export default function WordReveal({ word, wordNumber, speedMultiplier, onComplete, languageCode }: WordRevealProps) {
   const [phase, setPhase] = useState<RevealPhase>('word');
+  const continueRef = useRef<HTMLButtonElement>(null);
 
   const t = useCallback((ms: number) => ms * speedMultiplier, [speedMultiplier]);
 
@@ -43,6 +44,15 @@ export default function WordReveal({ word, wordNumber, speedMultiplier, onComple
 
     return () => timers.forEach(clearTimeout);
   }, [word, t]);
+
+  // The reveal grows downwards as the image and caption land, so on a phone
+  // the continue affordance ends up under the fold. Bring it to the learner.
+  useEffect(() => {
+    if (phase !== 'ready') return;
+    requestAnimationFrame(() =>
+      continueRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    );
+  }, [phase]);
 
   const showMeaning = phase !== 'word';
   const showBridge = phase !== 'word' && phase !== 'meaning';
@@ -110,11 +120,12 @@ export default function WordReveal({ word, wordNumber, speedMultiplier, onComple
       {/* Tap to continue */}
       {phase === 'ready' && (
         <motion.button
+          ref={continueRef}
           initial={{ opacity: 0 }}
           animate={{ opacity: [0.4, 1, 0.4] }}
           transition={{ repeat: Infinity, duration: 2 }}
           onClick={onComplete}
-          className="mt-4 px-8 py-4 text-text-secondary text-sm cursor-pointer animate-pulse"
+          className="mt-4 mb-2 scroll-mb-6 px-8 py-4 text-text-secondary text-sm cursor-pointer animate-pulse"
         >
           Tap to continue ›
         </motion.button>

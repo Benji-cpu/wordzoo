@@ -14,8 +14,8 @@ export function Hero() {
       </h1>
       <p className="max-w-md text-lg leading-8 text-text-secondary">
         WordZoo turns every new word into a vivid memory trick — so you actually
-        remember it tomorrow. Learn Indonesian, Spanish, or Portuguese a few
-        minutes a day.
+        remember it tomorrow. Learn Indonesian, Spanish, Portuguese
+        or Japanese a few minutes a day.
       </p>
       <div className="flex flex-col gap-3 sm:flex-row">
         <Button variant="accent" size="lg" href="/try">
