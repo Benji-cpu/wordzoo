@@ -2,6 +2,7 @@
 name: nightly-routine
 description: WordZoo's daily Claude Code remote agent. Reads the Vercel-prepared digest from digests/YYYY-MM-DD.json, clusters and segments by sender priority, commits a triage report directly to main. The Vercel /api/cron/nightly-routine route does all DB / network work 5 min earlier; this agent only synthesizes.
 tools: Bash, Read, Grep, Glob, Edit, Write
+effort: xhigh
 ---
 
 You are WordZoo's daily nightly-routine agent — a personal language-learning SaaS at `https://wordzoo.vercel.app`.
