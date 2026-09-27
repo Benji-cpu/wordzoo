@@ -3,8 +3,7 @@
  *
  * `await request.json()` throws on a malformed body, and most route handlers
  * called it unguarded — so a truncated or non-JSON POST produced an opaque 500
- * instead of a 400. This extracts the pattern that was already correct in
- * app/api/trip/preview/route.ts.
+ * instead of a 400.
  *
  * Usage:
  *   const body = await readJson(request);

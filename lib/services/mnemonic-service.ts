@@ -17,8 +17,7 @@ function parseCandidates(text: string): MnemonicCandidate[] {
   // Strip markdown code fences if present
   const cleaned = text.replace(/```(?:json)?\s*/g, '').replace(/```\s*/g, '').trim();
   // Raw JSON.parse on model output throws a bare SyntaxError on truncation,
-  // which surfaces to the caller as an opaque 500. Match the shape used in
-  // custom-path-service.ts.
+  // which surfaces to the caller as an opaque 500.
   let parsed: unknown;
   try {
     parsed = JSON.parse(cleaned);

@@ -3,6 +3,16 @@ import type { NextConfig } from "next";
 // Service worker is served by the app/sw.js/route.ts handler, which sets
 // its own cache-control headers. No static header rewrite needed here.
 const nextConfig: NextConfig = {
+  // Path Studio, custom/travel paths, /trip and mnemonic sharing were deleted
+  // on 27 Sep 2026 (WordZoo is Ben's own tool). Old links land on a live page.
+  async redirects() {
+    return [
+      { source: '/trip', destination: '/dashboard', permanent: false },
+      { source: '/trip/:path*', destination: '/dashboard', permanent: false },
+      { source: '/paths/studio', destination: '/paths', permanent: false },
+      { source: '/word/:wordId', destination: '/dashboard', permanent: false },
+    ];
+  },
   async headers() {
     return [
       {

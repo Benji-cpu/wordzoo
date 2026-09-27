@@ -6,9 +6,6 @@ import {
   updateSubscriptionStatus,
   updateUserSubscriptionTier,
   getUserById,
-  insertPurchase,
-  insertStudioPathPurchase,
-  getPathById,
   recordWebhookEvent,
 } from '@/lib/db/queries';
 
@@ -92,66 +89,6 @@ export async function createCheckoutSession(
   return session.url!;
 }
 
-export async function createTravelPackCheckout(
-  userId: string,
-  packId: string,
-  options?: { successUrl?: string; cancelUrl?: string }
-): Promise<string> {
-  const path = await getPathById(packId);
-  if (!path || path.type !== 'travel') throw new Error('Travel pack not found');
-
-  const customerId = await getOrCreateStripeCustomer(userId);
-
-  const session = await stripe.checkout.sessions.create({
-    customer: customerId,
-    mode: 'payment',
-    line_items: [{
-      price_data: {
-        currency: 'usd',
-        product_data: {
-          name: `Travel Pack: ${path.title}`,
-          description: path.description ?? undefined,
-        },
-        unit_amount: 499, // $4.99
-      },
-      quantity: 1,
-    }],
-    success_url: options?.successUrl ?? `${APP_URL}/paths?purchased=true`,
-    cancel_url: options?.cancelUrl ?? `${APP_URL}/paths?canceled=true`,
-    metadata: { userId, packId, type: 'travel_pack' },
-  });
-
-  return session.url!;
-}
-
-export async function createStudioPathCheckout(
-  userId: string,
-  sessionId: string
-): Promise<string> {
-  const customerId = await getOrCreateStripeCustomer(userId);
-
-  const session = await stripe.checkout.sessions.create({
-    customer: customerId,
-    mode: 'payment',
-    line_items: [{
-      price_data: {
-        currency: 'usd',
-        product_data: {
-          name: 'Path Studio: Custom Learning Path',
-          description: 'AI-generated dialogue path with vocabulary and conversations',
-        },
-        unit_amount: 299, // $2.99
-      },
-      quantity: 1,
-    }],
-    success_url: `${APP_URL}/api/studio/generate-callback?session_id={CHECKOUT_SESSION_ID}&studio_session=${sessionId}`,
-    cancel_url: `${APP_URL}/paths/studio?canceled=true`,
-    metadata: { userId, sessionId, type: 'studio_path' },
-  });
-
-  return session.url!;
-}
-
 export async function createPortalSession(userId: string): Promise<string> {
   const subscription = await getSubscriptionByUserId(userId);
   if (!subscription?.stripe_customer_id) {
@@ -177,40 +114,6 @@ export async function handleWebhookEvent(event: Stripe.Event): Promise<void> {
       const session = event.data.object as Stripe.Checkout.Session;
       const userId = session.metadata?.userId;
       if (!userId) break;
-
-      if (session.metadata?.type === 'travel_pack') {
-        // Handle travel pack purchase
-        const packId = session.metadata.packId;
-        if (packId && session.payment_intent) {
-          await insertPurchase({
-            userId,
-            packId,
-            stripePaymentId: typeof session.payment_intent === 'string'
-              ? session.payment_intent
-              : session.payment_intent.id,
-          });
-        }
-        break;
-      }
-
-      if (session.metadata?.type === 'studio_path') {
-        // Record purchase atomically with payment so callback retries are safe
-        // and /api/studio/generate can grant access on retry
-        const studioSessionId = session.metadata.sessionId ?? null;
-        const paymentIntent = session.payment_intent
-          ? (typeof session.payment_intent === 'string'
-              ? session.payment_intent
-              : session.payment_intent.id)
-          : null;
-
-        await insertStudioPathPurchase({
-          userId,
-          stripeSessionId: session.id,
-          studioSessionId,
-          stripePaymentId: paymentIntent,
-        });
-        break;
-      }
 
       // Handle subscription checkout
       if (session.subscription) {

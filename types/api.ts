@@ -34,12 +34,6 @@ export const CustomMnemonicSchema = z.object({
   keyword: z.string().min(1).max(200),
 });
 
-// Paths
-export const CustomPathSchema = z.object({
-  languageId: z.string().uuid(),
-  userInput: z.string().min(1).max(500),
-});
-
 // Trip-locked goals
 export const SetTripSchema = z.object({
   destination: z.string().trim().min(1).max(120),
@@ -74,7 +68,7 @@ export const DueWordsQuerySchema = z.object({
 });
 
 // Tutor
-export const TutorModeEnum = z.enum(['free_chat', 'role_play', 'word_review', 'grammar_glimpse', 'pronunciation_coach', 'guided_conversation', 'path_builder']);
+export const TutorModeEnum = z.enum(['free_chat', 'role_play', 'word_review', 'grammar_glimpse', 'pronunciation_coach', 'guided_conversation']);
 
 export const TutorSessionSchema = z.object({
   mode: TutorModeEnum,
@@ -110,26 +104,6 @@ export const SceneIdParamSchema = z.object({
   sceneId: z.string().uuid(),
 });
 
-// Travel pack
-export const TravelPackSchema = z.object({
-  destination: z.string().min(1).max(200),
-  duration: z.string().min(1).max(100),
-  languageId: z.string().uuid(),
-  useCases: z.array(z.string().min(1).max(80)).max(12).optional(),
-  tripDays: z.number().int().min(1).max(60).optional(),
-  tripStartDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-});
-
-// Trip prototype (anonymous preview)
-export const TripPreviewSchema = z.object({
-  destination: z.string().min(1).max(200).default('Bali'),
-  tripDays: z.number().int().min(1).max(60),
-  useCases: z.array(z.string().min(1).max(80)).min(1).max(12),
-  languageId: z.string().uuid().optional(),
-});
-
-export type TripPreviewInput = z.infer<typeof TripPreviewSchema>;
-
 // Graduation
 export const GraduatePathSchema = z.object({
   quizScore: z.number().min(0).max(100),
@@ -140,23 +114,13 @@ export const CheckoutSchema = z.object({
   plan: z.enum(['monthly', 'yearly']),
 });
 
-export const TravelPackCheckoutSchema = z.object({
-  packId: z.string().uuid(),
-});
-
-export const StudioPathCheckoutSchema = z.object({
-  sessionId: z.string().uuid(),
-});
-
 export const BillingFeatureEnum = z.enum([
   'new_word',
   'regenerate_mnemonic',
   'hands_free',
   'tutor_message',
-  'custom_path',
   'offline_download',
   'community_submit',
-  'studio_path',
 ]);
 
 export const CheckAccessSchema = z.object({
@@ -169,15 +133,9 @@ export const IncrementUsageSchema = z.object({
 });
 
 export type CheckoutInput = z.infer<typeof CheckoutSchema>;
-export type TravelPackCheckoutInput = z.infer<typeof TravelPackCheckoutSchema>;
-export type StudioPathCheckoutInput = z.infer<typeof StudioPathCheckoutSchema>;
 export type BillingFeature = z.infer<typeof BillingFeatureEnum>;
 export type CheckAccessInput = z.infer<typeof CheckAccessSchema>;
 export type IncrementUsageInput = z.infer<typeof IncrementUsageSchema>;
-
-export const ShareImageQuerySchema = z.object({
-  format: z.enum(['square', 'story']).optional().default('square'),
-});
 
 // Mnemonic Feedback
 export const FeedbackRatingEnum = z.enum(['thumbs_up', 'thumbs_down']);
@@ -209,14 +167,11 @@ export const AdminMnemonicOverrideSchema = z.object({
 export type GenerateMnemonicInput = z.infer<typeof GenerateMnemonicSchema>;
 export type RegenerateMnemonicInput = z.infer<typeof RegenerateMnemonicSchema>;
 export type CustomMnemonicInput = z.infer<typeof CustomMnemonicSchema>;
-export type CustomPathInput = z.infer<typeof CustomPathSchema>;
 export type RecordReviewInput = z.infer<typeof RecordReviewSchema>;
 export type TutorSessionInput = z.infer<typeof TutorSessionSchema>;
 export type TutorMessageInput = z.infer<typeof TutorMessageSchema>;
 export type TutorEndSessionInput = z.infer<typeof TutorEndSessionSchema>;
-export type TravelPackInput = z.infer<typeof TravelPackSchema>;
 export type GraduatePathInput = z.infer<typeof GraduatePathSchema>;
-export type ShareImageQuery = z.infer<typeof ShareImageQuerySchema>;
 export type SubmitFeedbackInput = z.infer<typeof SubmitFeedbackSchema>;
 export type AdminRegenerateMnemonicInput = z.infer<typeof AdminRegenerateMnemonicSchema>;
 export type AdminFeedbackQuery = z.infer<typeof AdminFeedbackQuerySchema>;
@@ -279,43 +234,6 @@ export const ProfileQuerySchema = z.object({
 });
 
 export type ProfileQueryInput = z.infer<typeof ProfileQuerySchema>;
-
-// Path Builder
-export const PathBuilderActionSchema = z.object({
-  sessionId: z.string().uuid(),
-  action: z.enum(['keep', 'remove', 'different', 'advance_phase']),
-  itemType: z.enum(['vocabulary', 'phrase', 'dialogue']).optional(),
-  tempId: z.string().optional(),
-});
-
-export type PathBuilderActionInput = z.infer<typeof PathBuilderActionSchema>;
-
-// --- Studio ---
-
-export const StudioStartSchema = z.object({
-  languageId: z.string().uuid(),
-  prefillScenario: z.string().max(500).optional(),
-});
-
-export const StudioChatSchema = z.object({
-  sessionId: z.string().uuid(),
-  message: z.string().min(1).max(2000),
-  selections: z.array(z.string()).optional(),
-});
-
-export const StudioGenerateSchema = z.object({
-  sessionId: z.string().uuid(),
-});
-
-export const StudioSuggestionsSchema = z.object({
-  sessionId: z.string().uuid(),
-  scenario: z.string().min(1).max(500),
-});
-
-export type StudioStartInput = z.infer<typeof StudioStartSchema>;
-export type StudioChatInput = z.infer<typeof StudioChatSchema>;
-export type StudioGenerateInput = z.infer<typeof StudioGenerateSchema>;
-export type StudioSuggestionsInput = z.infer<typeof StudioSuggestionsSchema>;
 
 // --- App Feedback ---
 

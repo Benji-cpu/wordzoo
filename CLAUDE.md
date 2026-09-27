@@ -122,10 +122,10 @@ The only surface that reads `pedagogy_events` and divides `times_correct / times
 ## Architecture
 
 - **Route groups**: `(app)/` (authed pages), `(auth)/` (login/signup), `try/` (public demo)
-- **API routes**: `app/api/` — REST handlers, all protected by middleware except `/api/auth/*`, `/api/share/*`, `/api/billing/webhook`, `/api/cron/*`
+- **API routes**: `app/api/` — REST handlers, all protected by middleware except `/api/auth/*`, `/api/billing/webhook`, `/api/cron/*`
 - **Service layer**: `lib/services/` — business logic (billing, tutor, mnemonic, path, community, sync, etc.)
 - **DB layer**: `lib/db/queries.ts` + `lib/db/community-queries.ts` — raw SQL via `@neondatabase/serverless`
-- **AI layer**: `lib/ai/` — Gemini client (`gemini.ts`), prompt templates (`prompts.ts`, `tutor-prompts.ts`, `path-prompts.ts`)
+- **AI layer**: `lib/ai/` — Gemini client (`gemini.ts`), prompt templates (`prompts.ts`, `tutor-prompts.ts`, `info-byte-prompts.ts`)
 - **Offline**: `lib/offline/` — IndexedDB storage, sync queue, cache management
 - **SRS engine**: `lib/srs/` — spaced repetition scheduling
 
@@ -172,7 +172,7 @@ All projects require `/api/auth/test-login` for Playwright testing:
 
 ## AI Integration
 
-Gemini 2.5 Flash via `@google/genai` SDK (NOT `@google-ai/generativelanguage`). Client in `lib/ai/gemini.ts`. Prompt templates in `lib/ai/prompts.ts`, `tutor-prompts.ts`, `path-prompts.ts`.
+Gemini 2.5 Flash via `@google/genai` SDK (NOT `@google-ai/generativelanguage`). Client in `lib/ai/gemini.ts`. Prompt templates in `lib/ai/prompts.ts`, `tutor-prompts.ts`, `info-byte-prompts.ts`.
 
 **Every Gemini call goes through `lib/ai/gemini.ts`** — never construct a `GoogleGenAI` client elsewhere. That module owns the model chain and the failure contract:
 
@@ -184,7 +184,7 @@ Gemini 2.5 Flash via `@google/genai` SDK (NOT `@google-ai/generativelanguage`). 
 
 ## Billing
 
-Stripe handles subscriptions (monthly/yearly) and one-time travel pack purchases. Free tier has daily limits: 5 words, 3 tutor messages, 300s hands-free, 2 mnemonic regenerations. Premium-only: custom paths, offline downloads, community submissions. Usage resets daily via `/api/cron/reset-usage`. Logic in `lib/services/billing-service.ts`.
+Stripe handles subscriptions (monthly/yearly) only. Free tier has daily limits: 5 words, 3 tutor messages, 300s hands-free, 2 mnemonic regenerations. Usage resets daily via `/api/cron/reset-usage`. Logic in `lib/services/billing-service.ts`.
 
 ## Spend Guard (required for every AI / image / TTS / Blob route)
 
@@ -207,6 +207,7 @@ if (!guard.ok) return guard.response;                       // pre-built 401 / 4
 
 - **`verifySceneAccess(sceneId, userId)`** is the entitlement check: premade → always; own custom/studio → always; own **travel** pack → scene `sort_order = 0` free, rest requires a `purchases` row; anyone else's path → never. Call it in *both* the page and the API route — the page-level omission was a full paywall bypass.
 - **`verifyPathAccess`** deliberately does NOT consult `purchases` — a travel path is owned by its buyer, so gating the path would lock them out of the page that sells the upgrade.
+- **Deleted 27 Sep 2026 on Ben's yes** (WordZoo is his own tool): Path Studio, custom paths (incl. the tutor's "Build a Path" mode), travel packs + `/trip`, and mnemonic sharing (`/word/[id]`, `/api/share/*`). Old URLs redirect in `next.config.ts`. Their tables (`studio_*`, `path_builder_drafts`, `purchases`, `mnemonic_shares`) and the one `travel` path row stay; `/paths` lists premade paths only. The access checks above are unchanged. `/api/trip` stays: it is the settings trip (destination + date) that the dashboard reads.
 - Admin gating is `isAdminEmail()` / `adminEmails()` from **`lib/auth/admin.ts`** (dependency-free, lowercases both sides). Never re-implement the `ADMIN_EMAILS` split inline — the old inline copies were case-sensitive and diverged from the billing service.
 - Route bodies: use `readJson(request)` from **`lib/api/request.ts`**, not bare `await request.json()` (which 500s on a malformed body).
 - External calls (Gemini, image gen, TTS, Blob `put`) must carry `AbortSignal.timeout(...)`.

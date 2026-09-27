@@ -18,7 +18,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { isAdminEmail } from '@/lib/auth/admin';
 import { checkAccess } from '@/lib/services/billing-service';
-import { claimSpend, clientIp, type SpendKind, type SpendLimit } from '@/lib/spend-ledger';
+import { claimSpend, type SpendKind, type SpendLimit } from '@/lib/spend-ledger';
 import type { ApiResponse, BillingFeature } from '@/types/api';
 
 export {
@@ -84,19 +84,4 @@ export async function guardSpend(
   }
 
   return { ok: true, userId, email, isAdmin };
-}
-
-/**
- * Unauthenticated guard keyed on client IP. Only for genuinely public
- * endpoints — /api/trip/preview (anonymous Gemini) and the public share-image
- * renderer.
- */
-export async function guardAnonymousSpend(
-  request: Request,
-  kind: SpendKind,
-  options: Partial<SpendLimit> = {},
-): Promise<{ ok: true } | { ok: false; response: NextResponse }> {
-  const claimed = await claimSpend(`ip:${clientIp(request)}`, kind, options);
-  if (!claimed) return deny('Rate limit exceeded. Try again shortly.', 429);
-  return { ok: true };
 }

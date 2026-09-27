@@ -9,11 +9,6 @@ export default auth((req) => {
     return NextResponse.next();
   }
 
-  // Allow share routes through (for social crawlers)
-  if (pathname.startsWith('/api/share')) {
-    return NextResponse.next();
-  }
-
   // Allow Stripe webhook (verified by Stripe signature, not session)
   if (pathname === '/api/billing/webhook') {
     return NextResponse.next();
@@ -40,16 +35,6 @@ export default auth((req) => {
     if (secret && auth === `Bearer ${secret}`) {
       return NextResponse.next();
     }
-  }
-
-  // Allow studio generate-callback (Stripe redirect after payment)
-  if (pathname === '/api/studio/generate-callback') {
-    return NextResponse.next();
-  }
-
-  // Allow anonymous trip preview (no auth, IP-rate-limited inside the route)
-  if (pathname === '/api/trip/preview') {
-    return NextResponse.next();
   }
 
   // For unauthenticated requests:

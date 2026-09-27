@@ -10,9 +10,7 @@ export type MessageSegment =
   | { type: 'english_translation'; content: string }
   | { type: 'correction'; original: string; corrected: string; explanation?: string }
   | { type: 'grammar_note'; title: string; body: string }
-  | { type: 'context_card'; label: string; content: string }
-  | { type: 'path_vocab'; word: string; romanization: string; meaning: string; mnemonicHint: string }
-  | { type: 'phase_transition'; phase: string; description: string };
+  | { type: 'context_card'; label: string; content: string };
 
 // Matches [MARKER: content] patterns (allowing one level of nested brackets) and **word** (meaning) patterns
 // The capture group (?:[^\[\]]|\[[^\]]*\])+ matches non-bracket chars OR a [...] pair, handling nested brackets like [your name]
@@ -22,8 +20,6 @@ const MARKER_REGEX = new RegExp(
   `|\\[CORRECT:\\s*(${NESTED})\\]` +
   `|\\[GRAMMAR:\\s*(${NESTED})\\]` +
   `|\\[CONTEXT:\\s*(${NESTED})\\]` +
-  `|\\[PATH_VOCAB:\\s*(${NESTED})\\]` +
-  `|\\[PHASE_TRANSITION:\\s*(${NESTED})\\]` +
   `|\\[EN:\\s*(${NESTED})\\]` +
   `|\\*\\*([^*]+)\\*\\*\\s*\\(([^)]+)\\)`,
   'g'
@@ -81,32 +77,6 @@ function parseContext(inner: string): MessageSegment {
   return { type: 'context_card', label, content };
 }
 
-function parsePathVocab(inner: string): MessageSegment {
-  const parts = inner.split('|').map((s) => s.trim());
-  if (parts.length < 3) {
-    return { type: 'text', content: `[PATH_VOCAB: ${inner}]` };
-  }
-  return {
-    type: 'path_vocab',
-    word: parts[0],
-    romanization: parts[1],
-    meaning: parts[2],
-    mnemonicHint: parts[3] ?? '',
-  };
-}
-
-function parsePhaseTransition(inner: string): MessageSegment {
-  const pipeIdx = inner.indexOf('|');
-  if (pipeIdx < 0) {
-    return { type: 'phase_transition', phase: inner.trim(), description: '' };
-  }
-  return {
-    type: 'phase_transition',
-    phase: inner.slice(0, pipeIdx).trim(),
-    description: inner.slice(pipeIdx + 1).trim(),
-  };
-}
-
 function addText(segments: MessageSegment[], text: string) {
   if (text) {
     segments.push({ type: 'text', content: text });
@@ -152,17 +122,11 @@ export function parseMessageContent(raw: string): MessageSegment[] {
       // [CONTEXT: ...]
       segments.push(parseContext(match[4]));
     } else if (match[5] != null) {
-      // [PATH_VOCAB: ...]
-      segments.push(parsePathVocab(match[5]));
-    } else if (match[6] != null) {
-      // [PHASE_TRANSITION: ...]
-      segments.push(parsePhaseTransition(match[6]));
-    } else if (match[7] != null) {
       // [EN: ...]
-      segments.push({ type: 'english_translation', content: match[7].trim() });
-    } else if (match[8] != null && match[9] != null) {
+      segments.push({ type: 'english_translation', content: match[5].trim() });
+    } else if (match[6] != null && match[7] != null) {
       // **word** (meaning)
-      segments.push({ type: 'vocab_word', word: match[8], meaning: match[9] });
+      segments.push({ type: 'vocab_word', word: match[6], meaning: match[7] });
     }
 
     lastIndex = match.index + match[0].length;

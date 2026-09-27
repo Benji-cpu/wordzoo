@@ -17,15 +17,9 @@ export type SpendKind =
   | 'mnemonic_generate'
   | 'mnemonic_custom'
   | 'mnemonic_regenerate'
-  | 'path_generate'
-  | 'studio_chat'
-  | 'path_enrich_word'
-  | 'trip_preview'
   | 'conversation_grade'
-  | 'studio_suggestions'
   | 'tutor_greeting'
   | 'screenshot_upload'
-  | 'share_image'
   | 'can_do_certify'
   | 'xp_award'
   | 'tts_synthesize';
@@ -51,15 +45,9 @@ export const SPEND_LIMITS: Record<SpendKind, SpendLimit> = {
   mnemonic_generate: { limit: 60, windowMinutes: 1440 },
   mnemonic_custom: { limit: 10, windowMinutes: 1440 },
   mnemonic_regenerate: { limit: 20, windowMinutes: 1440 },
-  path_generate: { limit: 5, windowMinutes: 1440 },
-  studio_chat: { limit: 100, windowMinutes: 1440 },
-  path_enrich_word: { limit: 250, windowMinutes: 1440 },
-  trip_preview: { limit: 3, windowMinutes: 60 },
   conversation_grade: { limit: 120, windowMinutes: 1440 },
-  studio_suggestions: { limit: 30, windowMinutes: 1440 },
   tutor_greeting: { limit: 30, windowMinutes: 1440 },
   screenshot_upload: { limit: 10, windowMinutes: 60 },
-  share_image: { limit: 60, windowMinutes: 60 },
   // Certification is rare by construction — a can-do unlocks once per scene and
   // is gated 48h out, with a 24h cooldown after a failure. 40/day is far above
   // honest use and caps the cost of someone hammering the endpoint.

@@ -10,7 +10,7 @@ const errorMessages: Record<string, string> = {
   OAuthAccountNotLinked: 'There was a problem with Google sign-in. Please try again.',
 };
 
-const ALLOWED_RETURN = ['/dashboard', '/paths', '/trip', '/trip/commit'];
+const ALLOWED_RETURN = ['/dashboard', '/paths'];
 
 function safeReturn(input: string | undefined): string {
   if (!input || !input.startsWith('/')) return '/dashboard';

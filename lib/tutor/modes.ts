@@ -38,12 +38,6 @@ export const TUTOR_MODES: TutorMode[] = [
     description: 'Improve your pronunciation',
     icon: '🗣️',
   },
-  {
-    id: 'path_builder',
-    label: 'Build a Path',
-    description: 'Create a custom learning path from a scenario',
-    icon: '🛠️',
-  },
 ];
 
 export type ChallengeMode = 'easy' | 'medium' | 'hard';
@@ -57,10 +51,8 @@ export const CHALLENGE_MODE_KEY = 'wordzoo-tutor-challenge-mode';
 export const MAX_GUIDED_TURNS = 6;
 export const MAX_FREE_TURNS = 10;
 
-/** null = uncapped (path_builder runs until the learner is done). */
-export function turnCapForMode(mode: string | null | undefined): number | null {
+export function turnCapForMode(mode: string | null | undefined): number {
   if (mode === 'guided_conversation') return MAX_GUIDED_TURNS;
-  if (mode === 'path_builder') return null;
   return MAX_FREE_TURNS;
 }
 
@@ -71,5 +63,4 @@ export const MODE_LABELS: Record<string, string> = {
   grammar_glimpse: 'Grammar',
   pronunciation_coach: 'Pronunciation',
   guided_conversation: 'Guided',
-  path_builder: 'Build a Path',
 };

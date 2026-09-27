@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { ImportOnboardingAfterAuth } from './import-onboarding';
 
-const ALLOWED_RETURN = ['/dashboard', '/paths', '/trip', '/trip/commit'];
+const ALLOWED_RETURN = ['/dashboard', '/paths'];
 
 function safeReturn(input: string | undefined): string {
   if (!input || !input.startsWith('/')) return '/dashboard';

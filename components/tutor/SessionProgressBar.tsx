@@ -41,7 +41,7 @@ export function SessionProgressBar({ activeMode, messages }: SessionProgressBarP
   // swapped to a summary. Showing the count makes the ending earned.
   const turn = useMemo(() => messages.filter((m) => m.role === 'user').length, [messages]);
   const cap = turnCapForMode(activeMode);
-  const onLastTurn = cap !== null && turn >= cap;
+  const onLastTurn = turn >= cap;
 
   return (
     <div className="flex items-center gap-2 text-xs text-text-secondary min-w-0 overflow-hidden">
@@ -50,24 +50,22 @@ export function SessionProgressBar({ activeMode, messages }: SessionProgressBarP
           {MODE_LABELS[activeMode] ?? activeMode}
         </span>
       )}
-      {cap !== null && (
-        <span
-          className={`flex items-center gap-1.5 shrink-0 ${onLastTurn ? 'text-accent-default font-medium' : ''}`}
-          title={onLastTurn ? 'Last exchange of this session' : `Exchange ${turn} of ${cap}`}
-        >
-          <span className="tabular-nums">{Math.min(turn, cap)}/{cap}</span>
-          <span className="flex gap-0.5" aria-hidden>
-            {Array.from({ length: cap }, (_, i) => (
-              <span
-                key={i}
-                className={`w-1 h-2.5 rounded-full transition-colors ${
-                  i < turn ? 'bg-accent-default' : 'bg-card-border'
-                }`}
-              />
-            ))}
-          </span>
+      <span
+        className={`flex items-center gap-1.5 shrink-0 ${onLastTurn ? 'text-accent-default font-medium' : ''}`}
+        title={onLastTurn ? 'Last exchange of this session' : `Exchange ${turn} of ${cap}`}
+      >
+        <span className="tabular-nums">{Math.min(turn, cap)}/{cap}</span>
+        <span className="flex gap-0.5" aria-hidden>
+          {Array.from({ length: cap }, (_, i) => (
+            <span
+              key={i}
+              className={`w-1 h-2.5 rounded-full transition-colors ${
+                i < turn ? 'bg-accent-default' : 'bg-card-border'
+              }`}
+            />
+          ))}
         </span>
-      )}
+      </span>
       {wordCount > 0 && (
         <span className="shrink-0">{wordCount} {wordCount === 1 ? 'word' : 'words'}</span>
       )}

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import Link from 'next/link';
 import { TutorHero } from '@/components/tutor/TutorHero';
 import { ChatBubble } from '@/components/tutor/ChatBubble';
 import { ChatInput } from '@/components/tutor/ChatInput';
@@ -131,7 +130,6 @@ export function TutorChat({
 }: TutorChatProps) {
   const [popover, setPopover] = useState<{ data: PopoverData; rect: DOMRect } | null>(null);
   const [vocabMap, setVocabMap] = useState(() => new Map<string, PopoverData>());
-  const [vocabStatuses, setVocabStatuses] = useState(() => new Map<string, 'pending' | 'kept' | 'removed'>());
   const [showOnboarding, setShowOnboarding] = useState(() => {
     if (typeof window === 'undefined') return false;
     try {
@@ -257,13 +255,6 @@ export function TutorChat({
     }
   }, [initialMode, view, isStarting, onStartSession]);
 
-  // Reset vocab statuses when session ends
-  useEffect(() => {
-    if (!sessionId) {
-      setVocabStatuses(new Map());
-    }
-  }, [sessionId]);
-
   const handleWordTap = useCallback((data: PopoverData, rect: DOMRect) => {
     setPopover({ data, rect });
   }, []);
@@ -281,50 +272,6 @@ export function TutorChat({
     try { localStorage.setItem(CHALLENGE_MODE_KEY, mode); } catch { /* ignore */ }
   }, []);
 
-  const handlePathVocabAction = useCallback(
-    async (word: string, action: 'keep' | 'remove' | 'different') => {
-      if (!sessionId) return;
-
-      setVocabStatuses((prev) => {
-        const next = new Map(prev);
-        next.set(word, action === 'keep' ? 'kept' : 'removed');
-        return next;
-      });
-
-      try {
-        const res = await fetch('/api/tutor/path-builder/action', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            sessionId,
-            action,
-            itemType: 'vocabulary',
-            tempId: word,
-          }),
-        });
-
-        if (!res.ok) {
-          setVocabStatuses((prev) => {
-            const next = new Map(prev);
-            next.set(word, 'pending');
-            return next;
-          });
-        }
-
-        if (action === 'different') {
-          onSendMessage(`Can you suggest a different word instead of "${word}"?`);
-        }
-      } catch {
-        setVocabStatuses((prev) => {
-          const next = new Map(prev);
-          next.set(word, 'pending');
-          return next;
-        });
-      }
-    },
-    [sessionId, onSendMessage]
-  );
-
   // Extract suggestion chips from last model message (only when not streaming)
   const suggestionOptions = useMemo(() => {
     if (isStreaming) return [];
@@ -336,12 +283,6 @@ export function TutorChat({
     }
     return [];
   }, [messages, isStreaming]);
-
-  function extractStudioCTA(content: string): { description: string } | null {
-    const match = content.match(/\[PATH_STUDIO_CTA:\s*(.+?)\]/);
-    if (!match) return null;
-    return { description: match[1] };
-  }
 
   return (
     <div className={`flex flex-col h-full min-h-0 ${className ?? ''}`}>
@@ -399,9 +340,7 @@ export function TutorChat({
               </button>
             </div>
           </div>
-          {activeMode !== 'path_builder' && (
-            <ChallengeModeToggle mode={challengeMode} onChange={handleChallengeModeChange} />
-          )}
+          <ChallengeModeToggle mode={challengeMode} onChange={handleChallengeModeChange} />
 
           {/* Messages */}
           <div className={`flex-1 min-h-0 overflow-y-auto overscroll-contain ${compact ? 'px-3 py-2' : 'px-4 py-3'}`}>
@@ -412,28 +351,9 @@ export function TutorChat({
                   content={msg.content}
                   vocabMap={vocabMap}
                   onWordTap={handleWordTap}
-                  onPathVocabAction={activeMode === 'path_builder' ? handlePathVocabAction : undefined}
-                  vocabStatuses={activeMode === 'path_builder' ? vocabStatuses : undefined}
                   challengeMode={challengeMode}
                   isLoading={isStreaming && i === messages.length - 1 && msg.role === 'model' && msg.content === ''}
                 />
-                {msg.role === 'model' && extractStudioCTA(msg.content) && (
-                  <Link
-                    href={`/paths/studio?prefillScenario=${encodeURIComponent(extractStudioCTA(msg.content)!.description)}&languageId=${languageId}`}
-                    className="block mx-2 mb-3 p-3 rounded-xl bg-accent-default/10 border border-accent-default/30 hover:bg-accent-default/20 transition-all"
-                  >
-                    <div className="flex items-center gap-2">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-accent-default shrink-0">
-                        <path d="M12 20h9" />
-                        <path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
-                      </svg>
-                      <div>
-                        <p className="text-sm font-medium text-accent-default">Open in Path Studio</p>
-                        <p className="text-xs text-text-secondary">Create a custom path with dialogues</p>
-                      </div>
-                    </div>
-                  </Link>
-                )}
               </div>
             ))}
             {error && (

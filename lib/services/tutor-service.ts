@@ -23,9 +23,6 @@ import { MAX_GUIDED_TURNS, MAX_FREE_TURNS } from '@/lib/tutor/modes';
 import { generateChat, generateChatStream } from '@/lib/ai/gemini';
 import { buildTutorSystemPrompt, buildGuidedConversationPrompt, getGuidedPhase, getFreeChatPhase } from '@/lib/ai/tutor-prompts';
 import { buildAdaptiveContext } from '@/lib/services/learner-profile-service';
-import { createDraft, getDraftBySessionId } from '@/lib/services/path-builder-service';
-import { buildPathBuilderDiscoveryPrompt, buildPathBuilderVocabPrompt } from '@/lib/ai/tutor-prompts';
-import type { PathBuilderScenarioContext } from '@/types/database';
 import type { GeminiChatMessage } from '@/types/ai';
 import type { TutorMessage } from '@/types/database';
 
@@ -79,29 +76,18 @@ export async function startSession(
     if (focusWords.length > 0) dueWords = focusWords;
   }
 
-  let systemPrompt: string;
-
-  if (mode === 'path_builder') {
-    systemPrompt = buildPathBuilderDiscoveryPrompt({
-      languageName: language.name,
-      scenarioContext: { scenario: '', proficiency: '', subtopics: [], preferences: [] },
-      knownWords,
-      adaptiveContext: adaptiveCtx,
-    });
-  } else {
-    systemPrompt = buildTutorSystemPrompt({
-      languageName: language.name,
-      languageCode: language.code,
-      l1Name,
-      mode,
-      scenario,
-      knownWords,
-      dueWords,
-      adaptiveContext: adaptiveCtx,
-      userName,
-      proficiencyTier,
-    });
-  }
+  const systemPrompt = buildTutorSystemPrompt({
+    languageName: language.name,
+    languageCode: language.code,
+    l1Name,
+    mode,
+    scenario,
+    knownWords,
+    dueWords,
+    adaptiveContext: adaptiveCtx,
+    userName,
+    proficiencyTier,
+  });
 
   // Save adaptive context snapshot to session
   if (adaptiveCtx) {
@@ -115,10 +101,6 @@ export async function startSession(
   const response = await generateChat(greetingMessages, systemPrompt);
   await insertTutorMessage(session.id, 'model', response.text);
   await updateTutorSession(session.id, { tokensUsed: response.tokensUsed });
-
-  if (mode === 'path_builder') {
-    await createDraft(userId, session.id, languageId);
-  }
 
   return { sessionId: session.id, greeting: response.text };
 }
@@ -260,41 +242,6 @@ export async function sendMessage(
       phase,
       maxTurns: MAX_GUIDED_TURNS,
     });
-  } else if (session.mode === 'path_builder') {
-    const draft = await getDraftBySessionId(sessionId);
-    const knownWords = await getUserKnownWords(userId, session.language_id);
-
-    if (draft && draft.current_phase === 'vocabulary') {
-      const scenarioCtx = (draft.scenario_context ?? {}) as PathBuilderScenarioContext;
-      const confirmedVocab = draft.draft_content.vocabulary
-        .filter((v) => v.status === 'kept')
-        .map((v) => ({ word: v.word, meaning: v.meaning }));
-
-      systemPrompt = buildPathBuilderVocabPrompt({
-        languageName: language.name,
-        scenarioContext: {
-          scenario: scenarioCtx.scenario ?? '',
-          proficiency: scenarioCtx.proficiency ?? 'beginner',
-          subtopics: scenarioCtx.subtopics ?? [],
-          preferences: scenarioCtx.preferences ?? [],
-        },
-        knownWords,
-        adaptiveContext: adaptiveCtx,
-        confirmedVocab,
-      });
-    } else {
-      systemPrompt = buildPathBuilderDiscoveryPrompt({
-        languageName: language.name,
-        scenarioContext: {
-          scenario: (draft?.scenario_context as PathBuilderScenarioContext)?.scenario ?? '',
-          proficiency: (draft?.scenario_context as PathBuilderScenarioContext)?.proficiency ?? '',
-          subtopics: (draft?.scenario_context as PathBuilderScenarioContext)?.subtopics ?? [],
-          preferences: (draft?.scenario_context as PathBuilderScenarioContext)?.preferences ?? [],
-        },
-        knownWords,
-        adaptiveContext: adaptiveCtx,
-      });
-    }
   } else {
     const [knownWords, dueWords] = await Promise.all([
       getUserKnownWords(userId, session.language_id),

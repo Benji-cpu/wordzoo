@@ -6,7 +6,6 @@ import { FeedbackButtons } from '@/components/learn/FeedbackButtons';
 import { RatingButtons } from '@/components/learn/RatingButtons';
 import { PronunciationButton } from '@/components/audio/SpeakerButton';
 import { MnemonicImage } from '@/components/shared/MnemonicImage';
-import { ShareButton } from '@/components/shared/ShareButton';
 import { playWordPronunciation, isAudioUnlocked } from '@/lib/audio/pronunciation';
 import { SwipeIndicators, getSwipeBorderStyle } from '@/components/learn/SwipeIndicators';
 import { CollapsibleWordFamily } from '@/components/learn/WordFamilyCard';
@@ -159,16 +158,6 @@ export function ReviewCard({ word, mnemonic, mode, onReveal, revealed, onRate, w
       {imageLoaded && (
         <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-black/60 backdrop-blur rounded-full px-1 py-0.5" onClick={(e) => e.stopPropagation()}>
           <FeedbackButtons mnemonicId={mnemonic.id} context="review" compact overlay />
-          <ShareButton
-            title={`${word.text} — WordZoo`}
-            text={`I learned "${word.text}" — it means "${word.meaning_en}". Try this memory trick on WordZoo.`}
-            url={typeof window !== 'undefined' ? `${window.location.origin}/word/${word.id}` : `/word/${word.id}`}
-            mnemonicId={mnemonic.id}
-            wordId={word.id}
-            wordText={word.text}
-            meaningEn={word.meaning_en}
-            languageName="WordZoo"
-          />
         </div>
       )}
     </div>

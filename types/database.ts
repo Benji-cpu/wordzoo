@@ -149,7 +149,7 @@ export interface TutorSession {
   id: string;
   user_id: string;
   language_id: string;
-  mode: 'free_chat' | 'role_play' | 'word_review' | 'grammar_glimpse' | 'pronunciation_coach' | 'guided_conversation' | 'path_builder';
+  mode: 'free_chat' | 'role_play' | 'word_review' | 'grammar_glimpse' | 'pronunciation_coach' | 'guided_conversation';
   scene_id: string | null;
   scenario: string | null;
   started_at: Date;
@@ -212,14 +212,6 @@ export interface Subscription {
   status: 'active' | 'canceled' | 'past_due' | 'incomplete';
   current_period_end: Date;
   created_at: Date;
-}
-
-export interface Purchase {
-  id: string;
-  user_id: string;
-  pack_id: string;
-  stripe_payment_id: string;
-  purchased_at: Date;
 }
 
 export interface DailyUsage {
@@ -386,147 +378,6 @@ export interface UserSceneProgress {
   completed_at: Date | null;
   created_at: Date;
   updated_at: Date;
-}
-
-// --- Path Builder Draft types ---
-
-export interface PathBuilderVocabItem {
-  tempId: string;
-  word: string;
-  romanization: string;
-  meaning: string;
-  mnemonicHint: string;
-  partOfSpeech: string;
-  status: 'pending' | 'kept' | 'removed';
-}
-
-export interface PathBuilderPhraseItem {
-  tempId: string;
-  phrase: string;
-  meaning: string;
-  breakdown: string;
-  usageNote: string;
-  status: 'pending' | 'kept' | 'removed';
-}
-
-export interface PathBuilderDialogueItem {
-  tempId: string;
-  title: string;
-  context: string;
-  linesTarget: string[];
-  linesEn: string[];
-  speakers: string[];
-  status: 'pending' | 'kept' | 'removed';
-}
-
-export interface PathBuilderDraftContent {
-  vocabulary: PathBuilderVocabItem[];
-  phrases: PathBuilderPhraseItem[];
-  dialogues: PathBuilderDialogueItem[];
-}
-
-export interface PathBuilderScenarioContext {
-  scenario: string;
-  proficiency: string;
-  subtopics: string[];
-  preferences: string[];
-  targetLanguage: string;
-}
-
-export type PathBuilderPhase = 'discovery' | 'vocabulary' | 'phrases' | 'dialogues' | 'confirm' | 'completed';
-
-export interface PathBuilderDraft {
-  id: string;
-  user_id: string;
-  session_id: string;
-  language_id: string;
-  title: string | null;
-  description: string | null;
-  scenario_context: PathBuilderScenarioContext;
-  current_phase: PathBuilderPhase;
-  draft_content: PathBuilderDraftContent;
-  created_at: Date;
-  updated_at: Date;
-}
-
-// --- Studio types ---
-
-export interface StudioSession {
-  id: string;
-  user_id: string;
-  language_id: string;
-  intake_data: StudioIntakeData;
-  messages: StudioMessage[];
-  path_preview: StudioPathPreview | null;
-  status: 'active' | 'completed' | 'abandoned';
-  path_id: string | null;
-  created_at: Date;
-  updated_at: Date;
-}
-
-export interface StudioMessage {
-  role: 'user' | 'model';
-  content: string;
-  visual_elements?: StudioVisualElement[];
-  intake_progress?: StudioIntakeProgress;
-  path_preview?: StudioPathPreview;
-  timestamp: string;
-}
-
-export interface StudioIntakeData {
-  category?: string;
-  scenario?: string;
-  sub_scenarios?: string[];
-  difficulty?: 'beginner' | 'intermediate' | 'advanced';
-  focus_areas?: string[];
-  confirmed?: boolean;
-}
-
-export interface StudioPathPreview {
-  title?: string;
-  description?: string;
-  difficulty?: string;
-  estimated_words?: number;
-  scenes?: StudioPreviewScene[];
-}
-
-export interface StudioPreviewScene {
-  title: string;
-  description?: string;
-  word_count?: number;
-  status: 'confirmed' | 'building' | 'pending';
-}
-
-export interface StudioVisualElement {
-  type: 'chips' | 'cards' | 'confirmation';
-  data: StudioChip[] | StudioCard[] | StudioConfirmation;
-  multi_select?: boolean;
-}
-
-export interface StudioChip {
-  id: string;
-  label: string;
-  emoji?: string;
-  selected?: boolean;
-}
-
-export interface StudioCard {
-  id: string;
-  title: string;
-  description: string;
-  selected?: boolean;
-}
-
-export interface StudioConfirmation {
-  title: string;
-  summary: Record<string, string>;
-}
-
-export interface StudioIntakeProgress {
-  current_step: number;
-  total_steps: number;
-  step_label: string;
-  can_generate: boolean;
 }
 
 // --- Info Bytes types ---

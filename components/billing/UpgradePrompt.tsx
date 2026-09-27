@@ -27,10 +27,6 @@ const FEATURE_MESSAGES: Record<string, { title: string; description: string }> =
     title: 'Tutor Messages Used Up',
     description: 'Upgrade for unlimited tutor conversations.',
   },
-  custom_path: {
-    title: 'Premium Feature',
-    description: 'Custom paths are available with a Premium subscription.',
-  },
 };
 
 export function UpgradePrompt({ feature, message, compact = false }: UpgradePromptProps) {
