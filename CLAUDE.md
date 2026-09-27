@@ -25,6 +25,8 @@ Language learning SaaS with AI-generated keyword mnemonics, spaced repetition, a
 - `npm run db:seed-expanded` — seed expanded Indonesian content (Units 1-5, 19 scenes, ~231 words).
   Pass `--lang=` for the others: `npx tsx lib/db/seed-expanded.ts --lang=pt` (Portuguese, Units 1-5,
   20 scenes, 233 words), `--lang=es`. Idempotent — it upserts on the ids in `lib/db/content/<lang>/`.
+  A dialogue or phrase whose text changed loses its `audio_url`, so follow it with
+  `npm run db:seed-audio -- --mode=all --lang=<lang>` or the line plays silent-then-browser-voice.
 - `npm test` — Vitest unit tests (`lib/**/*.test.ts`): `lib/srs/engine.test.ts` (the scheduler), `lib/pedagogy/leitner.test.ts` (the drill queue), `lib/pedagogy/normalize.test.ts` (typo tolerance). Pure modules only — `engine.test.ts` mocks the DB layer.
 - `npm run test:e2e` — Playwright smoke (`tests/e2e/learn-loop.spec.ts`): the `/try` demo and the first scene as a non-admin, on a phone viewport. Needs `npm run dev` already on :8000 (it never starts one). Launches the installed Google Chrome headless (`channel: 'chrome'`) because the Playwright browser download is blocked on this machine; `PW_CHROME=<binary>` overrides.
 - **Tests are required for `lib/srs/`, `lib/pedagogy/` and anything touching access control.** The old "no tests" rule was reversed on 2026-09-16 — it had already cost a paywall bypass, a public-mnemonic leak and a preview-deploy auth bypass. Playwright MCP is still the tool for exploratory checks during development; the spec file is the regression net.
@@ -63,7 +65,7 @@ The nightly feedback triage runs as a **two-stage pipeline** with `digests/YYYY-
 | `reset-usage` | Vercel Cron | `0 0 * * *` | `/api/cron/reset-usage` |
 | `generate-info-byte` | Vercel Cron | `0 1 * * *` | `/api/cron/generate-info-byte` |
 | `check-subscriptions` | Vercel Cron | `0 3 * * *` | `/api/cron/check-subscriptions` |
-| `daily-reminders` | Vercel Cron | `0 9 * * *` (≈17:00 Bali) | `/api/cron/daily-reminders` — retention emails (streak nudges weekdays, weekly recap Sundays); no-ops without `RESEND_API_KEY` |
+| `daily-reminders` | Vercel Cron | `0 9 * * *` (≈17:00 Bali) | `/api/cron/daily-reminders` — retention emails (streak nudges weekdays, weekly recap Sundays); the count is the next review sitting in the learner's active language, and due-review nudges stop after 90 days of silence; no-ops without `RESEND_API_KEY` |
 | `nightly-routine` (prepare) | Vercel Cron | `0 18 * * *` (runs 18:00–19:00 UTC, ≈02:xx Bali — see note) | `/api/cron/nightly-routine` |
 | `nightly-routine` (synth) | Claude Code remote agent | `32 19 * * *` (≈03:32 Bali) | `.claude/agents/nightly-routine.md` |
 
@@ -112,6 +114,8 @@ Progress is measured as capability, not throughput. A **can-do** is one communic
 
 The only surface that reads `pedagogy_events` and divides `times_correct / times_reviewed`. Queries live in `lib/db/pedagogy-queries.ts` (full-path import — not in the `lib/db/index.ts` barrel).
 
+- **7-day recall** is the dashboard line (`getWeekRecall`): the viewer's own reviews of items unanswered for 7+ days, keyed on the event's `daysAway`. Not `priorIntervalDays` — after a break a 1-day item is answered 50 days late and still reads "1d".
+- **One review sitting** is `REVIEW_SITTING` in `lib/srs/engine.ts` (14 words + 6 phrases, plus ≤2 can-dos). The review page, the dashboard card and the reminder email all read it; don't reintroduce a second number.
 - `srs_review_recorded` is emitted **server-side** from `lib/srs/engine.ts`, not via `fireTelemetry`. Lifetime counters can't be bucketed by the interval a review happened at, so the retention curve needs a per-review event.
 - `PedagogyEvent` in `lib/pedagogy/telemetry.ts` must stay in exact sync with the actual `fireTelemetry` call sites — the admin page renders one row per event name, so a declared-but-never-emitted member is a permanent zero that reads as a real measurement.
 - Leech thresholds on the admin page must match `LEECH_MIN_REVIEWS` / `LEECH_ACCURACY` in `lib/srs/engine.ts`.

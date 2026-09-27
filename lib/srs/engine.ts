@@ -28,6 +28,21 @@ function emitReviewEvent(userId: string, payload: Record<string, unknown>): void
   `.catch(() => {});
 }
 
+/**
+ * Whole days since the learner last answered this item; null on first sight.
+ *
+ * Carried on every review event because it is the x-axis of the question the
+ * app exists to answer — is a word still there a week later? — and
+ * priorIntervalDays can't answer it: after a long break a 1-day item is
+ * reviewed 50 days late and still reads as "1d".
+ */
+export function daysAway(lastReviewedAt: Date | string | null | undefined, now: Date): number | null {
+  if (!lastReviewedAt) return null;
+  const last = new Date(lastReviewedAt).getTime();
+  if (Number.isNaN(last)) return null;
+  return Math.max(0, Math.floor((now.getTime() - last) / 86_400_000));
+}
+
 function calculateStatus(intervalDays: number): 'learning' | 'reviewing' | 'mastered' {
   if (intervalDays >= 30) return 'mastered';
   if (intervalDays >= 7) return 'reviewing';
@@ -315,6 +330,15 @@ function applyCaps(days: number, lapses: number): number {
   return Math.min(leechCapped, MAX_INTERVAL_DAYS);
 }
 
+/**
+ * One review sitting: 20 cards, about five minutes. The queue used to load 20
+ * words AND 20 phrases (40 cards, plus can-dos), so a learner back from seven
+ * weeks away met a wall instead of a session he could finish. The rest of the
+ * due queue waits for the next sitting, retention-first (see
+ * getDueWordsForReview), so the probable wins come first either way.
+ */
+export const REVIEW_SITTING = { words: 14, phrases: 6 } as const;
+
 export async function getDueWords(
   userId: string,
   limit?: number,
@@ -392,6 +416,7 @@ export async function recordReview(
     source,
     reason,
     priorIntervalDays: oldInterval,
+    daysAway: daysAway(userWord.last_reviewed_at, now),
     priorEase: oldEF,
     priorLearningStep: userWord.learning_step,
     newIntervalDays: newInterval,
@@ -474,6 +499,7 @@ export async function recordPhraseReview(
     reason,
     direction: direction ?? null,
     priorIntervalDays: oldInterval,
+    daysAway: daysAway(userPhrase.last_reviewed_at, now),
     priorEase: oldEF,
     priorLearningStep: userPhrase.learning_step,
     newIntervalDays: newInterval,

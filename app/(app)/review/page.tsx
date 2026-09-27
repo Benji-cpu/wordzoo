@@ -1,7 +1,7 @@
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { getDueWords, getDuePhrases } from '@/lib/srs/engine';
-import { getAllLearnedWordsForPractice, getWordFamilies, getUserActivePath, getLanguageById, getDueCountsByOtherLanguages, getDueWordCount } from '@/lib/db/queries';
+import { getDueWords, getDuePhrases, REVIEW_SITTING } from '@/lib/srs/engine';
+import { getAllLearnedWordsForPractice, getWordFamilies, getUserActivePath, getLanguageById, getDueWordCount } from '@/lib/db/queries';
 import { getPhraseWordsWithMnemonics, getDuePhraseCount } from '@/lib/db/scene-flow-queries';
 import { getInsightState } from '@/lib/db/insight-queries';
 import { getDueCanDos } from '@/lib/db/can-do-queries';
@@ -27,18 +27,17 @@ export default async function ReviewPage() {
   const activePath = await getUserActivePath(session.user.id);
   const languageId = activePath?.path_language_id ?? null;
 
-  // getDueWords/getDuePhrases cap at 20 each so a sitting stays short. The
-  // uncapped totals come along too, or the session ends on "All caught up!"
-  // while 100+ items are still waiting — the single most-reported bug in the
-  // review flow ("34 words to review but it took me through 12").
-  const [dueWords, rawDuePhrases, dueCanDos, practiceWords, insightState, language, otherLanguagesDue, profile, dueWordTotal, duePhraseTotal] = await Promise.all([
-    getDueWords(session.user.id, undefined, undefined, languageId),
-    getDuePhrases(session.user.id, undefined, languageId),
+  // One sitting (REVIEW_SITTING) so a session stays short enough to finish.
+  // The uncapped totals come along too, or the session ends on "All caught
+  // up!" while 100+ items are still waiting — the single most-reported bug in
+  // the review flow ("34 words to review but it took me through 12").
+  const [dueWords, rawDuePhrases, dueCanDos, practiceWords, insightState, language, profile, dueWordTotal, duePhraseTotal] = await Promise.all([
+    getDueWords(session.user.id, REVIEW_SITTING.words, undefined, languageId),
+    getDuePhrases(session.user.id, REVIEW_SITTING.phrases, languageId),
     getDueCanDos(session.user.id, 5, languageId),
     getAllLearnedWordsForPractice(session.user.id, undefined, languageId),
     getInsightState(session.user.id),
     languageId ? getLanguageById(languageId) : Promise.resolve(null),
-    getDueCountsByOtherLanguages(session.user.id, languageId),
     getUserProfile(session.user.id),
     getDueWordCount(session.user.id, languageId),
     getDuePhraseCount(session.user.id, languageId),
@@ -104,7 +103,7 @@ export default async function ReviewPage() {
 
   return (
     <div className="max-w-lg mx-auto -mt-2">
-      <ReviewClient dueWords={dueWords} duePhrases={duePhrases} dueCanDos={dueCanDos} practiceWords={practiceWords} wordFamiliesMap={wordFamiliesMap} phraseWordMap={phraseWordMap} languageCode={language?.code ?? null} dueTotal={dueWordTotal + duePhraseTotal} otherLanguagesDue={otherLanguagesDue.map(o => ({ code: o.code, name: o.name, count: o.due_count }))} insightState={{ seenIds: Array.from(insightState.seenIds), shownToday: insightState.shownToday }} />
+      <ReviewClient dueWords={dueWords} duePhrases={duePhrases} dueCanDos={dueCanDos} practiceWords={practiceWords} wordFamiliesMap={wordFamiliesMap} phraseWordMap={phraseWordMap} languageCode={language?.code ?? null} dueTotal={dueWordTotal + duePhraseTotal} insightState={{ seenIds: Array.from(insightState.seenIds), shownToday: insightState.shownToday }} />
     </div>
   );
 }

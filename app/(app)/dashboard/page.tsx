@@ -8,8 +8,6 @@ import {
   getUserStreak,
   getUserXp,
   getLatestInfoByte,
-  getDailyLearningStats,
-  getDueCountsByOtherLanguages,
 } from '@/lib/db/queries';
 import { getDuePhraseCount } from '@/lib/db/scene-flow-queries';
 import { isSceneComplete, sceneProgress as getSceneProgress, findCurrentSceneIndex } from '@/lib/utils/scene-progress';
@@ -20,7 +18,9 @@ import { HeroCard } from '@/components/ui/HeroCard';
 import { EmptyStateCard } from '@/components/ui/EmptyStateCard';
 import Link from 'next/link';
 import { InfoByteCard } from '@/components/info-bytes/InfoByteCard';
-import { DailyRecap } from '@/components/learn/DailyRecap';
+import { REVIEW_SITTING } from '@/lib/srs/engine';
+import { getWeekRecall } from '@/lib/db/pedagogy-queries';
+import { Card } from '@/components/ui/Card';
 import { DashboardUpgradeBanner } from './DashboardUpgradeBanner';
 import { getInsightState } from '@/lib/db/insight-queries';
 import { getEligibleInsight } from '@/lib/insights/engine';
@@ -66,10 +66,6 @@ export default async function DashboardPage() {
   const pathId = activePath.path_id;
   const languageId = activePath.path_language_id;
 
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-  const yesterdayStr = yesterday.toISOString().split('T')[0];
-
   const [
     sceneMastery,
     dueWordCount,
@@ -77,11 +73,10 @@ export default async function DashboardPage() {
     language,
     streakData,
     todayInfoByte,
-    yesterdayStats,
+    weekRecall,
     insightState,
     tripContext,
     xpData,
-    otherLanguagesDue,
     canDoInventory,
   ] = await Promise.all([
     getSceneMasteryForPath(userId, pathId),
@@ -90,11 +85,10 @@ export default async function DashboardPage() {
     getLanguageById(languageId),
     getUserStreak(userId),
     getLatestInfoByte(languageId),
-    getDailyLearningStats(userId, yesterdayStr),
+    getWeekRecall(userId),
     getInsightState(userId),
     getTripContext(userId),
     getUserXp(userId),
-    getDueCountsByOtherLanguages(userId, languageId),
     getCanDoInventory(userId, languageId),
   ]);
 
@@ -108,8 +102,9 @@ export default async function DashboardPage() {
   const currentSceneProgress = nextScene ? getSceneProgress(nextScene) : 0;
 
   const totalDueCount = dueWordCount + duePhraseCount;
-  // Review sessions load at most 20 words + 20 phrases per sitting
-  const dueExceedsSession = dueWordCount > 20 || duePhraseCount > 20;
+  // What /review will actually load: one sitting, not the whole backlog.
+  const sittingCount =
+    Math.min(dueWordCount, REVIEW_SITTING.words) + Math.min(duePhraseCount, REVIEW_SITTING.phrases);
 
   const completedSceneCount = sceneMastery.filter(s => isSceneComplete(s)).length;
   const totalWordsLearnedFromScenes = sceneMastery.reduce((sum, s) => sum + (s.mastered_words ?? 0), 0);
@@ -169,25 +164,10 @@ export default async function DashboardPage() {
       {/* Review queue — top priority when reviews are due */}
       {hasReviews && (
         <ReviewQueueCard
-          dueCount={totalDueCount}
+          sittingCount={sittingCount}
+          laterCount={totalDueCount - sittingCount}
           languageName={language?.name}
-          startWithMostOverdue={dueExceedsSession}
         />
-      )}
-
-      {/* Due items hiding in other languages — review is scoped to the active
-          path's language, so without this they'd be invisible */}
-      {otherLanguagesDue.length > 0 && (
-        <Link
-          href="/settings"
-          className="flex items-center gap-2.5 rounded-2xl px-4 py-3 bg-surface-inset border border-card-border active:scale-[0.99] transition-transform"
-        >
-          <span aria-hidden className="text-lg">⏳</span>
-          <span className="text-[13px] font-semibold text-[color:var(--foreground)]">
-            {otherLanguagesDue.map((o) => `${o.due_count} due in ${o.name}`).join(' · ')}
-          </span>
-          <span aria-hidden className="ml-auto font-black text-text-secondary">›</span>
-        </Link>
       )}
 
       {/* Hero / empty state */}
@@ -246,12 +226,27 @@ export default async function DashboardPage() {
         <GoalProgressCard tripContext={tripContext} />
       )}
 
-      {/* Yesterday's recap (compact — review CTA lives above) */}
-      <DailyRecap
-        yesterdayWords={yesterdayStats.words_learned}
-        yesterdayScenes={yesterdayStats.scenes_completed}
-        variant="compact"
-      />
+      {/* 7-day recall — whether the pictures work. Of the items met again
+          after a week or more away, how many were still there. */}
+      <Card size="compact">
+        <p className="text-sm text-foreground">
+          <span className="font-semibold">7-day recall: </span>
+          {weekRecall.reviews > 0 ? (
+            <>
+              <span className="font-semibold">
+                {Math.round((100 * weekRecall.remembered) / weekRecall.reviews)}%
+              </span>
+              <span className="text-text-secondary">
+                {' '}· {weekRecall.remembered} of {weekRecall.reviews} remembered after a week or more away
+              </span>
+            </>
+          ) : (
+            <span className="text-text-secondary">
+              not measured yet — it counts reviews of words you hadn&apos;t seen for 7+ days
+            </span>
+          )}
+        </p>
+      </Card>
 
       {/* Daily Info Byte */}
       {todayInfoByte && (

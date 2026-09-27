@@ -106,17 +106,15 @@ interface ReviewClientProps {
   languageCode?: string | null;
   /**
    * Total items due in this language, UNCAPPED. The queue itself is capped at
-   * 20 words + 20 phrases so a sitting stays short, so this is usually larger
-   * than `items.length` — and without it the session would end on
+   * one sitting (REVIEW_SITTING in lib/srs/engine.ts), so this is usually
+   * larger than `items.length` — and without it the session would end on
    * "All caught up!" with a hundred items still waiting.
    */
   dueTotal?: number;
-  /** Due counts in languages other than the active one — never say "all caught up" while these exist. */
-  otherLanguagesDue?: { code: string; name: string; count: number }[];
   insightState?: { seenIds: string[]; shownToday: number };
 }
 
-export function ReviewClient({ dueWords, duePhrases, dueCanDos = [], practiceWords = [], wordFamiliesMap = {}, phraseWordMap = {}, languageCode = null, dueTotal, otherLanguagesDue = [], insightState }: ReviewClientProps) {
+export function ReviewClient({ dueWords, duePhrases, dueCanDos = [], practiceWords = [], wordFamiliesMap = {}, phraseWordMap = {}, languageCode = null, dueTotal, insightState }: ReviewClientProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
@@ -389,15 +387,6 @@ export function ReviewClient({ dueWords, duePhrases, dueCanDos = [], practiceWor
             ? `No reviews due right now. You can practice ${practiceWords.length} words if you'd like.`
             : 'Nothing to review yet — learn new words to grow your queue.'}
         </p>
-        {otherLanguagesDue.length > 0 && (
-          <Link
-            href="/settings"
-            className="mb-6 -mt-2 block rounded-xl bg-amber-500/10 border border-amber-500/25 px-4 py-3 text-[13px] font-semibold text-[color:var(--foreground)] active:scale-[0.99] transition-transform"
-          >
-            {otherLanguagesDue.map((o) => `${o.count} in ${o.name}`).join(' · ')} still waiting —
-            switch your learning language to review them ›
-          </Link>
-        )}
         {practiceWords.length > 0 ? (
           <ThumbButton
             onClick={() => setPracticeMode(true)}
@@ -427,8 +416,8 @@ export function ReviewClient({ dueWords, duePhrases, dueCanDos = [], practiceWor
         revisionCount={missedItems.length}
         revisionCorrectCount={revisionCorrectCount}
         reviewedWordIds={items.filter((i) => i.type === 'word').map((i) => i.data.word_id)}
-        otherLanguagesDue={otherLanguagesDue}
         remaining={dueRemaining}
+        sitting={wLen + pLen}
       />
     );
   }

@@ -934,53 +934,6 @@ export async function getDueWordCount(
   return (rows[0] as { count: number })?.count ?? 0;
 }
 
-export interface OtherLanguageDue {
-  language_id: string;
-  code: string;
-  name: string;
-  due_count: number;
-}
-
-/**
- * Due review counts (words + phrases) per language OTHER than the active one.
- * Review and the dashboard are scoped to the active path's language, which
- * makes due items in other languages invisible — this surfaces them so the
- * user is never told "all caught up" while another language has a queue.
- */
-export async function getDueCountsByOtherLanguages(
-  userId: string,
-  excludeLanguageId?: string | null
-): Promise<OtherLanguageDue[]> {
-  const rows = await sql`
-    SELECT l.id AS language_id, l.code, l.name, SUM(c.cnt)::int AS due_count
-    FROM (
-      SELECT w.language_id AS lid, COUNT(*) AS cnt
-      FROM user_words uw
-      JOIN words w ON w.id = uw.word_id
-      WHERE uw.user_id = ${userId}
-        AND uw.next_review_at <= NOW()
-        AND uw.status != 'new'
-      GROUP BY w.language_id
-      UNION ALL
-      -- phrases: language comes from the owning path, matching getDuePhrasesForReview
-      SELECT p.language_id AS lid, COUNT(*) AS cnt
-      FROM user_phrases up
-      JOIN scene_phrases sp ON sp.id = up.phrase_id
-      JOIN scenes s ON s.id = sp.scene_id
-      JOIN paths p ON p.id = s.path_id
-      WHERE up.user_id = ${userId}
-        AND up.next_review_at <= NOW()
-        AND up.status != 'new'
-      GROUP BY p.language_id
-    ) c
-    JOIN languages l ON l.id = c.lid
-    WHERE (${excludeLanguageId ?? null}::uuid IS NULL OR l.id != ${excludeLanguageId ?? null}::uuid)
-    GROUP BY l.id, l.code, l.name
-    ORDER BY due_count DESC
-  `;
-  return rows as OtherLanguageDue[];
-}
-
 export interface VocabWithMnemonic {
   word_id: string;
   text: string;

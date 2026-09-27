@@ -92,7 +92,7 @@ export function streakReminderEmail(p: {
   const subject = `🔥 Your ${p.streak}-day streak is on the line`;
   const reviewLine =
     p.dueCount > 0
-      ? `You have ${p.dueCount} ${p.dueCount === 1 ? 'word' : 'words'} ready to review — two minutes keeps the flame alive.`
+      ? `Your next review is ${p.dueCount} ${p.dueCount === 1 ? 'card' : 'cards'} — a few minutes keeps the flame alive.`
       : 'A quick two-minute session keeps the flame alive.';
   const html = layout(
     `<p style="font-size:16px;color:#3d3528;">Hey ${firstName(p.name)},</p>
@@ -112,16 +112,17 @@ export function dueReviewsEmail(p: {
   unsubscribeToken: string;
 }): EmailContent {
   const unsubscribeUrl = unsubscribeUrlFor(p.unsubscribeToken);
-  const subject = `${p.dueCount} words are ready for review`;
+  const minutes = Math.max(1, Math.ceil((p.dueCount * 15) / 60));
+  const subject = `Your ${minutes}-minute review is ready`;
   const html = layout(
     `<p style="font-size:16px;color:#3d3528;">Hey ${firstName(p.name)},</p>
-     <p style="font-size:16px;color:#3d3528;"><strong>${p.dueCount} words</strong> are due for review — they're right at the edge of memory, which is exactly when reviewing locks them in.</p>
+     <p style="font-size:16px;color:#3d3528;"><strong>${p.dueCount} cards</strong>, about ${minutes} minutes — they're right at the edge of memory, which is exactly when reviewing locks them in.</p>
      <p style="margin:24px 0;">
        <a href="${appUrl()}/review" style="background:#e2742d;color:#fff;font-weight:700;padding:12px 24px;border-radius:12px;text-decoration:none;display:inline-block;">Review now →</a>
      </p>`,
     unsubscribeUrl
   );
-  const text = `Hey ${firstName(p.name)},\n\n${p.dueCount} words are due for review — they're right at the edge of memory, which is exactly when reviewing locks them in.\n\nReview now: ${appUrl()}/review\n\nUnsubscribe: ${unsubscribeUrl}`;
+  const text = `Hey ${firstName(p.name)},\n\n${p.dueCount} cards, about ${minutes} minutes — they're right at the edge of memory, which is exactly when reviewing locks them in.\n\nReview now: ${appUrl()}/review\n\nUnsubscribe: ${unsubscribeUrl}`;
   return { subject, html, text };
 }
 

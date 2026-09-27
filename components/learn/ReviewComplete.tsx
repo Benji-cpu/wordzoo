@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect } from 'react';
-import Link from 'next/link';
 import { EmptyStateCard } from '@/components/ui/EmptyStateCard';
 import { ActionCard, ActionCardRow } from '@/components/ui/ActionCard';
 import { Celebration } from '@/components/ui/Celebration';
@@ -15,13 +14,14 @@ interface ReviewCompleteProps {
   revisionCount?: number;
   revisionCorrectCount?: number;
   reviewedWordIds?: string[];
-  otherLanguagesDue?: { code: string; name: string; count: number }[];
   /**
-   * Items still due that this sitting didn't reach (the queue is capped at 20
-   * words + 20 phrases). Greater than zero means this is NOT the end of the
-   * work, and the screen must not say or celebrate otherwise.
+   * Items still due that this sitting didn't reach (the queue is capped at one
+   * sitting). Greater than zero means this is NOT the end of the work, and the
+   * screen must not say or celebrate otherwise.
    */
   remaining?: number;
+  /** Words + phrases in one sitting, so "Review N more" names the next one. */
+  sitting?: number;
 }
 
 export function ReviewComplete({
@@ -30,8 +30,8 @@ export function ReviewComplete({
   revisionCount = 0,
   revisionCorrectCount = 0,
   reviewedWordIds = [],
-  otherLanguagesDue = [],
   remaining = 0,
+  sitting = 20,
 }: ReviewCompleteProps) {
   const didRevision = revisionCount > 0;
   const moreWaiting = remaining > 0;
@@ -68,13 +68,13 @@ export function ReviewComplete({
           title={`${remaining} more waiting`}
           subtitle={
             <>
-              You cleared {totalReviewed}. Reviews come in batches of 20 so a
-              sitting stays under a couple of minutes — keep going, or come back
-              to the rest later.
+              You cleared {totalReviewed}. Reviews come in short sittings so
+              each one is a few minutes — keep going, or come back to the rest
+              later.
             </>
           }
           primary={{
-            label: `Review ${Math.min(remaining, 20)} more →`,
+            label: `Review ${Math.min(remaining, Math.max(sitting, 1))} more →`,
             // Full navigation, not <Link>. A soft nav back to /review keeps the
             // mounted ReviewClient — including phase='done' — so the learner
             // would just land back on this same screen.
@@ -94,16 +94,6 @@ export function ReviewComplete({
           primary={{ label: 'Practice in conversation →', href: tutorHref }}
           secondary={{ label: 'Back to home', href: '/dashboard' }}
         />
-      )}
-
-      {otherLanguagesDue.length > 0 && (
-        <Link
-          href="/settings"
-          className="rounded-xl bg-amber-500/10 border border-amber-500/25 px-4 py-3 text-[13px] font-semibold text-[color:var(--foreground)] active:scale-[0.99] transition-transform"
-        >
-          {otherLanguagesDue.map((o) => `${o.count} in ${o.name}`).join(' · ')} still waiting —
-          switch your learning language to review them ›
-        </Link>
       )}
 
       {sessionEarned > 0 && (

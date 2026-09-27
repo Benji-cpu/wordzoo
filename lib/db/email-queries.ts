@@ -1,4 +1,5 @@
 import { sql } from '@/lib/db/client';
+import { REVIEW_SITTING } from '@/lib/srs/engine';
 
 /** Recipient row shared by the reminder queries. */
 export interface ReminderRecipient {
@@ -11,44 +12,61 @@ export interface ReminderRecipient {
 }
 
 /**
+ * Everyone emailable, with the reminder facts computed once.
+ *
+ * `due_count` is the next /review sitting in the learner's ACTIVE language —
+ * the same number the dashboard leads with — not every overdue row in every
+ * language they ever touched. The old count told a learner back from a break
+ * that 141 words were waiting, 95 of them in languages he had abandoned.
+ */
+async function reminderCandidates(): Promise<
+  (ReminderRecipient & { streak_at_risk: boolean; recently_active: boolean })[]
+> {
+  const rows = await sql`
+    SELECT u.id, u.email, u.name, u.unsubscribe_token,
+      COALESCE(us.current_streak, 0) AS current_streak,
+      (COALESCE(us.current_streak, 0) > 0 AND us.last_active_date = CURRENT_DATE - 1) AS streak_at_risk,
+      -- Stop nudging someone who has been gone three months: they left.
+      COALESCE(us.last_active_date >= CURRENT_DATE - 90, false) AS recently_active,
+      (
+        LEAST(${REVIEW_SITTING.words}, (
+          SELECT COUNT(*) FROM user_words uw JOIN words w ON w.id = uw.word_id
+          WHERE uw.user_id = u.id AND uw.next_review_at <= NOW() AND uw.status != 'new'
+            AND w.language_id = ap.language_id))
+        + LEAST(${REVIEW_SITTING.phrases}, (
+          SELECT COUNT(*) FROM user_phrases uph
+          JOIN scene_phrases sp ON sp.id = uph.phrase_id
+          JOIN scenes s ON s.id = sp.scene_id
+          JOIN paths p ON p.id = s.path_id
+          WHERE uph.user_id = u.id AND uph.next_review_at <= NOW() AND uph.status != 'new'
+            AND p.language_id = ap.language_id))
+      )::int AS due_count
+    FROM users u
+    JOIN LATERAL (
+      SELECT p.language_id FROM user_paths up JOIN paths p ON p.id = up.path_id
+      WHERE up.user_id = u.id AND up.status = 'active'
+      ORDER BY up.started_at DESC LIMIT 1
+    ) ap ON TRUE
+    LEFT JOIN user_streaks us ON us.user_id = u.id
+    WHERE u.email_reminders_enabled
+      AND u.email NOT LIKE '%@wordzoo.dev'
+  `;
+  return rows as (ReminderRecipient & { streak_at_risk: boolean; recently_active: boolean })[];
+}
+
+/**
  * Users with an active streak who haven't practiced yet today — the
  * streak-at-risk nudge audience. Due count rides along for the email copy.
  */
 export async function getStreakAtRiskUsers(): Promise<ReminderRecipient[]> {
-  const rows = await sql`
-    SELECT u.id, u.email, u.name, u.unsubscribe_token,
-      us.current_streak,
-      (SELECT COUNT(*)::int FROM user_words uw
-        WHERE uw.user_id = u.id AND uw.next_review_at <= NOW() AND uw.status != 'new') AS due_count
-    FROM user_streaks us
-    JOIN users u ON u.id = us.user_id
-    WHERE us.current_streak > 0
-      AND us.last_active_date = CURRENT_DATE - 1
-      AND u.email_reminders_enabled
-      AND u.email NOT LIKE '%@wordzoo.dev'
-  `;
-  return rows as ReminderRecipient[];
+  return (await reminderCandidates()).filter((u) => u.streak_at_risk);
 }
 
 /**
  * Users (without a streak at risk) sitting on a meaningful review queue.
  */
 export async function getUsersWithDueReviews(minDue = 5): Promise<ReminderRecipient[]> {
-  const rows = await sql`
-    SELECT u.id, u.email, u.name, u.unsubscribe_token,
-      COALESCE(us.current_streak, 0) AS current_streak,
-      due.due_count
-    FROM users u
-    JOIN LATERAL (
-      SELECT COUNT(*)::int AS due_count FROM user_words uw
-      WHERE uw.user_id = u.id AND uw.next_review_at <= NOW() AND uw.status != 'new'
-    ) due ON TRUE
-    LEFT JOIN user_streaks us ON us.user_id = u.id
-    WHERE u.email_reminders_enabled
-      AND u.email NOT LIKE '%@wordzoo.dev'
-      AND due.due_count >= ${minDue}
-  `;
-  return rows as ReminderRecipient[];
+  return (await reminderCandidates()).filter((u) => u.recently_active && u.due_count >= minDue);
 }
 
 export interface WeeklyRecapRecipient {

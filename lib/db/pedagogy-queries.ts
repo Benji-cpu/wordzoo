@@ -249,6 +249,36 @@ export async function getRetentionCurve(days = 90): Promise<RetentionBucketRow[]
   return rows as RetentionBucketRow[];
 }
 
+export interface WeekRecall {
+  /** Reviews of an item the learner hadn't answered for 7+ days. */
+  reviews: number;
+  remembered: number;
+}
+
+/**
+ * The one number WordZoo is for: of the words and phrases a learner met again
+ * after a week or more away, how many were still there?
+ *
+ * One learner's own reviews, not the population curve above — the admin curve
+ * mixes in every test account. Keyed on `daysAway` (added to the event
+ * 2026-09-27), not priorIntervalDays, so a returning learner's first sitting
+ * counts. Rolling 90 days, because that is how long pedagogy_events is kept.
+ */
+export async function getWeekRecall(userId: string): Promise<WeekRecall> {
+  const rows = await sql`
+    SELECT
+      COUNT(*)::int AS reviews,
+      COUNT(*) FILTER (WHERE payload->>'rating' <> 'forgot')::int AS remembered
+    FROM pedagogy_events
+    WHERE event = 'srs_review_recorded'
+      AND user_id = ${userId}
+      AND payload->>'daysAway' ~ '^[0-9]+$'
+      AND (payload->>'daysAway')::int >= 7
+  `;
+  const r = rows[0] as WeekRecall | undefined;
+  return { reviews: r?.reviews ?? 0, remembered: r?.remembered ?? 0 };
+}
+
 export interface ConsolidationRow {
   exposure: number;
   words: number;

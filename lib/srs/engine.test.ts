@@ -6,7 +6,7 @@ vi.mock('@/lib/db/queries', () => ({}));
 vi.mock('@/lib/db/scene-flow-queries', () => ({}));
 vi.mock('@/lib/db/client', () => ({ sql: () => Promise.resolve([]) }));
 
-import { schedule, LEECH_LAPSES, LEECH_MAX_INTERVAL_DAYS, type ScheduleInput } from './engine';
+import { schedule, daysAway, LEECH_LAPSES, LEECH_MAX_INTERVAL_DAYS, type ScheduleInput } from './engine';
 
 const DAY = 24 * 60 * 60 * 1000;
 const now = new Date('2026-09-16T00:00:00Z');
@@ -105,5 +105,24 @@ describe('schedule — lapses and learning steps', () => {
     expect(schedule({ ...base, rating: 'got_it' }).intervalDays).toBe(3);
     expect(schedule({ ...base, rating: 'instant' }).intervalDays).toBe(5);
     expect(schedule({ ...base, rating: 'got_it' }).reason).toBe('graduated');
+  });
+});
+
+describe('daysAway — the x-axis of 7-day recall', () => {
+  const now = new Date('2026-09-27T12:00:00Z');
+
+  it('is null on first sight', () => {
+    expect(daysAway(null, now)).toBeNull();
+    expect(daysAway(undefined, now)).toBeNull();
+  });
+
+  it('counts whole days, from a Date or the string Neon returns', () => {
+    expect(daysAway(new Date('2026-09-20T12:00:00Z'), now)).toBe(7);
+    expect(daysAway('2026-09-20T13:00:00Z', now)).toBe(6);
+    expect(daysAway('2026-08-10T07:00:00Z', now)).toBe(48);
+  });
+
+  it('never goes negative on clock skew', () => {
+    expect(daysAway(new Date('2026-09-27T12:05:00Z'), now)).toBe(0);
   });
 });

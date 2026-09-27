@@ -1,24 +1,34 @@
 import Link from 'next/link';
 
 interface ReviewQueueCardProps {
-  dueCount: number;
+  /** Items the next /review sitting will load — the number to lead with. */
+  sittingCount: number;
+  /** Everything else that is due, left for later sittings. */
+  laterCount?: number;
   languageName?: string | null;
-  startWithMostOverdue?: boolean;
 }
 
-export function ReviewQueueCard({ dueCount, languageName, startWithMostOverdue }: ReviewQueueCardProps) {
-  if (dueCount <= 0) return null;
+/**
+ * Leads with one sitting, not the backlog. After seven weeks away the backlog
+ * is 65+ items; showing that as the headline is a wall, and /review only ever
+ * loads one sitting anyway (REVIEW_SITTING in lib/srs/engine.ts).
+ */
+export function ReviewQueueCard({ sittingCount, laterCount = 0, languageName }: ReviewQueueCardProps) {
+  if (sittingCount <= 0) return null;
 
-  const subtitle = startWithMostOverdue
-    ? "we'll start with the most overdue"
+  // ~15s a card, rounded up to the minute.
+  const minutes = Math.max(1, Math.ceil((sittingCount * 15) / 60));
+  const subtitle = laterCount > 0
+    ? `about ${minutes} min · ${laterCount} more wait for later`
     : languageName
-      ? `${languageName} · words & phrases ready to review`
-      : 'words & phrases ready to review';
+      ? `${languageName} · about ${minutes} min`
+      : `about ${minutes} min`;
+  const dueCount = sittingCount;
 
   return (
     <Link
       href="/review"
-      aria-label={`Review ${dueCount} due items`}
+      aria-label={`Review ${dueCount} items`}
       className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nav-active)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)] rounded-[22px] active:scale-[0.99] transition-transform"
     >
       <div
@@ -33,7 +43,7 @@ export function ReviewQueueCard({ dueCount, languageName, startWithMostOverdue }
           </div>
           <div className="flex items-end gap-2 mb-0.5">
             <span className="text-[36px] font-black leading-none tracking-tight text-white">{dueCount}</span>
-            <span className="text-[14px] font-extrabold text-white pb-1">due</span>
+            <span className="text-[14px] font-extrabold text-white pb-1">to review</span>
           </div>
           <div className="text-[12.5px] font-semibold opacity-90 mb-3.5 text-white">{subtitle}</div>
           <div className="flex items-center justify-between">
