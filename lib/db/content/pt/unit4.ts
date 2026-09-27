@@ -8,7 +8,7 @@ const scene41: DialogueSceneData = {
   "id": "d4000000-0001-4000-8000-000000000041",
   "title": "Na rodoviária",
   "description": "At the bus station: buying tickets, finding the gate, departure and arrival times, delays and seats.",
-  "scene_context": "You, Dani and your mother are leaving Rio for a few days on the coast. You go to the bus station counter to buy the tickets and find your gate.",
+  "scene_context": "You, Dani and your mother are leaving São Paulo for a few days on the coast. You go to the bus station counter to buy the tickets and find your gate.",
   "sort_order": 13,
   "dialogues": [
     {

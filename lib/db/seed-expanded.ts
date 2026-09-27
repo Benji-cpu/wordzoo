@@ -133,7 +133,11 @@ export async function seedExpandedContentForLanguage(
           speaker = EXCLUDED.speaker,
           text_target = EXCLUDED.text_target,
           text_en = EXCLUDED.text_en,
-          sort_order = EXCLUDED.sort_order
+          sort_order = EXCLUDED.sort_order,
+          -- A rewritten line must not keep speaking its old words. Dropping
+          -- the clip lets seed-audio (which skips rows that have one) redo it.
+          audio_url = CASE WHEN scene_dialogues.text_target IS DISTINCT FROM EXCLUDED.text_target
+                           THEN NULL ELSE scene_dialogues.audio_url END
       `;
     }
     console.log(`  ${scene.dialogues.length} dialogues`);
@@ -149,7 +153,9 @@ export async function seedExpandedContentForLanguage(
           text_en = EXCLUDED.text_en,
           literal_translation = EXCLUDED.literal_translation,
           usage_note = EXCLUDED.usage_note,
-          sort_order = EXCLUDED.sort_order
+          sort_order = EXCLUDED.sort_order,
+          audio_url = CASE WHEN scene_phrases.text_target IS DISTINCT FROM EXCLUDED.text_target
+                           THEN NULL ELSE scene_phrases.audio_url END
       `;
 
       for (let w = 0; w < ph.wordTexts.length; w++) {

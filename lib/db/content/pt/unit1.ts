@@ -7,14 +7,14 @@ const scene11: DialogueSceneData = {
   "id": "d4000000-0001-4000-8000-000000000011",
   "title": "No aeroporto",
   "description": "Arriving at the airport: greetings, simple introductions, saying your name and thank you.",
-  "scene_context": "You have just landed in Rio de Janeiro and a friendly airport host greets you at the arrivals gate. You exchange first hellos and introduce yourself.",
+  "scene_context": "You have just landed in São Paulo and a friendly airport host greets you at the arrivals gate. You exchange first hellos and introduce yourself.",
   "sort_order": 1,
   "dialogues": [
     {
       "id": "e4000000-0011-4000-8000-000000000001",
       "speaker": "Bruno",
-      "text_target": "Olá! Bom dia! Bem-vinda ao Rio!",
-      "text_en": "Hello! Good morning! Welcome to Rio!"
+      "text_target": "Olá! Bom dia! Bem-vinda a São Paulo!",
+      "text_en": "Hello! Good morning! Welcome to São Paulo!"
     },
     {
       "id": "e4000000-0011-4000-8000-000000000002",
