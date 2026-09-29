@@ -23,6 +23,14 @@ export interface DueCanDo {
 /**
  * Can-dos this learner is eligible to certify right now.
  *
+ * Due = the time rules (unlocked, eligible_at passed) AND readiness: the scene's
+ * words and phrases are all out of the learning phase (learning_step >= 2, see
+ * GRADUATED in lib/srs/engine.ts). A row the learner has never met doesn't
+ * block; one still being learned does. Testing production of phrases the
+ * learner hasn't consolidated just books a strike; the reviews that would fix
+ * that are already in the same sitting. can_dos has no phrase FK, so readiness
+ * is scene-level.
+ *
  * Note what is NOT selected: reference_target and accept_notes. They are the
  * answer, and this payload is server-rendered into the review page. The test is
  * only unaided if the answer never reaches the client before a verdict — it
@@ -46,7 +54,18 @@ export async function getDueCanDos(
       AND ucd.status = 'unlocked'
       AND ucd.eligible_at <= NOW()
       AND (${languageId ?? null}::uuid IS NULL OR p.language_id = ${languageId ?? null}::uuid)
-    ORDER BY ucd.eligible_at ASC
+      AND NOT EXISTS (
+        SELECT 1 FROM scene_words sw
+        JOIN user_words uw ON uw.word_id = sw.word_id AND uw.user_id = ${userId}
+        WHERE sw.scene_id = cd.scene_id AND uw.learning_step < 2
+      )
+      AND NOT EXISTS (
+        SELECT 1 FROM scene_phrases sp
+        JOIN user_phrases up ON up.phrase_id = sp.id AND up.user_id = ${userId}
+        WHERE sp.scene_id = cd.scene_id AND up.learning_step < 2
+      )
+    -- A scene's can-dos share one eligible_at; sort_order makes their order stable.
+    ORDER BY ucd.eligible_at ASC, cd.sort_order ASC
     LIMIT ${limit}
   `;
   return rows as DueCanDo[];
@@ -108,7 +127,20 @@ export async function getCanDoInventory(
       SELECT
         COUNT(*) FILTER (WHERE ucd.status = 'certified')::int AS certified,
         COUNT(*) FILTER (WHERE ucd.status = 'unlocked')::int AS unlocked,
-        COUNT(*) FILTER (WHERE ucd.status = 'unlocked' AND ucd.eligible_at <= NOW())::int AS due_now
+        -- Same readiness rule as getDueCanDos, so "N ready to certify" is what /review offers.
+        COUNT(*) FILTER (
+          WHERE ucd.status = 'unlocked' AND ucd.eligible_at <= NOW()
+            AND NOT EXISTS (
+              SELECT 1 FROM scene_words sw
+              JOIN user_words uw ON uw.word_id = sw.word_id AND uw.user_id = ${userId}
+              WHERE sw.scene_id = cd.scene_id AND uw.learning_step < 2
+            )
+            AND NOT EXISTS (
+              SELECT 1 FROM scene_phrases sp
+              JOIN user_phrases up ON up.phrase_id = sp.id AND up.user_id = ${userId}
+              WHERE sp.scene_id = cd.scene_id AND up.learning_step < 2
+            )
+        )::int AS due_now
       FROM user_can_dos ucd
       JOIN can_dos cd ON cd.id = ucd.can_do_id
       JOIN scenes s ON s.id = cd.scene_id
@@ -169,8 +201,10 @@ export async function getCertifiableCanDo(
     SELECT
       cd.id AS can_do_id, cd.scene_id, cd.statement_en, cd.prompt_en,
       cd.reference_target, cd.accept_notes, cd.must_include,
-      ucd.status, ucd.eligible_at::text, ucd.attempts, ucd.fails,
-      ucd.unlocked_at::text
+      ucd.status,
+      -- ISO, not ::text: Postgres text timestamps ('2026-10-01 12:00:00+00') are not reliably Date-parseable.
+      to_char(ucd.eligible_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS eligible_at,
+      ucd.attempts, ucd.fails, ucd.unlocked_at::text
     FROM user_can_dos ucd
     JOIN can_dos cd ON cd.id = ucd.can_do_id
     WHERE ucd.user_id = ${userId} AND ucd.can_do_id = ${canDoId}
@@ -178,6 +212,12 @@ export async function getCertifiableCanDo(
   return (rows[0] as CertifiableCanDo) ?? null;
 }
 
+/**
+ * Applies a graded attempt. Returns false when the row was no longer
+ * 'unlocked' and eligible (a concurrent request already settled it), in which
+ * case nothing was written: a second request can never downgrade a certified
+ * row or add a strike. The caller re-reads and returns the settled state.
+ */
 export async function recordCanDoAttempt(
   userId: string,
   canDoId: string,
@@ -185,13 +225,14 @@ export async function recordCanDoAttempt(
   attemptText: string,
   feedback: string,
   cooldownHours: number | null
-): Promise<void> {
+): Promise<boolean> {
   // One statement so a pass can't half-apply. `unclear` deliberately touches
-  // neither fails nor eligible_at: a grader outage must not cost the learner a
-  // strike or a day's cooldown.
-  await sql`
+  // neither attempts, fails nor eligible_at: a grader outage must not cost the
+  // learner a strike, an attempt or a day's cooldown.
+  const counts = verdict !== 'unclear';
+  const rows = await sql`
     UPDATE user_can_dos SET
-      attempts = attempts + 1,
+      attempts = attempts + ${counts ? 1 : 0},
       last_attempt_at = NOW(),
       last_attempt_text = ${attemptText},
       last_verdict = ${verdict},
@@ -205,5 +246,52 @@ export async function recordCanDoAttempt(
       END,
       updated_at = NOW()
     WHERE user_id = ${userId} AND can_do_id = ${canDoId}
+      AND status = 'unlocked' AND eligible_at <= NOW()
+    RETURNING id
   `;
+  return rows.length > 0;
+}
+
+/**
+ * "I don't know": no strike, no attempt counted, no verdict change. The can-do
+ * rests for `restHours`, and the scene's phrases come back for study: one
+ * relearn step (learning_step 0, due now if not already sooner) with interval
+ * and ease untouched, so this only ever tightens a schedule.
+ *
+ * Same guard as recordCanDoAttempt; returns null when a concurrent request got
+ * there first. One statement (data-modifying CTEs), so the rest and the
+ * phrase reset land together.
+ */
+export async function recordCanDoGiveUp(
+  userId: string,
+  canDoId: string,
+  restHours: number
+): Promise<{ nextEligibleAt: string; phrasesReset: number } | null> {
+  const rows = await sql`
+    WITH upd AS (
+      UPDATE user_can_dos SET
+        eligible_at = NOW() + (${restHours}::int || ' hours')::interval,
+        updated_at = NOW()
+      WHERE user_id = ${userId} AND can_do_id = ${canDoId}
+        AND status = 'unlocked' AND eligible_at <= NOW()
+      RETURNING can_do_id, eligible_at
+    ),
+    ph AS (
+      UPDATE user_phrases up SET
+        learning_step = 0,
+        next_review_at = LEAST(up.next_review_at, NOW())
+      FROM scene_phrases sp, can_dos cd, upd
+      WHERE up.user_id = ${userId}
+        AND up.phrase_id = sp.id
+        AND cd.id = upd.can_do_id
+        AND sp.scene_id = cd.scene_id
+      RETURNING up.id
+    )
+    SELECT
+      to_char(upd.eligible_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS next_eligible_at,
+      (SELECT COUNT(*) FROM ph)::int AS phrases_reset
+    FROM upd
+  `;
+  const r = rows[0] as { next_eligible_at: string; phrases_reset: number } | undefined;
+  return r ? { nextEligibleAt: r.next_eligible_at, phrasesReset: r.phrases_reset } : null;
 }
