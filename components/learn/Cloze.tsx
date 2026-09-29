@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import type { FormEvent } from 'react';
 import { Celebration } from '@/components/ui/Celebration';
 import { Fox } from '@/components/mascot/Fox';
@@ -8,6 +8,7 @@ import { useSound } from '@/lib/hooks/useSound';
 import { useHaptic } from '@/lib/hooks/useHaptic';
 import { useXP, XP_AMOUNTS } from '@/lib/hooks/useXP';
 import { fuzzyMatchAnswer } from '@/lib/pedagogy/normalize';
+import { blankSentence } from '@/lib/pedagogy/cloze';
 import { fireTelemetry } from '@/lib/pedagogy/telemetry';
 import { useViewportInsets } from '@/lib/hooks/useKeyboardVisible';
 import type { ClozePhraseForWord } from '@/lib/db/queries';
@@ -29,9 +30,25 @@ interface ClozeProps {
    * `resolveRevealed`.
    */
   onAnswer?: (correct: boolean, attempts: number) => void;
+  /**
+   * Fired once, instead of rendering, when none of `phrases` literally contains
+   * the target as a whole word (so there is nothing to blank). Nothing is
+   * scored; the parent should pick another cue for this turn. Without it the
+   * defensive fallback is `onCorrect`, which credits an unanswered item.
+   */
+  onUnavailable?: () => void;
 }
 
 const BLANK = '_____';
+
+function resolveCloze(phrases: ClozePhraseForWord[], target: string) {
+  for (const phrase of phrases) {
+    const blank =
+      blankSentence(phrase.text_target, phrase.word_text) ?? blankSentence(phrase.text_target, target);
+    if (blank) return { phrase, blank };
+  }
+  return null;
+}
 
 /**
  * Attempts reported when the learner needed the answer shown — either they
@@ -54,9 +71,14 @@ export function Cloze({
   meaningEn,
   onCorrect,
   onAnswer,
+  onUnavailable,
 }: ClozeProps) {
   const { beat } = usePace();
-  const phrase = phrases[0] ?? null;
+  // First phrase where the word really appears; the blank hides exactly that
+  // surface form, and that is what the learner is graded on.
+  const resolved = resolveCloze(phrases, correctTarget);
+  const phrase = resolved?.phrase ?? null;
+  const answer = resolved?.blank.answer ?? correctTarget;
   const [typed, setTyped] = useState('');
   const [attempts, setAttempts] = useState(0);
   const [hint, setHint] = useState<string | null>(null);
@@ -71,21 +93,7 @@ export function Cloze({
   const { award } = useXP();
   const { keyboardHeight } = useViewportInsets();
 
-  // Build the visible cloze: replace the target word in text_target with a blank
-  // (case-insensitive, word-boundary aware where possible).
-  const cloze = useMemo(() => {
-    if (!phrase) return { before: '', after: '', whole: '' };
-    const target = phrase.word_text;
-    const idx = phrase.text_target.toLowerCase().indexOf(target.toLowerCase());
-    if (idx < 0) {
-      return { before: phrase.text_target + ' ', after: '', whole: phrase.text_target };
-    }
-    return {
-      before: phrase.text_target.slice(0, idx),
-      after: phrase.text_target.slice(idx + target.length),
-      whole: phrase.text_target,
-    };
-  }, [phrase]);
+  const cloze = resolved?.blank ?? { before: '', after: '', answer };
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -164,7 +172,12 @@ export function Cloze({
       }
       const guess = typed.trim();
       if (!guess) return;
-      const result = fuzzyMatchAnswer(guess, correctTarget);
+      // The surface form is what's hidden; the dictionary form is also accepted.
+      const results = [fuzzyMatchAnswer(guess, answer), fuzzyMatchAnswer(guess, correctTarget)];
+      const result =
+        results.find((r) => r.kind === 'exact') ??
+        results.find((r) => r.kind === 'close') ??
+        results[0];
       const nextAttempts = attempts + 1;
       setAttempts(nextAttempts);
 
@@ -194,6 +207,7 @@ export function Cloze({
     },
     [
       typed,
+      answer,
       correctTarget,
       attempts,
       done,
@@ -216,18 +230,27 @@ export function Cloze({
       // Typing the revealed answer auto-continues — the encoding rep is the
       // point, so it shouldn't also cost a button press.
       if (revealed) {
-        const r = fuzzyMatchAnswer(e.target.value, correctTarget, 0);
+        const r = fuzzyMatchAnswer(e.target.value, answer, 0);
         if (r.kind === 'exact') resolveRevealed();
       }
     },
-    [revealed, correctTarget, resolveRevealed],
+    [revealed, answer, resolveRevealed],
   );
 
-  // Defensive: caller should have filtered cloze when no phrases exist;
-  // if it slipped through, signal completion in an effect (run unconditionally).
+  // Nothing to blank: hand the turn back exactly once. Latest callbacks live in
+  // a ref because parents pass fresh closures every render.
+  const unavailableFired = useRef(false);
+  const fallbackRef = useRef({ onUnavailable, onCorrect });
   useEffect(() => {
-    if (!phrase) onCorrect();
-  }, [phrase, onCorrect]);
+    fallbackRef.current = { onUnavailable, onCorrect };
+  });
+  useEffect(() => {
+    if (phrase || unavailableFired.current) return;
+    unavailableFired.current = true;
+    const cb = fallbackRef.current;
+    if (cb.onUnavailable) cb.onUnavailable();
+    else cb.onCorrect();
+  }, [phrase]);
 
   if (!phrase) return null;
 
@@ -249,7 +272,7 @@ export function Cloze({
         >
           <span>{cloze.before}</span>
           <span className="border-b-2 border-dashed border-[color:var(--color-fox-primary)] inline-block min-w-[3ch] mx-1 align-baseline opacity-70">
-            {revealed ? correctTarget : BLANK}
+            {revealed ? answer : BLANK}
           </span>
           <span>{cloze.after}</span>
         </p>
@@ -261,7 +284,7 @@ export function Cloze({
         ) : null}
         {revealed ? (
           <p className="mt-3 text-sm text-[color:var(--text-secondary)]">
-            The word is <span className="font-bold text-[color:var(--color-fox-primary)]">{correctTarget}</span> · type it to lock it in
+            The word is <span className="font-bold text-[color:var(--color-fox-primary)]">{answer}</span> · type it to lock it in
           </p>
         ) : null}
 

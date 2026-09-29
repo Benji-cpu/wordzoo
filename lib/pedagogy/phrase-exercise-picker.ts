@@ -1,5 +1,6 @@
 import type { ScenePhraseWithMnemonics, PhraseWordMnemonic } from '@/types/database';
 import type { CueType, DrillItem } from '@/lib/pedagogy/leitner';
+import { clozeTokenCount, findClozeSpan } from '@/lib/pedagogy/cloze';
 
 /**
  * Pedagogy v2 — phrase-side analogue of `lib/pedagogy/exercise-picker`.
@@ -10,7 +11,7 @@ import type { CueType, DrillItem } from '@/lib/pedagogy/leitner';
 export interface PhraseEligibility {
   /** At least 4 phrases exist in the scene → recognition MCQ has 3 distractors. */
   recognitionAvailable: boolean;
-  /** Phrase has at least one >=4-char word in `phrase.words[]`. */
+  /** Phrase has a >=4-char word from `phrase.words[]` that appears whole in its text. */
   clozeAvailable: boolean;
   /** Phrase has audio_url. Reserved for the listening cue (next round). */
   hasAudioUrl: boolean;
@@ -19,16 +20,27 @@ export interface PhraseEligibility {
 const MIN_CLOZE_WORD_LENGTH = 4;
 
 /**
- * Pick a content word from the phrase to blank for cloze. Prefers the
- * longest word ≥ MIN_CLOZE_WORD_LENGTH so we don't blank out "di" / "ke".
- * Returns null if no word meets the threshold (caller should skip cloze).
+ * Pick a content word from the phrase to blank for cloze. Only words that
+ * literally appear in `text_target` as a whole word qualify (a word from the
+ * gloss list that was inflected away, or that only occurs inside another word,
+ * would render a blank-less sentence). Prefers single-token words, then the
+ * longest, so we don't blank out "di" / "ke". Returns null if nothing
+ * qualifies (caller should use another cue).
  */
 export function pickClozeWord(
-  phrase: Pick<ScenePhraseWithMnemonics, 'words'>,
+  phrase: Pick<ScenePhraseWithMnemonics, 'words' | 'text_target'>,
 ): PhraseWordMnemonic | null {
   const eligible = phrase.words
-    .filter((w) => w.word_text.length >= MIN_CLOZE_WORD_LENGTH)
-    .sort((a, b) => b.word_text.length - a.word_text.length);
+    .filter(
+      (w) =>
+        w.word_text.length >= MIN_CLOZE_WORD_LENGTH &&
+        findClozeSpan(phrase.text_target, w.word_text) !== null,
+    )
+    .sort((a, b) => {
+      const multiA = clozeTokenCount(a.word_text) > 1 ? 1 : 0;
+      const multiB = clozeTokenCount(b.word_text) > 1 ? 1 : 0;
+      return multiA - multiB || b.word_text.length - a.word_text.length;
+    });
   return eligible[0] ?? null;
 }
 

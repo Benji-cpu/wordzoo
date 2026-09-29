@@ -353,6 +353,10 @@ export function SceneFlowClient({
   );
   const [dailyStats, setDailyStats] = useState<{ words_learned: number; scenes_completed: number }>({ words_learned: 0, scenes_completed: 0 });
   const statsFetched = useRef(false);
+  // Set when the learned-words fetch empties the vocabulary phase; the effect
+  // after saveProgress persists the jump to summary (it can't be called here,
+  // saveProgress is declared further down).
+  const jumpedToSummary = useRef(false);
 
   // Fetch learned word IDs on mount — skip already-learned words in vocabulary phase
   useEffect(() => {
@@ -370,6 +374,7 @@ export function SceneFlowClient({
         setState(prev => {
           if (prev.phase !== 'vocabulary') return prev;
           if (unlearnedWords.length === 0) {
+            jumpedToSummary.current = true;
             return { phase: 'summary' };
           }
           // Clamp wordIndex to filtered list bounds
@@ -478,6 +483,14 @@ export function SceneFlowClient({
     };
     doFetch(phase === 'summary' ? 2 : 0);
   }, [sceneId]);
+
+  // Without this the summary shows but completed_at is never written, and the
+  // sequential gate bounces the learner back to this scene.
+  useEffect(() => {
+    if (state.phase !== 'summary' || !jumpedToSummary.current) return;
+    jumpedToSummary.current = false;
+    saveProgress('summary', 0, 'vocabulary', null, 0);
+  }, [state.phase, saveProgress]);
 
   // Dedup v2 saves: the drill's per-card `fraction` updates fire onProgress
   // many times per second; we only persist when `kind` or `batchIndex` change.

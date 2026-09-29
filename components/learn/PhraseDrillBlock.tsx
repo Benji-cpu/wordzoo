@@ -62,13 +62,17 @@ export function PhraseDrillBlock({
   onQueueChange,
   onComplete,
 }: PhraseDrillBlockProps) {
+  /** Phrases whose cloze word turned out not to be blankable; never re-offered. */
+  const [clozeBlocked, setClozeBlocked] = useState<string[]>([]);
+
   const eligibilityMap = useMemo<BatchEligibilityMap>(() => {
     const out: BatchEligibilityMap = {};
     for (const p of phrases) {
-      out[p.id] = computePhraseEligibility(p, scenePhrases.length);
+      const elig = computePhraseEligibility(p, scenePhrases.length);
+      out[p.id] = clozeBlocked.includes(p.id) ? { ...elig, clozeAvailable: false } : elig;
     }
     return out;
-  }, [phrases, scenePhrases.length]);
+  }, [phrases, scenePhrases.length, clozeBlocked]);
 
   const phraseById = useMemo(() => {
     const map = new Map<string, ScenePhraseWithMnemonics>();
@@ -186,6 +190,18 @@ export function PhraseDrillBlock({
 
   const item = currentItem(queue);
   const phrase = item ? phraseById.get(item.itemId) : null;
+  const clozeWord = phrase ? pickClozeWord(phrase) : null;
+
+  // Nothing to blank for this phrase: stop offering cloze and re-pick the cue
+  // (recognition/production). Not scored — no answer was given.
+  const clozeStrandedId = activeCueType === 'cloze' && phrase && !clozeWord ? phrase.id : null;
+  const blockCloze = useCallback((id: string) => {
+    setClozeBlocked((ids) => (ids.includes(id) ? ids : [...ids, id]));
+  }, []);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (clozeStrandedId) blockCloze(clozeStrandedId);
+  }, [clozeStrandedId, blockCloze]);
 
   if (!item || !phrase) {
     return (
@@ -201,7 +217,6 @@ export function PhraseDrillBlock({
   );
 
   if (activeCueType === 'cloze') {
-    const clozeWord = pickClozeWord(phrase);
     if (clozeWord) {
       return (
         <>
@@ -224,12 +239,19 @@ export function PhraseDrillBlock({
             onAnswer={(correct) => {
               if (!correct) handleWrong();
             }}
+            onUnavailable={() => blockCloze(item.itemId)}
           />
         </>
       );
     }
-    // Defensive: cue picker said cloze, but no eligible word — fall through
-    // to recognition/production below.
+    // Stale cloze cue with no blankable word: the effect above re-picks. Show
+    // the loading state meanwhile rather than a recognition card that would
+    // be credited as cloze.
+    return (
+      <div className="flex flex-col items-center justify-center flex-1 min-h-[40vh] py-12 animate-pulse">
+        <Fox pose="thinking" size="sm" aria-label="Loading next exercise" />
+      </div>
+    );
   }
 
   if (activeCueType === 'production') {

@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { speak, playWordPronunciation } from '@/lib/audio';
 import { useAutoSpeak } from '@/components/audio/AudioPreferences';
 
@@ -127,7 +128,10 @@ function ZoomOverlay({ src, alt, caption, onClose, onSpeak }: { src: string; alt
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        onClose();
+      }
     }
     document.addEventListener('keydown', onKey);
     const previousOverflow = document.body.style.overflow;
@@ -141,16 +145,25 @@ function ZoomOverlay({ src, alt, caption, onClose, onSpeak }: { src: string; alt
   // Anything that isn't the story toggle closes: backdrop, the padding around
   // the image, and the image itself. Tapping an opened image to shut it again
   // is the one gesture everybody tries first.
-  return (
+  // Portalled to <body>: React events still bubble through the React tree, so
+  // every close stops propagation or the card that owns this image (which
+  // advances on click) would treat the close as its own tap.
+  const close = (e: { stopPropagation: () => void }) => {
+    e.stopPropagation();
+    onClose();
+  };
+
+  const overlay = (
     <div
-      onClick={onClose}
+      onClick={close}
+      style={{ touchAction: 'manipulation' }}
       className="fixed inset-0 z-[10000] bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in cursor-zoom-out"
       role="dialog"
       aria-modal="true"
       aria-label={alt}
     >
       <button
-        onClick={onClose}
+        onClick={close}
         aria-label="Close image"
         className="fixed top-3 right-3 w-10 h-10 rounded-full bg-white text-black flex items-center justify-center shadow-lg active:scale-95"
       >
@@ -180,7 +193,7 @@ function ZoomOverlay({ src, alt, caption, onClose, onSpeak }: { src: string; alt
       )}
       <div className="relative max-w-3xl w-full">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={src} alt={alt} className="w-full max-h-[85vh] object-contain rounded-xl" />
+        <img src={src} alt={alt} onClick={close} className="w-full max-h-[85vh] object-contain rounded-xl" />
         {caption && (
           <>
             <button
@@ -204,6 +217,8 @@ function ZoomOverlay({ src, alt, caption, onClose, onSpeak }: { src: string; alt
       </div>
     </div>
   );
+
+  return typeof document === 'undefined' ? null : createPortal(overlay, document.body);
 }
 
 /**
@@ -250,6 +265,7 @@ function ExpandButton({ onClick }: { onClick: () => void }) {
         onClick();
       }}
       aria-label="Open image full screen"
+      style={{ touchAction: 'manipulation' }}
       className="absolute top-2 right-2 w-9 h-9 rounded-full bg-black/45 backdrop-blur-md text-white/85 flex items-center justify-center active:scale-95 hover:text-white transition-[transform,color]"
     >
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -285,6 +301,8 @@ export function MnemonicImage({
   const [errored, setErrored] = useState(false);
   const [prevSrc, setPrevSrc] = useState(src);
   const [zoomed, setZoomed] = useState(false);
+  // A close tap can land on the expand button underneath it a beat later.
+  const closedAtRef = useRef(0);
   const [speaking, setSpeaking] = useState(false);
   if (src !== prevSrc) {
     setPrevSrc(src);
@@ -312,6 +330,15 @@ export function MnemonicImage({
   // Keyed on what is said rather than on `src`, so a picture that changes while
   // the word stays put (a regenerated mnemonic) doesn't announce itself again.
   useAutoSpeak(speech ? `${speech.lang ?? speech.wordId ?? ''}:${speech.text}` : null, say);
+
+  const openZoom = () => {
+    if (Date.now() - closedAtRef.current < 300) return;
+    setZoomed(true);
+  };
+  const closeZoom = () => {
+    closedAtRef.current = Date.now();
+    setZoomed(false);
+  };
 
   if (!src || errored) {
     if (fallback === null) return null;
@@ -341,9 +368,9 @@ export function MnemonicImage({
           onLoad?.();
         }}
         onError={() => setErrored(true)}
-        onClick={zoomMode === 'tap' ? (e) => { e.stopPropagation(); setZoomed(true); } : undefined}
+        onClick={zoomMode === 'tap' ? (e) => { e.stopPropagation(); openZoom(); } : undefined}
       />
-      {zoomMode === 'button' && loaded && <ExpandButton onClick={() => setZoomed(true)} />}
+      {zoomMode === 'button' && loaded && <ExpandButton onClick={openZoom} />}
       {/* Thumbnails and community tiles are too small to carry a control, and
           are decoration rather than the thing being learned. */}
       {speech && loaded && variant !== 'thumb' && variant !== 'community' && (
@@ -354,7 +381,7 @@ export function MnemonicImage({
           src={src}
           alt={alt}
           caption={zoomCaption ?? null}
-          onClose={() => setZoomed(false)}
+          onClose={closeZoom}
           onSpeak={speech ? say : null}
         />
       )}

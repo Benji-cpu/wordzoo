@@ -19,6 +19,7 @@ import {
   type DrillQueue,
 } from '@/lib/pedagogy/leitner';
 import { pickCueType, eligibleCueTypes, type PickerEligibility } from '@/lib/pedagogy/exercise-picker';
+import { usableClozePhrases } from '@/lib/pedagogy/cloze';
 import { fireTelemetry } from '@/lib/pedagogy/telemetry';
 import { emitDiag } from '@/lib/feedback/diag';
 import { Fox } from '@/components/mascot/Fox';
@@ -69,6 +70,8 @@ export function DrillBlock({
   const [speakBlocked, setSpeakBlocked] = useState(false);
   /** Items where the learner chose typing over the mic. */
   const [speakDeclined, setSpeakDeclined] = useState<string[]>([]);
+  /** Items whose cloze phrases turned out not to contain the word; never re-offered. */
+  const [clozeBlocked, setClozeBlocked] = useState<string[]>([]);
   const notScoredStreak = useRef(0);
 
   useEffect(() => {
@@ -81,12 +84,16 @@ export function DrillBlock({
 
   const eligibilityMap = useMemo<BatchEligibilityMap>(() => {
     const declined = new Set(speakDeclined);
+    const clozeOut = new Set(clozeBlocked);
     const out: BatchEligibilityMap = {};
     for (const w of words) {
       out[w.word.id] = {
         hasMnemonic: !!w.mnemonic,
         hasAudioUrl: !!w.word.pronunciation_audio_url,
-        hasClozePhrase: !!(w.clozePhrases && w.clozePhrases.length > 0),
+        // Only phrases where the word can literally be blanked count.
+        hasClozePhrase:
+          !clozeOut.has(w.word.id) &&
+          usableClozePhrases(w.clozePhrases ?? [], w.word.text).length > 0,
         // Never offer the mic where it can't work, or where this learner has
         // already told us it isn't working. Prevention beats an error state.
         speechRecognitionAvailable:
@@ -99,7 +106,7 @@ export function DrillBlock({
       };
     }
     return out;
-  }, [words, enabledCueTypes, speechAvailable, speakBlocked, speakDeclined]);
+  }, [words, enabledCueTypes, speechAvailable, speakBlocked, speakDeclined, clozeBlocked]);
 
   const [queue, setQueue] = useState<DrillQueue>(() => {
     if (initialQueue && initialQueue.items.length > 0) {
@@ -266,6 +273,19 @@ export function DrillBlock({
 
   const item = currentItem(queue);
   const word = item ? words.find((w) => w.word.id === item.itemId) : null;
+  const clozePhrases = word ? usableClozePhrases(word.clozePhrases ?? [], word.word.text) : [];
+
+  // Nothing to blank for this item: stop offering cloze and re-pick the cue.
+  // Not scored — no answer was given.
+  const clozeStrandedId =
+    activeCueType === 'cloze' && item && word && clozePhrases.length === 0 ? item.itemId : null;
+  const blockCloze = useCallback((id: string) => {
+    setClozeBlocked((ids) => (ids.includes(id) ? ids : [...ids, id]));
+  }, []);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (clozeStrandedId) blockCloze(clozeStrandedId);
+  }, [clozeStrandedId, blockCloze]);
 
   // Loading placeholder while between items / between batch transitions.
   // Renders the fox so the user never sees a blank screen mid-flow.
@@ -283,7 +303,7 @@ export function DrillBlock({
     <DrillProgressHeader queue={queue} cueLabel={humanCueType(activeCueType)} />
   );
 
-  if (activeCueType === 'cloze' && word.clozePhrases && word.clozePhrases.length > 0) {
+  if (activeCueType === 'cloze' && clozePhrases.length > 0) {
     return (
       <>
         {header}
@@ -292,7 +312,7 @@ export function DrillBlock({
           correctTarget={word.word.text}
           wordId={word.word.id}
           meaningEn={word.word.meaning_en}
-          phrases={word.clozePhrases.map((p) => ({
+          phrases={clozePhrases.map((p) => ({
             phrase_id: p.phrase_id,
             text_target: p.text_target,
             text_en: p.text_en,
@@ -303,6 +323,7 @@ export function DrillBlock({
           onAnswer={(correct) => {
             if (!correct) handleWrong();
           }}
+          onUnavailable={() => blockCloze(item.itemId)}
         />
       </>
     );

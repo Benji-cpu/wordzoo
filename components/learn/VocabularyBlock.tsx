@@ -96,6 +96,18 @@ export function VocabularyBlock({
     return { kind: 'intro', batchIndex: 0 };
   });
 
+  // `words` shrinks when the parent's learned-words fetch lands after we've
+  // restored a batchIndex; keep the phase inside the new batch list.
+  useEffect(() => {
+    if (batches.length === 0) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setPhase((p) =>
+      p.kind !== 'checkpoint' && p.batchIndex > batches.length - 1
+        ? { kind: p.kind, batchIndex: batches.length - 1 }
+        : p,
+    );
+  }, [batches.length]);
+
   const [drillFraction, setDrillFraction] = useState(0);
   const drillInitialSize = useRef(0);
 
@@ -234,12 +246,12 @@ export function VocabularyBlock({
     if (phase.kind === 'checkpoint') {
       fraction = 1;
     } else if (phase.kind === 'intro') {
-      fraction = slotOffsets[phase.batchIndex] / totalSlots;
+      fraction = (slotOffsets[phase.batchIndex] ?? 0) / totalSlots;
     } else if (phase.kind === 'converse') {
-      fraction = (slotOffsets[phase.batchIndex] + 2) / totalSlots;
+      fraction = ((slotOffsets[phase.batchIndex] ?? 0) + 2) / totalSlots;
     } else {
       // drill
-      fraction = (slotOffsets[phase.batchIndex] + 1 + drillFraction) / totalSlots;
+      fraction = ((slotOffsets[phase.batchIndex] ?? 0) + 1 + drillFraction) / totalSlots;
     }
     const batchIndex = phase.kind === 'checkpoint' ? batches.length : phase.batchIndex;
     onProgress({
@@ -289,7 +301,10 @@ export function VocabularyBlock({
     return null;
   }
 
+  // The clamp effect above lands a render late; never hand a batch-less phase
+  // to IntroduceBatch/DrillBlock.
   const batch = batches[phase.batchIndex];
+  if (!batch) return null;
   const globalIndexStart = phase.batchIndex * VOCAB_BATCH_SIZE;
 
   if (phase.kind === 'intro') {

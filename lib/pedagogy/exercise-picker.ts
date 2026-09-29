@@ -48,7 +48,7 @@ export const RENDERABLE_CUE_TYPES: readonly CueType[] = [
 export interface PickerEligibility {
   hasMnemonic: boolean;
   hasAudioUrl: boolean;
-  /** Word appears in at least one scene_phrase via phrase_words. */
+  /** Word appears, as a whole word, in at least one scene_phrase (see `usableClozePhrases`). */
   hasClozePhrase: boolean;
   /**
    * The browser AND the language can transcribe speech (Japanese cannot;
