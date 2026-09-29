@@ -135,3 +135,138 @@ export function matchAnyAnswer(typed: string, answers: readonly string[]): strin
   }
   return null;
 }
+
+export interface RecallScore {
+  /** Share of the best target's words that were said, 0-1. */
+  ratio: number;
+  verdict: 'correct' | 'partial' | 'wrong';
+  /** Target words heard, in the target's own casing and accents. */
+  matched: string[];
+  /** Target words not heard, in target order. */
+  missed: string[];
+  /** The accepted answer the attempt was judged against. */
+  bestTarget: string;
+  /** The attempt that scored best, as typed or transcribed. */
+  heard: string;
+}
+
+interface Word {
+  display: string;
+  norm: string;
+}
+
+function wordsOf(value: string): Word[] {
+  return value
+    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+    .split(/\s+/)
+    .map((display) => ({ display, norm: normalizeForCompare(display) }))
+    .filter((w) => w.norm.length > 0);
+}
+
+function wordMatches(said: string, target: string): boolean {
+  return said === target || levenshtein(said, target) <= allowedEditsFor(target);
+}
+
+/** Longest in-order run of target words that the attempt also said. */
+function alignWords(target: Word[], attempt: Word[]): boolean[] {
+  const n = target.length;
+  const m = attempt.length;
+  const dp: number[][] = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
+  for (let i = 1; i <= n; i++) {
+    for (let j = 1; j <= m; j++) {
+      dp[i][j] = wordMatches(attempt[j - 1].norm, target[i - 1].norm)
+        ? dp[i - 1][j - 1] + 1
+        : Math.max(dp[i - 1][j], dp[i][j - 1]);
+    }
+  }
+  const hit = new Array<boolean>(n).fill(false);
+  let i = n;
+  let j = m;
+  while (i > 0 && j > 0) {
+    if (wordMatches(attempt[j - 1].norm, target[i - 1].norm) && dp[i][j] === dp[i - 1][j - 1] + 1) {
+      hit[i - 1] = true;
+      i--;
+      j--;
+    } else if (dp[i - 1][j] >= dp[i][j - 1]) {
+      i--;
+    } else {
+      j--;
+    }
+  }
+  return hit;
+}
+
+/**
+ * Grade a typed or spoken recall against every accepted answer.
+ *
+ * `attempts` is one string when typed, or the recogniser's alternatives
+ * best-first; the best (target, attempt) pair decides. A single word or short
+ * phrase is all-or-nothing, since a half-said word is not half-known. A longer
+ * phrase earns partial credit and reports which words were missed, so the
+ * learner sees what to fix rather than a bare "wrong".
+ */
+export function scoreRecall(
+  targets: string[],
+  attempts: string[],
+  opts: { kind?: 'word' | 'phrase' } = {},
+): RecallScore {
+  const accepted = targets.filter((t) => wordsOf(t).length > 0);
+  const canonical = accepted[0] ?? targets[0] ?? '';
+  const kind = opts.kind ?? (wordsOf(canonical).length <= 2 ? 'word' : 'phrase');
+
+  let best: { rank: number; score: RecallScore } | null = null;
+
+  for (const attempt of attempts) {
+    const said = wordsOf(attempt);
+    if (said.length === 0) continue;
+    for (const target of accepted) {
+      const tWords = wordsOf(target);
+      const exact = matchAnyAnswer(attempt, [target]) !== null;
+      const hit = exact ? tWords.map(() => true) : alignWords(tWords, said);
+      const matchedCount = hit.filter(Boolean).length;
+      const ratio = matchedCount / tWords.length;
+      // Exact beats any fuzzy alignment; earlier attempt / target win ties.
+      const rank = exact ? 2 : ratio;
+      if (best && rank <= best.rank) continue;
+
+      let verdict: RecallScore['verdict'];
+      if (exact) {
+        verdict = 'correct';
+      } else if (kind === 'word') {
+        verdict = 'wrong';
+      } else {
+        verdict = ratio >= 0.9 ? 'correct' : ratio >= 0.6 ? 'partial' : 'wrong';
+      }
+      const extras = said.length - matchedCount;
+      if (verdict === 'correct' && !exact && extras > Math.max(2, Math.ceil(tWords.length / 2))) {
+        verdict = 'partial';
+      }
+      const wordKindMiss = kind === 'word' && verdict === 'wrong';
+      best = {
+        rank,
+        score: {
+          ratio: wordKindMiss ? 0 : ratio,
+          verdict,
+          matched: wordKindMiss ? [] : tWords.filter((_, i) => hit[i]).map((w) => w.display),
+          missed: wordKindMiss
+            ? tWords.map((w) => w.display)
+            : tWords.filter((_, i) => !hit[i]).map((w) => w.display),
+          bestTarget: target,
+          heard: attempt.trim(),
+        },
+      };
+    }
+  }
+
+  if (!best) {
+    return {
+      ratio: 0,
+      verdict: 'wrong',
+      matched: [],
+      missed: wordsOf(canonical).map((w) => w.display),
+      bestTarget: canonical,
+      heard: attempts.map((a) => a.trim()).find(Boolean) ?? '',
+    };
+  }
+  return best.score;
+}

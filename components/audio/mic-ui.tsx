@@ -138,3 +138,26 @@ export function ScoreDisplay({ result }: { result: PronunciationResult }) {
     </div>
   );
 }
+
+/**
+ * Names the language the mic is set to. A transcript in the wrong language is
+ * only diagnosable if the screen says what was being listened for.
+ */
+export function LanguageChip({ label, prefix = '', className = '' }: { label: string; prefix?: string; className?: string }) {
+  return (
+    <span
+      className={`inline-flex items-center rounded-full bg-[var(--surface-inset)] px-2.5 py-0.5 text-[11px] font-medium text-[color:var(--text-secondary)] ${className}`}
+    >
+      {prefix ? `${prefix} ${label}` : label}
+    </span>
+  );
+}
+
+/** What the recogniser actually heard, so a mishearing is visible rather than guessed at. */
+export function HeardLine({ text, className = '' }: { text: string; className?: string }) {
+  return (
+    <p className={`text-sm text-[color:var(--foreground)] ${className}`}>
+      <span className="text-[color:var(--text-secondary)]">Heard:</span> &ldquo;{text}&rdquo;
+    </p>
+  );
+}

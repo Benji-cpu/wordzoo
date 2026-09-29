@@ -10,13 +10,19 @@
  * broken", not "this browser can't do this".
  *
  * So we detect it the only way that is actually true: watch for the failure,
- * remember it for the session, and say plainly whose limitation it is. Runtime
+ * remember it briefly, and say plainly whose limitation it is. Runtime
  * evidence beats UA sniffing here — the day Brave ships its own speech service
- * this stops lying in the other direction, and because the flag is per-session
- * a new tab re-tests rather than staying stuck on a stale verdict.
+ * this stops lying in the other direction, and because the latch expires after
+ * ten minutes it re-tests rather than staying stuck on a stale verdict.
  */
 
 const BLOCKED_KEY = 'wordzoo_speech_service_blocked';
+const FAILS_KEY = 'wordzoo_speech_immediate_fails';
+
+/** The latch is a guess about the browser, so it expires and gets re-tested. */
+export const BLOCK_TTL_MS = 10 * 60 * 1000;
+/** A failure this soon after start(), with no audio ever opened, is "immediate". */
+export const IMMEDIATE_FAILURE_MS = 1500;
 
 /**
  * Brave exposes `navigator.brave`. The documented probe is the async
@@ -34,29 +40,73 @@ function isFirefox(): boolean {
   return navigator.userAgent.includes('Firefox');
 }
 
-/** True once this session has watched the speech service refuse to run. */
-export function isSpeechServiceBlocked(): boolean {
-  if (typeof sessionStorage === 'undefined') return false;
+function readNumber(key: string): number {
   try {
-    return sessionStorage.getItem(BLOCKED_KEY) === '1';
+    return Number(sessionStorage.getItem(key)) || 0;
   } catch {
     // Private mode / storage disabled — just re-test each time.
-    return false;
+    return 0;
   }
 }
 
-/**
- * Record that recognition started and then immediately failed for reasons that
- * have nothing to do with the learner (no service, no licence, blocked host).
- * Callers use this to stop offering a mic that cannot work.
- */
-export function markSpeechServiceBlocked(): void {
-  if (typeof sessionStorage === 'undefined') return;
+function writeValue(key: string, value: string | null): void {
   try {
-    sessionStorage.setItem(BLOCKED_KEY, '1');
+    if (value === null) sessionStorage.removeItem(key);
+    else sessionStorage.setItem(key, value);
   } catch {
     // Best effort — the in-flight attempt still reports the right reason.
   }
+}
+
+/** True while a recent run of immediate failures says the service is not there. */
+export function isSpeechServiceBlocked(): boolean {
+  if (typeof sessionStorage === 'undefined') return false;
+  const at = readNumber(BLOCKED_KEY);
+  if (!at) return false;
+  if (Date.now() - at < BLOCK_TTL_MS) return true;
+  writeValue(BLOCKED_KEY, null);
+  writeValue(FAILS_KEY, null);
+  return false;
+}
+
+/**
+ * Latch speech off outright. Prefer `recordSpeechFailure`: one 'network' error
+ * on a phone is a dropped connection, not proof the browser lacks the service.
+ */
+export function markSpeechServiceBlocked(): void {
+  if (typeof sessionStorage === 'undefined') return;
+  writeValue(BLOCKED_KEY, String(Date.now()));
+}
+
+/**
+ * Report a failed recognition session and say whether it latched speech off.
+ *
+ * Only a failure that is immediate (recognition died within
+ * `IMMEDIATE_FAILURE_MS` of start with no audio ever opened) says anything about
+ * the browser, and even then it latches only on a browser known to lack the
+ * service (Brave, Firefox) or on the second immediate failure in a row.
+ * Anything slower, or with audio already flowing, is a transient error: retry.
+ */
+export function recordSpeechFailure(info: { msSinceStart: number; audioStarted: boolean }): boolean {
+  if (typeof sessionStorage === 'undefined') return false;
+  const immediate = !info.audioStarted && info.msSinceStart < IMMEDIATE_FAILURE_MS;
+  if (!immediate) {
+    writeValue(FAILS_KEY, null);
+    return false;
+  }
+  const fails = readNumber(FAILS_KEY) + 1;
+  writeValue(FAILS_KEY, String(fails));
+  if (isBraveBrowser() || isFirefox() || fails >= 2) {
+    markSpeechServiceBlocked();
+    return true;
+  }
+  return false;
+}
+
+/** Audio opened, so the service exists: forget any run of immediate failures. */
+export function recordSpeechSuccess(): void {
+  if (typeof sessionStorage === 'undefined') return;
+  writeValue(FAILS_KEY, null);
 }
 
 /**
@@ -74,4 +124,9 @@ export function speechUnavailableMessage(): string {
     return "Firefox can't transcribe speech. Use Chrome, Edge, or Safari for speaking practice, or type it instead.";
   }
   return "This browser can't reach the speech service, so nothing was scored. Try Chrome, Edge, or Safari — or type it instead.";
+}
+
+/** A single failure that did not latch: say what happened, and that trying again is fine. */
+export function speechRetryMessage(): string {
+  return "Couldn't reach the speech service just then. Check your connection and tap the mic again, or type it instead.";
 }

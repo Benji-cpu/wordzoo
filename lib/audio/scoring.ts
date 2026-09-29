@@ -5,9 +5,16 @@ import type {
 } from '@/types/audio';
 import { LANGUAGE_VOICE_MAP } from './voice-map';
 import { playWordPronunciation, fetchWord } from './pronunciation';
+import { stopPlayback } from './player';
+import { stopNarration } from './narration';
+import { recognitionLang } from './recognition-lang';
+import { normalizeSentence } from '@/lib/pedagogy/normalize';
 import {
   isSpeechServiceBlocked,
   markSpeechServiceBlocked,
+  recordSpeechFailure,
+  recordSpeechSuccess,
+  speechRetryMessage,
   speechUnavailableMessage,
 } from './speech-support';
 
@@ -20,13 +27,16 @@ interface WebSpeechRecognition extends EventTarget {
   onresult: ((event: WebSpeechRecognitionEvent) => void) | null;
   onerror: ((event: WebSpeechRecognitionErrorEvent) => void) | null;
   onend: (() => void) | null;
+  onaudiostart: (() => void) | null;
+  onsoundstart: (() => void) | null;
+  onspeechstart: (() => void) | null;
   start(): void;
   stop(): void;
   abort(): void;
 }
 
 interface WebSpeechRecognitionEvent {
-  results: { [index: number]: { [index: number]: { transcript: string } } };
+  results: { [index: number]: { length: number; [index: number]: { transcript: string } } };
 }
 
 interface WebSpeechRecognitionErrorEvent {
@@ -118,8 +128,175 @@ function notScored(
   reason: NonNullable<PronunciationResult['reason']>,
   feedback: string,
   targetWord: string,
-): PronunciationResult {
-  return { score: 'not_scored', reason, transcription: '', feedback, targetWord };
+): SpeechAttemptResult {
+  return { score: 'not_scored', reason, transcription: '', feedback, targetWord, alternatives: [] };
+}
+
+/**
+ * A `PronunciationResult` plus every alternative the recogniser offered,
+ * best-first. Extra field only, so callers written against
+ * `PronunciationResult` keep compiling and behaving.
+ */
+export type SpeechAttemptResult = PronunciationResult & { alternatives: string[] };
+
+export type RecognitionOutcome =
+  | { ok: true; alternatives: string[] }
+  | { ok: false; reason: NonNullable<PronunciationResult['reason']>; message: string };
+
+export interface RecognitionOptions {
+  timeoutMs?: number;
+  /** Mic loudness 0-1 while the window is open, then 0 once. Desktop only. */
+  onLevel?: (level: number) => void;
+  /** The mic is open. This, not the click, is when "listening" is true. */
+  onAudioStart?: () => void;
+  /** Any sound at all reached the recogniser. */
+  onSoundStart?: () => void;
+  /** Sound it thinks is speech. */
+  onSpeechStart?: () => void;
+}
+
+/** Touch phones share one mic between the page and the system recogniser. */
+function isTouchDevice(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  return navigator.maxTouchPoints > 0 || /Android|iPhone|iPad/.test(navigator.userAgent);
+}
+
+/**
+ * Listen once and hand back what was heard, ungraded.
+ *
+ * Call it synchronously from a tap: mobile browsers refuse to open the mic
+ * otherwise. Never rejects — anything that stops a transcript arriving
+ * resolves as `ok: false` with a reason, and that is a microphone problem, not
+ * a verdict on the learner.
+ */
+export function startRecognition(
+  languageCode: SupportedLanguageCode | string,
+  options: RecognitionOptions = {},
+): { promise: Promise<RecognitionOutcome>; stop: () => void } {
+  const { timeoutMs = LISTEN_TIMEOUT_MS, onLevel, onAudioStart, onSoundStart, onSpeechStart } = options;
+  const fail = (
+    reason: NonNullable<PronunciationResult['reason']>,
+    message: string,
+  ): RecognitionOutcome => ({ ok: false, reason, message });
+
+  const SpeechRec = getSpeechRecognition();
+  if (!SpeechRec || LANGUAGE_VOICE_MAP[languageCode as SupportedLanguageCode]?.speechRecognitionSupported === false || isSpeechServiceBlocked()) {
+    return {
+      promise: Promise.resolve(
+        fail(
+          isSpeechServiceBlocked() ? 'service_blocked' : 'unsupported_browser',
+          speechUnavailableMessage(),
+        ),
+      ),
+      stop: () => {},
+    };
+  }
+
+  // The recogniser must not have to talk over our own audio, and on some
+  // phones a playing clip holds the audio route the mic needs.
+  stopPlayback();
+  stopNarration();
+
+  let stop = () => {};
+  const promise = new Promise<RecognitionOutcome>((resolve) => {
+    const recognition = new SpeechRec();
+
+    recognition.lang = recognitionLang(languageCode).bcp47;
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 5;
+
+    let resolved = false;
+    let audioStarted = false;
+    let stopMeter = () => {};
+    const startedAt = Date.now();
+    const timer = setTimeout(() => recognition.stop(), timeoutMs);
+
+    const settle = (outcome: RecognitionOutcome) => {
+      if (resolved) return;
+      resolved = true;
+      clearTimeout(timer);
+      stopMeter();
+      resolve(outcome);
+    };
+
+    stop = () => {
+      recognition.abort();
+      settle(fail('no_speech', 'Stopped before anything was scored.'));
+    };
+
+    // The listening UI hangs off these, not off the tap: the mic is only open
+    // once the browser says so, and a permission prompt can sit in between.
+    recognition.onaudiostart = () => {
+      audioStarted = true;
+      recordSpeechSuccess();
+      // A second capture stream while the system recogniser holds the mic
+      // starves it on phones. Desktop only, and only once audio is flowing.
+      if (onLevel && !isTouchDevice()) stopMeter = startLevelMeter(onLevel);
+      onAudioStart?.();
+    };
+    recognition.onsoundstart = () => onSoundStart?.();
+    recognition.onspeechstart = () => onSpeechStart?.();
+
+    recognition.onresult = (event: WebSpeechRecognitionEvent) => {
+      const first = event.results[0];
+      const alternatives: string[] = [];
+      for (let i = 0; first && i < first.length; i++) {
+        const t = first[i]?.transcript?.trim();
+        if (t) alternatives.push(t);
+      }
+      if (alternatives.length === 0) {
+        settle(fail('no_speech', 'No speech detected — nothing was scored. Tap the mic and try again.'));
+        return;
+      }
+      settle({ ok: true, alternatives });
+    };
+
+    recognition.onerror = (event: WebSpeechRecognitionErrorEvent) => {
+      if (event.error === 'not-allowed') {
+        settle(fail('mic_denied', 'Mic access is off, so nothing was scored. Allow the mic and try again.'));
+        return;
+      }
+
+      if (event.error === 'service-not-allowed') {
+        markSpeechServiceBlocked();
+        settle(fail('service_blocked', speechUnavailableMessage()));
+        return;
+      }
+
+      // 'network' is often just a dropped connection. Only an immediate
+      // failure on a browser without the service (or a second one in a row)
+      // latches speech off; anything else is worth another tap.
+      if (event.error === 'network') {
+        const latched = recordSpeechFailure({ msSinceStart: Date.now() - startedAt, audioStarted });
+        settle(
+          latched
+            ? fail('service_blocked', speechUnavailableMessage())
+            : fail('recognition_error', speechRetryMessage()),
+        );
+        return;
+      }
+
+      if (event.error === 'no-speech') {
+        settle(fail('no_speech', 'No speech detected — nothing was scored. Tap the mic and try again.'));
+        return;
+      }
+
+      settle(fail('recognition_error', "We couldn't hear you, so nothing was scored. Try again."));
+    };
+
+    recognition.onend = () => {
+      settle(fail('no_speech', 'No speech detected — nothing was scored. Tap the mic and try again.'));
+    };
+
+    try {
+      recognition.start();
+    } catch {
+      settle(fail('recognition_error', "Listening didn't start, so nothing was checked."));
+    }
+  });
+
+  return { promise, stop };
 }
 
 /**
@@ -137,118 +314,20 @@ function notScored(
 export function startSpeechAttempt(
   target: string,
   languageCode: SupportedLanguageCode,
-  options: {
-    romanization?: string | null;
-    timeoutMs?: number;
-    /** Mic loudness 0-1 while the window is open, then 0 once. Best-effort. */
-    onLevel?: (level: number) => void;
-  } = {},
-): { promise: Promise<PronunciationResult>; stop: () => void } {
-  const { romanization = null, timeoutMs = LISTEN_TIMEOUT_MS, onLevel } = options;
+  options: RecognitionOptions & { romanization?: string | null } = {},
+): { promise: Promise<SpeechAttemptResult>; stop: () => void } {
+  const { romanization = null, ...recognitionOptions } = options;
+  const attempt = startRecognition(languageCode, recognitionOptions);
 
-  if (!isScoringAvailable(languageCode)) {
+  const promise = attempt.promise.then((outcome): SpeechAttemptResult => {
+    if (!outcome.ok) return notScored(outcome.reason, outcome.message, target);
     return {
-      promise: Promise.resolve(
-        notScored(
-          isSpeechServiceBlocked() ? 'service_blocked' : 'unsupported_browser',
-          speechUnavailableMessage(),
-          target,
-        ),
-      ),
-      stop: () => {},
+      ...scorePronunciation(outcome.alternatives[0], target, languageCode, romanization, outcome.alternatives),
+      alternatives: outcome.alternatives,
     };
-  }
-
-  let stop = () => {};
-  const promise = new Promise<PronunciationResult>((resolve) => {
-    const SpeechRec = getSpeechRecognition()!;
-    const recognition = new SpeechRec();
-    const config = LANGUAGE_VOICE_MAP[languageCode];
-
-    recognition.lang = config.bcp47;
-    recognition.continuous = false;
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 3;
-
-    let resolved = false;
-    const timer = setTimeout(() => recognition.stop(), timeoutMs);
-    const stopMeter = onLevel ? startLevelMeter(onLevel) : () => {};
-
-    const settle = (result: PronunciationResult) => {
-      if (resolved) return;
-      resolved = true;
-      clearTimeout(timer);
-      stopMeter();
-      resolve(result);
-    };
-
-    stop = () => {
-      recognition.abort();
-      settle(
-        notScored('no_speech', 'Stopped before anything was scored.', target),
-      );
-    };
-
-    recognition.onresult = (event: WebSpeechRecognitionEvent) => {
-      const transcription = event.results[0][0].transcript;
-      settle(scorePronunciation(transcription, target, languageCode, romanization));
-    };
-
-    recognition.onerror = (event: WebSpeechRecognitionErrorEvent) => {
-      if (event.error === 'not-allowed') {
-        settle(
-          notScored(
-            'mic_denied',
-            'Mic access is off, so nothing was scored. Allow the mic and try again.',
-            target,
-          ),
-        );
-        return;
-      }
-
-      // The browser has no working speech service — Brave holds no licence for
-      // one, and both codes also cover a blocked or unreachable service. The
-      // learner did nothing wrong and retrying cannot help, so remember it and
-      // say so instead of asking them to speak up.
-      if (event.error === 'service-not-allowed' || event.error === 'network') {
-        markSpeechServiceBlocked();
-        settle(notScored('service_blocked', speechUnavailableMessage(), target));
-        return;
-      }
-
-      settle(
-        notScored(
-          'recognition_error',
-          "We couldn't hear you, so nothing was scored. Try again.",
-          target,
-        ),
-      );
-    };
-
-    recognition.onend = () => {
-      settle(
-        notScored(
-          'no_speech',
-          'No speech detected — nothing was scored. Tap the mic and try again.',
-          target,
-        ),
-      );
-    };
-
-    try {
-      recognition.start();
-    } catch {
-      settle(
-        notScored(
-          'recognition_error',
-          "Listening didn't start, so nothing was checked.",
-          target,
-        ),
-      );
-    }
   });
 
-  return { promise, stop };
+  return { promise, stop: attempt.stop };
 }
 
 export async function startPronunciationChallenge(
@@ -284,21 +363,26 @@ export function scorePronunciation(
   transcription: string,
   targetWord: string,
   language: SupportedLanguageCode,
-  romanization: string | null = null
+  romanization: string | null = null,
+  alternatives: string[] = [],
 ): PronunciationResult {
-  const normalizedTranscript = normalize(transcription);
-  const normalizedTarget = normalize(targetWord);
+  const normalizedTarget = normalizeSentence(targetWord);
+  const normalizedRoman = language === 'ja' && romanization ? normalizeSentence(romanization) : null;
 
-  let similarity = levenshteinSimilarity(normalizedTranscript, normalizedTarget);
-
-  // For Japanese, also compare against romanization
-  if (language === 'ja' && romanization) {
-    const romanSimilarity = levenshteinSimilarity(
-      normalizedTranscript,
-      normalize(romanization)
-    );
-    similarity = Math.max(similarity, romanSimilarity);
+  // Best alternative wins: the recogniser's first guess is often a near-homophone.
+  let similarity = -1;
+  let heard = transcription;
+  for (const candidate of [transcription, ...alternatives]) {
+    const c = normalizeSentence(candidate);
+    let sim = levenshteinSimilarity(c, normalizedTarget);
+    // For Japanese, also compare against romanization
+    if (normalizedRoman) sim = Math.max(sim, levenshteinSimilarity(c, normalizedRoman));
+    if (sim > similarity) {
+      similarity = sim;
+      heard = candidate;
+    }
   }
+  transcription = heard;
 
   if (similarity >= 0.7) {
     return {
@@ -324,14 +408,6 @@ export function scorePronunciation(
     feedback: `Let's try once more. Listen carefully to "${targetWord}".`,
     targetWord,
   };
-}
-
-function normalize(s: string): string {
-  return s
-    .toLowerCase()
-    .trim()
-    .replace(/[^\p{L}\p{N}\s]/gu, '')
-    .replace(/\s+/g, ' ');
 }
 
 function levenshteinSimilarity(a: string, b: string): number {

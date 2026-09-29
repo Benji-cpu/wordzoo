@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { PronunciationResult, SupportedLanguageCode } from '@/types/audio';
 import { startSpeechAttempt } from '@/lib/audio';
-import { MicIcon, ScoreDisplay, Waveform } from '@/components/audio/mic-ui';
+import { recognitionLang } from '@/lib/audio/recognition-lang';
+import { HeardLine, LanguageChip, MicIcon, ScoreDisplay, Waveform } from '@/components/audio/mic-ui';
 
 /**
  * "Say it back" — the smallest complete speaking control, for surfaces that
@@ -59,6 +60,9 @@ export function SpeakBack({
 }: SpeakBackProps) {
   const [stage, setStage] = useState<Stage>('idle');
   const [result, setResult] = useState<PronunciationResult | null>(null);
+  // Listening is true when the browser says the mic is open, not when we asked.
+  const [micOpen, setMicOpen] = useState(false);
+  const [sounding, setSounding] = useState(false);
   const micLevelRef = useRef(0);
   const stopRef = useRef<() => void>(() => {});
   const aliveRef = useRef(true);
@@ -76,17 +80,24 @@ export function SpeakBack({
     if (stage === 'listening') return;
     setStage('listening');
     setResult(null);
+    setMicOpen(false);
+    setSounding(false);
 
+    // Playback is stopped inside startSpeechAttempt before the mic opens.
     const attempt = startSpeechAttempt(target, languageCode, {
       romanization,
+      // Desktop only: on phones a second capture stream starves the recogniser.
       onLevel: (level) => {
         micLevelRef.current = level;
       },
+      onAudioStart: () => aliveRef.current && setMicOpen(true),
+      onSoundStart: () => aliveRef.current && setSounding(true),
     });
     stopRef.current = attempt.stop;
 
     void attempt.promise.then((r) => {
       if (!aliveRef.current) return;
+      setSounding(false);
       setResult(r);
       setStage('result');
       onResult?.(r);
@@ -95,6 +106,7 @@ export function SpeakBack({
 
   const listening = stage === 'listening';
   const terminal = !!result && TERMINAL_REASONS.has(result.reason ?? '');
+  const langLabel = recognitionLang(languageCode).label;
 
   // Prose, not the score pill: the pill is shaped for verdicts on the learner,
   // and this is a statement about their browser.
@@ -119,7 +131,7 @@ export function SpeakBack({
             : 'bg-[var(--surface-inset)] text-[color:var(--foreground)] active:scale-95'
         }`}
       >
-        {listening && (
+        {listening && sounding && (
           <span className="absolute inset-0 rounded-full bg-red-500/40 animate-ping" />
         )}
         <span className="relative">
@@ -130,26 +142,36 @@ export function SpeakBack({
       <div className="min-w-0 flex-1">
         {listening ? (
           <>
-            <p className="text-xs font-bold text-red-400">Speak now — recording</p>
+            <p className="text-xs font-bold text-red-400">
+              {micOpen ? 'Speak now — listening' : 'Starting the mic…'}
+            </p>
             <Waveform
               levelRef={micLevelRef}
               active
               className="mt-1 block w-full h-5 text-red-400"
             />
+            <LanguageChip label={langLabel} prefix="Listening in" className="mt-1" />
           </>
         ) : result ? (
-          <div className="flex items-center gap-2 flex-wrap">
-            <ScoreDisplay result={result} />
-            <button
-              type="button"
-              onClick={listen}
-              className="text-xs underline underline-offset-4 text-[color:var(--text-secondary)]"
-            >
-              Again
-            </button>
+          <div className="flex flex-col gap-1.5">
+            {result.transcription.trim() && <HeardLine text={result.transcription.trim()} />}
+            <div className="flex items-center gap-2 flex-wrap">
+              <ScoreDisplay result={result} />
+              <button
+                type="button"
+                onClick={listen}
+                className="text-xs underline underline-offset-4 text-[color:var(--text-secondary)]"
+              >
+                Again
+              </button>
+            </div>
+            <LanguageChip label={langLabel} prefix="Listened in" />
           </div>
         ) : (
-          <p className="text-xs text-[color:var(--text-secondary)]">{label}</p>
+          <>
+            <p className="text-xs text-[color:var(--text-secondary)]">{label}</p>
+            <LanguageChip label={langLabel} prefix="Speak in" className="mt-1" />
+          </>
         )}
       </div>
     </div>

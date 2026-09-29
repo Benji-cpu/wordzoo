@@ -13,6 +13,8 @@ interface FeedbackModalProps {
   onClose: () => void;
   context: FeedbackContext | null;
   screenshotBlob: Blob | null;
+  /** The capture still in flight; Send waits for it up to SCREENSHOT_WAIT_MS. */
+  screenshotPromise?: Promise<Blob | null> | null;
   domainSnapshot: unknown | null;
 }
 
@@ -20,8 +22,17 @@ type ModalState = 'idle' | 'sending' | 'success' | 'error';
 
 const DRAFT_KEY = 'feedback_draft';
 const FIRST_SEND_KEY = 'feedback_first_send_done';
+const SCREENSHOT_WAIT_MS = 2000;
 
-export function FeedbackModal({ isOpen, onClose, context, screenshotBlob, domainSnapshot }: FeedbackModalProps) {
+/** Append dictated words to what is already there, with one space between. */
+function appendText(base: string, addition: string): string {
+  const add = addition.trimStart();
+  if (!add) return base;
+  const sep = base && !/\s$/.test(base) ? ' ' : '';
+  return (base + sep + add).slice(0, 8000);
+}
+
+export function FeedbackModal({ isOpen, onClose, context, screenshotBlob, screenshotPromise, domainSnapshot }: FeedbackModalProps) {
   const [message, setMessage] = useState(() => {
     if (typeof window === 'undefined') return '';
     return sessionStorage.getItem(DRAFT_KEY) ?? '';
@@ -31,15 +42,39 @@ export function FeedbackModal({ isOpen, onClose, context, screenshotBlob, domain
   const [mounted, setMounted] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Voice feedback: auto-start dictation on open, fold speech into the message,
-  // stop on send/close (user request — "record on open, stop+send on enter").
-  const { isListening, transcript, startListening, stopListening, supported: voiceSupported, error: voiceError } =
+  // Voice feedback: dictation starts only from the Speak button (a tap), since
+  // mobile browsers refuse the mic outside a user gesture. Speech is appended
+  // to the message as it finalises; the still-changing tail is shown beside the
+  // box so text typed mid-dictation is never overwritten by a revised guess.
+  const { isListening, finalText, interimText, startListening, stopListening, supported: voiceSupported, error: voiceError } =
     useSpeechInput('en-US');
+  const dictatingRef = useRef(false);
   const dictationBaseRef = useRef('');
+  // How much of finalText is already part of the base (the user typed past it).
+  const consumedRef = useRef(0);
+  const finalTextRef = useRef('');
+  const messageRef = useRef(message);
+  const submittingRef = useRef(false);
+  finalTextRef.current = finalText;
+  messageRef.current = message;
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Uses only refs and stable setters, so the stale copy captured by the
+  // [isOpen] effect's cleanup is safe to call.
+  async function stopAndMerge(): Promise<string> {
+    const text = await stopListening();
+    let next = messageRef.current;
+    if (dictatingRef.current) {
+      next = appendText(dictationBaseRef.current, text.slice(consumedRef.current));
+      setMessage(next);
+      messageRef.current = next;
+    }
+    dictatingRef.current = false;
+    return next;
+  }
 
   useEffect(() => {
     if (isOpen && textareaRef.current) {
@@ -47,33 +82,39 @@ export function FeedbackModal({ isOpen, onClose, context, screenshotBlob, domain
       const draft = sessionStorage.getItem(DRAFT_KEY);
       if (draft && !message) setMessage(draft);
       const t = setTimeout(() => textareaRef.current?.focus(), 200);
-      // Auto-start dictation so feedback can be spoken hands-free.
-      if (voiceSupported) {
-        dictationBaseRef.current = draft || message || '';
-        startListening();
-      }
       return () => {
         clearTimeout(t);
-        stopListening();
+        if (dictatingRef.current) void stopAndMerge();
       };
     }
   }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Live-merge the running transcript into the message (preserving any draft).
+  // Fold newly finalised speech into the message.
   useEffect(() => {
-    if (!isListening || !transcript) return;
-    const base = dictationBaseRef.current;
-    const sep = base && !base.endsWith(' ') ? ' ' : '';
-    setMessage((base + sep + transcript).slice(0, 8000));
-  }, [transcript, isListening]);
+    if (!dictatingRef.current) return;
+    setMessage(appendText(dictationBaseRef.current, finalText.slice(consumedRef.current)));
+  }, [finalText]);
+
+  function handleMessageChange(value: string) {
+    const next = value.slice(0, 8000);
+    setMessage(next);
+    if (dictatingRef.current) {
+      // Typing wins: what is in the box now is the new base, and only speech
+      // finalised from here on is appended after it.
+      dictationBaseRef.current = next;
+      consumedRef.current = finalTextRef.current.length;
+    }
+  }
 
   function toggleDictation() {
     if (isListening) {
-      stopListening();
-    } else {
-      dictationBaseRef.current = message;
-      startListening();
+      void stopAndMerge();
+      return;
     }
+    dictationBaseRef.current = message;
+    consumedRef.current = 0;
+    dictatingRef.current = true;
+    void startListening();
   }
 
   // Auto-dismiss after success
@@ -88,10 +129,11 @@ export function FeedbackModal({ isOpen, onClose, context, screenshotBlob, domain
   }, [state, onClose]);
 
   function handleClose() {
-    stopListening();
-    if (message.trim()) {
-      sessionStorage.setItem(DRAFT_KEY, message);
-    }
+    // Close at once; the draft is saved once the last spoken words have landed.
+    const pending = dictatingRef.current ? stopAndMerge() : Promise.resolve(message);
+    void pending.then((text) => {
+      if (text.trim()) sessionStorage.setItem(DRAFT_KEY, text);
+    });
     setState('idle');
     onClose();
   }
@@ -102,15 +144,19 @@ export function FeedbackModal({ isOpen, onClose, context, screenshotBlob, domain
   }
 
   async function handleSubmit() {
-    if (!message.trim() || !context) return;
-    stopListening();
+    if (!context || submittingRef.current) return;
+    submittingRef.current = true;
+    // The last spoken words only arrive after stop, so flush before reading.
+    const finalMessage = dictatingRef.current ? await stopAndMerge() : message;
+    submittingRef.current = false;
+    if (!finalMessage.trim()) return;
 
     // Optimistic UX: the user doesn't need to watch the upload. Snapshot
     // the payload, clear the draft, flash a success, and close — then do the
     // network work in the background. If it fails we stash the draft back
     // into sessionStorage so they don't lose it.
     const payload = {
-      message: message.trim(),
+      message: finalMessage.trim(),
       pageUrl: context.pageUrl,
       pageTitle: context.pageTitle,
       routeParams: context.routeParams,
@@ -121,7 +167,8 @@ export function FeedbackModal({ isOpen, onClose, context, screenshotBlob, domain
       domainContext: domainSnapshot ?? undefined,
       website,
     };
-    const blob = screenshotBlob;
+    const blobNow = screenshotBlob;
+    const shotPromise = screenshotPromise;
     clearDraft();
     // First feedback ever: show the celebration so the user knows it worked.
     // Every subsequent send: just close — power users send rapidly and don't
@@ -140,6 +187,15 @@ export function FeedbackModal({ isOpen, onClose, context, screenshotBlob, domain
 
     void (async () => {
       try {
+        // The capture may still be rendering on a slow phone: give it a moment,
+        // then send without it rather than hold the feedback back.
+        let blob = blobNow;
+        if (!blob && shotPromise) {
+          blob = await Promise.race([
+            shotPromise,
+            new Promise<null>((resolve) => setTimeout(() => resolve(null), SCREENSHOT_WAIT_MS)),
+          ]);
+        }
         let screenshotUrl: string | undefined;
         if (blob) {
           const formData = new FormData();
@@ -166,6 +222,9 @@ export function FeedbackModal({ isOpen, onClose, context, screenshotBlob, domain
       }
     })();
   }
+
+  // Speech still arriving counts: Send stops dictation and takes it.
+  const canSend = !!message.trim() || (isListening && !!(finalText.trim() || interimText.trim()));
 
   if (!mounted) return null;
 
@@ -240,17 +299,26 @@ export function FeedbackModal({ isOpen, onClose, context, screenshotBlob, domain
                   <textarea
                     ref={textareaRef}
                     value={message}
-                    onChange={(e) => setMessage(e.target.value.slice(0, 8000))}
+                    onChange={(e) => handleMessageChange(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
                         e.preventDefault();
-                        if (message.trim()) handleSubmit();
+                        if (canSend) void handleSubmit();
                       }
                     }}
                     placeholder="What's on your mind? Bug report, suggestion, content issue... (Enter to send, Shift+Enter for newline)"
                     className="w-full h-28 p-3 rounded-xl bg-surface-inset border border-card-border text-foreground placeholder:text-text-secondary/60 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-accent-id/40"
                     disabled={state === 'sending'}
                   />
+
+                  {/* What is being heard right now, not yet part of the message */}
+                  {isListening && (
+                    <p className="text-xs text-text-secondary mt-2 min-h-4" role="status" aria-live="polite">
+                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse mr-1.5 align-middle" />
+                      <span className="font-semibold">Listening in English</span>
+                      {interimText && <span className="italic"> &mdash; {interimText}</span>}
+                    </p>
+                  )}
 
                   {/* Voice input failure hint — never fail silently */}
                   {voiceError && !isListening && (
@@ -281,7 +349,7 @@ export function FeedbackModal({ isOpen, onClose, context, screenshotBlob, domain
                           <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
                           <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4" />
                         </svg>
-                        {isListening ? 'Listening…' : voiceError ? 'Try again' : 'Speak'}
+                        {isListening ? 'Stop' : voiceError ? 'Try again' : 'Speak'}
                       </button>
                     ) : <span />}
                     <div className="flex gap-2 items-center">
@@ -294,7 +362,7 @@ export function FeedbackModal({ isOpen, onClose, context, screenshotBlob, domain
                       </button>
                       <ThumbButton
                         onClick={handleSubmit}
-                        disabled={!message.trim()}
+                        disabled={!canSend}
                         loading={state === 'sending'}
                         size="md"
                         variant="primary"
