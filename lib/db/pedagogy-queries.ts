@@ -606,7 +606,6 @@ export async function getUserBacklog(days = 30): Promise<UserBacklogRow[]> {
            AND uph.status <> 'new' AND uph.learning_step < 2) AS learning_items
     FROM act a
     LEFT JOIN languages l ON l.id = a.language_id
-    ORDER BY due_words + due_phrases DESC, a.email
   `) as Array<{
     email: string;
     active_language: string | null;
@@ -614,11 +613,14 @@ export async function getUserBacklog(days = 30): Promise<UserBacklogRow[]> {
     due_phrases: number;
     learning_items: number;
   }>;
-  return rows.map((r) => ({
-    email_masked: maskEmail(r.email),
-    activeLanguage: r.active_language,
-    dueWords: r.due_words,
-    duePhrases: r.due_phrases,
-    learningItems: r.learning_items,
-  }));
+  // Sorted here: Postgres can't ORDER BY an expression over output aliases.
+  return rows
+    .sort((a, b) => b.due_words + b.due_phrases - (a.due_words + a.due_phrases) || a.email.localeCompare(b.email))
+    .map((r) => ({
+      email_masked: maskEmail(r.email),
+      activeLanguage: r.active_language,
+      dueWords: r.due_words,
+      duePhrases: r.due_phrases,
+      learningItems: r.learning_items,
+    }));
 }
