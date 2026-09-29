@@ -1,0 +1,830 @@
+{
+  "project": "wordzoo",
+  "today": "2026-09-30",
+  "startedAt": "2026-09-29T18:54:48.168Z",
+  "finishedAt": "2026-09-29T18:54:49.490Z",
+  "feedback": {
+    "byStatus": {
+      "actioned": 138,
+      "dismissed": 1,
+      "new": 7
+    },
+    "newLast24h": 7,
+    "pendingRows": [
+      {
+        "id": "573c499c-a1ce-417b-9865-2d6540393585",
+        "user_id": "b16a9e8f-1bd8-4de1-8fab-c4622da01d57",
+        "message": "It seems like a run out of usage maybe it's on the free plan or something and I'm not sure what happened here maybe was an error but it just said something weird about the certification",
+        "page_url": "https://wordzoo.vercel.app/review",
+        "page_title": "WordZoo",
+        "viewport_width": 384,
+        "viewport_height": 647,
+        "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Mobile Safari/537.36",
+        "activity_trail": [
+          {
+            "t": 1.6,
+            "kind": "route",
+            "detail": "/settings"
+          },
+          {
+            "t": 2.1,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 7.2,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 31.3,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 38.7,
+            "kind": "click",
+            "detail": "a: Home"
+          },
+          {
+            "t": 38.8,
+            "kind": "route",
+            "detail": "/dashboard"
+          },
+          {
+            "t": 41.7,
+            "kind": "click",
+            "detail": "a: Review first20to reviewabout 5 min · 25 "
+          },
+          {
+            "t": 42.8,
+            "kind": "route",
+            "detail": "/review"
+          },
+          {
+            "t": 93.8,
+            "kind": "click",
+            "detail": "button: Submit"
+          },
+          {
+            "t": 121,
+            "kind": "fetch",
+            "detail": "403 /api/can-dos/c4000000-0002-4000-8000-000000000012/certify"
+          },
+          {
+            "t": 132.8,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 153.4,
+            "kind": "click",
+            "detail": "button: Send"
+          }
+        ],
+        "status": "new",
+        "created_at": "2026-09-29T08:06:42.109Z",
+        "user_email": "profbenjo@gmail.com",
+        "user_name": "Ben Hemson-Struthers"
+      },
+      {
+        "id": "4a2a574e-0a44-4450-b446-9f616fa68be8",
+        "user_id": "b16a9e8f-1bd8-4de1-8fab-c4622da01d57",
+        "message": "I was speaking and doing one of the scenes I opened up the image on the scene and then when I closed it it closed the scene and where I was it didn't just close the image it was like maybe I double clicked or something but it was an easy enough mistake to make to then accidentally leave the scene",
+        "page_url": "https://wordzoo.vercel.app/settings",
+        "page_title": "WordZoo",
+        "viewport_width": 384,
+        "viewport_height": 647,
+        "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Mobile Safari/537.36",
+        "activity_trail": [
+          {
+            "t": 1.6,
+            "kind": "route",
+            "detail": "/settings"
+          },
+          {
+            "t": 2.1,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 7.2,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 31.3,
+            "kind": "click",
+            "detail": "button: Send"
+          }
+        ],
+        "status": "new",
+        "created_at": "2026-09-29T08:04:40.693Z",
+        "user_email": "profbenjo@gmail.com",
+        "user_name": "Ben Hemson-Struthers"
+      },
+      {
+        "id": "550cc215-7e66-4e62-9178-14dad4b335ae",
+        "user_id": "b16a9e8f-1bd8-4de1-8fab-c4622da01d57",
+        "message": "Also I would like to be speaking more and it just doesn't really seem to be picking up the language if I use my auto detect on my phone it doesn't pick up the Portuguese it's just more or less translated to English or whatever it doesn't really seem to work so this needs to be kind of have that like language option mostly people want to learn to speak and so that conversational language model type approaches essential",
+        "page_url": "https://wordzoo.vercel.app/review",
+        "page_title": "WordZoo",
+        "viewport_width": 384,
+        "viewport_height": 647,
+        "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Mobile Safari/537.36",
+        "activity_trail": [
+          {
+            "t": 0,
+            "kind": "route",
+            "detail": "/review"
+          },
+          {
+            "t": 34.4,
+            "kind": "click",
+            "detail": "button: Submit"
+          },
+          {
+            "t": 81.8,
+            "kind": "click",
+            "detail": "button: Continue →"
+          },
+          {
+            "t": 97.6,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 116.1,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 129.5,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 165.2,
+            "kind": "click",
+            "detail": "button: Send"
+          }
+        ],
+        "status": "new",
+        "created_at": "2026-09-29T08:03:18.685Z",
+        "user_email": "profbenjo@gmail.com",
+        "user_name": "Ben Hemson-Struthers"
+      },
+      {
+        "id": "b38e9660-7d11-476b-b658-c275299b92a7",
+        "user_id": "b16a9e8f-1bd8-4de1-8fab-c4622da01d57",
+        "message": "Absolutely no idea what to say for this one and there's not really an option to say I don't know I'm failing or ask for help or whatever it is to deal with the complete lack of",
+        "page_url": "https://wordzoo.vercel.app/review",
+        "page_title": "WordZoo",
+        "viewport_width": 384,
+        "viewport_height": 647,
+        "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Mobile Safari/537.36",
+        "activity_trail": [
+          {
+            "t": 0,
+            "kind": "route",
+            "detail": "/review"
+          },
+          {
+            "t": 34.4,
+            "kind": "click",
+            "detail": "button: Submit"
+          },
+          {
+            "t": 81.8,
+            "kind": "click",
+            "detail": "button: Continue →"
+          },
+          {
+            "t": 97.6,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 116.1,
+            "kind": "click",
+            "detail": "button: Send"
+          }
+        ],
+        "status": "new",
+        "created_at": "2026-09-29T08:02:29.019Z",
+        "user_email": "profbenjo@gmail.com",
+        "user_name": "Ben Hemson-Struthers"
+      },
+      {
+        "id": "8a3cfa5a-54d8-4054-9de2-feb82f989796",
+        "user_id": "b16a9e8f-1bd8-4de1-8fab-c4622da01d57",
+        "message": "Seem like the speech detection was working when I spoke and much of what that speech is for anyway kind of weird to have it there it's it's kind of like there's some little like like all different ways of like learning in months and I think rather like each of these kind of learning that bites should have its own should be like specific like okay then in this case to like speak with it or type or whatever it is and then repeat it as a spoken word as a type word or whatever so that the repetition builds in from multiple angles or whatever",
+        "page_url": "https://wordzoo.vercel.app/review",
+        "page_title": "WordZoo",
+        "viewport_width": 384,
+        "viewport_height": 647,
+        "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Mobile Safari/537.36",
+        "activity_trail": [
+          {
+            "t": 0,
+            "kind": "route",
+            "detail": "/dashboard"
+          },
+          {
+            "t": 28.3,
+            "kind": "click",
+            "detail": "a: Review first20to reviewabout 5 min · 45 "
+          },
+          {
+            "t": 31,
+            "kind": "click",
+            "detail": "a: Review first20to reviewabout 5 min · 45 "
+          },
+          {
+            "t": 31.1,
+            "kind": "route",
+            "detail": "/review"
+          },
+          {
+            "t": 55,
+            "kind": "click",
+            "detail": "button: Submit"
+          },
+          {
+            "t": 71.4,
+            "kind": "click",
+            "detail": "button: Continue →"
+          },
+          {
+            "t": 80.8,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 83,
+            "kind": "click",
+            "detail": "button: Listening…"
+          },
+          {
+            "t": 84.2,
+            "kind": "click",
+            "detail": "button: Speak"
+          },
+          {
+            "t": 89.1,
+            "kind": "click",
+            "detail": "button: Speak"
+          },
+          {
+            "t": 102.7,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 132.4,
+            "kind": "click",
+            "detail": "button: Submit"
+          },
+          {
+            "t": 180.3,
+            "kind": "click",
+            "detail": "button: Continue →"
+          },
+          {
+            "t": 183.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 190,
+            "kind": "click",
+            "detail": "button: Hard"
+          },
+          {
+            "t": 192.8,
+            "kind": "click",
+            "detail": "button: Easy"
+          },
+          {
+            "t": 199.6,
+            "kind": "click",
+            "detail": "button: Easy"
+          },
+          {
+            "t": 202.8,
+            "kind": "click",
+            "detail": "button: Easy"
+          },
+          {
+            "t": 223.9,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 235.4,
+            "kind": "click",
+            "detail": "button: Easy"
+          },
+          {
+            "t": 259.2,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 301.2,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 304.7,
+            "kind": "click",
+            "detail": "button: Again"
+          },
+          {
+            "t": 307.3,
+            "kind": "click",
+            "detail": "button: Easy"
+          },
+          {
+            "t": 311.1,
+            "kind": "click",
+            "detail": "button: Easy"
+          },
+          {
+            "t": 334.2,
+            "kind": "click",
+            "detail": "button: Hard"
+          },
+          {
+            "t": 336.6,
+            "kind": "click",
+            "detail": "button: Easy"
+          },
+          {
+            "t": 340.1,
+            "kind": "click",
+            "detail": "button: Easy"
+          },
+          {
+            "t": 343.2,
+            "kind": "click",
+            "detail": "button: Easy"
+          },
+          {
+            "t": 348.5,
+            "kind": "click",
+            "detail": "button: Easy"
+          },
+          {
+            "t": 354,
+            "kind": "click",
+            "detail": "button: Easy"
+          },
+          {
+            "t": 381,
+            "kind": "click",
+            "detail": "button: Hard"
+          },
+          {
+            "t": 398.8,
+            "kind": "click",
+            "detail": "button: Easy"
+          },
+          {
+            "t": 401.7,
+            "kind": "click",
+            "detail": "button: Easy"
+          },
+          {
+            "t": 438.7,
+            "kind": "click",
+            "detail": "button: See word mnemonics"
+          },
+          {
+            "t": 448.7,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 453.4,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 463.1,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 512.1,
+            "kind": "click",
+            "detail": "button: Send"
+          }
+        ],
+        "status": "new",
+        "created_at": "2026-09-29T07:58:48.846Z",
+        "user_email": "profbenjo@gmail.com",
+        "user_name": "Ben Hemson-Struthers"
+      },
+      {
+        "id": "d5cdfeda-6524-41cb-b2c6-0c19d0b3920b",
+        "user_id": "b16a9e8f-1bd8-4de1-8fab-c4622da01d57",
+        "message": "Two kinds of phrases and for learning these kinds of phrases it would be it would be nice if there was like a part of its spoken and so if I was you know remembering it and I don't even remember half of it then that was kind of Taken on board so it wasn't always just that the whole thing was being that I think it would also the speaking to chat feature in the feedback isn't working",
+        "page_url": "https://wordzoo.vercel.app/review",
+        "page_title": "WordZoo",
+        "viewport_width": 384,
+        "viewport_height": 647,
+        "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Mobile Safari/537.36",
+        "activity_trail": [
+          {
+            "t": 0,
+            "kind": "route",
+            "detail": "/dashboard"
+          },
+          {
+            "t": 28.3,
+            "kind": "click",
+            "detail": "a: Review first20to reviewabout 5 min · 45 "
+          },
+          {
+            "t": 31,
+            "kind": "click",
+            "detail": "a: Review first20to reviewabout 5 min · 45 "
+          },
+          {
+            "t": 31.1,
+            "kind": "route",
+            "detail": "/review"
+          },
+          {
+            "t": 55,
+            "kind": "click",
+            "detail": "button: Submit"
+          },
+          {
+            "t": 71.4,
+            "kind": "click",
+            "detail": "button: Continue →"
+          },
+          {
+            "t": 80.8,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 83,
+            "kind": "click",
+            "detail": "button: Listening…"
+          },
+          {
+            "t": 84.2,
+            "kind": "click",
+            "detail": "button: Speak"
+          },
+          {
+            "t": 89.1,
+            "kind": "click",
+            "detail": "button: Speak"
+          },
+          {
+            "t": 102.7,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 132.4,
+            "kind": "click",
+            "detail": "button: Submit"
+          },
+          {
+            "t": 180.3,
+            "kind": "click",
+            "detail": "button: Continue →"
+          },
+          {
+            "t": 183.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 190,
+            "kind": "click",
+            "detail": "button: Hard"
+          },
+          {
+            "t": 192.8,
+            "kind": "click",
+            "detail": "button: Easy"
+          },
+          {
+            "t": 199.6,
+            "kind": "click",
+            "detail": "button: Easy"
+          },
+          {
+            "t": 202.8,
+            "kind": "click",
+            "detail": "button: Easy"
+          },
+          {
+            "t": 223.9,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 235.4,
+            "kind": "click",
+            "detail": "button: Easy"
+          },
+          {
+            "t": 259.2,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 301.2,
+            "kind": "click",
+            "detail": "button: Send"
+          }
+        ],
+        "status": "new",
+        "created_at": "2026-09-29T07:55:18.607Z",
+        "user_email": "profbenjo@gmail.com",
+        "user_name": "Ben Hemson-Struthers"
+      },
+      {
+        "id": "9d4d862d-285a-4862-aec2-ebf08c0d03c9",
+        "user_id": "b16a9e8f-1bd8-4de1-8fab-c4622da01d57",
+        "message": "So it would be ideal to have this primarily audio",
+        "page_url": "https://wordzoo.vercel.app/review",
+        "page_title": "WordZoo",
+        "viewport_width": 384,
+        "viewport_height": 647,
+        "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Mobile Safari/537.36",
+        "activity_trail": [
+          {
+            "t": 0,
+            "kind": "route",
+            "detail": "/dashboard"
+          },
+          {
+            "t": 28.3,
+            "kind": "click",
+            "detail": "a: Review first20to reviewabout 5 min · 45 "
+          },
+          {
+            "t": 31,
+            "kind": "click",
+            "detail": "a: Review first20to reviewabout 5 min · 45 "
+          },
+          {
+            "t": 31.1,
+            "kind": "route",
+            "detail": "/review"
+          },
+          {
+            "t": 55,
+            "kind": "click",
+            "detail": "button: Submit"
+          },
+          {
+            "t": 71.4,
+            "kind": "click",
+            "detail": "button: Continue →"
+          },
+          {
+            "t": 80.8,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 83,
+            "kind": "click",
+            "detail": "button: Listening…"
+          },
+          {
+            "t": 84.2,
+            "kind": "click",
+            "detail": "button: Speak"
+          },
+          {
+            "t": 89.1,
+            "kind": "click",
+            "detail": "button: Speak"
+          },
+          {
+            "t": 102.7,
+            "kind": "click",
+            "detail": "button: Send"
+          }
+        ],
+        "status": "new",
+        "created_at": "2026-09-29T07:52:00.735Z",
+        "user_email": "profbenjo@gmail.com",
+        "user_name": "Ben Hemson-Struthers"
+      }
+    ]
+  },
+  "health": {
+    "stuckMnemonicsLast72h": 1,
+    "overdueReviews": 186,
+    "spendLast24h": [],
+    "pedagogy": {
+      "cueAccuracy": [
+        {
+          "cue_type": "production",
+          "attempts": 26,
+          "correct": 23,
+          "first_try": 17,
+          "accuracy_pct": 88.5
+        },
+        {
+          "cue_type": "cloze",
+          "attempts": 26,
+          "correct": 0,
+          "first_try": 0,
+          "accuracy_pct": 0
+        },
+        {
+          "cue_type": "recognition",
+          "attempts": 9,
+          "correct": 9,
+          "first_try": 5,
+          "accuracy_pct": 100
+        },
+        {
+          "cue_type": "phrase_cloze",
+          "attempts": 5,
+          "correct": 0,
+          "first_try": 0,
+          "accuracy_pct": 0
+        },
+        {
+          "cue_type": "phrase_recognition",
+          "attempts": 5,
+          "correct": 5,
+          "first_try": 5,
+          "accuracy_pct": 100
+        },
+        {
+          "cue_type": "conversation_turn",
+          "attempts": 5,
+          "correct": 3,
+          "first_try": 0,
+          "accuracy_pct": 60
+        },
+        {
+          "cue_type": "phrase_production",
+          "attempts": 5,
+          "correct": 5,
+          "first_try": 0,
+          "accuracy_pct": 100
+        }
+      ],
+      "cueAccuracy30": [
+        {
+          "cue_type": "production",
+          "attempts": 60,
+          "correct": 23,
+          "first_try": 17,
+          "accuracy_pct": 38.3
+        },
+        {
+          "cue_type": "cloze",
+          "attempts": 47,
+          "correct": 0,
+          "first_try": 0,
+          "accuracy_pct": 0
+        },
+        {
+          "cue_type": "phrase_production",
+          "attempts": 39,
+          "correct": 5,
+          "first_try": 0,
+          "accuracy_pct": 12.8
+        },
+        {
+          "cue_type": "phrase_recognition",
+          "attempts": 33,
+          "correct": 18,
+          "first_try": 16,
+          "accuracy_pct": 54.5
+        },
+        {
+          "cue_type": "phrase_cloze",
+          "attempts": 26,
+          "correct": 0,
+          "first_try": 0,
+          "accuracy_pct": 0
+        },
+        {
+          "cue_type": "recognition",
+          "attempts": 9,
+          "correct": 9,
+          "first_try": 5,
+          "accuracy_pct": 100
+        },
+        {
+          "cue_type": "conversation_turn",
+          "attempts": 5,
+          "correct": 3,
+          "first_try": 0,
+          "accuracy_pct": 60
+        }
+      ],
+      "checkpoints": {
+        "started": 1,
+        "passed": 1,
+        "failed": 0,
+        "pass_rate_pct": 100,
+        "avg_remediation_loops": 0
+      },
+      "retention": [
+        {
+          "interval_bucket": "<1d (learning)",
+          "reviews": 197,
+          "correct": 70,
+          "retention_pct": 35.5
+        },
+        {
+          "interval_bucket": "4-7d",
+          "reviews": 2,
+          "correct": 2,
+          "retention_pct": 100
+        },
+        {
+          "interval_bucket": "15-30d",
+          "reviews": 1,
+          "correct": 1,
+          "retention_pct": 100
+        },
+        {
+          "interval_bucket": "31d+",
+          "reviews": 14,
+          "correct": 13,
+          "retention_pct": 92.9
+        }
+      ],
+      "overdue": [
+        {
+          "bucket": "due now",
+          "words": 14,
+          "phrases": 7
+        },
+        {
+          "bucket": "8d+ late",
+          "words": 186,
+          "phrases": 99
+        }
+      ],
+      "consolidation": [
+        {
+          "exposure": 1,
+          "words": 197,
+          "phrases": 110,
+          "reached_pct": 94.5
+        },
+        {
+          "exposure": 2,
+          "words": 134,
+          "phrases": 82,
+          "reached_pct": 66.5
+        },
+        {
+          "exposure": 3,
+          "words": 92,
+          "phrases": 60,
+          "reached_pct": 46.8
+        },
+        {
+          "exposure": 4,
+          "words": 40,
+          "phrases": 35,
+          "reached_pct": 23.1
+        },
+        {
+          "exposure": 5,
+          "words": 28,
+          "phrases": 27,
+          "reached_pct": 16.9
+        },
+        {
+          "exposure": 6,
+          "words": 21,
+          "phrases": 24,
+          "reached_pct": 13.8
+        }
+      ],
+      "scheduleHealth": {
+        "max_interval_days": 365,
+        "p95_interval_days": 122,
+        "items_over_365d": 0,
+        "items_over_4x_age": 0,
+        "mean_ease": 2.516,
+        "items_at_min_ease": 0,
+        "leeches": 0
+      }
+    }
+  },
+  "errors": []
+}
