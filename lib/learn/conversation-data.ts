@@ -20,15 +20,21 @@
  *   - 'speak'   → say it; scored on what the browser transcribed. Only ever
  *                 assigned where speech recognition actually works, and a
  *                 mic problem is never a wrong answer.
- *   - 'produce' → free production from an English goal only; graded leniently
- *                 by the conversation-grade route, ACCEPT-AND-COACH (never a
- *                 dead end — MEMORY: the app must never wall the learner in).
+ *   - 'produce' → free production from an English goal only, ACCEPT-AND-COACH
+ *                 (never a dead end — MEMORY: the app must never wall the
+ *                 learner in). A miss shows a natural answer and moves on.
+ *
+ * Typed turns are matched locally against `target` + `accept`
+ * (`matchAnyAnswer`) — no model. So authored turns should list the other
+ * answers that count as right; a derived turn has only its target.
  *
  * Scenes without an entry here are no longer left without conversation: see
  * lib/learn/derive-conversation.ts, which builds the same shapes from the
  * scene's own dialogue. This file stays types + authored content, and
  * authored content always wins.
  */
+
+import { PT_FAMILY_CONVERSATIONS } from '@/lib/learn/conversations/pt-family';
 
 export type ConversationMode = 'select' | 'type' | 'speak' | 'produce';
 export type ConversationSide = 'ask' | 'answer';
@@ -52,6 +58,10 @@ export interface ConversationTurn {
   distractors?: string[];
   /** 'type' / 'produce' mode: optional word chips to scaffold the answer. */
   hints?: string[];
+  /** Other answers that count as correct besides `target` (authored turns).
+   * Matching is local — accent-, case- and punctuation-insensitive with typo
+   * tolerance — so no model grades a conversation turn. */
+  accept?: string[];
   /** Name-introduction turns: accept any answer that fits the pattern even
    * when we don't know the learner's name (avoids a spelling dead-end). */
   acceptAny?: boolean;
@@ -63,7 +73,7 @@ export interface ConversationExchange {
   turns: ConversationTurn[];
 }
 
-const SCENE_CONVERSATIONS: Record<string, ConversationExchange[]> = {
+const ID_CONVERSATIONS: Record<string, ConversationExchange[]> = {
   // ── Scene 1: Selamat Pagi! (greetings + introductions) ──────────────
   'd1000000-0001-4000-8000-000000000004': [
     {
@@ -185,6 +195,11 @@ const SCENE_CONVERSATIONS: Record<string, ConversationExchange[]> = {
       ],
     },
   ],
+};
+
+const SCENE_CONVERSATIONS: Record<string, ConversationExchange[]> = {
+  ...ID_CONVERSATIONS,
+  ...PT_FAMILY_CONVERSATIONS,
 };
 
 /** Replace the `[name]` placeholder with the learner's name (fallback kept

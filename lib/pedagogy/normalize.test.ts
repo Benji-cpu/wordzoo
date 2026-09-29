@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { allowedEditsFor, fuzzyMatchAnswer, levenshtein, normalizeForCompare } from './normalize';
+import {
+  allowedEditsFor,
+  fuzzyMatchAnswer,
+  levenshtein,
+  matchAnyAnswer,
+  normalizeForCompare,
+  normalizeSentence,
+} from './normalize';
 
 describe('normalizeForCompare', () => {
   it('ignores case, surrounding space and accents', () => {
@@ -45,5 +52,50 @@ describe('fuzzyMatchAnswer', () => {
 
   it('transcription checks can demand exactness', () => {
     expect(fuzzyMatchAnswer('terima kasi', 'terima kasih', 0).kind).toBe('wrong');
+  });
+});
+
+describe('normalizeSentence', () => {
+  it('drops punctuation and collapses spacing on top of accents and case', () => {
+    expect(normalizeSentence('Tudo bem, obrigado!')).toBe('tudo bem obrigado');
+    expect(normalizeSentence('  Está   uma delícia. ')).toBe('esta uma delicia');
+    expect(normalizeSentence('Bem-vindo!')).toBe('bem vindo');
+  });
+});
+
+describe('matchAnyAnswer', () => {
+  const answers = ['Está uma delícia!', 'Está muito bom!', 'Que delícia!'];
+
+  it('matches any accepted answer, ignoring punctuation and accents', () => {
+    expect(matchAnyAnswer('esta uma delicia', answers)).toBe('Está uma delícia!');
+    expect(matchAnyAnswer('Que delicia', answers)).toBe('Que delícia!');
+    expect(matchAnyAnswer('está muito bom.', answers)).toBe('Está muito bom!');
+  });
+
+  it('tolerates a typo in a sentence', () => {
+    expect(matchAnyAnswer('esta uma delisia', answers)).toBe('Está uma delícia!');
+  });
+
+  it('rejects a different sentence and an empty attempt', () => {
+    expect(matchAnyAnswer('Eu estou cansado', answers)).toBeNull();
+    expect(matchAnyAnswer('  !! ', answers)).toBeNull();
+  });
+
+  it('forgives a typo inside a word but not a different word', () => {
+    expect(matchAnyAnswer('Vamos cantar?', ['Vamos nadar?'])).toBeNull();
+    expect(matchAnyAnswer('Vamos nadra?', ['Vamos nadar?'])).toBeNull(); // 5 chars: 1 edit, this is 2
+    expect(matchAnyAnswer('Vamos nadr', ['Vamos nadar?'])).toBe('Vamos nadar?');
+    expect(matchAnyAnswer('Tudo bem obrigdo', ['Tudo bem, obrigado!'])).toBe('Tudo bem, obrigado!');
+  });
+
+  it('treats a missing or extra word as a different answer, but not spacing', () => {
+    expect(matchAnyAnswer('Está delícia', ['Está uma delícia!'])).toBeNull();
+    expect(matchAnyAnswer('Está muito uma delícia', ['Está uma delícia!'])).toBeNull();
+    expect(matchAnyAnswer('bemvindo', ['Bem-vindo!'])).toBe('Bem-vindo!');
+  });
+
+  it('keeps short answers exact', () => {
+    expect(matchAnyAnswer('nao', ['Sim'])).toBeNull();
+    expect(matchAnyAnswer('sim!', ['Sim'])).toBe('Sim');
   });
 });

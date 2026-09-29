@@ -1,5 +1,5 @@
 import { sql } from './client';
-import type { Word, Mnemonic, Path, Scene, Language, UserPath, TutorSession, TutorMessage, Subscription, DailyUsage, MnemonicFeedback, LearnerProfile, TutorWordReview, TutorNudge, WordFamily, InfoByte } from '@/types/database';
+import type { Word, Mnemonic, Path, Scene, Language, UserPath, TutorSession, TutorMessage, Subscription, DailyUsage, MnemonicFeedback, LearnerProfile, TutorWordReview, TutorNudge, WordFamily } from '@/types/database';
 
 export interface WordWithLanguage extends Word {
   language_code: string;
@@ -1757,77 +1757,6 @@ export async function getUserEncounteredAffixes(userId: string): Promise<string[
     WHERE usp.user_id = ${userId} AND usp.affixes_completed = true
   `;
   return (rows as { target_affix: string }[]).map((r) => r.target_affix);
-}
-
-// --- Info Byte Queries ---
-
-export async function getTodayInfoByte(languageId: string): Promise<InfoByte | null> {
-  const rows = await sql`
-    SELECT * FROM info_bytes
-    WHERE language_id = ${languageId} AND publish_date = CURRENT_DATE
-  `;
-  return (rows[0] as InfoByte) ?? null;
-}
-
-/**
- * Latest info byte for a language, today or not. Keeps the Daily Dose card on
- * the dashboard even when the generation cron skipped/failed for a language.
- */
-export async function getLatestInfoByte(languageId: string): Promise<InfoByte | null> {
-  const rows = await sql`
-    SELECT * FROM info_bytes
-    WHERE language_id = ${languageId}
-    ORDER BY publish_date DESC
-    LIMIT 1
-  `;
-  return (rows[0] as InfoByte) ?? null;
-}
-
-export interface RecentInfoByteRow {
-  category: string;
-  topic_summary: string;
-  publish_date: string;
-}
-
-export async function getRecentInfoBytes(languageId: string, days: number = 14): Promise<RecentInfoByteRow[]> {
-  const rows = await sql`
-    SELECT category, topic_summary, publish_date
-    FROM info_bytes
-    WHERE language_id = ${languageId}
-      AND publish_date >= CURRENT_DATE - ${days}::int
-    ORDER BY publish_date DESC
-  `;
-  return rows as RecentInfoByteRow[];
-}
-
-export async function insertInfoByte(data: {
-  languageId: string;
-  publishDate: string;
-  category: string;
-  topicSummary: string;
-  easyTarget: string;
-  easyEnglish: string;
-  mediumTarget: string;
-  mediumEnglish: string;
-  hardTarget: string;
-  hardEnglish: string;
-  sourceTopic: string | null;
-  tokensUsed: number;
-}): Promise<InfoByte | null> {
-  const rows = await sql`
-    INSERT INTO info_bytes (
-      language_id, publish_date, category, topic_summary,
-      easy_target, easy_english, medium_target, medium_english,
-      hard_target, hard_english, source_topic, tokens_used
-    ) VALUES (
-      ${data.languageId}, ${data.publishDate}, ${data.category}, ${data.topicSummary},
-      ${data.easyTarget}, ${data.easyEnglish}, ${data.mediumTarget}, ${data.mediumEnglish},
-      ${data.hardTarget}, ${data.hardEnglish}, ${data.sourceTopic}, ${data.tokensUsed}
-    )
-    ON CONFLICT (publish_date, language_id) DO NOTHING
-    RETURNING *
-  `;
-  return (rows[0] as InfoByte) ?? null;
 }
 
 // ──────────────────────────────────────────────────────────────────

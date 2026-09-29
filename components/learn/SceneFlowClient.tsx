@@ -300,8 +300,8 @@ export function SceneFlowClient({
   const hasConversation = conversationCount > 0;
 
   const conversationContext = useMemo(
-    () => ({ learnerName: learnerName ?? null, languageName, sceneId }),
-    [learnerName, languageName, sceneId],
+    () => ({ learnerName: learnerName ?? null, sceneId }),
+    [learnerName, sceneId],
   );
 
   // Free-tier daily new-word limit. Every word answer goes through this so a
@@ -759,7 +759,6 @@ export function SceneFlowClient({
         <ConversationBlock
           exchanges={conversationExchanges}
           learnerName={learnerName ?? null}
-          languageName={languageName}
           languageCode={languageCode}
           sceneId={sceneId}
           initialExchangeIndex={state.exchangeIndex}

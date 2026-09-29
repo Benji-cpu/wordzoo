@@ -11,23 +11,16 @@ import { getCertifiableCanDo, recordCanDoAttempt } from '@/lib/db/can-do-queries
 /**
  * Certifies a can-do: one delayed, unaided production attempt, graded strictly.
  *
- * Contract: STRICT, and deliberately the mirror image of
- * /api/scenes/[sceneId]/conversation-grade. That route is ACCEPT-AND-COACH —
- * it advances on every branch, defaults ambiguity to accept, and passes on
- * every error, because walling a learner in mid-lesson is worse than a
- * generous verdict. Correct there; disqualifying here. A test that cannot be
- * failed certifies nothing.
+ * Contract: STRICT, and deliberately the mirror image of in-lesson
+ * conversation practice (ConversationBlock), which is ACCEPT-AND-COACH: it
+ * advances on every branch, because walling a learner in mid-lesson is worse
+ * than a generous verdict. Correct there; disqualifying here. A test that
+ * cannot be failed certifies nothing.
  *
- * Four reasons this is a separate route rather than a `mode` flag on that one:
- *  1. One function with two contradictory failure semantics is how a silently
- *     lenient certifier ships and goes unnoticed for a month.
- *  2. Different budget — conversation_grade is 120/day for in-lesson coaching.
- *  3. Different authorization. That route checks scene access; certification is
- *     reached from /review where no scene is in scope, so the real check is
- *     "does this user own an eligible user_can_dos row".
- *  4. That route takes `expected` from the client. Harmless when the verdict is
- *     cosmetic; fatal when it certifies. This one accepts `attempt` and nothing
- *     else, and loads the reference server-side.
+ * Lesson practice is matched locally against authored answers (no model);
+ * certification stays model-graded because the attempt is free production
+ * with no answer list. The reference is loaded server-side and the client
+ * sends `attempt` and nothing else.
  *
  * Ambiguity resolves to `unclear`, never to `pass`.
  */
@@ -151,8 +144,8 @@ export async function POST(
       systemPrompt,
       { maxOutputTokens: 200 },
     );
-    // Anything that is not literally pass or fail is unclear. Note the
-    // asymmetry with conversation-grade's `accept: data?.accept !== false`.
+    // Anything that is not literally pass or fail is unclear — never a
+    // default pass.
     if (data?.verdict === 'pass') verdict = 'pass';
     else if (data?.verdict === 'fail') verdict = 'fail';
     else verdict = 'unclear';

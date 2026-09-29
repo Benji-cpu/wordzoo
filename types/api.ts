@@ -15,23 +15,9 @@ export const LanguageIdParamSchema = z.object({
 });
 
 // Mnemonics
-export const GenerateMnemonicSchema = z.object({
-  wordId: z.string().uuid(),
-});
-
-export const RegenerateMnemonicSchema = z.object({
-  wordId: z.string().uuid(),
-  excludeKeywords: z.array(z.string()),
-});
-
 export const RegenerateFromFeedbackSchema = z.object({
   mnemonicId: z.string().uuid(),
   comment: z.string().max(500).optional(),
-});
-
-export const CustomMnemonicSchema = z.object({
-  wordId: z.string().uuid(),
-  keyword: z.string().min(1).max(200),
 });
 
 // Trip-locked goals
@@ -164,9 +150,6 @@ export const AdminMnemonicOverrideSchema = z.object({
 });
 
 // Type exports from schemas
-export type GenerateMnemonicInput = z.infer<typeof GenerateMnemonicSchema>;
-export type RegenerateMnemonicInput = z.infer<typeof RegenerateMnemonicSchema>;
-export type CustomMnemonicInput = z.infer<typeof CustomMnemonicSchema>;
 export type RecordReviewInput = z.infer<typeof RecordReviewSchema>;
 export type TutorSessionInput = z.infer<typeof TutorSessionSchema>;
 export type TutorMessageInput = z.infer<typeof TutorMessageSchema>;

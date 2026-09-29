@@ -1,6 +1,6 @@
 /**
  * Dashboard route skeleton. The page is a server component that awaits
- * several queries (active path, due words/phrases, streak, info-byte,
+ * several queries (active path, due words/phrases, streak,
  * stats, insights, trip context) before it can render. Without this
  * segment-level fallback the main area sat blank during that wait — the
  * "a preload screen loads first" flash users reported. This mirrors the

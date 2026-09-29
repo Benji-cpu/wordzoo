@@ -14,10 +14,7 @@ import { sql } from '@/lib/db/client';
  * error rather than a silently unlimited endpoint.
  */
 export type SpendKind =
-  | 'mnemonic_generate'
-  | 'mnemonic_custom'
   | 'mnemonic_regenerate'
-  | 'conversation_grade'
   | 'tutor_greeting'
   | 'screenshot_upload'
   | 'can_do_certify'
@@ -36,16 +33,12 @@ export interface SpendLimit {
 /**
  * Default budgets, sized for real use with headroom, then a hard stop.
  *
- * `mnemonic_generate` is the one that matters most: IntroduceBatch fires it in
- * parallel for every word in a scene that lacks a mnemonic, so a render loop
- * there is exactly how the Blob store filled up. 60/day is ~6 fully-unenriched
- * scenes — well above genuine use, and a firm ceiling on runaway generation.
+ * On-demand mnemonic generation (60/day) and the conversation grader were
+ * deleted on 2026-09-29: every pt word ships with a written mnemonic, and
+ * conversation turns are matched against authored answers locally.
  */
 export const SPEND_LIMITS: Record<SpendKind, SpendLimit> = {
-  mnemonic_generate: { limit: 60, windowMinutes: 1440 },
-  mnemonic_custom: { limit: 10, windowMinutes: 1440 },
   mnemonic_regenerate: { limit: 20, windowMinutes: 1440 },
-  conversation_grade: { limit: 120, windowMinutes: 1440 },
   tutor_greeting: { limit: 30, windowMinutes: 1440 },
   screenshot_upload: { limit: 10, windowMinutes: 60 },
   // Certification is rare by construction — a can-do unlocks once per scene and

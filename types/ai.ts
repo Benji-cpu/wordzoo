@@ -32,7 +32,3 @@ export interface MnemonicCandidate {
   imagePrompt: string;
 }
 
-export interface MnemonicGenerationResult {
-  candidates: MnemonicCandidate[];
-  recommended: number; // index of best candidate
-}

@@ -60,23 +60,6 @@ Remember: the keyword must SOUND LIKE "${word}" (phonetically), and the scene mu
 The image text overlay must show the target word "${word.toUpperCase()}" (NOT the English meaning).`;
 }
 
-export function buildRegeneratePrompt(
-  word: string,
-  meaning: string,
-  language: string,
-  excludeKeywords: string[]
-): string {
-  return `Generate 3 NEW mnemonic keyword candidates for this ${language} word:
-
-Word: "${word}"
-Meaning: "${meaning}"
-
-DO NOT use any of these previously used keywords: ${excludeKeywords.map((k) => `"${k}"`).join(', ')}
-
-Generate completely different keywords that still SOUND LIKE "${word}" (phonetically) and visually link to the meaning "${meaning}".
-The image text overlay must show the target word "${word.toUpperCase()}" (NOT the English meaning).`;
-}
-
 export function buildFeedbackRegeneratePrompt(
   word: string,
   meaning: string,
@@ -94,23 +77,6 @@ Meaning: "${meaning}"
 ${feedbackBlock}
 Create completely new keywords and scenes that address the feedback. The keyword must SOUND LIKE "${word}" (phonetically), and the scene must visually link the keyword to the meaning "${meaning}".
 The image text overlay must show the target word "${word.toUpperCase()}" (NOT the English meaning).`;
-}
-
-export function buildCustomKeywordPrompt(
-  word: string,
-  meaning: string,
-  keyword: string
-): string {
-  return `The user wants to use their own keyword "${keyword}" as a mnemonic for this word:
-
-Word: "${word}"
-Meaning: "${meaning}"
-User's keyword: "${keyword}"
-
-Generate ONLY 1 candidate using the user's keyword. Create an absurd, vivid scene that visually links "${keyword}" to the meaning "${meaning}".
-The image text overlay must show the target word "${word.toUpperCase()}" (NOT the English meaning).
-
-Return a JSON array with exactly 1 candidate.`;
 }
 
 export function buildSceneGenerationPrompt(

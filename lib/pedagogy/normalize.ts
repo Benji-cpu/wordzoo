@@ -87,3 +87,51 @@ export function fuzzyMatchAnswer(
   }
   return { kind: 'wrong', distance: dist };
 }
+
+/**
+ * `normalizeForCompare` plus punctuation and spacing: "Tudo bem, obrigado!"
+ * and "tudo bem obrigado" compare equal. For whole sentences, where a missing
+ * comma is not a mistake worth marking.
+ */
+export function normalizeSentence(value: string): string {
+  return normalizeForCompare(value)
+    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/**
+ * Word by word, each word with its own `allowedEditsFor` budget. A whole-string
+ * budget (length/4) is generous enough on a short sentence to accept a
+ * different word — "vamos cantar" for "vamos nadar" is 3 edits of a 12-char
+ * target — so a typo is judged against the word it is in, and a missing,
+ * extra or swapped word is a different answer. Spacing alone ("bemvindo") is
+ * not a mistake.
+ */
+function sentenceMatches(typed: string, answer: string): boolean {
+  if (typed === answer) return true;
+  if (typed.replace(/ /g, '') === answer.replace(/ /g, '')) return true;
+  const typedWords = typed.split(' ');
+  const answerWords = answer.split(' ');
+  if (typedWords.length !== answerWords.length) return false;
+  return answerWords.every((word, i) => levenshtein(typedWords[i], word) <= allowedEditsFor(word));
+}
+
+/**
+ * Match a typed sentence against every answer that counts as right,
+ * forgiving accents, case, punctuation and per-word typos
+ * (`sentenceMatches`). Returns the answer it matched, or null.
+ *
+ * This is how conversation practice is graded: the authored turn carries its
+ * accepted answers, so no model is asked (the Gemini grader it replaced was
+ * deleted on 2026-09-29).
+ */
+export function matchAnyAnswer(typed: string, answers: readonly string[]): string | null {
+  const t = normalizeSentence(typed);
+  if (!t) return null;
+  for (const answer of answers) {
+    const a = normalizeSentence(answer);
+    if (a && sentenceMatches(t, a)) return answer;
+  }
+  return null;
+}

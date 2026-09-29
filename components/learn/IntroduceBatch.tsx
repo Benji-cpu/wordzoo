@@ -56,14 +56,14 @@ export function IntroduceBatch({
   registerBack,
   onComplete,
 }: IntroduceBatchProps) {
-  // Every word gets a mnemonic step. Words that arrive without one (AI-
-  // generated paths whose async enrichment hasn't caught up, or curated
-  // gaps) get theirs generated lazily below — the step order never shifts.
+  // A word gets a mnemonic step only when it has a written mnemonic. There is
+  // no on-demand generation any more (deleted 2026-09-29: every pt word ships
+  // with one), so a word without one goes straight from its card to the drill.
   const steps = useMemo<Step[]>(() => {
     const out: Step[] = [];
-    words.forEach((_, i) => {
+    words.forEach((w, i) => {
       out.push({ wordIdx: i, sub: 'word' });
-      out.push({ wordIdx: i, sub: 'mnemonic' });
+      if (w.mnemonic) out.push({ wordIdx: i, sub: 'mnemonic' });
     });
     return out;
   }, [words]);
@@ -73,37 +73,6 @@ export function IntroduceBatch({
   const [stepIdx, setStepIdx] = useState(() => (startAtEnd ? Math.max(0, steps.length - 1) : 0));
   const [readyToDrill, setReadyToDrill] = useState(Boolean(startAtEnd));
   const introducedRef = useRef<Set<string>>(new Set());
-
-  // Lazy mnemonic generation for words missing one.
-  const [generatedMnemonics, setGeneratedMnemonics] = useState<
-    Record<string, NonNullable<LearnWord['mnemonic']>>
-  >({});
-  const [failedMnemonics, setFailedMnemonics] = useState<Set<string>>(new Set());
-  const requestedRef = useRef<Set<string>>(new Set());
-
-  useEffect(() => {
-    words.forEach((w) => {
-      const wordId = w.word.id;
-      if (w.mnemonic || requestedRef.current.has(wordId)) return;
-      requestedRef.current.add(wordId);
-      fetch('/api/mnemonics/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ wordId }),
-      })
-        .then((r) => r.json())
-        .then((res) => {
-          if (res?.data?.mnemonic) {
-            setGeneratedMnemonics((g) => ({ ...g, [wordId]: res.data.mnemonic }));
-          } else {
-            setFailedMnemonics((f) => new Set(f).add(wordId));
-          }
-        })
-        .catch(() => {
-          setFailedMnemonics((f) => new Set(f).add(wordId));
-        });
-    });
-  }, [words]);
 
   const advance = useCallback(() => {
     if (stepIdx + 1 >= steps.length) {
@@ -217,41 +186,9 @@ export function IntroduceBatch({
     );
   }
 
-  // mnemonic
-  const mnemonic = word.mnemonic ?? generatedMnemonics[word.word.id] ?? null;
-
-  if (!mnemonic) {
-    // Generation in flight (AI-path enrichment hasn't caught up) or failed.
-    // Never a dead end: the user can always move on, and an in-flight
-    // mnemonic lands by review time.
-    const failed = failedMnemonics.has(word.word.id);
-    return (
-      <div className="flex flex-col items-center justify-center text-center py-12 px-6 animate-fade-in">
-        <span
-          className="font-display text-[color:var(--color-fox-primary)] leading-none mb-3"
-          style={{ fontSize: 'clamp(1.35rem, 5.5vw, 1.75rem)' }}
-        >
-          {word.word.text}
-        </span>
-        <p className={`text-sm text-[color:var(--text-secondary)] mb-6 ${failed ? '' : 'animate-pulse'}`}>
-          {failed
-            ? 'No memory trick this time — straight to the drill.'
-            : 'Conjuring a memory trick for this word…'}
-        </p>
-        <button
-          type="button"
-          onClick={advance}
-          className={
-            failed
-              ? 'rounded-xl bg-[color:var(--color-fox-primary)] text-white font-bold py-3 px-6 active:scale-[0.98] transition'
-              : 'px-4 py-2 rounded-xl text-sm font-bold text-[color:var(--text-secondary)] hover:text-[color:var(--foreground)] transition-colors'
-          }
-        >
-          {failed ? 'Continue →' : 'Skip ahead →'}
-        </button>
-      </div>
-    );
-  }
+  // mnemonic — steps only include this sub-step when the word has one.
+  const mnemonic = word.mnemonic;
+  if (!mnemonic) return null;
 
   return (
     <>

@@ -7,6 +7,7 @@ import { speakText, stopPlayback } from '@/lib/audio/pronunciation';
 import { SpeakBack } from '@/components/audio/SpeakBack';
 import type { SupportedLanguageCode } from '@/types/audio';
 import type { InfoByteDifficulty } from '@/types/database';
+import { splitSentences } from '@/lib/daily-dose/sentences';
 
 const DIFFICULTIES: { value: InfoByteDifficulty; label: string }[] = [
   { value: 'easy', label: 'Easy' },
@@ -23,10 +24,6 @@ function formatCategory(category: string): string {
     .join(' ');
 }
 
-function splitSentences(text: string): string[] {
-  return text.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
-}
-
 interface InfoByteCardProps {
   category: string;
   topicSummary: string;
@@ -37,8 +34,6 @@ interface InfoByteCardProps {
   hardTarget: string;
   hardEnglish: string;
   languageCode?: SupportedLanguageCode;
-  /** Set when showing an older byte (generation skipped today), e.g. "from Tuesday". */
-  staleLabel?: string | null;
 }
 
 export function InfoByteCard({
@@ -51,7 +46,6 @@ export function InfoByteCard({
   hardTarget,
   hardEnglish,
   languageCode,
-  staleLabel = null,
 }: InfoByteCardProps) {
   const [difficulty, setDifficulty] = useState<InfoByteDifficulty>('easy');
   const [revealed, setRevealed] = useState(false);
@@ -108,9 +102,6 @@ export function InfoByteCard({
         <div className="flex items-center gap-2">
           <span className="text-sm font-semibold text-foreground">Daily Dose</span>
           <Badge>{formatCategory(category)}</Badge>
-          {staleLabel && (
-            <span className="text-[10px] text-text-secondary/80">{staleLabel}</span>
-          )}
           {canSpeak && languageCode && (
             <button
               onClick={() => handleSpeak(targetText)}

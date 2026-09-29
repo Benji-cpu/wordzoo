@@ -7,8 +7,8 @@ import {
   getLanguageById,
   getUserStreak,
   getUserXp,
-  getLatestInfoByte,
 } from '@/lib/db/queries';
+import { getDailyDose } from '@/lib/daily-dose';
 import { getDuePhraseCount } from '@/lib/db/scene-flow-queries';
 import { isSceneComplete, sceneProgress as getSceneProgress, findCurrentSceneIndex } from '@/lib/utils/scene-progress';
 import { habitatFromLanguageCode } from '@/lib/utils/language-habitat';
@@ -72,7 +72,6 @@ export default async function DashboardPage() {
     duePhraseCount,
     language,
     streakData,
-    todayInfoByte,
     weekRecall,
     insightState,
     tripContext,
@@ -84,13 +83,14 @@ export default async function DashboardPage() {
     getDuePhraseCount(userId, languageId),
     getLanguageById(languageId),
     getUserStreak(userId),
-    getLatestInfoByte(languageId),
     getWeekRecall(userId),
     getInsightState(userId),
     getTripContext(userId),
     getUserXp(userId),
     getCanDoInventory(userId, languageId),
   ]);
+
+  const dailyDose = getDailyDose(language?.code);
 
   const firstName = session.user.name?.split(/\s+/)[0] ?? null;
   const greeting = pickGreeting(Boolean(firstName));
@@ -248,27 +248,22 @@ export default async function DashboardPage() {
         </p>
       </Card>
 
-      {/* Daily Info Byte */}
-      {todayInfoByte && (
+      {/* Daily Dose — written ahead in lib/daily-dose, one card per day */}
+      {dailyDose && (
         <InfoByteCard
           languageCode={
             language?.code === 'id' || language?.code === 'es' || language?.code === 'ja' || language?.code === 'pt'
               ? language.code
               : undefined
           }
-          staleLabel={
-            new Date(todayInfoByte.publish_date).toISOString().slice(0, 10) !== new Date().toISOString().slice(0, 10)
-              ? `from ${new Date(todayInfoByte.publish_date).toLocaleDateString('en-US', { weekday: 'long' })}`
-              : null
-          }
-          category={todayInfoByte.category}
-          topicSummary={todayInfoByte.topic_summary}
-          easyTarget={todayInfoByte.easy_target}
-          easyEnglish={todayInfoByte.easy_english}
-          mediumTarget={todayInfoByte.medium_target}
-          mediumEnglish={todayInfoByte.medium_english}
-          hardTarget={todayInfoByte.hard_target}
-          hardEnglish={todayInfoByte.hard_english}
+          category={dailyDose.category}
+          topicSummary={dailyDose.topic_summary}
+          easyTarget={dailyDose.easy_target}
+          easyEnglish={dailyDose.easy_english}
+          mediumTarget={dailyDose.medium_target}
+          mediumEnglish={dailyDose.medium_english}
+          hardTarget={dailyDose.hard_target}
+          hardEnglish={dailyDose.hard_english}
         />
       )}
 

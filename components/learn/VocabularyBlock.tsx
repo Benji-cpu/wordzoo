@@ -50,7 +50,6 @@ interface VocabularyBlockProps {
   /** Context ConversationBlock needs; required only when interludes are passed. */
   conversationContext?: {
     learnerName: string | null;
-    languageName: string;
     sceneId: string;
   };
   /** Fired after the end-of-vocab checkpoint resolves. */
@@ -278,7 +277,6 @@ export function VocabularyBlock({
           key={`converse-${phase.batchIndex}`}
           exchanges={exchanges}
           learnerName={conversationContext.learnerName}
-          languageName={conversationContext.languageName}
           languageCode={languageCode}
           sceneId={conversationContext.sceneId}
           onComplete={advanceFromConverse}

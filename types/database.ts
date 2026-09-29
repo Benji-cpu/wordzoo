@@ -408,19 +408,3 @@ export interface AppFeedback {
   created_at: Date;
 }
 
-export interface InfoByte {
-  id: string;
-  language_id: string;
-  publish_date: string;
-  category: string;
-  topic_summary: string;
-  easy_target: string;
-  easy_english: string;
-  medium_target: string;
-  medium_english: string;
-  hard_target: string;
-  hard_english: string;
-  source_topic: string | null;
-  tokens_used: number;
-  created_at: Date;
-}

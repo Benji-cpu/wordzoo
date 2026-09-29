@@ -5,7 +5,7 @@ import { ThumbButton } from '@/components/ui/ThumbButton';
 import { Fox } from '@/components/mascot/Fox';
 import { useSound } from '@/lib/hooks/useSound';
 import { useHaptic } from '@/lib/hooks/useHaptic';
-import { fuzzyMatchAnswer, normalizeForCompare } from '@/lib/pedagogy/normalize';
+import { matchAnyAnswer, normalizeForCompare, normalizeSentence } from '@/lib/pedagogy/normalize';
 import { fireTelemetry } from '@/lib/pedagogy/telemetry';
 import { SpeakChallenge, type SpeakOutcome } from '@/components/learn/SpeakChallenge';
 import { stableShuffle } from '@/lib/learn/derive-conversation';
@@ -20,7 +20,6 @@ import type { SupportedLanguageCode } from '@/types/audio';
 interface ConversationBlockProps {
   exchanges: ConversationExchange[];
   learnerName: string | null;
-  languageName: string;
   languageCode?: SupportedLanguageCode;
   sceneId: string;
   /** Resume point — the exchange the learner left off at. */
@@ -41,7 +40,8 @@ interface Bubble {
  * In-scene progressive, two-sided conversation practice (Pedagogy v2
  * "conversation" slice). The learner both ANSWERS the NPC and ASKS questions,
  * ramping easy (tap the line) → medium (type with hints) → say it aloud →
- * hard (free production graded leniently).
+ * hard (free production from the goal alone). Typed turns are matched locally
+ * against the turn's `target` plus its authored `accept` list — no model.
  *
  * Content is authored per turn in lib/learn/conversation-data.ts where it
  * exists, and otherwise derived from the scene's own dialogue by
@@ -55,12 +55,12 @@ interface Bubble {
  * bottom (sticky) above the nav — so the action never slides out of view.
  *
  * Never a dead end (MEMORY): wrong taps shake, typing reveals a ladder, and
- * free production is accept-and-coach — the learner always moves forward.
+ * free production is accept-and-coach — a miss shows a natural way to say it
+ * and the learner moves forward.
  */
 export function ConversationBlock({
   exchanges,
   learnerName,
-  languageName,
   languageCode,
   sceneId,
   initialExchangeIndex = 0,
@@ -78,7 +78,6 @@ export function ConversationBlock({
   const [typed, setTyped] = useState('');
   const [attempts, setAttempts] = useState(0);
   const [revealed, setRevealed] = useState(false);
-  const [grading, setGrading] = useState(false);
   const [coach, setCoach] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [shake, setShake] = useState(false);
@@ -103,6 +102,7 @@ export function ConversationBlock({
             goal_en: rawTurn.goal_en ? applyLearnerName(rawTurn.goal_en, learnerName) : undefined,
             distractors: rawTurn.distractors?.map((d) => applyLearnerName(d, learnerName)),
             hints: rawTurn.hints?.map((h) => applyLearnerName(h, learnerName)),
+            accept: rawTurn.accept?.map((a) => applyLearnerName(a, learnerName)),
           }
         : undefined,
     [rawTurn, learnerName],
@@ -126,7 +126,6 @@ export function ConversationBlock({
     setTyped('');
     setAttempts(0);
     setRevealed(false);
-    setGrading(false);
     setCoach(null);
     setFeedback(null);
     setShake(false);
@@ -286,10 +285,10 @@ export function ConversationBlock({
         return;
       }
     }
-    const result = fuzzyMatchAnswer(guess, turn.target);
-    if (result.kind === 'exact' || result.kind === 'close') {
+    const matched = matchAnyAnswer(guess, [turn.target, ...(turn.accept ?? [])]);
+    if (matched) {
       recordTurn(true, 'type');
-      acceptLearner(turn.target);
+      acceptLearner(matched);
       return;
     }
     play('incorrect');
@@ -311,7 +310,8 @@ export function ConversationBlock({
     (value: string) => {
       setTyped(value);
       if (revealed && turn) {
-        if (fuzzyMatchAnswer(value, turn.target, 0).kind === 'exact') {
+        // Exact words, but a missing comma or "!" is not worth making them retype.
+        if (normalizeSentence(value) === normalizeSentence(turn.target)) {
           acceptLearner(turn.target);
         }
       }
@@ -319,40 +319,21 @@ export function ConversationBlock({
     [revealed, turn, acceptLearner],
   );
 
-  // ── Produce (free, AI-graded, accept-and-coach) ──
-  const handleProduce = useCallback(async () => {
-    if (!turn || !typed.trim() || grading) return;
+  // ── Produce (free production, accept-and-coach) ──
+  const handleProduce = useCallback(() => {
+    if (!turn || !typed.trim()) return;
     const attempt = typed.trim();
-    setGrading(true);
-    try {
-      const res = await fetch(`/api/scenes/${sceneId}/conversation-grade`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          goalEn: turn.goal_en ?? turn.en,
-          expected: turn.target,
-          attempt,
-          languageName,
-        }),
-      });
-      const json = await res.json().catch(() => null);
-      const data = json?.data as { accept: boolean; feedback: string; reference: string } | undefined;
-      if (data?.accept) {
-        setFeedback(data.feedback);
-        recordTurn(true, 'produce');
-        acceptLearner(attempt);
-      } else {
-        // Coach: show the reference as a gentle recast, then advance on tap.
-        setGrading(false);
-        recordTurn(false, 'produce');
-        setCoach(data?.reference ?? turn.target);
-        setFeedback(data?.feedback ?? null);
-      }
-    } catch {
-      // Fail-open — never block.
+    if (matchAnyAnswer(attempt, [turn.target, ...(turn.accept ?? [])])) {
+      recordTurn(true, 'produce');
       acceptLearner(attempt);
+      return;
     }
-  }, [turn, typed, grading, sceneId, languageName, acceptLearner, recordTurn]);
+    // Not one of the answers we know — which may still be right. Show a
+    // natural way to say it and let them move on; never a wall.
+    recordTurn(false, 'produce');
+    setCoach(turn.target);
+    setFeedback('Good try — compare yours with this.');
+  }, [turn, typed, acceptLearner, recordTurn]);
 
   const acceptCoachAndAdvance = useCallback(() => {
     if (!turn) return;
@@ -474,7 +455,7 @@ export function ConversationBlock({
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
-                  if (turn.mode === 'produce') void handleProduce();
+                  if (turn.mode === 'produce') handleProduce();
                   else handleTypeSubmit();
                 }}
                 className="flex flex-col gap-2"
@@ -509,17 +490,16 @@ export function ConversationBlock({
                   autoCorrect="off"
                   spellCheck={false}
                   placeholder="Type your answer…"
-                  disabled={grading}
                   className={`w-full rounded-xl border px-4 py-3 text-base bg-surface-inset text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-default disabled:opacity-60 ${
                     revealed ? 'border-amber-500/60' : 'border-card-border'
                   }`}
                 />
                 <button
                   type="submit"
-                  disabled={grading || typed.trim().length === 0}
+                  disabled={typed.trim().length === 0}
                   className="rounded-2xl bg-[color:var(--accent-indonesian)] text-white font-extrabold py-3.5 disabled:opacity-40 active:scale-[0.97] transition"
                 >
-                  {grading ? 'Checking…' : revealed ? 'Type the answer above' : turn.mode === 'produce' ? 'Send →' : 'Check'}
+                  {revealed ? 'Type the answer above' : turn.mode === 'produce' ? 'Send →' : 'Check'}
                 </button>
               </form>
             )}

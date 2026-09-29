@@ -3,8 +3,10 @@
  * mnemonic row at all. Without this, the UI correctly shows "Visual coming
  * soon" because the data simply doesn't exist.
  *
- * Runs the same generation pipeline as /api/mnemonics/generate (Gemini for
- * candidates, Stability AI for the image) and inserts a single row per word.
+ * Gemini for candidates, Stability AI for the image; inserts a single row per
+ * word. This is now the only way a missing mnemonic gets made — the app's
+ * on-demand /api/mnemonics/generate was deleted on 2026-09-29, and a word
+ * without one simply skips the mnemonic card.
  *
  * Flags:
  *   --dry-run           — list targets, no API calls / no writes

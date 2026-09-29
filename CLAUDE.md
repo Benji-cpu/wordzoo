@@ -27,7 +27,7 @@ Language learning SaaS with AI-generated keyword mnemonics, spaced repetition, a
   20 scenes, 233 words), `--lang=es`. Idempotent — it upserts on the ids in `lib/db/content/<lang>/`.
   A dialogue or phrase whose text changed loses its `audio_url`, so follow it with
   `npm run db:seed-audio -- --mode=all --lang=<lang>` or the line plays silent-then-browser-voice.
-- `npm test` — Vitest unit tests (`lib/**/*.test.ts`): `lib/srs/engine.test.ts` (the scheduler), `lib/pedagogy/leitner.test.ts` (the drill queue), `lib/pedagogy/normalize.test.ts` (typo tolerance). Pure modules only — `engine.test.ts` mocks the DB layer.
+- `npm test` — Vitest unit tests (`lib/**/*.test.ts`): `lib/srs/engine.test.ts` (the scheduler), `lib/pedagogy/leitner.test.ts` (the drill queue), `lib/pedagogy/normalize.test.ts` (typo tolerance and conversation answer matching), `lib/daily-dose/daily-dose.test.ts` (the written Daily Dose: one card a day, sentence parity). Pure modules only — `engine.test.ts` mocks the DB layer.
 - `npm run test:e2e` — Playwright smoke (`tests/e2e/learn-loop.spec.ts`): the `/try` demo and the first scene as a non-admin, on a phone viewport. Needs `npm run dev` already on :8000 (it never starts one). Launches the installed Google Chrome headless (`channel: 'chrome'`) because the Playwright browser download is blocked on this machine; `PW_CHROME=<binary>` overrides.
 - **Tests are required for `lib/srs/`, `lib/pedagogy/` and anything touching access control.** The old "no tests" rule was reversed on 2026-09-16 — it had already cost a paywall bypass, a public-mnemonic leak and a preview-deploy auth bypass. Playwright MCP is still the tool for exploratory checks during development; the spec file is the regression net.
 
@@ -55,7 +55,6 @@ The nightly feedback triage runs as a **two-stage pipeline** with `digests/YYYY-
 | Job | Backend | Schedule (UTC) | Endpoint / file |
 |-----|---------|----------------|-----------------|
 | `reset-usage` | Vercel Cron | `0 0 * * *` | `/api/cron/reset-usage` |
-| `generate-info-byte` | Vercel Cron | `0 1 * * *` | `/api/cron/generate-info-byte` |
 | `check-subscriptions` | Vercel Cron | `0 3 * * *` | `/api/cron/check-subscriptions` |
 | `daily-reminders` | Vercel Cron | `0 9 * * *` (≈17:00 Bali) | `/api/cron/daily-reminders` — retention emails (streak nudges weekdays, weekly recap Sundays); the count is the next review sitting in the learner's active language, and due-review nudges stop after 90 days of silence; no-ops without `RESEND_API_KEY` |
 | `nightly-routine` (prepare) | Vercel Cron | `0 18 * * *` (runs 18:00–19:00 UTC, ≈02:xx Bali — see note) | `/api/cron/nightly-routine` |
@@ -71,7 +70,7 @@ Two scheduling backbones, two ownership models — keep them straight:
 
 **(a) Claude Code remote trigger** (the nightly-routine synth step). Managed from this CLI via the `schedule` skill + `RemoteTrigger` tool — `list`, `get`, `update`, `run` all work in-session (no curl, no OAuth juggling). Cannot delete from CLI; for deletion go to https://claude.ai/code/scheduled. Current trigger: `trig_01Dnx4XZjFoduw1SEfio9vPy` (cron `32 19 * * *`). The trigger prompt MUST stay a thin shim that points at `.claude/agents/nightly-routine.md` — every behaviour change belongs in the agent file, not the prompt. After editing the agent file, re-read the trigger prompt and update it if the two have drifted. The trigger no longer needs `CRON_SECRET`; it never makes HTTPS calls except `git push origin main`.
 
-**(b) Vercel Cron jobs** (`reset-usage`, `generate-info-byte`, `check-subscriptions`, `nightly-routine` prepare). Managed in `vercel.json` and deployed on push to `main`. No CLI surface — schedule changes ship via a normal commit. Health is verifiable from anywhere with `curl -o /dev/null -w "%{http_code}" https://wordzoo.vercel.app/api/cron/<name>` — a deployed, middleware-protected route returns 401 without auth, which is the green signal. The `nightly-routine` route additionally requires `GITHUB_PAT_REPO_WRITE` in Vercel env (fine-grained PAT scoped to `Benji-cpu/wordzoo` with Contents: write).
+**(b) Vercel Cron jobs** (`reset-usage`, `check-subscriptions`, `daily-reminders`, `nightly-routine` prepare). `generate-info-byte` was retired on 2026-09-29 — Daily Dose is written ahead (see below). Managed in `vercel.json` and deployed on push to `main`. No CLI surface — schedule changes ship via a normal commit. Health is verifiable from anywhere with `curl -o /dev/null -w "%{http_code}" https://wordzoo.vercel.app/api/cron/<name>` — a deployed, middleware-protected route returns 401 without auth, which is the green signal. The `nightly-routine` route additionally requires `GITHUB_PAT_REPO_WRITE` in Vercel env (fine-grained PAT scoped to `Benji-cpu/wordzoo` with Contents: write).
 
 Failure playbook (look in `feedback-log/*.md` and Vercel runtime logs):
 
@@ -92,8 +91,13 @@ Progress is measured as capability, not throughput. A **can-do** is one communic
   2. **Hand-edit the file.** This is the point of the pipeline. Check `prompt_en` never contains the target-language answer, and opt into `must_include` deliberately (it ships empty — a wrong lemma rejects a valid answer before the grader runs, with no appeal).
   3. `npx tsx lib/db/seed-can-dos.ts --language=id` — idempotent upsert on deterministic ids. It also **backfills `user_can_dos` for scenes a learner already finished**, anchored to that scene's own `completed_at` exactly as the live unlock is. Without it, can-dos authored after someone completed a scene would never reach them: the only other unlock path fires at scene completion, which has already happened.
 - **`CAN_DO_DELAY_HOURS` lives in `lib/db/can-do-delay.ts`, not in `can-do-queries.ts`.** A seeder runs `dotenv.config()` in its body, but ES imports are hoisted above it — so importing anything that reaches `lib/db/client.ts` (which reads `DATABASE_URL` at module load) kills the script before its own first line. Keep constants a seeder needs in a module with no DB import.
-- **Grading**: `POST /api/can-dos/[canDoId]/certify` is **STRICT** and is deliberately a separate route from `/api/scenes/[sceneId]/conversation-grade`, which is ACCEPT-AND-COACH. Do not merge them behind a flag — one function with two contradictory failure semantics is how a silently lenient certifier ships. Ambiguity and every error path resolve to `unclear`, never `pass`; `unclear` costs no strike and no cooldown.
+- **Grading**: `POST /api/can-dos/[canDoId]/certify` is **STRICT** (model-graded, reference loaded server-side). In-lesson conversation practice is its opposite, ACCEPT-AND-COACH, and is matched locally (see Conversation practice). Never give the certifier the lesson's leniency — one function with two contradictory failure semantics is how a silently lenient certifier ships. Ambiguity and every error path resolve to `unclear`, never `pass`; `unclear` costs no strike and no cooldown.
 - **`CanDoTest` must stay unaided**: no hints, chips, reveal, audio, romanization, autocomplete or spellcheck. `ConversationBlock` ships hints on purpose — that's practice. The absence of scaffolding *is* the measurement.
+
+## Daily Dose and conversation practice (written ahead)
+
+- **Daily Dose** is read from `lib/daily-dose/<lang>/` by `getDailyDose()` (UTC date). Portuguese has one card a day for 29 Sep – 20 Dec 2026 (`pt/part1.ts` … `part4.ts`); outside that range it cycles, never blank. A language with no file shows no card. The `info_bytes` table and its old rows stay, unread. Each level's Portuguese and English must split into the same number of sentences (`InfoByteCard` interleaves them) — `daily-dose.test.ts` enforces it, so run `npm test` after editing.
+- **Conversation practice** is authored per scene in `lib/learn/conversation-data.ts` (Indonesian) and `lib/learn/conversations/pt-family.ts` (the seven pt family scenes); every other scene is derived from its dialogue. Typed turns are graded by `matchAnyAnswer` (`lib/pedagogy/normalize.ts`) against `target` + `accept[]` — accent-, case- and punctuation-insensitive with length-scaled typo tolerance. A miss on a free-production turn shows "a natural way to say it" and moves on. When authoring, list the other right answers in `accept`; a turn without them only accepts its target.
 
 ## Pedagogy invariants
 
@@ -125,7 +129,7 @@ The only surface that reads `pedagogy_events` and divides `times_correct / times
 - **API routes**: `app/api/` — REST handlers, all protected by middleware except `/api/auth/*`, `/api/billing/webhook`, `/api/cron/*`
 - **Service layer**: `lib/services/` — business logic (billing, tutor, mnemonic, path, community, sync, etc.)
 - **DB layer**: `lib/db/queries.ts` + `lib/db/community-queries.ts` — raw SQL via `@neondatabase/serverless`
-- **AI layer**: `lib/ai/` — Gemini client (`gemini.ts`), prompt templates (`prompts.ts`, `tutor-prompts.ts`, `info-byte-prompts.ts`)
+- **AI layer**: `lib/ai/` — Gemini client (`gemini.ts`), prompt templates (`prompts.ts`, `tutor-prompts.ts`)
 - **Offline**: `lib/offline/` — IndexedDB storage, sync queue, cache management
 - **SRS engine**: `lib/srs/` — spaced repetition scheduling
 
@@ -172,7 +176,9 @@ All projects require `/api/auth/test-login` for Playwright testing:
 
 ## AI Integration
 
-Gemini 2.5 Flash via `@google/genai` SDK (NOT `@google-ai/generativelanguage`). Client in `lib/ai/gemini.ts`. Prompt templates in `lib/ai/prompts.ts`, `tutor-prompts.ts`, `info-byte-prompts.ts`.
+Gemini 2.5 Flash via `@google/genai` SDK (NOT `@google-ai/generativelanguage`). Client in `lib/ai/gemini.ts`. Prompt templates in `lib/ai/prompts.ts`, `tutor-prompts.ts`.
+
+**Gemini stays only where a person is waiting on the answer** (Ben, 28 Sep 2026: off Gemini wherever possible, free tier only where needed): the tutor chat and guided session, the after-session evaluation, can-do certification, and regenerate-from-feedback. Fixed content is written ahead into the repo by Claude instead — Daily Dose (`lib/daily-dose/`), conversation answers (`lib/learn/conversations/`), mnemonics (`lib/db/content/<lang>/mnemonics-*.ts`). Deleted 2026-09-29: the Daily Dose cron, the conversation grader, and on-demand/custom/regenerate mnemonic generation. Don't add a new model call for content that can be written once.
 
 **Every Gemini call goes through `lib/ai/gemini.ts`** — never construct a `GoogleGenAI` client elsewhere. That module owns the model chain and the failure contract:
 
@@ -191,7 +197,7 @@ Stripe handles subscriptions (monthly/yearly) only. Free tier has daily limits: 
 **Any route that calls Gemini, generates an image, synthesizes TTS, or writes to Blob MUST claim budget first.** These operations cost real money, and an unmetered one already filled and suspended the Blob store once (see `docs/2026-08-02-product-evaluation.md`).
 
 ```ts
-const guard = await guardSpend('mnemonic_generate');       // + { feature: 'custom_path' } to also gate on billing
+const guard = await guardSpend('mnemonic_regenerate');     // + { feature: 'regenerate_mnemonic' } to also gate on billing
 if (!guard.ok) return guard.response;                       // pre-built 401 / 429 / 403
 // ... guard.userId is the authenticated user
 ```
@@ -223,7 +229,7 @@ if (!guard.ok) return guard.response;                       // pre-built 401 / 4
 
 `DATABASE_URL`, `AUTH_SECRET`, `AUTH_URL`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`, `GOOGLE_GEMINI_API_KEY`, `GOOGLE_CLOUD_TTS_API_KEY`, `STABILITY_AI_API_KEY`, `BLOB_READ_WRITE_TOKEN`, `STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_PRICE_MONTHLY`, `STRIPE_PRICE_YEARLY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_APP_URL`, `CRON_SECRET` (also set as GitHub repo secret), `ADMIN_EMAILS`, `GITHUB_PAT_REPO_WRITE` (fine-grained PAT scoped to `Benji-cpu/wordzoo` with `Contents: write` — used by `/api/cron/nightly-routine` to write `digests/YYYY-MM-DD.json`). `.env.example` documents all of them.
 
-**`PEDAGOGY_V2_SLICES`** only gates `conversation`, `tutor` and `speech` now. The five drill slices (`distractors`, `production`, `mastery`, `restructure`, `cloze`) are permanently on in `lib/pedagogy/flags.ts` and the legacy word → mnemonic → quiz loop was deleted from `SceneFlowClient` on 2026-09-16; there is no env value that brings it back. Set `PEDAGOGY_V2_SLICES=conversation` to turn the AI-graded conversation interludes on for everyone (capped by the `conversation_grade` spend budget).
+**`PEDAGOGY_V2_SLICES`** only gates `conversation`, `tutor` and `speech` now. The five drill slices (`distractors`, `production`, `mastery`, `restructure`, `cloze`) are permanently on in `lib/pedagogy/flags.ts` and the legacy word → mnemonic → quiz loop was deleted from `SceneFlowClient` on 2026-09-16; there is no env value that brings it back. Set `PEDAGOGY_V2_SLICES=conversation` to turn the conversation interludes on for everyone (admins always have them); they cost nothing, since answers are matched locally.
 
 **Optional:** `RESEND_API_KEY`, `EMAIL_FROM` — the retention email system (`/api/cron/daily-reminders`, `lib/services/email-service.ts`) is fully wired but skips every send (cron stays green) until `RESEND_API_KEY` is set in Vercel. `EMAIL_FROM` defaults to Resend's test sender (`onboarding@resend.dev`, delivers only to the Resend account owner) until a sending domain is verified. `ADMIN_EMAIL` — reserved for the nightly digest email.
 
