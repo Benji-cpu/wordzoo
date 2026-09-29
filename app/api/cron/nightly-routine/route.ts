@@ -123,6 +123,7 @@ export async function GET(request: NextRequest) {
     newFeedbackLast24h,
     stuckMnemonicsLast72h,
     overdueReviews,
+    userBacklog,
     spendLast24h,
     pedagogy,
     pendingRows,
@@ -157,13 +158,26 @@ export async function GET(request: NextRequest) {
       return rows[0]?.count ?? 0;
     }),
 
+    // Real learners only, and only items in each learner's ACTIVE path language
+    // (see lib/db/real-users.ts). The unscoped count read 186 words late when the
+    // real backlog was 33; the rest were test accounts and abandoned languages.
     safe('overdueReviews', async () => {
+      const { realUserOnly, activeLanguageId } = await import('@/lib/db/real-users');
       const rows = (await sql`
         SELECT COUNT(*)::int AS count
-        FROM user_words
-        WHERE next_review_at < now() - interval '2 days'
+        FROM user_words uw
+        JOIN words w ON w.id = uw.word_id
+        WHERE uw.next_review_at < now() - interval '2 days'
+          AND w.language_id = ${sql.unsafe(activeLanguageId('uw.user_id'))}
+          AND ${sql.unsafe(realUserOnly('uw.user_id'))}
       `) as Array<{ count: number }>;
       return rows[0]?.count ?? 0;
+    }),
+
+    // Per-learner backlog, so the morning reader sees each real user's own queue.
+    safe('userBacklog', async () => {
+      const { getUserBacklog } = await import('@/lib/db/pedagogy-queries');
+      return getUserBacklog(30);
     }),
 
     // Spend rollup: what the AI/image/TTS/Blob endpoints actually cost in the
@@ -250,6 +264,7 @@ export async function GET(request: NextRequest) {
     health: {
       stuckMnemonicsLast72h: stuckMnemonicsLast72h ?? 0,
       overdueReviews: overdueReviews ?? 0,
+      userBacklog: userBacklog ?? [],
       spendLast24h: spendLast24h ?? [],
       pedagogy: pedagogy ?? null,
     },

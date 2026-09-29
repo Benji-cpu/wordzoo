@@ -20,6 +20,9 @@
  */
 
 import { sql } from './client';
+import { realUserOnly, activeLanguageId, maskEmail } from './real-users';
+
+// Every aggregate below counts real learners only (no @wordzoo.dev fixtures); see real-users.ts.
 
 /**
  * Events whose NAME encodes the cue. drill_* is the exception — it carries the
@@ -46,6 +49,21 @@ const FIRST_TRY_EXPR = `
     ELSE NULL
   END`;
 
+/**
+ * "Overdue" = an introduced item due now, of a real learner, in the language of their
+ * ACTIVE path (the same scope the /review page uses). Items in languages they walked
+ * away from are not a backlog: they inflated the digest's 8d+ bucket to 186 words.
+ * Expects aliases uw+w (words) / uph+p (phrases).
+ */
+const DUE_WORD_SCOPE = `
+  uw.status <> 'new' AND uw.next_review_at <= NOW()
+  AND w.language_id = ${activeLanguageId('uw.user_id')}
+  AND ${realUserOnly('uw.user_id')}`;
+const DUE_PHRASE_SCOPE = `
+  uph.status <> 'new' AND uph.next_review_at <= NOW()
+  AND p.language_id = ${activeLanguageId('uph.user_id')}
+  AND ${realUserOnly('uph.user_id')}`;
+
 export interface CueAccuracyRow {
   cue_type: string;
   attempts: number;
@@ -68,6 +86,7 @@ export async function getCueAccuracy(days = 30): Promise<CueAccuracyRow[]> {
     FROM pedagogy_events
     WHERE created_at > NOW() - (${days} || ' days')::interval
       AND (event LIKE '%_correct' OR event LIKE '%_wrong')
+      AND ${sql.unsafe(realUserOnly('pedagogy_events.user_id'))}
     GROUP BY 1
     ORDER BY attempts DESC
   `;
@@ -93,6 +112,7 @@ export async function getDailyAccuracy(days = 30): Promise<DailyAccuracyRow[]> {
     FROM pedagogy_events
     WHERE created_at > NOW() - (${days} || ' days')::interval
       AND (event LIKE '%_correct' OR event LIKE '%_wrong')
+      AND ${sql.unsafe(realUserOnly('pedagogy_events.user_id'))}
     GROUP BY 1
     ORDER BY 1 DESC
   `;
@@ -125,6 +145,7 @@ export async function getCheckpointStats(days = 30): Promise<CheckpointStats> {
     FROM pedagogy_events
     WHERE created_at > NOW() - (${days} || ' days')::interval
       AND event LIKE '%checkpoint_%'
+      AND ${sql.unsafe(realUserOnly('pedagogy_events.user_id'))}
   `;
   return (rows[0] as CheckpointStats) ?? {
     started: 0, passed: 0, failed: 0, pass_rate_pct: 0, avg_remediation_loops: 0,
@@ -147,6 +168,7 @@ export async function getWordAccuracyDistribution(): Promise<WordAccuracyBucketR
       SELECT times_correct::numeric / NULLIF(times_reviewed, 0) AS ratio
       FROM user_words
       WHERE times_reviewed >= 3
+        AND ${sql.unsafe(realUserOnly('user_words.user_id'))}
     )
     SELECT bucket, COUNT(*)::int AS word_count
     FROM (
@@ -191,6 +213,7 @@ export async function getWeakestWords(limit = 25): Promise<WeakWordRow[]> {
     FROM user_words uw
     JOIN words w ON w.id = uw.word_id
     JOIN languages l ON l.id = w.language_id
+    WHERE ${sql.unsafe(realUserOnly('uw.user_id'))}
     GROUP BY w.id, w.text, w.meaning_en, l.code
     HAVING SUM(uw.times_reviewed) >= 3
     ORDER BY accuracy_pct ASC, times_reviewed DESC
@@ -224,6 +247,7 @@ export async function getRetentionCurve(days = 90): Promise<RetentionBucketRow[]
       FROM pedagogy_events
       WHERE event = 'srs_review_recorded'
         AND created_at > NOW() - (${days} || ' days')::interval
+        AND ${sql.unsafe(realUserOnly('pedagogy_events.user_id'))}
     )
     SELECT
       CASE
@@ -300,8 +324,10 @@ export async function getConsolidationFunnel(): Promise<ConsolidationRow[]> {
   const rows = await sql`
     WITH items AS (
       SELECT times_reviewed AS n, 'word' AS kind FROM user_words
+      WHERE ${sql.unsafe(realUserOnly('user_words.user_id'))}
       UNION ALL
       SELECT times_reviewed, 'phrase' FROM user_phrases
+      WHERE ${sql.unsafe(realUserOnly('user_phrases.user_id'))}
     ),
     steps AS (SELECT generate_series(1, 6) AS exposure)
     SELECT
@@ -345,10 +371,12 @@ export async function getScheduleHealth(): Promise<ScheduleHealth> {
       SELECT interval_days, ease_factor, lapses,
              GREATEST(1, (NOW()::date - created_at::date)) AS age_days
       FROM user_words
+      WHERE ${sql.unsafe(realUserOnly('user_words.user_id'))}
       UNION ALL
       SELECT interval_days, ease_factor, lapses,
              GREATEST(1, (NOW()::date - created_at::date))
       FROM user_phrases
+      WHERE ${sql.unsafe(realUserOnly('user_phrases.user_id'))}
     )
     SELECT
       COALESCE(MAX(interval_days), 0)::int AS max_interval_days,
@@ -378,12 +406,17 @@ export async function getOverdueQueue(): Promise<OverdueBucketRow[]> {
   const rows = await sql`
     WITH b AS (
       SELECT 'due now' AS bucket, 0 AS ord,
-             EXTRACT(EPOCH FROM (NOW() - next_review_at)) / 86400 AS late, 'word' AS kind
-      FROM user_words WHERE status <> 'new' AND next_review_at <= NOW()
+             EXTRACT(EPOCH FROM (NOW() - uw.next_review_at)) / 86400 AS late, 'word' AS kind
+      FROM user_words uw JOIN words w ON w.id = uw.word_id
+      WHERE ${sql.unsafe(DUE_WORD_SCOPE)}
       UNION ALL
       SELECT 'due now', 0,
-             EXTRACT(EPOCH FROM (NOW() - next_review_at)) / 86400, 'phrase'
-      FROM user_phrases WHERE status <> 'new' AND next_review_at <= NOW()
+             EXTRACT(EPOCH FROM (NOW() - uph.next_review_at)) / 86400, 'phrase'
+      FROM user_phrases uph
+      JOIN scene_phrases sp ON sp.id = uph.phrase_id
+      JOIN scenes s ON s.id = sp.scene_id
+      JOIN paths p ON p.id = s.path_id
+      WHERE ${sql.unsafe(DUE_PHRASE_SCOPE)}
     )
     SELECT
       CASE
@@ -445,6 +478,7 @@ export async function getLeechWords(limit = 20): Promise<LeechRow[]> {
     JOIN words w ON w.id = uw.word_id
     JOIN languages l ON l.id = w.language_id
     WHERE uw.lapses >= 6
+      AND ${sql.unsafe(realUserOnly('uw.user_id'))}
     GROUP BY w.id, w.text, w.meaning_en, l.code
     ORDER BY lapses DESC, accuracy_pct ASC
     LIMIT ${limit}
@@ -468,6 +502,7 @@ export async function getEventVolume(days = 30): Promise<EventVolumeRow[]> {
     SELECT event, COUNT(*)::int AS n, MAX(created_at)::text AS last_seen
     FROM pedagogy_events
     WHERE created_at > NOW() - (${days} || ' days')::interval
+      AND ${sql.unsafe(realUserOnly('pedagogy_events.user_id'))}
     GROUP BY event
     ORDER BY n DESC
   `;
@@ -486,13 +521,22 @@ export interface LearnerTotals {
 export async function getLearnerTotals(): Promise<LearnerTotals> {
   const rows = await sql`
     SELECT
-      (SELECT COUNT(DISTINCT user_id)::int FROM user_words) AS learners,
-      (SELECT COUNT(*)::int FROM user_words) AS words_tracked,
-      (SELECT COUNT(*)::int FROM user_words WHERE times_reviewed > 0) AS words_reviewed,
+      (SELECT COUNT(DISTINCT user_id)::int FROM user_words
+         WHERE ${sql.unsafe(realUserOnly('user_words.user_id'))}) AS learners,
+      (SELECT COUNT(*)::int FROM user_words
+         WHERE ${sql.unsafe(realUserOnly('user_words.user_id'))}) AS words_tracked,
+      (SELECT COUNT(*)::int FROM user_words WHERE times_reviewed > 0
+         AND ${sql.unsafe(realUserOnly('user_words.user_id'))}) AS words_reviewed,
       (SELECT COALESCE(ROUND(AVG(times_correct::numeric / NULLIF(times_reviewed, 0)) * 100, 1), 0)::float
-         FROM user_words WHERE times_reviewed >= 3) AS mean_accuracy_pct,
-      (SELECT COUNT(*)::int FROM user_words   WHERE status <> 'new' AND next_review_at <= NOW()) AS overdue_words,
-      (SELECT COUNT(*)::int FROM user_phrases WHERE status <> 'new' AND next_review_at <= NOW()) AS overdue_phrases
+         FROM user_words WHERE times_reviewed >= 3
+           AND ${sql.unsafe(realUserOnly('user_words.user_id'))}) AS mean_accuracy_pct,
+      (SELECT COUNT(*)::int FROM user_words uw JOIN words w ON w.id = uw.word_id
+         WHERE ${sql.unsafe(DUE_WORD_SCOPE)}) AS overdue_words,
+      (SELECT COUNT(*)::int FROM user_phrases uph
+         JOIN scene_phrases sp ON sp.id = uph.phrase_id
+         JOIN scenes s ON s.id = sp.scene_id
+         JOIN paths p ON p.id = s.path_id
+         WHERE ${sql.unsafe(DUE_PHRASE_SCOPE)}) AS overdue_phrases
   `;
   return rows[0] as LearnerTotals;
 }
@@ -507,4 +551,74 @@ export async function prunePedagogyEvents(retentionDays = 90): Promise<void> {
     DELETE FROM pedagogy_events
     WHERE created_at < NOW() - (${retentionDays} || ' days')::interval
   `;
+}
+
+export interface UserBacklogRow {
+  email_masked: string;
+  activeLanguage: string | null;
+  dueWords: number;
+  duePhrases: number;
+  /** Introduced items still in the learning steps (learning_step < 2). */
+  learningItems: number;
+}
+
+/**
+ * Per-learner backlog for the morning digest: who is behind, in the language they are
+ * actually studying. Real users active in the last 30 days only; emails masked because
+ * the digest is committed to git.
+ */
+export async function getUserBacklog(days = 30): Promise<UserBacklogRow[]> {
+  const rows = (await sql`
+    WITH recent AS (
+      SELECT user_id FROM pedagogy_events
+        WHERE user_id IS NOT NULL AND created_at > NOW() - (${days} || ' days')::interval
+      UNION SELECT user_id FROM user_words
+        WHERE last_reviewed_at > NOW() - (${days} || ' days')::interval
+      UNION SELECT user_id FROM user_phrases
+        WHERE last_reviewed_at > NOW() - (${days} || ' days')::interval
+      UNION SELECT user_id FROM user_streaks
+        WHERE last_active_date >= CURRENT_DATE - ${days}::int
+    ),
+    act AS (
+      SELECT u.id AS user_id, u.email, ${sql.unsafe(activeLanguageId('u.id'))} AS language_id
+      FROM users u JOIN recent r ON r.user_id = u.id
+      WHERE ${sql.unsafe(realUserOnly('u.id'))}
+    )
+    SELECT
+      a.email, l.code AS active_language,
+      (SELECT COUNT(*)::int FROM user_words uw JOIN words w ON w.id = uw.word_id
+         WHERE uw.user_id = a.user_id AND w.language_id = a.language_id
+           AND uw.status <> 'new' AND uw.next_review_at <= NOW()) AS due_words,
+      (SELECT COUNT(*)::int FROM user_phrases uph
+         JOIN scene_phrases sp ON sp.id = uph.phrase_id
+         JOIN scenes s ON s.id = sp.scene_id
+         JOIN paths p ON p.id = s.path_id
+         WHERE uph.user_id = a.user_id AND p.language_id = a.language_id
+           AND uph.status <> 'new' AND uph.next_review_at <= NOW()) AS due_phrases,
+      (SELECT COUNT(*)::int FROM user_words uw JOIN words w ON w.id = uw.word_id
+         WHERE uw.user_id = a.user_id AND w.language_id = a.language_id
+           AND uw.status <> 'new' AND uw.learning_step < 2)
+      + (SELECT COUNT(*)::int FROM user_phrases uph
+         JOIN scene_phrases sp ON sp.id = uph.phrase_id
+         JOIN scenes s ON s.id = sp.scene_id
+         JOIN paths p ON p.id = s.path_id
+         WHERE uph.user_id = a.user_id AND p.language_id = a.language_id
+           AND uph.status <> 'new' AND uph.learning_step < 2) AS learning_items
+    FROM act a
+    LEFT JOIN languages l ON l.id = a.language_id
+    ORDER BY due_words + due_phrases DESC, a.email
+  `) as Array<{
+    email: string;
+    active_language: string | null;
+    due_words: number;
+    due_phrases: number;
+    learning_items: number;
+  }>;
+  return rows.map((r) => ({
+    email_masked: maskEmail(r.email),
+    activeLanguage: r.active_language,
+    dueWords: r.due_words,
+    duePhrases: r.due_phrases,
+    learningItems: r.learning_items,
+  }));
 }
