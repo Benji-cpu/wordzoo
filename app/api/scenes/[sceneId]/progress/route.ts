@@ -38,12 +38,22 @@ export async function GET(
 
   const today = new Date().toISOString().split('T')[0];
 
+  // "Learned" means learned BEFORE this scene was first opened. The page
+  // creates the user_scene_progress row on first load, ahead of any
+  // introduction, so words this scene introduces itself stay in the list and
+  // a saved phase_batch keeps pointing at the same batch when the learner
+  // resumes. Without a progress row, NOW() counts every existing row.
   const [rows, dailyStats] = await Promise.all([
     sql`
       SELECT uw.word_id
       FROM scene_words sw
       JOIN user_words uw ON uw.word_id = sw.word_id AND uw.user_id = ${session.user.id}
       WHERE sw.scene_id = ${sceneId}
+        AND uw.created_at < COALESCE(
+          (SELECT usp.created_at FROM user_scene_progress usp
+            WHERE usp.user_id = ${session.user.id} AND usp.scene_id = ${sceneId}),
+          NOW()
+        )
     `,
     getDailyLearningStats(session.user.id, today),
   ]);

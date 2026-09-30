@@ -224,8 +224,10 @@ export function SceneFlowClient({
 }: SceneFlowClientProps) {
   const hasAnchorImage = !!anchorImageUrl;
 
-  // Filter out already-learned words so users don't re-learn duplicates across
-  // scenes. Memoized because the conversation plan below keys off it — an
+  // Filter out words learned before this scene was first opened so users don't
+  // re-learn duplicates across scenes (the progress route excludes words this
+  // scene introduced itself, which keeps a resumed phase_batch aligned with the
+  // list it was saved against). Memoized because the conversation plan below keys off it — an
   // array rebuilt every render would rebuild every exchange with it.
   const [learnedWordIds, setLearnedWordIds] = useState<Set<string> | null>(null);
   const words = useMemo(

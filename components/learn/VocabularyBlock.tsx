@@ -96,8 +96,10 @@ export function VocabularyBlock({
     return { kind: 'intro', batchIndex: 0 };
   });
 
-  // `words` shrinks when the parent's learned-words fetch lands after we've
-  // restored a batchIndex; keep the phase inside the new batch list.
+  // `words` can shrink when the parent's learned-words fetch lands after we've
+  // restored a batchIndex (words learned in other scenes). The fetch never drops
+  // this scene's own introduced words, so the index stays aligned; this only
+  // keeps the phase inside the new batch list.
   useEffect(() => {
     if (batches.length === 0) return;
     // eslint-disable-next-line react-hooks/set-state-in-effect
