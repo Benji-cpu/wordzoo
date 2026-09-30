@@ -52,6 +52,11 @@ export function FeedbackModal({ isOpen, onClose, context, screenshotBlob, screen
   const dictationBaseRef = useRef('');
   // How much of finalText is already part of the base (the user typed past it).
   const consumedRef = useRef(0);
+  // Each Speak tap is a new dictation session. A stop still flushing when the
+  // next session starts must not write into it.
+  const dictationIdRef = useRef(0);
+  // For a session superseded mid-flush: how much of its text was already folded.
+  const supersededFoldedRef = useRef<Record<number, number>>({});
   const finalTextRef = useRef('');
   const messageRef = useRef(message);
   const submittingRef = useRef(false);
@@ -65,7 +70,24 @@ export function FeedbackModal({ isOpen, onClose, context, screenshotBlob, screen
   // Uses only refs and stable setters, so the stale copy captured by the
   // [isOpen] effect's cleanup is safe to call.
   async function stopAndMerge(): Promise<string> {
+    const id = dictationIdRef.current;
     const text = await stopListening();
+    if (id !== dictationIdRef.current) {
+      // A newer session took over while this stop was flushing. Keep the words
+      // this one still had in flight by adding them to the new session's base,
+      // once (a second stop of the same session finds nothing left to add).
+      const folded = supersededFoldedRef.current[id];
+      delete supersededFoldedRef.current[id];
+      if (folded !== undefined) {
+        dictationBaseRef.current = appendText(dictationBaseRef.current, text.slice(folded));
+        const next = dictatingRef.current
+          ? appendText(dictationBaseRef.current, finalTextRef.current.slice(consumedRef.current))
+          : dictationBaseRef.current;
+        setMessage(next);
+        messageRef.current = next;
+      }
+      return messageRef.current;
+    }
     let next = messageRef.current;
     if (dictatingRef.current) {
       next = appendText(dictationBaseRef.current, text.slice(consumedRef.current));
@@ -111,10 +133,15 @@ export function FeedbackModal({ isOpen, onClose, context, screenshotBlob, screen
       void stopAndMerge();
       return;
     }
+    if (dictatingRef.current) {
+      // The last stop is still flushing; its words are folded in when it lands.
+      supersededFoldedRef.current[dictationIdRef.current] = finalTextRef.current.length;
+    }
+    dictationIdRef.current += 1;
     dictationBaseRef.current = message;
     consumedRef.current = 0;
-    dictatingRef.current = true;
-    void startListening();
+    // Only dictating if recognition really started (not blocked or unsupported).
+    dictatingRef.current = startListening();
   }
 
   // Auto-dismiss after success

@@ -264,27 +264,26 @@ export function useSpeechInput(langCode: string) {
     return true;
   }
 
-  const startListening = useCallback(async () => {
-    const Ctor = window.SpeechRecognition || window.webkitSpeechRecognition;
-    // A missing constructor is only one of the ways this can be unavailable.
-    // Brave ships `webkitSpeechRecognition` and has nothing behind it, so also
-    // honour a service failure we've already watched happen recently.
-    if (!Ctor || isSpeechServiceBlocked()) {
-      setError(speechUnavailableMessage());
-      return;
-    }
-    setError(null);
-
-    // A previous instance still flushing is superseded, not waited for.
+  /**
+   * Begin a session. Returns whether recognition actually started, so a caller
+   * that tracks "am I dictating" does not treat a blocked or failed start as one.
+   * Synchronous on purpose: it must run inside the user gesture.
+   */
+  const startListening = useCallback((): boolean => {
+    // A previous instance still flushing is superseded, not waited for. Keep
+    // whatever it had heard, and hand that to anyone waiting on its stop.
     const previous = recognitionRef.current;
     if (previous) {
       recognitionRef.current = null;
       try { previous.abort(); } catch { /* already stopped */ }
+      commitInstance();
     }
     if (restartTimerRef.current) clearTimeout(restartTimerRef.current);
     restartTimerRef.current = null;
     stopWaitersRef.current.splice(0).forEach((w) => w(committedRef.current));
 
+    // Clear the last session's text before any early return: a caller that
+    // stops after a start that never happened must not get the old words back.
     userStoppedRef.current = false;
     restartsRef.current = 0;
     committedRef.current = '';
@@ -293,14 +292,26 @@ export function useSpeechInput(langCode: string) {
     setFinalText('');
     setInterimText('');
 
+    const Ctor = window.SpeechRecognition || window.webkitSpeechRecognition;
+    // A missing constructor is only one of the ways this can be unavailable.
+    // Brave ships `webkitSpeechRecognition` and has nothing behind it, so also
+    // honour a service failure we've already watched happen recently.
+    if (!Ctor || isSpeechServiceBlocked()) {
+      setError(speechUnavailableMessage());
+      return false;
+    }
+    setError(null);
+
     // Start recognition synchronously within the user gesture — awaiting
     // anything first breaks the gesture chain on iOS Safari.
     try {
       if (!launch()) throw new Error('start failed');
       setIsListening(true);
+      return true;
     } catch {
       recognitionRef.current = null;
       setError('Voice input could not start. Tap the mic to try again.');
+      return false;
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
