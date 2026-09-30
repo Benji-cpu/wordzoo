@@ -11,7 +11,6 @@ Language learning SaaS with AI-generated keyword mnemonics, spaced repetition, a
 - **AI**: Google Gemini 2.5 Flash, falling back to 2.5 Flash-Lite (`@google/genai`)
 - **Images**: Stability AI
 - **Payments**: Stripe (subscriptions + one-time purchases)
-- **Offline**: IndexedDB with sync queue
 
 ## Commands
 
@@ -92,7 +91,9 @@ Progress is measured as capability, not throughput. A **can-do** is one communic
   3. `npx tsx lib/db/seed-can-dos.ts --language=id` — idempotent upsert on deterministic ids. It also **backfills `user_can_dos` for scenes a learner already finished**, anchored to that scene's own `completed_at` exactly as the live unlock is. Without it, can-dos authored after someone completed a scene would never reach them: the only other unlock path fires at scene completion, which has already happened.
 - **`CAN_DO_DELAY_HOURS` lives in `lib/db/can-do-delay.ts`, not in `can-do-queries.ts`.** A seeder runs `dotenv.config()` in its body, but ES imports are hoisted above it — so importing anything that reaches `lib/db/client.ts` (which reads `DATABASE_URL` at module load) kills the script before its own first line. Keep constants a seeder needs in a module with no DB import.
 - **Grading**: `POST /api/can-dos/[canDoId]/certify` is **STRICT** (model-graded, reference loaded server-side). In-lesson conversation practice is its opposite, ACCEPT-AND-COACH, and is matched locally (see Conversation practice). Never give the certifier the lesson's leniency — one function with two contradictory failure semantics is how a silently lenient certifier ships. Ambiguity and every error path resolve to `unclear`, never `pass`; `unclear` costs no strike and no cooldown.
-- **`CanDoTest` must stay unaided**: no hints, chips, reveal, audio, romanization, autocomplete or spellcheck. `ConversationBlock` ships hints on purpose — that's practice. The absence of scaffolding *is* the measurement.
+- **`CanDoTest` must stay unaided**: no hints, chips, reveal, target-language audio, romanization, autocomplete or spellcheck before the verdict. Answering by voice (pt-BR mic, `SpeakAnswer`) is not an aid — it is the goal; the transcript lands in an editable box. `ConversationBlock` ships hints on purpose — that's practice. The absence of scaffolding *is* the measurement.
+- **Certify never dead-ends** (30 Sep): an already-certified or resting can-do returns 200 with `alreadySettled`, the attempt write only applies `WHERE status='unlocked' AND eligible_at <= NOW()`, and `{ gaveUp: true }` ("I don't know — show me") skips the grader, costs no strike, rests 12 h and puts the scene's phrases back into review. Pure decisions live in `lib/pedagogy/can-do-certify.ts`.
+- **Can-dos wait for the scene to be known**: `getDueCanDos` skips a can-do while any of its scene's words or phrases is learning (`learning_step < 2`) or overdue. The review sitting offers at most one, after the word and phrase cards.
 
 ## Daily Dose and conversation practice (written ahead)
 
@@ -102,8 +103,17 @@ Progress is measured as capability, not throughput. A **can-do** is one communic
 ## Pedagogy invariants
 
 - **The drill has an exit.** `lib/pedagogy/leitner.ts` parks an item after `MAX_TRIES_PER_ITEM` (6) presentations as a *wrong* completion instead of re-queueing it; the review queue owns it from there. Before this a learner who needed the reveal every time was re-queued forever (80 presentations, 0 locked in — the "learning stopped" feedback). Do not raise the cap without a reason measured in `pedagogy_events`.
-- **A late correct review is credited for the whole gap** (`schedule()` in `lib/srs/engine.ts`): Hard `(interval + delay/4) × 1.2`, Good `(interval + delay/2) × ease`, Easy `(interval + delay) × ease × 1.3`, Anki's rule. With no delay it is the old formula exactly. This is what lets a backlog drain; without it every late success came straight back at `interval × ease`.
-- **The due queue is ordered by likelihood of retention**, not by due date: lateness relative to the item's own interval, ascending (`getDueWordsForReview`, `getDuePhrasesForReview`). A returning learner meets the probable wins first.
+- **An item is known when it is recalled, not when it is shown** (30 Sep 2026, Ben: "until I remember the content you shouldn't move on"). The rules live in the doc comment above `schedule()` in `lib/srs/engine.ts`; the ones easiest to undo by accident:
+  - Due is `now >= next_review_at` (30 s tolerance). Never `last_reviewed_at + interval` — that made relearning stall.
+  - Learning items (`learning_step < 2`) graduate on one correct recall from the review queue (1 day); `hard` keeps them learning; **ease never moves while learning**; a 15 s floor stops a double post graduating anything.
+  - Late credit counts at most the item's own interval (`min(delay, interval)`). Crediting the whole gap sent 13 of Ben's words from 6–105 days to 365 on 4-second self-rated "Easy" taps (29 Sep).
+  - Any miss that isn't a real lapse (scene/tutor/practice source, a not-due review, a can-do give-up) shrinks a graduated interval to 30%; it never keeps or lengthens it.
+  - **Trip-aware**: while `users.trip_date` is ahead, intervals cap at a third of the days left (7–30, spread downward) and nothing is due after trip − 3 days; `status` comes from the uncapped interval so the cap never demotes "mastered". `setUserTrip` re-applies the cap (`applyTripIntervalCap`).
+  - Writes are compare-and-set on the millisecond-truncated `last_reviewed_at`; counters are atomic and bump once per sitting (`presentation` 1).
+- **The due queue is weakest-first**: just-parked items last, a lock-in scene (`/review?scene=`) first, then learning items, shortest interval, oldest due; with more than 40 due, ~30% of the sitting goes to the most-overdue mature items (`lib/srs/sitting.ts`). "Probable wins first" starved Ben's weak items behind 12 known words.
+- **Review is attempt-first** (`lib/pedagogy/review-session.ts`): say it (pt-BR mic), type it, or hear it and pick the meaning; "I don't know" on every card; no self-rating and no Easy button. The rating is derived from the answer; a listening pick is `hard` and never graduates on its own; "I said it right" (mic mishearing) is `hard`. A card that isn't known comes back ≥5 cards and ≥20 s later, max 3 presentations, then it's parked. Phrases score on content words (function words and names don't count); a partial phrase gets a gap drill then the whole phrase, and ONE rating at the end.
+- **New content waits for fragile items** (`lib/db/gate-queries.ts`, `lib/pedagogy/gate.ts`): a scene that hasn't started opens when ≤8 fragile items (learning, or interval ≤3 days, due now, in the scene's language, excluding its own items) are due; otherwise `GateNotice` sends to /review with "Start the scene anyway" (`?anyway=1`). Mature items never block.
+- **The pt path is ordered for the trip**: the family scenes follow the four finished ones (sort_order in `lib/db/content/pt/unit*.ts`; `lib/db/apply-pt-trip-order.ts` writes it to the DB).
 - Typed cues own their reveal timing (see MEMORY.md) — report a miss only after the learner dismisses the reveal.
 
 ## Measurement (`/admin/pedagogy`)
@@ -111,11 +121,12 @@ Progress is measured as capability, not throughput. A **can-do** is one communic
 The only surface that reads `pedagogy_events` and divides `times_correct / times_reviewed`. Queries live in `lib/db/pedagogy-queries.ts` (full-path import — not in the `lib/db/index.ts` barrel).
 
 - **7-day recall** is the dashboard line (`getWeekRecall`): the viewer's own reviews of items unanswered for 7+ days, keyed on the event's `daysAway`. Not `priorIntervalDays` — after a break a 1-day item is answered 50 days late and still reads "1d".
-- **One review sitting** is `REVIEW_SITTING` in `lib/srs/engine.ts` (14 words + 6 phrases, plus ≤2 can-dos). The review page, the dashboard card and the reminder email all read it; don't reintroduce a second number.
+- **One review sitting** is `REVIEW_SITTING` in `lib/srs/engine.ts` (14 words + 6 phrases first-pass cards, re-asks on top, plus ≤1 can-do), composed by `getReviewSitting`. The review page, the dashboard card and the reminder email all read it; don't reintroduce a second number.
 - `srs_review_recorded` is emitted **server-side** from `lib/srs/engine.ts`, not via `fireTelemetry`. Lifetime counters can't be bucketed by the interval a review happened at, so the retention curve needs a per-review event.
 - `PedagogyEvent` in `lib/pedagogy/telemetry.ts` must stay in exact sync with the actual `fireTelemetry` call sites — the admin page renders one row per event name, so a declared-but-never-emitted member is a permanent zero that reads as a real measurement.
 - Leech thresholds on the admin page must match `LEECH_MIN_REVIEWS` / `LEECH_ACCURACY` in `lib/srs/engine.ts`.
 - `pedagogy_events` is unbounded (the telemetry route has no rate limit); `/api/cron/reset-usage` prunes it at 90 days, and the nightly digest keeps a permanent summary in `digests/*.json`.
+- **Health numbers exclude test accounts** (`@wordzoo.dev`) and count backlog only in each learner's active path language (`lib/db/real-users.ts`); `health.userBacklog` has one masked line per real learner. The retention curve counts only review-source answers that advanced (re-asks aren't retention samples).
 
 ## Feedback Module
 
@@ -130,7 +141,6 @@ The only surface that reads `pedagogy_events` and divides `times_correct / times
 - **Service layer**: `lib/services/` — business logic (billing, tutor, mnemonic, path, community, sync, etc.)
 - **DB layer**: `lib/db/queries.ts` + `lib/db/community-queries.ts` — raw SQL via `@neondatabase/serverless`
 - **AI layer**: `lib/ai/` — Gemini client (`gemini.ts`), prompt templates (`prompts.ts`, `tutor-prompts.ts`)
-- **Offline**: `lib/offline/` — IndexedDB storage, sync queue, cache management
 - **SRS engine**: `lib/srs/` — spaced repetition scheduling
 
 ## Code Conventions
