@@ -5,8 +5,11 @@ import {
   levenshtein,
   matchAnyAnswer,
   normalizeForCompare,
+  normalizeNumbers,
   normalizeSentence,
+  numberToPortuguese,
   scoreRecall,
+  similarity,
 } from './normalize';
 
 describe('normalizeForCompare', () => {
@@ -207,5 +210,190 @@ describe('scoreRecall', () => {
       expect(r).toMatchObject({ verdict: 'wrong', ratio: 0 });
       expect(r.missed).toEqual(['Eu', 'gosto', 'muito', 'de', 'café']);
     });
+  });
+});
+
+describe('numbers', () => {
+  it('spells 0-100 in Portuguese and leaves the rest alone', () => {
+    expect(numberToPortuguese(0)).toBe('zero');
+    expect(numberToPortuguese(13)).toBe('treze');
+    expect(numberToPortuguese(20)).toBe('vinte');
+    expect(numberToPortuguese(45)).toBe('quarenta e cinco');
+    expect(numberToPortuguese(100)).toBe('cem');
+    expect(numberToPortuguese(101)).toBeNull();
+    expect(numberToPortuguese(-1)).toBeNull();
+  });
+
+  it('turns digits, "R$ N" and "N reais" into words', () => {
+    expect(normalizeNumbers('5')).toBe('cinco');
+    expect(normalizeNumbers('R$ 5')).toBe('cinco reais');
+    expect(normalizeNumbers('R$5')).toBe('cinco reais');
+    expect(normalizeNumbers('R$ 1')).toBe('um real');
+    expect(normalizeNumbers('5 reais')).toBe('cinco reais');
+    expect(normalizeNumbers('são 12 horas')).toBe('são doze horas');
+    expect(normalizeNumbers('sala 2b')).toBe('sala 2b');
+    expect(normalizeNumbers('1500')).toBe('1500');
+  });
+
+  it('scores a spoken digit against a target written in words', () => {
+    expect(scoreRecall(['cinco reais'], ['R$ 5']).verdict).toBe('correct');
+    expect(scoreRecall(['cinco reais'], ['5 reais']).verdict).toBe('correct');
+    expect(scoreRecall(['dez'], ['10']).verdict).toBe('correct');
+    expect(scoreRecall(['vinte e um'], ['21']).verdict).toBe('correct');
+    expect(scoreRecall(['dez'], ['11']).verdict).toBe('wrong');
+  });
+});
+
+describe('similarity', () => {
+  it('is 1 for the same sentence and falls with distance', () => {
+    expect(similarity('Tudo bem!', 'tudo bem')).toBe(1);
+    expect(similarity('obrigado', 'obrigada')).toBeGreaterThan(0.8);
+    expect(similarity('abc', 'xyz')).toBe(0);
+    expect(similarity('', '')).toBe(0);
+  });
+});
+
+describe('scoreRecall - spoken short words', () => {
+  it('a recogniser alternative one edit away counts for a 3-letter word', () => {
+    expect(scoreRecall(['sim'], ['sem'], { spoken: true }).verdict).toBe('correct');
+    expect(scoreRecall(['sim'], ['sem'], {}).verdict).toBe('wrong');
+    expect(scoreRecall(['sim'], ['não', 'sem'], { spoken: true }).verdict).toBe('correct');
+  });
+
+  it('but two edits, or a longer word, do not get the extra edit', () => {
+    expect(scoreRecall(['sim'], ['sol'], { spoken: true }).verdict).toBe('wrong');
+    expect(scoreRecall(['casa'], ['caso'], { spoken: true, noVariants: ['caso'] }).verdict).toBe('wrong');
+    expect(scoreRecall(['noite'], ['voice'], { spoken: true }).verdict).toBe('wrong');
+  });
+
+  it('applies inside a phrase too', () => {
+    const r = scoreRecall(['Eu vou sim'], ['eu vou sem'], { kind: 'phrase', spoken: true });
+    expect(r.verdict).toBe('correct');
+  });
+});
+
+describe('scoreRecall - hyphens', () => {
+  it('treats hyphens as spaces', () => {
+    expect(scoreRecall(['guarda-chuva'], ['guarda chuva']).verdict).toBe('correct');
+    expect(scoreRecall(['guarda chuva'], ['guarda-chuva']).verdict).toBe('correct');
+    expect(scoreRecall(['guarda-chuva'], ['guardachuva']).verdict).toBe('correct');
+  });
+});
+
+describe('scoreRecall - gender endings', () => {
+  it('accepts the other o/a ending of a single word and says so', () => {
+    const r = scoreRecall(['gato'], ['gata']);
+    expect(r.verdict).toBe('correct');
+    expect(r.variant).toBe('gender');
+    expect(r.bestTarget).toBe('gata');
+    expect(scoreRecall(['gata'], ['gato']).variant).toBe('gender');
+  });
+
+  it('a plain right answer carries no variant', () => {
+    const r = scoreRecall(['obrigado'], ['obrigado']);
+    expect(r.variant).toBeUndefined();
+    expect(r.bestTarget).toBe('obrigado');
+  });
+
+  it('prefers the typed form when both endings are near', () => {
+    const r = scoreRecall(['obrigado'], ['obrigada']);
+    expect(r.verdict).toBe('correct');
+    expect(r.bestTarget).toBe('obrigada');
+    expect(r.variant).toBe('gender');
+  });
+
+  it('does not apply to phrases or to a flip listed in noVariants', () => {
+    expect(scoreRecall(['Eu vejo o gato'], ['eu vejo o gata']).verdict).not.toBe('correct');
+    expect(scoreRecall(['casa'], ['caso'], { noVariants: ['caso'] }).verdict).toBe('wrong');
+    expect(scoreRecall(['casa'], ['caso']).verdict).toBe('correct');
+  });
+
+  it('a different word that only shares a stem is still wrong', () => {
+    expect(scoreRecall(['bonito'], ['bonitos']).verdict).toBe('correct'); // 1 edit on a 6-letter word
+    expect(scoreRecall(['gato'], ['pato']).verdict).toBe('wrong');
+  });
+});
+
+describe('scoreRecall - content words', () => {
+  const opts = { kind: 'phrase' as const, contentWords: true };
+
+  it('function words are shown but not required', () => {
+    const r = scoreRecall(['Eu gosto muito de café'], ['eu gosto muito café'], opts);
+    expect(r.verdict).toBe('correct');
+    expect(r.total).toBe(4);
+    expect(r.missed).toEqual([]);
+  });
+
+  it('all content words is correct even with every function word dropped', () => {
+    const r = scoreRecall(['Quero um copo de água com gelo'], ['quero copo água gelo'], opts);
+    expect(r.verdict).toBe('correct');
+  });
+
+  it('half the content words (of three or more) is partial and names the misses', () => {
+    const r = scoreRecall(['Eu gosto muito de café'], ['eu gosto'], opts);
+    expect(r.verdict).toBe('partial');
+    expect(r.ratio).toBeCloseTo(0.5);
+    expect(r.missed).toEqual(['muito', 'café']);
+    expect(r.matched).toEqual(['Eu', 'gosto']);
+  });
+
+  it('under half is wrong', () => {
+    const r = scoreRecall(['Eu gosto muito de café'], ['gosto'], opts);
+    expect(r.verdict).toBe('wrong');
+  });
+
+  it('a phrase with fewer than three content words is all-or-nothing', () => {
+    const r = scoreRecall(['Bom dia, como vai?'], ['bom dia'], opts);
+    // content: bom, dia, como, vai = 4 -> partial
+    expect(r.verdict).toBe('partial');
+    const short = scoreRecall(['Que horas são?'], ['horas'], opts);
+    // content: horas, são = 2 -> wrong, not partial
+    expect(short.verdict).toBe('wrong');
+  });
+
+  it('names mid-sentence are not required; sentence-initial capitals are', () => {
+    const r = scoreRecall(['Meu nome é Ana e moro em Curitiba'], ['meu nome moro'], opts);
+    // Ana and Curitiba are names; content = meu, nome, moro
+    expect(r.verdict).toBe('correct');
+    const initial = scoreRecall(['Casa grande e bonita'], ['grande bonita'], opts);
+    // Casa is sentence-initial so it counts: 2 of 3 content words
+    expect(initial.verdict).toBe('partial');
+  });
+
+  it('a capital after a full stop is sentence-initial, after a comma it is a name', () => {
+    const after = scoreRecall(['Tudo bem. Vamos comer agora'], ['tudo bem comer agora'], opts);
+    expect(after.missed).toEqual(['Vamos']);
+    expect(after.verdict).toBe('partial'); // "Vamos" missing but required
+    const comma = scoreRecall(['Tudo bem, Ana, vamos comer'], ['tudo bem vamos comer'], opts);
+    expect(comma.verdict).toBe('correct');
+  });
+
+  it('names passed in are not required either', () => {
+    // "Benji" opens the sentence, so only being passed in exempts it
+    const r = scoreRecall(['Benji mora aqui'], ['mora aqui'], { ...opts, names: ['Benji'] });
+    expect(r.verdict).toBe('correct');
+    const without = scoreRecall(['Benji mora aqui'], ['mora aqui'], opts);
+    expect(without.verdict).toBe('partial');
+  });
+
+  it('the same phrase without the option keeps the old thresholds', () => {
+    const r = scoreRecall(['Eu gosto muito de café'], ['eu gosto']);
+    expect(r.verdict).toBe('wrong');
+  });
+
+  it('an all-function phrase falls back to scoring every word', () => {
+    const r = scoreRecall(['É o que?'], ['é o que'], opts);
+    expect(r.verdict).toBe('correct');
+    expect(scoreRecall(['É o que?'], ['é'], opts).verdict).toBe('wrong');
+  });
+
+  it('a spoken 3-letter content word gets its one edit', () => {
+    const r = scoreRecall(['Eu vou sim agora'], ['eu vou sem agora'], { ...opts, spoken: true });
+    expect(r.verdict).toBe('correct');
+  });
+
+  it('a wrong-order attempt does not count words out of order', () => {
+    const r = scoreRecall(['gosto muito café'], ['café muito gosto'], opts);
+    expect(r.verdict).not.toBe('correct');
   });
 });

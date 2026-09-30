@@ -1,10 +1,9 @@
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { getDueWords, getDuePhrases, REVIEW_SITTING } from '@/lib/srs/engine';
-import { getAllLearnedWordsForPractice, getWordFamilies, getUserActivePath, getLanguageById, getDueWordCount } from '@/lib/db/queries';
-import { getPhraseWordsWithMnemonics, getDuePhraseCount } from '@/lib/db/scene-flow-queries';
+import { getReviewSitting, REVIEW_SITTING } from '@/lib/srs/engine';
+import { getAllLearnedWordsForPractice, getWordFamilies, getUserActivePath, getLanguageById } from '@/lib/db/queries';
+import { getPhraseWordsWithMnemonics } from '@/lib/db/scene-flow-queries';
 import { getInsightState } from '@/lib/db/insight-queries';
-import { getDueCanDos } from '@/lib/db/can-do-queries';
 import { getUserProfile } from '@/lib/db/queries';
 import {
   personalizeReviewPhrase,
@@ -17,9 +16,26 @@ import { ReviewClient } from '@/components/learn/ReviewClient';
 import type { LearnWordFamily } from '@/types/learn';
 import type { PhraseWordMnemonic } from '@/types/database';
 
-export default async function ReviewPage() {
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** "Practice now" runs through this many learned words, least recently seen first. */
+const PRACTICE_SITTING = 20;
+/** Learned words sent to the client as listening distractors and same-meaning alternates. */
+const WORD_POOL_LIMIT = 300;
+
+export default async function ReviewPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ scene?: string | string[] }>;
+}) {
   const session = await auth();
   if (!session?.user?.id) redirect('/login');
+
+  // `?scene=` is the "Lock these in" hand-off from a scene summary. It goes
+  // into a ::uuid cast, so anything that is not a uuid is dropped here.
+  const { scene } = await searchParams;
+  const sceneParam = Array.isArray(scene) ? scene[0] : scene;
+  const priorityScene = sceneParam && UUID.test(sceneParam) ? sceneParam : null;
 
   // Scope review to the user's active path's language so they aren't reviewing
   // words from a path they're not currently working on. If no active path,
@@ -27,21 +43,19 @@ export default async function ReviewPage() {
   const activePath = await getUserActivePath(session.user.id);
   const languageId = activePath?.path_language_id ?? null;
 
-  // One sitting (REVIEW_SITTING) so a session stays short enough to finish.
-  // The uncapped totals come along too, or the session ends on "All caught
-  // up!" while 100+ items are still waiting — the single most-reported bug in
-  // the review flow ("34 words to review but it took me through 12").
-  const [dueWords, rawDuePhrases, dueCanDos, practiceWords, insightState, language, profile, dueWordTotal, duePhraseTotal] = await Promise.all([
-    getDueWords(session.user.id, REVIEW_SITTING.words, undefined, languageId),
-    getDuePhrases(session.user.id, REVIEW_SITTING.phrases, languageId),
-    getDueCanDos(session.user.id, 5, languageId),
-    getAllLearnedWordsForPractice(session.user.id, undefined, languageId),
+  // One sitting (REVIEW_SITTING), in the order the engine composes it. The
+  // uncapped totals come along too, so the end screen can say how much is
+  // still waiting instead of pretending the queue is empty.
+  const [sitting, learnedWords, insightState, language, profile] = await Promise.all([
+    getReviewSitting(session.user.id, languageId, { priorityScene }),
+    getAllLearnedWordsForPractice(session.user.id, WORD_POOL_LIMIT, languageId),
     getInsightState(session.user.id),
     languageId ? getLanguageById(languageId) : Promise.resolve(null),
     getUserProfile(session.user.id),
-    getDueWordCount(session.user.id, languageId),
-    getDuePhraseCount(session.user.id, languageId),
   ]);
+  const dueWords = sitting.words;
+  const practiceWords = learnedWords.slice(0, PRACTICE_SITTING);
+  const wordPool = learnedWords.map((w) => ({ id: w.word_id, text: w.text, meaning_en: w.meaning_en }));
 
   // Personalize learner-facing phrase fields (same rules as the learn page —
   // the due queue otherwise still shows the seed persona "Ana").
@@ -56,32 +70,30 @@ export default async function ReviewPage() {
         ? (prefs.learner_gender as LearnerGender)
         : null,
   };
-  const duePhrases = rawDuePhrases.map((p) =>
-    personalizeReviewPhrase(p, language?.code, learnerIdentity)
-  );
+  const duePhrases = sitting.phrases.map((p) => personalizeReviewPhrase(p, language?.code, learnerIdentity));
 
-  // Collect all unique word IDs and batch-fetch word families
-  const allWordIds = new Set<string>();
-  dueWords.forEach(w => allWordIds.add(w.word_id));
-  practiceWords.forEach(w => allWordIds.add(w.word_id));
+  // Word families for the words that can be asked (the sitting, or practice).
+  const familyWordIds = new Set<string>();
+  dueWords.forEach((w) => familyWordIds.add(w.word_id));
+  practiceWords.forEach((w) => familyWordIds.add(w.word_id));
 
   const wordFamiliesMap: Record<string, LearnWordFamily[]> = {};
   await Promise.all(
-    Array.from(allWordIds).map(async (wordId) => {
+    Array.from(familyWordIds).map(async (wordId) => {
       const families = await getWordFamilies(wordId);
       if (families.length > 0) {
-        wordFamiliesMap[wordId] = families.map(f => ({
+        wordFamiliesMap[wordId] = families.map((f) => ({
           affix_type: f.affix_type,
           derived_word: f.derived_text,
           derived_meaning: f.derived_meaning_en,
           meaning_shift: f.meaning_shift ?? '',
         }));
       }
-    })
+    }),
   );
 
-  // Fetch word-level mnemonics for all due phrases
-  const phraseIds = duePhrases.map(p => p.phrase_id);
+  // Word-level mnemonics for every phrase in the sitting: shown after a miss.
+  const phraseIds = duePhrases.map((p) => p.phrase_id);
   const phraseWordRows = await getPhraseWordsWithMnemonics(phraseIds, session.user.id);
   const phraseWordMap: Record<string, PhraseWordMnemonic[]> = {};
   for (const pw of phraseWordRows) {
@@ -103,7 +115,20 @@ export default async function ReviewPage() {
 
   return (
     <div className="max-w-lg mx-auto -mt-2">
-      <ReviewClient dueWords={dueWords} duePhrases={duePhrases} dueCanDos={dueCanDos} practiceWords={practiceWords} wordFamiliesMap={wordFamiliesMap} phraseWordMap={phraseWordMap} languageCode={language?.code ?? null} dueTotal={dueWordTotal + duePhraseTotal} insightState={{ seenIds: Array.from(insightState.seenIds), shownToday: insightState.shownToday }} />
+      <ReviewClient
+        dueWords={dueWords}
+        duePhrases={duePhrases}
+        practiceWords={practiceWords}
+        wordPool={wordPool}
+        wordFamiliesMap={wordFamiliesMap}
+        phraseWordMap={phraseWordMap}
+        languageCode={language?.code ?? null}
+        dueTotal={sitting.dueWordTotal + sitting.duePhraseTotal}
+        sittingSize={REVIEW_SITTING.words + REVIEW_SITTING.phrases}
+        learnerName={learnerIdentity.firstName}
+        sceneId={priorityScene}
+        insightState={{ seenIds: Array.from(insightState.seenIds), shownToday: insightState.shownToday }}
+      />
     </div>
   );
 }

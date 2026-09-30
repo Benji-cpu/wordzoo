@@ -7,119 +7,102 @@ import { Celebration } from '@/components/ui/Celebration';
 import { useSound } from '@/lib/hooks/useSound';
 import { useHaptic } from '@/lib/hooks/useHaptic';
 import { useXP } from '@/lib/hooks/useXP';
+import type { SittingSummary } from '@/lib/pedagogy/review-session';
 
 interface ReviewCompleteProps {
-  totalReviewed: number;
-  correctCount: number;
-  revisionCount?: number;
-  revisionCorrectCount?: number;
-  reviewedWordIds?: string[];
-  /**
-   * Items still due that this sitting didn't reach (the queue is capped at one
-   * sitting). Greater than zero means this is NOT the end of the work, and the
-   * screen must not say or celebrate otherwise.
-   */
-  remaining?: number;
-  /** Words + phrases in one sitting, so "Review N more" names the next one. */
-  sitting?: number;
+  summary: SittingSummary;
+  /** "Practice now" sittings are not due work: nothing is owed after them. */
+  practice?: boolean;
+  /** The scene this sitting was opened from ("Lock these in"), kept for another round. */
+  sceneId?: string | null;
 }
 
-export function ReviewComplete({
-  totalReviewed,
-  correctCount,
-  revisionCount = 0,
-  revisionCorrectCount = 0,
-  reviewedWordIds = [],
-  remaining = 0,
-  sitting = 20,
-}: ReviewCompleteProps) {
-  const didRevision = revisionCount > 0;
-  const moreWaiting = remaining > 0;
-  // Carry the just-reviewed words into the tutor so the word_review session
-  // practices them instead of the (now empty) due queue
-  const tutorHref = reviewedWordIds.length > 0
-    ? `/tutor?mode=word_review&words=${reviewedWordIds.slice(0, 10).join(',')}`
-    : '/tutor?mode=word_review';
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function sittingsLabel(n: number): string {
+  return n <= 1 ? 'about 1 sitting' : `about ${n} sittings`;
+}
+
+/**
+ * How the sitting went, without flattery: what is locked in, what is parked
+ * for next time, and how much is still waiting. "Next scene" is the main
+ * button only when nothing fragile is left (see summarize); otherwise the main
+ * button is another round.
+ */
+export function ReviewComplete({ summary, practice = false, sceneId = null }: ReviewCompleteProps) {
   const { play } = useSound();
   const { trigger } = useHaptic();
   const { award, sessionEarned } = useXP();
+  const { lockedIn, parked, stillWaiting, sittings, total, canMoveOn } = summary;
+  const celebrate = !practice && canMoveOn && stillWaiting === 0;
 
   useEffect(() => {
-    // Confetti and a fanfare for clearing 20 of 148 is the dishonesty the
-    // learner reported as "it doesn't say I'm done, it just restarts". Only
-    // celebrate an actually-empty queue. The XP is still earned either way —
-    // they did the work.
-    if (!moreWaiting) {
+    if (celebrate) {
       play('scene-complete');
       trigger('celebrate');
     }
-    if (totalReviewed > 0) void award('review_session');
-    // intentional: award once on mount
+    if (total > 0) void award('review_session');
+    // intentional: once on mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const roundHref = sceneId && UUID.test(sceneId) ? `/review?scene=${sceneId}` : '/review';
+  // Full navigation, not <Link>: a soft nav back to /review would keep this
+  // mounted screen and never fetch the next sitting.
+  const anotherRound = () => window.location.assign(roundHref);
+
+  let title: string;
+  let subtitle: string;
+  if (practice) {
+    title = 'Practice done';
+    subtitle = `You went through ${total} ${total === 1 ? 'item' : 'items'}. Practice never changes your schedule.`;
+  } else if (canMoveOn && stillWaiting === 0) {
+    title = 'All caught up';
+    subtitle = 'Everything due is locked in. A good time to learn something new.';
+  } else if (canMoveOn) {
+    title = 'Good place to stop';
+    subtitle = `${stillWaiting} still waiting, ${sittingsLabel(sittings)}, but nothing shaky is holding you back.`;
+  } else {
+    title = 'Not locked in yet';
+    subtitle =
+      parked > 0
+        ? `${parked} ${parked === 1 ? 'item is' : 'items are'} parked for next time. They stay due and come first.`
+        : `${stillWaiting} still waiting, ${sittingsLabel(sittings)}. Another round keeps them coming back.`;
+  }
+
+  const primary = practice
+    ? { label: 'Practice again', onClick: anotherRound }
+    : canMoveOn
+      ? { label: 'Next scene', href: '/dashboard' }
+      : { label: 'Another round', onClick: anotherRound };
+  const secondary = { label: 'Back to home', href: '/dashboard' };
+
   return (
     <div className="flex flex-col items-stretch justify-center flex-1 min-h-[60vh] animate-spring-in relative pt-4 pb-6 gap-4">
-      {!moreWaiting && <Celebration active variant="scene-complete" />}
+      {celebrate && <Celebration active variant="scene-complete" />}
 
-      {moreWaiting ? (
-        <EmptyStateCard
-          foxPose="wave"
-          title={`${remaining} more waiting`}
-          subtitle={
-            <>
-              You cleared {totalReviewed}. Reviews come in short sittings so
-              each one is a few minutes — keep going, or come back to the rest
-              later.
-            </>
-          }
-          primary={{
-            label: `Review ${Math.min(remaining, Math.max(sitting, 1))} more →`,
-            // Full navigation, not <Link>. A soft nav back to /review keeps the
-            // mounted ReviewClient — including phase='done' — so the learner
-            // would just land back on this same screen.
-            onClick: () => window.location.assign('/review'),
-          }}
-          secondary={{ label: 'Back to home', href: '/dashboard' }}
-        />
-      ) : (
-        <EmptyStateCard
-          foxPose="celebrating"
-          title="All caught up!"
-          subtitle={
-            didRevision
-              ? 'Great job reinforcing those tricky words — keep the habit going.'
-              : 'Nice work on your reviews. The best time to learn a new word is right now.'
-          }
-          primary={{ label: 'Practice in conversation →', href: tutorHref }}
-          secondary={{ label: 'Back to home', href: '/dashboard' }}
-        />
-      )}
+      <EmptyStateCard
+        foxPose={celebrate ? 'celebrating' : canMoveOn ? 'proud' : 'wave'}
+        title={title}
+        subtitle={subtitle}
+        primary={primary}
+        secondary={secondary}
+      />
 
       {sessionEarned > 0 && (
         <p className="self-center inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[color:var(--color-fox-soft)] text-[color:var(--color-fox-deep)] dark:text-[color:var(--color-fox-primary)] text-[13px] font-extrabold">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-            <path d="m12 3 1.9 5.6L20 11l-6.1 2.4L12 19l-1.9-5.6L4 11l6.1-2.4Z" />
-          </svg>
           +{sessionEarned} XP earned
         </p>
       )}
 
-      <ActionCardRow>
-        <ActionCard icon="↻" value={totalReviewed} label="Reviewed" tone="cream" />
-        <ActionCard icon="✓" value={correctCount} label="Remembered" tone="warm" />
-      </ActionCardRow>
-
-      {didRevision && (
-        <>
-          <p className="text-[10.5px] font-extrabold tracking-[0.16em] uppercase text-[color:var(--text-secondary)] px-1 -mb-2">
-            Revision round
-          </p>
-          <ActionCardRow>
-            <ActionCard icon="↻" value={revisionCount} label="Revised" tone="cream" />
-            <ActionCard icon="✓" value={revisionCorrectCount} label="Recalled" tone="warm" />
-          </ActionCardRow>
-        </>
+      {!practice && (
+        <ActionCardRow>
+          <ActionCard icon="✓" value={`${lockedIn} of ${total}`} label="Locked in" tone="warm" />
+          <ActionCard icon="⏸" value={parked} label="Parked for next time" tone="cream" />
+          {stillWaiting > 0 && (
+            <ActionCard icon="↻" value={stillWaiting} label={`Still waiting, ${sittingsLabel(sittings)}`} tone="neutral" />
+          )}
+        </ActionCardRow>
       )}
     </div>
   );
