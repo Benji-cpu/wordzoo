@@ -25,8 +25,9 @@ export interface DueCanDo {
  *
  * Due = the time rules (unlocked, eligible_at passed) AND readiness: the scene's
  * words and phrases are all out of the learning phase (learning_step >= 2, see
- * GRADUATED in lib/srs/engine.ts). A row the learner has never met doesn't
- * block; one still being learned does. Testing production of phrases the
+ * GRADUATED in lib/srs/engine.ts) AND none is overdue (next_review_at <= NOW()):
+ * an item whose review is waiting is not yet consolidated either. A row the
+ * learner has never met doesn't block; one still being learned or overdue does. Testing production of phrases the
  * learner hasn't consolidated just books a strike; the reviews that would fix
  * that are already in the same sitting. can_dos has no phrase FK, so readiness
  * is scene-level.
@@ -57,12 +58,12 @@ export async function getDueCanDos(
       AND NOT EXISTS (
         SELECT 1 FROM scene_words sw
         JOIN user_words uw ON uw.word_id = sw.word_id AND uw.user_id = ${userId}
-        WHERE sw.scene_id = cd.scene_id AND uw.learning_step < 2
+        WHERE sw.scene_id = cd.scene_id AND (uw.learning_step < 2 OR uw.next_review_at <= NOW())
       )
       AND NOT EXISTS (
         SELECT 1 FROM scene_phrases sp
         JOIN user_phrases up ON up.phrase_id = sp.id AND up.user_id = ${userId}
-        WHERE sp.scene_id = cd.scene_id AND up.learning_step < 2
+        WHERE sp.scene_id = cd.scene_id AND (up.learning_step < 2 OR up.next_review_at <= NOW())
       )
     -- A scene's can-dos share one eligible_at; sort_order makes their order stable.
     ORDER BY ucd.eligible_at ASC, cd.sort_order ASC
@@ -133,12 +134,12 @@ export async function getCanDoInventory(
             AND NOT EXISTS (
               SELECT 1 FROM scene_words sw
               JOIN user_words uw ON uw.word_id = sw.word_id AND uw.user_id = ${userId}
-              WHERE sw.scene_id = cd.scene_id AND uw.learning_step < 2
+              WHERE sw.scene_id = cd.scene_id AND (uw.learning_step < 2 OR uw.next_review_at <= NOW())
             )
             AND NOT EXISTS (
               SELECT 1 FROM scene_phrases sp
               JOIN user_phrases up ON up.phrase_id = sp.id AND up.user_id = ${userId}
-              WHERE sp.scene_id = cd.scene_id AND up.learning_step < 2
+              WHERE sp.scene_id = cd.scene_id AND (up.learning_step < 2 OR up.next_review_at <= NOW())
             )
         )::int AS due_now
       FROM user_can_dos ucd
@@ -255,8 +256,8 @@ export async function recordCanDoAttempt(
 /**
  * "I don't know": no strike, no attempt counted, no verdict change. The can-do
  * rests for `restHours`, and the scene's phrases come back for study: one
- * relearn step (learning_step 0, due now if not already sooner) with interval
- * and ease untouched, so this only ever tightens a schedule.
+ * relearn step (learning_step 0, due now if not already sooner), a graduated
+ * phrase's interval cut to 30%, ease untouched: this only ever tightens a schedule.
  *
  * Same guard as recordCanDoAttempt; returns null when a concurrent request got
  * there first. One statement (data-modifying CTEs), so the rest and the
@@ -278,6 +279,13 @@ export async function recordCanDoGiveUp(
     ),
     ph AS (
       UPDATE user_phrases up SET
+        -- A graduated phrase's interval shrinks to 30% (never lengthens: a
+        -- reset must not leave a long interval behind). SET reads OLD values,
+        -- so learning_step here is still the pre-reset one.
+        interval_days = CASE
+          WHEN up.learning_step >= 2 THEN GREATEST(1, ROUND(up.interval_days * 0.3)::int)
+          ELSE up.interval_days
+        END,
         learning_step = 0,
         next_review_at = LEAST(up.next_review_at, NOW())
       FROM scene_phrases sp, can_dos cd, upd

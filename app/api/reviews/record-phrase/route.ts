@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { RecordPhraseReviewSchema } from '@/types/api';
-import type { ApiResponse } from '@/types/api';
+import type { ApiResponse, RecordReviewResponse } from '@/types/api';
 import { recordPhraseReview } from '@/lib/srs/engine';
 import { readJson } from '@/lib/api/request';
 
@@ -25,10 +25,10 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { phraseId, rating, source, direction } = parsed.data;
-  const result = await recordPhraseReview(session.user.id, phraseId, rating, source, direction);
+  const { phraseId, rating, source, direction, presentation } = parsed.data;
+  const result = await recordPhraseReview(session.user.id, phraseId, rating, source, direction, presentation);
 
-  return NextResponse.json<ApiResponse<{ nextReviewAt: Date; newInterval: number }>>(
-    { data: result, error: null }
+  return NextResponse.json<ApiResponse<RecordReviewResponse>>(
+    { data: { ...result, nextReviewAt: result.nextReviewAt.toISOString() }, error: null }
   );
 }

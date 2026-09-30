@@ -1,4 +1,5 @@
 import { sql } from './client';
+import { tripDaysLeft, tripBulkCap } from '@/lib/srs/trip';
 import type { Word, Mnemonic, Path, Scene, Language, UserPath, TutorSession, TutorMessage, Subscription, DailyUsage, MnemonicFeedback, LearnerProfile, TutorWordReview, TutorNudge, WordFamily } from '@/types/database';
 
 export interface WordWithLanguage extends Word {
@@ -418,13 +419,14 @@ export async function getPathWordStats(
     SELECT
       COUNT(DISTINCT pw.word_id)::int AS total_words,
       COUNT(DISTINCT CASE WHEN uw.status IN ('learning', 'reviewing', 'mastered') THEN pw.word_id END)::int AS words_learned,
-      -- "Mastered" used to be status = 'mastered', i.e. interval_days >= 30,
-      -- which was reachable in about four self-graded taps with the mnemonic
-      -- on screen. It now has to look like actual retention: a real interval,
-      -- enough spaced attempts to mean something, a passing hit rate, and not
-      -- a leech. This also moves the path progress bars, deliberately.
+      -- "Mastered" used to be status = 'mastered' alone, which was reachable in
+      -- about four self-graded taps with the mnemonic on screen. It now has to
+      -- look like actual retention: status 'mastered', enough spaced attempts to
+      -- mean something, a passing hit rate, and not a leech. Status (not
+      -- interval_days) because the engine derives it from the UNCAPPED
+      -- interval: a trip cap shortens interval_days but must not un-master a word.
       COUNT(DISTINCT CASE
-        WHEN uw.interval_days >= 21
+        WHEN uw.status = 'mastered'
          AND uw.times_reviewed >= 4
          AND uw.times_correct::numeric / NULLIF(uw.times_reviewed, 0) >= 0.75
          AND uw.lapses <= 2
@@ -894,6 +896,66 @@ export async function setUserTrip(userId: string, data: {
       updated_at = NOW()
     WHERE id = ${userId}
   `;
+  // The scheduler only caps an item when it is answered, so a trip set now
+  // would leave every existing item on its old, longer schedule.
+  await applyTripIntervalCap(userId);
+}
+
+/**
+ * Bring existing schedules in line with the user's trip: any word or phrase in
+ * the active path's language whose interval exceeds the trip cap gets the cap
+ * (spread downward, so a cohort doesn't lump) and is due no later than its last
+ * review + that interval. status, learning_step and ease are untouched — the
+ * cap must not demote "mastered". No-op without a trip, or with <= 3 days left.
+ * The one-off repair script (lib/db/apply-trip-interval-cap.ts) is the same rule
+ * with the 29 Sep special case; keep them in step.
+ */
+export async function applyTripIntervalCap(userId: string): Promise<{ words: number; phrases: number }> {
+  const trip = await getUserTrip(userId);
+  const cap = tripBulkCap(tripDaysLeft(trip?.trip_date ?? null, new Date()));
+  if (cap == null) return { words: 0, phrases: 0 };
+  const width = Math.max(1, Math.round(cap * 0.1));
+
+  const lang = await sql`
+    SELECT p.language_id FROM user_paths up JOIN paths p ON p.id = up.path_id
+    WHERE up.user_id = ${userId} AND up.status = 'active'
+    ORDER BY up.started_at DESC LIMIT 1
+  `;
+  const languageId = (lang[0] as { language_id: string } | undefined)?.language_id;
+  if (!languageId) return { words: 0, phrases: 0 };
+
+  const [words, phrases] = await Promise.all([
+    sql`
+      WITH tgt AS (
+        SELECT uw.id, GREATEST(1, ${cap}::int - floor(random() * ${width})::int) AS iv
+        FROM user_words uw JOIN words w ON w.id = uw.word_id
+        WHERE uw.user_id = ${userId} AND uw.interval_days > ${cap}::int AND w.language_id = ${languageId}
+      )
+      UPDATE user_words uw SET
+        interval_days = t.iv,
+        next_review_at = LEAST(uw.next_review_at, COALESCE(uw.last_reviewed_at, NOW()) + t.iv * interval '1 day'),
+        updated_at = NOW()
+      FROM tgt t WHERE uw.id = t.id
+      RETURNING uw.id
+    `,
+    sql`
+      WITH tgt AS (
+        SELECT up.id, GREATEST(1, ${cap}::int - floor(random() * ${width})::int) AS iv
+        FROM user_phrases up
+        JOIN scene_phrases sp ON sp.id = up.phrase_id
+        JOIN scenes s ON s.id = sp.scene_id
+        JOIN paths p ON p.id = s.path_id
+        WHERE up.user_id = ${userId} AND up.interval_days > ${cap}::int AND p.language_id = ${languageId}
+      )
+      UPDATE user_phrases up SET
+        interval_days = t.iv,
+        next_review_at = LEAST(up.next_review_at, COALESCE(up.last_reviewed_at, NOW()) + t.iv * interval '1 day'),
+        updated_at = NOW()
+      FROM tgt t WHERE up.id = t.id
+      RETURNING up.id
+    `,
+  ]);
+  return { words: words.length, phrases: phrases.length };
 }
 
 export async function clearUserTrip(userId: string): Promise<void> {
@@ -1156,16 +1218,32 @@ export interface DueWordForReview {
   status: string;
   ease_factor: number;
   interval_days: number;
+  learning_step: number;
+  /** ISO string (UTC), or null if never reviewed. */
+  last_reviewed_at: string | null;
   times_reviewed: number;
   times_correct: number;
   direction: string;
 }
 
+/**
+ * Due words in sitting order:
+ *  1. items touched in the last 10 minutes go LAST ("parked": a card the
+ *     learner just failed three times shouldn't reopen the next sitting),
+ *     except the priority scene's items, which are just-touched by design;
+ *  2. the priority scene's items (the "Lock these in" hand-off);
+ *  3. learning / relearning items, then the shortest intervals, then oldest due.
+ * matureOverdue swaps 3 for "most overdue first" and keeps only interval >= 7:
+ * the catch-up slice of a big backlog (see lib/srs/sitting.ts).
+ */
 export async function getDueWordsForReview(
   userId: string,
   limit: number = 20,
-  languageId?: string | null
+  languageId?: string | null,
+  opts?: { priorityScene?: string | null; matureOverdue?: boolean }
 ): Promise<DueWordForReview[]> {
+  const priorityScene = opts?.priorityScene ?? null;
+  const mature = opts?.matureOverdue ?? false;
   const rows = await sql`
     SELECT
       w.id AS word_id, w.text, w.romanization, w.pronunciation_audio_url,
@@ -1173,6 +1251,8 @@ export async function getDueWordsForReview(
       w.informal_text, w.register,
       m.id AS mnemonic_id, m.keyword_text, m.scene_description, m.bridge_sentence, m.image_url,
       uw.id AS user_word_id, uw.status, uw.ease_factor, uw.interval_days,
+      uw.learning_step,
+      to_char(uw.last_reviewed_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS last_reviewed_at,
       uw.times_reviewed, uw.times_correct, uw.direction
     FROM user_words uw
     JOIN words w ON w.id = uw.word_id
@@ -1187,16 +1267,23 @@ export async function getDueWordsForReview(
         created_at DESC
       LIMIT 1
     ) m ON true
+    CROSS JOIN LATERAL (
+      SELECT (${priorityScene}::uuid IS NOT NULL AND EXISTS (
+        SELECT 1 FROM scene_words sw WHERE sw.scene_id = ${priorityScene}::uuid AND sw.word_id = w.id
+      )) AS is_priority
+    ) pri
     WHERE uw.user_id = ${userId}
       AND uw.next_review_at <= NOW()
       AND uw.status != 'new'
       AND (${languageId ?? null}::uuid IS NULL OR w.language_id = ${languageId ?? null}::uuid)
-    -- Most-likely-still-known first: lateness relative to the item's own
-    -- interval. A 90-day word 20 days late is a probable win; a 1-day word 100
-    -- days late is a probable Again. A returning learner meets the wins first,
-    -- so the 10-minute re-asks cluster at the END of a sitting, not the start.
+      AND (NOT ${mature}::boolean OR uw.interval_days >= 7)
+    -- Weak first, not "probable wins first": the old lateness-relative order
+    -- starved the items that most needed a re-ask.
     ORDER BY
-      EXTRACT(EPOCH FROM (NOW() - uw.next_review_at)) / 86400.0 / GREATEST(uw.interval_days, 1) ASC,
+      COALESCE(uw.last_reviewed_at > NOW() - interval '10 minutes' AND NOT pri.is_priority, false) ASC,
+      pri.is_priority DESC,
+      (uw.learning_step < 2 AND NOT ${mature}::boolean) DESC,
+      CASE WHEN ${mature}::boolean THEN 0 ELSE uw.interval_days END ASC,
       uw.next_review_at ASC
     LIMIT ${limit}
   `;
@@ -1215,6 +1302,8 @@ export async function getAllLearnedWordsForPractice(
       w.informal_text, w.register,
       m.id AS mnemonic_id, m.keyword_text, m.scene_description, m.bridge_sentence, m.image_url,
       uw.id AS user_word_id, uw.status, uw.ease_factor, uw.interval_days,
+      uw.learning_step,
+      to_char(uw.last_reviewed_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS last_reviewed_at,
       uw.times_reviewed, uw.times_correct, uw.direction
     FROM user_words uw
     JOIN words w ON w.id = uw.word_id
@@ -1238,37 +1327,73 @@ export async function getAllLearnedWordsForPractice(
   return rows as DueWordForReview[];
 }
 
-export async function updateWordSRS(
-  userWordId: string,
-  data: {
-    easeFactor: number;
-    intervalDays: number;
-    /** 0 = awaiting the 10-min step, 1 = awaiting graduation, 2 = graduated. */
-    learningStep: number;
-    lapses: number;
-    nextReviewAt: Date;
-    timesReviewed: number;
-    timesCorrect: number;
-    status: string;
-    direction: string;
-    lastReviewedAt: Date;
+/**
+ * One SRS write, shared by words and phrases (see engine.recordSrs).
+ *
+ * advance=false is practice_no_advance: counters, last_reviewed_at and direction
+ * only. The schedule columns are not written, so it needs no compare-and-set: a
+ * racing advance can't be clobbered by it.
+ */
+export interface SrsWrite {
+  advance: boolean;
+  easeFactor: number;
+  intervalDays: number;
+  /** 0 = awaiting the first recall, 1 = legacy same, 2 = graduated. */
+  learningStep: number;
+  lapses: number;
+  nextReviewAt: Date;
+  status: string;
+  isCorrect: boolean;
+  /** False for a repeat presentation in a sitting: counters stay put. */
+  countAttempt: boolean;
+  /** Direction of THIS review. Omitted leaves the stored value alone. */
+  direction?: string;
+  lastReviewedAt: Date;
+  /** The read's last_reviewed_token (ms-truncated ISO, or null): the compare-and-set value. */
+  expectedLastReviewedAt: string | null;
+}
+
+/**
+ * Returns false when the compare-and-set lost: another request changed
+ * last_reviewed_at since this one read the row, so nothing was written and the
+ * caller re-reads. The token is date_trunc('milliseconds') on both sides: NOW()
+ * defaults carry microseconds a JS Date can't, and updated_at is unusable for
+ * phrases (getOrCreateUserPhrase bumps it on every read).
+ */
+export async function updateWordSRS(userWordId: string, data: SrsWrite): Promise<boolean> {
+  const inc = data.countAttempt ? 1 : 0;
+  const incCorrect = data.countAttempt && data.isCorrect ? 1 : 0;
+  const last = data.lastReviewedAt.toISOString();
+  if (!data.advance) {
+    await sql`
+      UPDATE user_words SET
+        times_reviewed = times_reviewed + ${inc},
+        times_correct = times_correct + ${incCorrect},
+        direction = COALESCE(${data.direction ?? null}, direction),
+        last_reviewed_at = ${last},
+        updated_at = NOW()
+      WHERE id = ${userWordId}
+    `;
+    return true;
   }
-): Promise<void> {
-  await sql`
+  const rows = await sql`
     UPDATE user_words SET
       ease_factor = ${data.easeFactor},
       interval_days = ${data.intervalDays},
       learning_step = ${data.learningStep},
       lapses = ${data.lapses},
       next_review_at = ${data.nextReviewAt.toISOString()},
-      times_reviewed = ${data.timesReviewed},
-      times_correct = ${data.timesCorrect},
+      times_reviewed = times_reviewed + ${inc},
+      times_correct = times_correct + ${incCorrect},
       status = ${data.status},
-      direction = ${data.direction},
-      last_reviewed_at = ${data.lastReviewedAt.toISOString()},
+      direction = COALESCE(${data.direction ?? null}, direction),
+      last_reviewed_at = ${last},
       updated_at = NOW()
     WHERE id = ${userWordId}
+      AND date_trunc('milliseconds', last_reviewed_at) IS NOT DISTINCT FROM ${data.expectedLastReviewedAt}::timestamptz
+    RETURNING id
   `;
+  return rows.length > 0;
 }
 
 export async function getUserWord(
@@ -1300,7 +1425,11 @@ export interface UserWordSrsState {
   status: string;
   direction: string;
   last_reviewed_at: Date | null;
+  /** last_reviewed_at truncated to ms, ISO UTC: the compare-and-set token (a JS Date round-trip can be off by 1 ms). */
+  last_reviewed_token: string | null;
   next_review_at: Date | null;
+  /** users.trip_date as 'YYYY-MM-DD', or null. */
+  trip_date: string | null;
 }
 
 export async function getOrCreateUserWord(
@@ -1319,7 +1448,10 @@ export async function getOrCreateUserWord(
     DO UPDATE SET current_mnemonic_id = COALESCE(user_words.current_mnemonic_id, EXCLUDED.current_mnemonic_id)
     RETURNING id, ease_factor, interval_days, learning_step, lapses,
               times_reviewed, times_correct, status, direction,
-              last_reviewed_at, next_review_at
+              last_reviewed_at,
+              to_char(date_trunc('milliseconds', last_reviewed_at) AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS last_reviewed_token,
+              next_review_at,
+              (SELECT to_char(trip_date, 'YYYY-MM-DD') FROM users WHERE id = ${userId}) AS trip_date
   `;
   return rows[0] as UserWordSrsState;
 }

@@ -1,4 +1,5 @@
 import { sql } from './client';
+import type { SrsWrite } from './queries';
 import type {
   SceneDialogue,
   ScenePhrase,
@@ -170,7 +171,11 @@ export interface UserPhraseSrsState {
   times_correct: number;
   status: string;
   last_reviewed_at: Date | null;
+  /** last_reviewed_at truncated to ms, ISO UTC: the compare-and-set token (see updateWordSRS). */
+  last_reviewed_token: string | null;
   next_review_at: Date | null;
+  /** users.trip_date as 'YYYY-MM-DD', or null. */
+  trip_date: string | null;
 }
 
 export async function getOrCreateUserPhrase(
@@ -184,43 +189,49 @@ export async function getOrCreateUserPhrase(
     DO UPDATE SET updated_at = NOW()
     RETURNING id, ease_factor, interval_days, learning_step, lapses,
               times_reviewed, times_correct, status,
-              last_reviewed_at, next_review_at
+              last_reviewed_at,
+              to_char(date_trunc('milliseconds', last_reviewed_at) AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS last_reviewed_token,
+              next_review_at,
+              (SELECT to_char(trip_date, 'YYYY-MM-DD') FROM users WHERE id = ${userId}) AS trip_date
   `;
   return rows[0] as UserPhraseSrsState;
 }
 
-export async function updatePhraseSRS(
-  userPhraseId: string,
-  data: {
-    easeFactor: number;
-    intervalDays: number;
-    /** 0 = awaiting the 10-min step, 1 = awaiting graduation, 2 = graduated. */
-    learningStep: number;
-    lapses: number;
-    nextReviewAt: Date;
-    timesReviewed: number;
-    timesCorrect: number;
-    status: string;
-    lastReviewedAt: Date;
-    /** Direction of THIS review. Omitted leaves the stored value alone. */
-    direction?: 'recognition' | 'production';
+/** Same contract as updateWordSRS (compare-and-set, atomic counters, no-advance writes counters only). */
+export async function updatePhraseSRS(userPhraseId: string, data: SrsWrite): Promise<boolean> {
+  const inc = data.countAttempt ? 1 : 0;
+  const incCorrect = data.countAttempt && data.isCorrect ? 1 : 0;
+  const last = data.lastReviewedAt.toISOString();
+  if (!data.advance) {
+    await sql`
+      UPDATE user_phrases SET
+        times_reviewed = times_reviewed + ${inc},
+        times_correct = times_correct + ${incCorrect},
+        direction = COALESCE(${data.direction ?? null}, direction),
+        last_reviewed_at = ${last},
+        updated_at = NOW()
+      WHERE id = ${userPhraseId}
+    `;
+    return true;
   }
-): Promise<void> {
-  await sql`
+  const rows = await sql`
     UPDATE user_phrases SET
       ease_factor = ${data.easeFactor},
       interval_days = ${data.intervalDays},
       learning_step = ${data.learningStep},
       lapses = ${data.lapses},
       next_review_at = ${data.nextReviewAt.toISOString()},
-      times_reviewed = ${data.timesReviewed},
-      times_correct = ${data.timesCorrect},
+      times_reviewed = times_reviewed + ${inc},
+      times_correct = times_correct + ${incCorrect},
       status = ${data.status},
       direction = COALESCE(${data.direction ?? null}, direction),
-      last_reviewed_at = ${data.lastReviewedAt.toISOString()},
+      last_reviewed_at = ${last},
       updated_at = NOW()
     WHERE id = ${userPhraseId}
+      AND date_trunc('milliseconds', last_reviewed_at) IS NOT DISTINCT FROM ${data.expectedLastReviewedAt}::timestamptz
+    RETURNING id
   `;
+  return rows.length > 0;
 }
 
 export interface DuePhraseForReview {
@@ -236,35 +247,50 @@ export interface DuePhraseForReview {
   status: string;
   ease_factor: number;
   interval_days: number;
+  learning_step: number;
+  /** ISO string (UTC), or null if never reviewed. */
+  last_reviewed_at: string | null;
   times_reviewed: number;
   times_correct: number;
   /** Direction of the LAST review — the queue flips it to alternate. */
   direction: string;
 }
 
+/** Same order and options as getDueWordsForReview (see the note there). */
 export async function getDuePhrasesForReview(
   userId: string,
   limit: number = 20,
-  languageId?: string | null
+  languageId?: string | null,
+  opts?: { priorityScene?: string | null; matureOverdue?: boolean }
 ): Promise<DuePhraseForReview[]> {
+  const priorityScene = opts?.priorityScene ?? null;
+  const mature = opts?.matureOverdue ?? false;
   const rows = await sql`
     SELECT
       sp.id AS phrase_id, sp.text_target, sp.text_en,
       sp.literal_translation, sp.audio_url,
       sp.phrase_bridge_sentence, sp.composite_image_url, sp.composite_scene_description,
       up.id AS user_phrase_id, up.status, up.ease_factor,
-      up.interval_days, up.times_reviewed, up.times_correct, up.direction
+      up.interval_days, up.learning_step,
+      to_char(up.last_reviewed_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS last_reviewed_at,
+      up.times_reviewed, up.times_correct, up.direction
     FROM user_phrases up
     JOIN scene_phrases sp ON sp.id = up.phrase_id
     JOIN scenes s ON s.id = sp.scene_id
     JOIN paths p ON p.id = s.path_id
+    CROSS JOIN LATERAL (
+      SELECT (${priorityScene}::uuid IS NOT NULL AND sp.scene_id = ${priorityScene}::uuid) AS is_priority
+    ) pri
     WHERE up.user_id = ${userId}
       AND up.next_review_at <= NOW()
       AND up.status != 'new'
       AND (${languageId ?? null}::uuid IS NULL OR p.language_id = ${languageId ?? null}::uuid)
-    -- Same retention-first order as getDueWordsForReview (see the note there).
+      AND (NOT ${mature}::boolean OR up.interval_days >= 7)
     ORDER BY
-      EXTRACT(EPOCH FROM (NOW() - up.next_review_at)) / 86400.0 / GREATEST(up.interval_days, 1) ASC,
+      COALESCE(up.last_reviewed_at > NOW() - interval '10 minutes' AND NOT pri.is_priority, false) ASC,
+      pri.is_priority DESC,
+      (up.learning_step < 2 AND NOT ${mature}::boolean) DESC,
+      CASE WHEN ${mature}::boolean THEN 0 ELSE up.interval_days END ASC,
       up.next_review_at ASC
     LIMIT ${limit}
   `;

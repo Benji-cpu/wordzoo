@@ -238,24 +238,37 @@ export interface RetentionBucketRow {
  * by the interval the review actually happened at.
  */
 export async function getRetentionCurve(days = 90): Promise<RetentionBucketRow[]> {
+  // Only genuine due reviews: source 'review'. Scene, tutor and practice
+  // answers are working memory and would flatter every bucket. An answer whose
+  // item was still in the learning phase (priorLearningStep < 2) is bucketed
+  // '<1d (learning)' whatever interval it carried — a relearning 6-day item
+  // that lapsed is not a 6-day retention sample. A review that didn't advance
+  // (not due, or inside the 15 s learning floor) is a re-ask, not a sample.
   const rows = await sql`
     WITH r AS (
       SELECT
         CASE WHEN payload->>'priorIntervalDays' ~ '^[0-9]+$'
              THEN (payload->>'priorIntervalDays')::int END AS prior_interval,
+        CASE WHEN payload->>'priorLearningStep' ~ '^[0-9]+$'
+             THEN (payload->>'priorLearningStep')::int END AS prior_step,
         payload->>'rating' AS rating
       FROM pedagogy_events
       WHERE event = 'srs_review_recorded'
+        AND payload->>'source' = 'review'
+        AND payload->>'reason' IS DISTINCT FROM 'practice_no_advance'
         AND created_at > NOW() - (${days} || ' days')::interval
         AND ${sql.unsafe(realUserOnly('pedagogy_events.user_id'))}
+    ),
+    b AS (
+      SELECT *, COALESCE(prior_step < 2, prior_interval = 0) AS is_learning FROM r
+      WHERE prior_interval IS NOT NULL
     )
     SELECT
       CASE
-        -- Learning-step answers arrive with priorIntervalDays = 0 and are
-        -- minutes apart, not days. Bucketing them as '1d' would dilute the
-        -- first real retention number with working-memory hits.
-        WHEN prior_interval = 0   THEN '<1d (learning)'
-        WHEN prior_interval = 1   THEN '1d'
+        -- Learning-step answers are minutes apart, not days. Bucketing them as
+        -- '1d' would dilute the first real retention number with working-memory hits.
+        WHEN is_learning          THEN '<1d (learning)'
+        WHEN prior_interval <= 1  THEN '1d'
         WHEN prior_interval <= 3  THEN '2-3d'
         WHEN prior_interval <= 7  THEN '4-7d'
         WHEN prior_interval <= 14 THEN '8-14d'
@@ -265,10 +278,9 @@ export async function getRetentionCurve(days = 90): Promise<RetentionBucketRow[]
       COUNT(*)::int AS reviews,
       COUNT(*) FILTER (WHERE rating <> 'forgot')::int AS correct,
       ROUND(100.0 * COUNT(*) FILTER (WHERE rating <> 'forgot') / NULLIF(COUNT(*), 0), 1)::float AS retention_pct
-    FROM r
-    WHERE prior_interval IS NOT NULL
+    FROM b
     GROUP BY 1
-    ORDER BY MIN(prior_interval)
+    ORDER BY MIN(CASE WHEN is_learning THEN -1 ELSE prior_interval END)
   `;
   return rows as RetentionBucketRow[];
 }

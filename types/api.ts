@@ -40,14 +40,30 @@ export const ReviewRatingEnum = z.enum(['instant', 'got_it', 'hard', 'forgot']);
  * Defaults to 'scene', the no-penalty branch, so a caller that omits it
  * under-penalises rather than wrecking ease factors.
  */
-export const ReviewSourceEnum = z.enum(['review', 'scene', 'tutor']);
+export const ReviewSourceEnum = z.enum(['review', 'scene', 'tutor', 'practice']);
+
+/** Which showing of the item in a sitting this answer is (1 = first). Repeats don't bump hit-rate counters. */
+export const ReviewPresentationSchema = z.number().int().min(1).max(10);
 
 export const RecordReviewSchema = z.object({
   wordId: z.string().uuid(),
   direction: ReviewDirectionEnum,
   rating: ReviewRatingEnum,
   source: ReviewSourceEnum.optional(),
+  presentation: ReviewPresentationSchema.optional(),
 });
+
+/** `data` of POST /api/reviews/record and /record-phrase. */
+export interface RecordReviewResponse {
+  nextReviewAt: string;
+  newInterval: number;
+  learningStep: number;
+  intervalDays: number;
+  reason: 'learning_step' | 'graduated' | 'review_advance' | 'lapse' | 'practice_no_advance' | 'conflict';
+  isCorrect: boolean;
+  /** learningStep >= 2: the item is out of the learning phase. */
+  known: boolean;
+}
 
 export const DueWordsQuerySchema = z.object({
   context: z.enum(['pre_scene', 'session_start', 'conversation']).optional(),
@@ -193,6 +209,7 @@ export const RecordPhraseReviewSchema = z.object({
   rating: ReviewRatingEnum,
   direction: ReviewDirectionEnum.optional(),
   source: ReviewSourceEnum.optional(),
+  presentation: ReviewPresentationSchema.optional(),
 });
 
 export type RecordPhraseReviewInput = z.infer<typeof RecordPhraseReviewSchema>;

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { RecordReviewSchema } from '@/types/api';
-import type { ApiResponse } from '@/types/api';
+import type { ApiResponse, RecordReviewResponse } from '@/types/api';
 import { recordReview } from '@/lib/srs/engine';
 import { checkAccess } from '@/lib/services/billing-service';
 import { getUserWord } from '@/lib/db/queries';
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { wordId, direction, rating, source } = parsed.data;
+  const { wordId, direction, rating, source, presentation } = parsed.data;
   const userId = session.user.id;
 
   // Enforce the free-tier daily new-word limit only when this word is brand new
@@ -60,10 +60,10 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  const result = await recordReview(userId, wordId, direction, rating, source);
+  const result = await recordReview(userId, wordId, direction, rating, source, presentation);
 
-  return NextResponse.json<ApiResponse<{ nextReviewAt: Date; newInterval: number }>>(
-    { data: result, error: null },
+  return NextResponse.json<ApiResponse<RecordReviewResponse>>(
+    { data: { ...result, nextReviewAt: result.nextReviewAt.toISOString() }, error: null },
     remaining === null ? undefined : { headers: { 'X-Words-Remaining': String(remaining) } }
   );
 }
