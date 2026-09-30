@@ -33,6 +33,8 @@ import { CanDoInventoryCard } from '@/components/dashboard/CanDoInventoryCard';
 import { getCanDoInventory } from '@/lib/db/can-do-queries';
 import { LevelBadge } from '@/components/dashboard/LevelBadge';
 import { isAdminEmail } from '@/lib/auth/admin';
+import { getNewContentGate, getRecentSceneCompletions } from '@/lib/db/gate-queries';
+import { lockInFirstLabel, paceNote, reviewMinutes } from '@/lib/pedagogy/gate';
 
 function pickGreeting(short: boolean): string {
   const hour = new Date().getHours();
@@ -90,6 +92,15 @@ export default async function DashboardPage() {
     getCanDoInventory(userId, languageId),
   ]);
 
+  // The next scene is the first unfinished one in path order; null once the
+  // whole path is done (it used to fall back to scene 1, which made "caught up"
+  // unreachable). Its gate and the pace history need it, so they load second.
+  const nextScene = sceneMastery.find(s => !isSceneComplete(s)) ?? null;
+  const [gate, completedRecently] = await Promise.all([
+    nextScene ? getNewContentGate(userId, nextScene.id) : Promise.resolve(null),
+    getRecentSceneCompletions(userId, pathId),
+  ]);
+
   const dailyDose = getDailyDose(language?.code);
 
   const firstName = session.user.name?.split(/\s+/)[0] ?? null;
@@ -97,7 +108,6 @@ export default async function DashboardPage() {
   const kicker = pickKicker(streakData.current_streak);
   const habitat = habitatFromLanguageCode(language?.code);
 
-  const nextScene = sceneMastery.find(s => !isSceneComplete(s)) ?? sceneMastery[0];
   const currentSceneIndex = findCurrentSceneIndex(sceneMastery);
   const currentSceneProgress = nextScene ? getSceneProgress(nextScene) : 0;
 
@@ -119,7 +129,31 @@ export default async function DashboardPage() {
   const streak = streakData.current_streak;
   const hasReviews = totalDueCount > 0;
   const hasNextScene = !!nextScene;
+  const pathComplete = sceneMastery.length > 0 && !nextScene;
   const caughtUp = !hasReviews && !hasNextScene;
+
+  // Hero state: a closed gate turns the hero into "lock in N first" (the next
+  // scene is named as what it unlocks); otherwise start or resume the scene.
+  const gateClosed = !!gate && !gate.open;
+  const sceneStarted = !!nextScene?.current_phase;
+  const heroHref = gateClosed ? '/review' : `/learn/${nextScene?.id}`;
+  const heroLabel = !nextScene
+    ? ''
+    : gateClosed
+      ? lockInFirstLabel(gate!.fragileDue)
+      : `${sceneStarted ? 'Resume' : 'Start'} ${nextScene.title}`;
+  const sittingMinutes = reviewMinutes(sittingCount);
+  const heroNote = gateClosed
+    ? `Unlocks: ${nextScene!.title} · next round about ${sittingMinutes} min`
+    : null;
+  const heroSecondary = gateClosed
+    ? { label: 'Start the scene anyway', href: `/learn/${nextScene!.id}?anyway=1` }
+    : null;
+  const pace = paceNote({
+    scenes: sceneMastery.map(s => ({ id: s.id, title: s.title, completed: isSceneComplete(s) })),
+    completedRecently,
+    tripDate: tripContext.tripDate,
+  });
 
   return (
     <div className="max-w-lg lg:max-w-3xl mx-auto space-y-4">
@@ -150,7 +184,7 @@ export default async function DashboardPage() {
       {/* Streak at risk — nudge before it resets, with the action that saves it */}
       {streak > 0 && !streakData.active_today && (
         <Link
-          href={hasReviews ? '/review' : hasNextScene ? `/learn/${nextScene!.id}` : '/paths'}
+          href={hasReviews || gateClosed ? '/review' : hasNextScene ? `/learn/${nextScene!.id}` : '/paths'}
           className="flex items-center gap-2.5 rounded-2xl px-4 py-3 bg-amber-500/10 border border-amber-500/25 active:scale-[0.99] transition-transform"
         >
           <span aria-hidden className="text-lg">🔥</span>
@@ -161,8 +195,10 @@ export default async function DashboardPage() {
         </Link>
       )}
 
-      {/* Review queue — top priority when reviews are due */}
-      {hasReviews && (
+      {/* Review queue — top priority when reviews are due. With the gate closed
+          the hero already carries "lock in N first", so this card would be a
+          second, differently-numbered button to the same place. */}
+      {hasReviews && !gateClosed && (
         <ReviewQueueCard
           sittingCount={sittingCount}
           laterCount={totalDueCount - sittingCount}
@@ -171,37 +207,45 @@ export default async function DashboardPage() {
       )}
 
       {/* Hero / empty state */}
-      {caughtUp ? (
+      {!hasNextScene ? (
         <EmptyStateCard
           foxPose="proud"
-          title="You've cleared review"
+          title={pathComplete ? 'Path complete' : "You've cleared review"}
           subtitle={
-            <>
-              Nothing due until tomorrow. Meet a few more words, or ask Fox about what
-              you&apos;ve learned.
-            </>
+            pathComplete ? (
+              <>
+                You&apos;ve finished every scene{hasReviews ? '. Keep what you learned fresh.' : ' and cleared review. Nothing due until tomorrow.'}
+              </>
+            ) : (
+              'Nothing due until tomorrow.'
+            )
           }
-          primary={{ label: 'Meet 3 new words →', href: '/paths' }}
-          secondary={{ label: 'Chat about yesterday', href: '/tutor' }}
+          primary={{ label: hasReviews ? 'Review now →' : 'Chat with Fox →', href: hasReviews ? '/review' : '/tutor' }}
+          secondary={{ label: 'See the path', href: `/paths/${pathId}` }}
         />
       ) : tripContext.hasTrip && hasNextScene ? (
         <TripHero
           trip={tripContext}
-          ctaHref={`/learn/${nextScene!.id}`}
-          ctaLabel="Resume session"
+          ctaHref={heroHref}
+          ctaLabel={heroLabel}
+          nextNote={heroNote}
+          paceNote={pace}
+          secondary={heroSecondary}
         />
       ) : hasNextScene ? (
         <HeroCard
-          label="Continue"
+          label={gateClosed ? 'Lock in first' : sceneStarted ? 'Continue' : 'Next scene'}
           title={nextScene!.title}
           subtitle={
-            currentSceneIndex >= 0 && sceneMastery.length > 0
-              ? `${language?.name ?? 'Learning'} · scene ${currentSceneIndex + 1} of ${sceneMastery.length}`
-              : language?.name ?? 'Resume learning'
+            gateClosed
+              ? `Unlocks after a short round · about ${sittingMinutes} min`
+              : currentSceneIndex >= 0 && sceneMastery.length > 0
+                ? `${language?.name ?? 'Learning'} · scene ${currentSceneIndex + 1} of ${sceneMastery.length}`
+                : language?.name ?? 'Resume learning'
           }
-          progress={currentSceneProgress}
-          ctaText="Resume session"
-          href={`/learn/${nextScene!.id}`}
+          progress={gateClosed ? undefined : currentSceneProgress}
+          ctaText={heroLabel}
+          href={heroHref}
           language={habitat}
         />
       ) : null}

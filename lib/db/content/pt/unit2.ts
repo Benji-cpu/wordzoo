@@ -8,7 +8,7 @@ const scene21: DialogueSceneData = {
   "title": "No café",
   "description": "Ordering at a café/restaurant: food and drink basics, ordering politely.",
   "scene_context": "You sit down at a cozy corner café for breakfast. A waiter comes over and you order something to eat and drink.",
-  "sort_order": 5,
+  "sort_order": 11,
   "dialogues": [
     {
       "id": "e4000000-0021-4000-8000-000000000001",
@@ -238,7 +238,7 @@ const scene22: DialogueSceneData = {
   "title": "Na feira",
   "description": "Shopping at the market: numbers, asking prices, paying with reais.",
   "scene_context": "You wander through a colourful street market full of fruit and crafts. You pick out a few things and ask the vendor how much they cost.",
-  "sort_order": 6,
+  "sort_order": 15,
   "dialogues": [
     {
       "id": "e4000000-0022-4000-8000-000000000001",
@@ -465,7 +465,7 @@ const scene23: DialogueSceneData = {
   "title": "Pegando o ônibus",
   "description": "Getting around the city: transport, asking how to get somewhere, simple useful verbs.",
   "scene_context": "You want to visit the old town across the city and decide to take the bus. You ask a local how to get there.",
-  "sort_order": 7,
+  "sort_order": 16,
   "dialogues": [
     {
       "id": "e4000000-0023-4000-8000-000000000001",
@@ -698,7 +698,7 @@ const scene24: DialogueSceneData = {
   "title": "Um jantar entre amigos",
   "description": "A friendly meal: paying the bill, complimenting the food, making simple plans.",
   "scene_context": "Your new friends invite you to dinner at a lively restaurant. After a great meal you settle the bill and make plans to meet again.",
-  "sort_order": 8,
+  "sort_order": 12,
   "dialogues": [
     {
       "id": "e4000000-0024-4000-8000-000000000001",

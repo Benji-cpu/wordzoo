@@ -8,7 +8,7 @@ const scene51: DialogueSceneData = {
   "title": "Apresentando a minha mãe",
   "description": "Introducing your mother to the family and helping her follow along when she doesn't speak Portuguese.",
   "scene_context": "You have brought your mother to your partner Dani's family home for the holidays. She doesn't speak Portuguese, so you introduce her and keep the conversation slow enough for her to follow.",
-  "sort_order": 17,
+  "sort_order": 9,
   "dialogues": [
     {
       "id": "e4000000-0051-4000-8000-000000000001",
@@ -244,7 +244,7 @@ const scene52: DialogueSceneData = {
   "title": "Ceia de Natal",
   "description": "Christmas Eve dinner with the family: the supper, presents at midnight, songs, everyone together.",
   "scene_context": "You are at the family's Christmas Eve table, the ceia, with your mother beside you. The grandmother has cooked, the presents wait under the tree, and the family sings after dinner.",
-  "sort_order": 18,
+  "sort_order": 10,
   "dialogues": [
     {
       "id": "e4000000-0052-4000-8000-000000000001",
@@ -479,7 +479,7 @@ const scene53: DialogueSceneData = {
   "title": "Réveillon na praia",
   "description": "New Year's Eve on the beach: white clothes, fireworks, jumping seven waves, a toast and a wish.",
   "scene_context": "You are spending New Year's Eve, the Réveillon, on the beach with Dani and the family. Everyone is in white, the fireworks go off at midnight, and there are traditions to learn.",
-  "sort_order": 19,
+  "sort_order": 13,
   "dialogues": [
     {
       "id": "e4000000-0053-4000-8000-000000000001",
@@ -712,7 +712,7 @@ const scene54: DialogueSceneData = {
   "title": "Carnaval e a despedida",
   "description": "A Carnival street party, then saying goodbye to the family and promising to come back next year.",
   "scene_context": "You are heading out to a Carnival bloco with Dani's brother on your last full day in Brazil. Tomorrow you and your mother fly home, so the day ends with goodbyes at the family's door.",
-  "sort_order": 20,
+  "sort_order": 14,
   "dialogues": [
     {
       "id": "e4000000-0054-4000-8000-000000000001",

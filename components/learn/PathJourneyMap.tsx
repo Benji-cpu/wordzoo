@@ -9,6 +9,12 @@ import type { SceneMasteryRow } from '@/lib/db/queries';
 interface PathJourneyMapProps {
   sceneMastery: SceneMasteryRow[];
   pathId: string;
+  /**
+   * getNewContentGate() for the next scene, computed by the server parent.
+   * When closed, that scene shows "After a practice round". Optional: without
+   * it the map behaves as before.
+   */
+  nextSceneGate?: { open: boolean; fragileDue: number } | null;
 }
 
 const NODE_SIZE = 48;
@@ -16,7 +22,7 @@ const NODE_GAP_Y = 100;
 const ZIGZAG_X = 60;
 const CENTER_X = 160;
 
-export function PathJourneyMap({ sceneMastery, pathId }: PathJourneyMapProps) {
+export function PathJourneyMap({ sceneMastery, pathId, nextSceneGate = null }: PathJourneyMapProps) {
   const router = useRouter();
   const currentRef = useRef<HTMLDivElement>(null);
 
@@ -95,6 +101,9 @@ export function PathJourneyMap({ sceneMastery, pathId }: PathJourneyMapProps) {
         const complete = isSceneComplete(s);
         const isCurrent = i === activeIdx;
         const isUnlocked = complete || isCurrent || i === 0;
+        // Held back for review, not locked out: tapping still opens the scene's
+        // "practise first" screen, which has the way in.
+        const gated = isCurrent && !!nextSceneGate && !nextSceneGate.open;
         const progress = sceneProgress(s);
         const status = sceneStatusLabel(s);
         const nodeX = getNodeX(i);
@@ -130,7 +139,7 @@ export function PathJourneyMap({ sceneMastery, pathId }: PathJourneyMapProps) {
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
-              ) : !isUnlocked ? (
+              ) : gated || !isUnlocked ? (
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                   <path d="M7 11V7a5 5 0 0 1 10 0v4" />
@@ -152,10 +161,12 @@ export function PathJourneyMap({ sceneMastery, pathId }: PathJourneyMapProps) {
               )}
               {isCurrent && (
                 <div className="mt-1">
-                  <p className="text-xs text-accent-id mb-0.5">{status}</p>
-                  <div className="max-w-[100px]">
-                    <ProgressBar value={progress} accentColor="bg-accent-id" height="sm" />
-                  </div>
+                  <p className="text-xs text-accent-id mb-0.5">{gated ? 'After a practice round' : status}</p>
+                  {!gated && (
+                    <div className="max-w-[100px]">
+                      <ProgressBar value={progress} accentColor="bg-accent-id" height="sm" />
+                    </div>
+                  )}
                 </div>
               )}
               {!complete && !isCurrent && isUnlocked && (

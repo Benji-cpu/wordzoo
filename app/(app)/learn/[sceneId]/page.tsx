@@ -18,6 +18,8 @@ import { SceneFlowClient } from '@/components/learn/SceneFlowClient';
 import { LessonPersonaPrompt } from '@/components/learn/LessonPersonaPrompt';
 import { getInsightState } from '@/lib/db/insight-queries';
 import { getCanDosForScene } from '@/lib/db/can-do-queries';
+import { getNewContentGate } from '@/lib/db/gate-queries';
+import { GateNotice } from '@/components/learn/GateNotice';
 import { resolvePedagogyFlags } from '@/lib/pedagogy/flags';
 import {
   personalizeSceneContent,
@@ -149,6 +151,17 @@ export default async function LearnPage({ params, searchParams }: PageProps) {
         } else {
           redirect(`/paths/${scene.path_id}`);
         }
+      }
+    }
+
+    // New content waits for what is still fragile. Soft gate: ?anyway=1 skips
+    // it, and a scene already started or finished is always open (the query
+    // knows). Runs before getOrCreateSceneProgress below so a held-back scene
+    // does not count as "started".
+    if (resolvedSearchParams.anyway !== '1') {
+      const gate = await getNewContentGate(userId, sceneId);
+      if (!gate.open) {
+        return <GateNotice sceneId={sceneId} sceneTitle={scene.scene_title} fragileDue={gate.fragileDue} />;
       }
     }
 

@@ -1,7 +1,9 @@
 import Link from 'next/link';
 
+import { reviewMinutes } from '@/lib/pedagogy/gate';
+
 interface ReviewQueueCardProps {
-  /** Items the next /review sitting will load — the number to lead with. */
+  /** First-pass cards in the next /review sitting (REVIEW_SITTING caps) — the number to lead with. */
   sittingCount: number;
   /** Everything else that is due, left for later sittings. */
   laterCount?: number;
@@ -16,10 +18,11 @@ interface ReviewQueueCardProps {
 export function ReviewQueueCard({ sittingCount, laterCount = 0, languageName }: ReviewQueueCardProps) {
   if (sittingCount <= 0) return null;
 
-  // ~15s a card, rounded up to the minute.
-  const minutes = Math.max(1, Math.ceil((sittingCount * 15) / 60));
+  // ~20 s a card, rounded up to the minute. A miss comes back once or twice
+  // in the sitting, so this is a floor the honest way round, not a promise.
+  const minutes = reviewMinutes(sittingCount);
   const subtitle = laterCount > 0
-    ? `about ${minutes} min · ${laterCount} more wait for later`
+    ? `about ${minutes} min · ${laterCount} still waiting`
     : languageName
       ? `${languageName} · about ${minutes} min`
       : `about ${minutes} min`;

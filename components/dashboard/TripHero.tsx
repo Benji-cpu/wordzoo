@@ -7,6 +7,12 @@ interface TripHeroProps {
   trip: TripContext;
   ctaHref: string;
   ctaLabel?: string;
+  /** What the next step unlocks / leads to ("Unlocks: <scene>"). One line. */
+  nextNote?: string | null;
+  /** One-line pace projection ("At this pace: ..."). */
+  paceNote?: string | null;
+  /** A small way out under the card, e.g. "Start the scene anyway". */
+  secondary?: { label: string; href: string } | null;
 }
 
 const STATUS_TONE: Record<TripStatus, { gradient: string; ink: string; eyebrow: string }> = {
@@ -23,7 +29,14 @@ function formatTripDate(iso: string): string {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
-export function TripHero({ trip, ctaHref, ctaLabel = 'Resume session' }: TripHeroProps) {
+export function TripHero({
+  trip,
+  ctaHref,
+  ctaLabel = 'Resume session',
+  nextNote = null,
+  paceNote = null,
+  secondary = null,
+}: TripHeroProps) {
   if (!trip.hasTrip || !trip.tripDate || trip.daysRemaining === null) return null;
 
   const tone = STATUS_TONE[trip.status];
@@ -61,6 +74,7 @@ export function TripHero({ trip, ctaHref, ctaLabel = 'Resume session' }: TripHer
   const dateLabel = formatTripDate(trip.tripDate);
 
   return (
+    <div>
     <Link
       href={ctaHref}
       aria-label={`Trip countdown: ${title}`}
@@ -81,18 +95,24 @@ export function TripHero({ trip, ctaHref, ctaLabel = 'Resume session' }: TripHer
           <div className="text-[20px] font-extrabold leading-tight tracking-tight text-white mb-0.5">
             {title}
           </div>
-          <div className="text-[12.5px] font-semibold opacity-90 mb-3.5 text-white">{subtitle}</div>
+          <div className="text-[12.5px] font-semibold opacity-90 mb-3 text-white">{subtitle}</div>
           <div className="h-[5px] bg-white/30 rounded-full overflow-hidden mb-3">
             <div
               className="h-full bg-white rounded-full transition-[width] duration-500"
               style={{ width: `${progress * 100}%` }}
             />
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-[13px] font-extrabold tracking-wide text-white">{ctaLabel}</span>
+          {paceNote && (
+            <div className="text-[12px] font-semibold opacity-90 mb-2 text-white">{paceNote}</div>
+          )}
+          {nextNote && (
+            <div className="text-[12px] font-semibold opacity-90 mb-2 text-white">{nextNote}</div>
+          )}
+          <div className="flex items-center justify-between gap-3">
+            <span className="min-w-0 truncate text-[13px] font-extrabold tracking-wide text-white">{ctaLabel}</span>
             <span
               aria-hidden
-              className="w-[38px] h-[38px] rounded-full bg-white flex items-center justify-center font-black text-lg shadow-[0_2px_6px_rgba(0,0,0,0.1)]"
+              className="w-[38px] h-[38px] shrink-0 rounded-full bg-white flex items-center justify-center font-black text-lg shadow-[0_2px_6px_rgba(0,0,0,0.1)]"
               style={{ color: tone.ink }}
             >
               ›
@@ -101,5 +121,14 @@ export function TripHero({ trip, ctaHref, ctaLabel = 'Resume session' }: TripHer
         </div>
       </div>
     </Link>
+    {secondary && (
+      <Link
+        href={secondary.href}
+        className="block text-center text-[12.5px] font-semibold text-[color:var(--text-secondary)] underline underline-offset-2 hover:text-[color:var(--foreground)] transition-colors py-2"
+      >
+        {secondary.label}
+      </Link>
+    )}
+    </div>
   );
 }

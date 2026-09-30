@@ -91,7 +91,8 @@ export function SceneSummary({
         : 'Back to Dashboard';
 
   const pacingLevel = getPacingLevel(wordsLearnedToday);
-  const isEarlyScene = sceneNumber !== undefined && sceneNumber <= 3;
+  // The review page puts this scene's items first (priorityScene).
+  const lockInHref = sceneId ? `/review?scene=${sceneId}` : '/review';
 
   return (
     <div className="flex flex-col flex-1 min-h-0 pt-1">
@@ -204,65 +205,40 @@ export function SceneSummary({
         </div>
       )}
 
-      {/* CTAs */}
+      {/* CTAs. The scene's items are all due now at learning step 0, so the
+          main action is the review round that makes them stick; the next scene
+          and the tutor stay one tap away. */}
       <div className="flex flex-col gap-2 pb-3">
-        {isEarlyScene ? (
-          <>
-            <Link href={nextSceneHref} className="block">
-              <ThumbButton size="lg" variant="primary">
-                {nextLabel} →
-              </ThumbButton>
-            </Link>
-            <Link
-              href={tutorHref}
-              className="mt-0.5 block text-center text-sm font-semibold text-text-secondary hover:text-foreground transition-colors py-2"
-            >
-              Or practice with Tutor →
-            </Link>
-          </>
-        ) : pacingLevel === 'green' ? (
-          <>
-            <Link href={tutorHref} className="block">
-              <ThumbButton size="lg" variant="primary">
-                Practice with Tutor
-              </ThumbButton>
-            </Link>
-            {/* /practice/speak has worked since it was built but lost its only
-                entry point when the dashboard action tiles were removed
-                (673b670). It is the one place that drills saying the words out
-                loud end to end, so it gets a door again. */}
-            <Link href="/practice/speak" className="block">
-              <Button variant="secondary" className="w-full">
-                Say it out loud
-              </Button>
-            </Link>
-            <Link
-              href={nextSceneHref}
-              className="mt-0.5 block text-center text-sm font-semibold text-text-secondary hover:text-foreground transition-colors py-2"
-            >
-              Skip — {nextLabel} →
-            </Link>
-          </>
-        ) : (
-          <>
-            <Link href="/review" className="block">
-              <ThumbButton size="lg" variant="primary">
-                Review Now
-              </ThumbButton>
-            </Link>
-            <Link href={tutorHref} className="block">
-              <Button variant="secondary" className="w-full">
-                Practice with Tutor
-              </Button>
-            </Link>
-            <Link
-              href={nextSceneHref}
-              className="block text-center text-sm text-text-secondary hover:text-foreground transition-colors"
-            >
-              {nextLabel} →
-            </Link>
-          </>
+        <Link href={lockInHref} className="block">
+          <ThumbButton size="lg" variant="primary">
+            Lock these in
+          </ThumbButton>
+        </Link>
+        <p className="text-center text-[11.5px] text-[color:var(--text-secondary)] -mt-0.5">
+          A short round now, while they&apos;re fresh, is what makes them stick.
+        </p>
+        <Link href={tutorHref} className="block">
+          <Button variant="secondary" className="w-full">
+            Practice with Tutor
+          </Button>
+        </Link>
+        {/* /practice/speak has worked since it was built but lost its only
+            entry point when the dashboard action tiles were removed
+            (673b670). It is the one place that drills saying the words out
+            loud end to end, so it gets a door again. */}
+        {pacingLevel === 'green' && (
+          <Link href="/practice/speak" className="block">
+            <Button variant="secondary" className="w-full">
+              Say it out loud
+            </Button>
+          </Link>
         )}
+        <Link
+          href={nextSceneHref}
+          className="mt-0.5 block text-center text-sm font-semibold text-text-secondary hover:text-foreground transition-colors py-2"
+        >
+          {nextLabel} →
+        </Link>
       </div>
 
       {showUpgrade && (

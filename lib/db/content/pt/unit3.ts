@@ -8,7 +8,7 @@ const scene31: DialogueSceneData = {
   "title": "Chegando na casa da família",
   "description": "Arriving at your partner's family home: first hugs, being welcomed in, saying you are tired from the trip.",
   "scene_context": "You and Dani pull up outside her parents' house after a long journey. Her mother, Dona Márcia, opens the door with her arms already open.",
-  "sort_order": 9,
+  "sort_order": 5,
   "dialogues": [
     {
       "id": "e4000000-0031-4000-8000-000000000001",
@@ -244,7 +244,7 @@ const scene32: DialogueSceneData = {
   "title": "Quem é quem",
   "description": "Who's who in the family: siblings, grandparents, aunts and uncles, partners, ages and where people live.",
   "scene_context": "The living room fills up with relatives and Dani walks you through who everyone is. Her brother Lucas wants to know a bit about you too.",
-  "sort_order": 10,
+  "sort_order": 6,
   "dialogues": [
     {
       "id": "e4000000-0032-4000-8000-000000000001",
@@ -485,7 +485,7 @@ const scene33: DialogueSceneData = {
   "title": "Falando de mim",
   "description": "Talking about yourself: where you live, your work, that you are learning Portuguese, and asking people to slow down.",
   "scene_context": "Over coffee, Vó Neide wants to know all about you — where you live and what you do. You answer as best you can and ask her to speak slowly.",
-  "sort_order": 11,
+  "sort_order": 7,
   "dialogues": [
     {
       "id": "e4000000-0033-4000-8000-000000000001",
@@ -721,7 +721,7 @@ const scene34: DialogueSceneData = {
   "title": "Churrasco de domingo",
   "description": "The Sunday barbecue: passing food, asking for seconds, complimenting the cook, a toast, and saying you are full.",
   "scene_context": "Sunday means churrasco in the back garden. Seu Roberto is at the grill, plates are piling up, and everyone wants to make sure you eat more.",
-  "sort_order": 12,
+  "sort_order": 8,
   "dialogues": [
     {
       "id": "e4000000-0034-4000-8000-000000000001",

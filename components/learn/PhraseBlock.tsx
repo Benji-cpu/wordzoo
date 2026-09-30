@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { PhraseCard } from '@/components/learn/PhraseCard';
 import { PhraseBreakdown } from '@/components/learn/PhraseBreakdown';
 import { PhraseDrillBlock } from '@/components/learn/PhraseDrillBlock';
@@ -11,6 +12,7 @@ import type { SupportedLanguageCode } from '@/types/audio';
 import type { CueType, DrillQueue } from '@/lib/pedagogy/leitner';
 import type { PedagogyFlags } from '@/lib/pedagogy/flags';
 import type { ConversationExchange } from '@/lib/learn/conversation-data';
+import { reviewMinutes } from '@/lib/pedagogy/gate';
 import {
   chunkIntoBatches,
   PHRASE_BATCH_SIZE,
@@ -45,7 +47,9 @@ type Phase =
   | { kind: 'intro'; batchIndex: number }
   | { kind: 'drill'; batchIndex: number }
   | { kind: 'converse'; batchIndex: number }
-  | { kind: 'checkpoint' };
+  | { kind: 'checkpoint' }
+  // After the checkpoint: the pause point (lock these in now, or go on).
+  | { kind: 'handoff' };
 
 /**
  * Pedagogy v2 phrases phase orchestrator. Mirrors VocabularyBlock for
@@ -57,7 +61,8 @@ type Phase =
  *   PhraseCard → PhraseBreakdown (skipped if no word mnemonics)
  *   → next phrase → handoff button → PhraseDrillBlock
  * After last batch:
- *   PhraseCheckpoint over every phrase in the scene → onComplete
+ *   PhraseCheckpoint over every phrase in the scene → handoff → onComplete
+ * The handoff offers a review round on these phrases before the words.
  */
 export function PhraseBlock({
   phrases,
@@ -70,6 +75,8 @@ export function PhraseBlock({
   conversationContext,
   onComplete,
 }: PhraseBlockProps) {
+  const router = useRouter();
+  const [lockingIn, setLockingIn] = useState(false);
   const batches = useMemo(() => chunkIntoBatches(phrases, PHRASE_BATCH_SIZE), [phrases]);
 
   const interludeFor = useCallback(
@@ -166,7 +173,38 @@ export function PhraseBlock({
     [interludeFor],
   );
 
+  // Leave for /review with this scene's items first. The parent normally saves
+  // "phrases done, now vocabulary" when onComplete fires; going to /review
+  // skips that, so save the same progress here or Ben would resume at the
+  // checkpoint instead of the words. Navigation goes ahead even if the save fails.
+  const lockInNow = useCallback(async () => {
+    const sceneId = phrases[0]?.scene_id;
+    if (!sceneId || lockingIn) return;
+    setLockingIn(true);
+    try {
+      await fetch(`/api/scenes/${sceneId}/progress`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          currentPhase: 'vocabulary',
+          phaseIndex: 0,
+          phaseCompleted: 'phrases',
+          phaseStep: null,
+          phaseBatch: 0,
+        }),
+      });
+    } catch {
+      // Offline: resume lands back on the phrase checkpoint, which is safe.
+    }
+    router.push(`/review?scene=${sceneId}`);
+  }, [phrases, lockingIn, router]);
+
   const goBack = useCallback((): boolean => {
+    if (phase.kind === 'handoff') {
+      if (batches.length === 0) return false;
+      setPhase(tailOf(batches.length - 1));
+      return true;
+    }
     if (phase.kind === 'checkpoint') {
       if (batches.length === 0) return false;
       setPhase(tailOf(batches.length - 1));
@@ -202,7 +240,7 @@ export function PhraseBlock({
   useEffect(() => {
     if (!onProgress) return;
     let fraction: number;
-    if (phase.kind === 'checkpoint') {
+    if (phase.kind === 'checkpoint' || phase.kind === 'handoff') {
       fraction = 1;
     } else if (phase.kind === 'intro') {
       fraction = slotOffsets[phase.batchIndex] / totalSlots;
@@ -211,11 +249,13 @@ export function PhraseBlock({
     } else {
       fraction = (slotOffsets[phase.batchIndex] + 1 + drillFraction) / totalSlots;
     }
-    const batchIndex = phase.kind === 'checkpoint' ? batches.length : phase.batchIndex;
+    const batchIndex =
+      phase.kind === 'checkpoint' || phase.kind === 'handoff' ? batches.length : phase.batchIndex;
     onProgress({
       fraction: Math.max(0, Math.min(1, fraction)),
       goBack: () => goBackRef.current(),
-      kind: phase.kind,
+      // The handoff reports as the checkpoint: same saved sub-state, no new save.
+      kind: phase.kind === 'handoff' ? 'checkpoint' : phase.kind,
       batchIndex,
     });
   }, [phase, drillFraction, totalSlots, slotOffsets, onProgress, batches.length]);
@@ -231,8 +271,45 @@ export function PhraseBlock({
         items={phrases}
         scenePhrases={phrases}
         onItemAnswered={onItemAnswered}
-        onComplete={onComplete}
+        onComplete={() => setPhase({ kind: 'handoff' })}
       />
+    );
+  }
+
+  if (phase.kind === 'handoff') {
+    const minutes = reviewMinutes(phrases.length);
+    return (
+      <div className="flex flex-col items-center justify-center text-center flex-1 min-h-0 py-12 px-6 animate-spring-in">
+        <p className="text-[10.5px] font-extrabold tracking-[0.18em] uppercase text-[color:var(--text-secondary)] mb-3">
+          {phrases.length} phrases done
+        </p>
+        <h2
+          className="font-display text-[color:var(--color-fox-primary)] leading-[0.95] mb-4"
+          style={{ fontSize: 'clamp(2rem, 7vw, 3rem)' }}
+        >
+          Now the words
+        </h2>
+        <p className="text-sm text-[color:var(--text-secondary)] max-w-sm mb-8">
+          A quick round on these phrases while they&apos;re fresh helps them stick.
+          Your place is saved either way.
+        </p>
+        <button
+          type="button"
+          onClick={() => onComplete()}
+          disabled={lockingIn}
+          className="rounded-xl bg-[color:var(--color-fox-primary)] text-white font-bold py-3 px-6 active:scale-[0.98] transition disabled:opacity-50"
+        >
+          Continue to the words →
+        </button>
+        <button
+          type="button"
+          onClick={() => void lockInNow()}
+          disabled={lockingIn}
+          className="mt-3 rounded-xl border border-[color:var(--border-default)] text-[color:var(--foreground)] font-semibold text-sm py-3 px-6 active:scale-[0.98] transition disabled:opacity-50"
+        >
+          {lockingIn ? 'Opening review…' : `Lock in these phrases now (≈${minutes} min)`}
+        </button>
+      </div>
     );
   }
 

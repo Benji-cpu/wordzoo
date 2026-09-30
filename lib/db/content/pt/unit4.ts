@@ -9,7 +9,7 @@ const scene41: DialogueSceneData = {
   "title": "Na rodoviária",
   "description": "At the bus station: buying tickets, finding the gate, departure and arrival times, delays and seats.",
   "scene_context": "You, Dani and your mother are leaving São Paulo for a few days on the coast. You go to the bus station counter to buy the tickets and find your gate.",
-  "sort_order": 13,
+  "sort_order": 17,
   "dialogues": [
     {
       "id": "e4000000-0041-4000-8000-000000000001",
@@ -248,7 +248,7 @@ const scene42: DialogueSceneData = {
   "title": "Na pousada",
   "description": "Checking into a guesthouse: breakfast included, air conditioning, the wifi password, towels, hot water and what isn't working.",
   "scene_context": "You arrive at a small family-run guesthouse by the sea. The owner shows you the rooms and you sort out the details for your mother's room and yours.",
-  "sort_order": 14,
+  "sort_order": 18,
   "dialogues": [
     {
       "id": "e4000000-0042-4000-8000-000000000001",
@@ -488,7 +488,7 @@ const scene43: DialogueSceneData = {
   "title": "Dia de praia",
   "description": "A day at the beach: sun and heat, waves and sand, renting a chair and umbrella, coconut water and açaí, going for a swim.",
   "scene_context": "You spend the day on a long beach with Dani and your mother. A vendor rents out chairs and umbrellas and sells drinks, and Dani wants you in the water.",
-  "sort_order": 15,
+  "sort_order": 19,
   "dialogues": [
     {
       "id": "e4000000-0043-4000-8000-000000000001",
@@ -731,7 +731,7 @@ const scene44: DialogueSceneData = {
   "title": "Pedindo dicas",
   "description": "Asking locals for tips and getting around safely: recommendations, the ride-app driver, your phone, getting lost, finding a pharmacy.",
   "scene_context": "You are in a new city without Dani for the afternoon. You ask the ride-app driver where to go, and later you need a pharmacy for your mother's headache.",
-  "sort_order": 16,
+  "sort_order": 20,
   "dialogues": [
     {
       "id": "e4000000-0044-4000-8000-000000000001",
