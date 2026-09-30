@@ -80,6 +80,21 @@ function calculateStatus(intervalDays: number): 'learning' | 'reviewing' | 'mast
   return 'learning';
 }
 
+const STATUS_RANK: Record<string, number> = { learning: 0, reviewing: 1, mastered: 2 };
+
+/**
+ * The status to store. A correct advance never lowers the stored status: the
+ * stored interval may already be trip-capped, so growing it can land below the
+ * uncapped interval that earned the status. Misses and lapses use the
+ * interval-derived status as-is, so a real lapse still demotes.
+ */
+function nextStatus(stored: string, r: ScheduleResult): 'learning' | 'reviewing' | 'mastered' {
+  const derived = calculateStatus(r.statusIntervalDays);
+  if (!r.isCorrect || (r.reason !== 'review_advance' && r.reason !== 'graduated')) return derived;
+  const keep = (STATUS_RANK[stored] ?? 0) > STATUS_RANK[derived];
+  return keep ? (stored as 'reviewing' | 'mastered') : derived;
+}
+
 /** Nothing schedules further out than this. */
 const MAX_INTERVAL_DAYS = 365;
 /** Intervals at or above this get fuzzed so same-session cohorts don't clump. */
@@ -516,8 +531,9 @@ async function recordSrs(args: {
     learningStep: r.learningStep,
     lapses: r.lapses,
     nextReviewAt: r.nextReviewAt,
-    // Status reads the uncapped interval so a trip cap never demotes "mastered".
-    status: calculateStatus(r.statusIntervalDays),
+    // Status reads the uncapped interval, and a correct advance never lowers it,
+    // so a trip cap never demotes "mastered" on this review or any later one.
+    status: nextStatus(row.status, r),
     isCorrect: r.isCorrect,
     // Repeat presentations of one item in a sitting are practice, not new
     // attempts: they must not inflate the hit rate.

@@ -145,7 +145,12 @@ export function ProductionCard({
   const commit = () => {
     if (!verdict || committed.current) return;
     committed.current = true;
-    onCommit({ result: verdict.result, spoken: verdict.spoken, overridden });
+    onCommit({
+      result: verdict.result,
+      spoken: verdict.spoken,
+      // "I said it right" from the retry screen never passes through override().
+      overridden: overridden || verdict.result.how === 'override',
+    });
   };
 
   if (phase === 'feedback' && verdict) {
@@ -221,7 +226,7 @@ export function ProductionCard({
             onUnavailable={onMicUnavailable}
             label={phase === 'retry' ? 'Tap and say it again' : 'Tap and say it'}
           />
-          <ThumbButton variant="ghost" fullWidth={false} onClick={() => setInput('type')}>
+          <ThumbButton variant="ghost" fullWidth={false} aria-label="Type instead" onClick={() => setInput('type')}>
             Type instead
           </ThumbButton>
         </div>
@@ -248,7 +253,7 @@ export function ProductionCard({
             Check
           </ThumbButton>
           {speechAvailable && languageCode && (
-            <ThumbButton variant="ghost" onClick={() => setInput('say')}>
+            <ThumbButton variant="ghost" aria-label="Say it instead" onClick={() => setInput('say')}>
               Say it instead
             </ThumbButton>
           )}
@@ -258,7 +263,7 @@ export function ProductionCard({
       <div className="flex flex-col gap-2">
         {phase === 'retry' && (
           <>
-            <ThumbButton variant="ghost" onClick={overrideFromRetry}>
+            <ThumbButton variant="ghost" aria-label="I said it right" onClick={overrideFromRetry}>
               I said it right
             </ThumbButton>
             <ThumbButton variant="secondary" onClick={showMe}>

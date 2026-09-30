@@ -18,6 +18,7 @@
  * near the end it is as far back as the queue allows.
  */
 
+import { GATE_THRESHOLD } from '@/lib/pedagogy/gate';
 import { normalizeForCompare, normalizeSentence, scoreRecall, similarity } from '@/lib/pedagogy/normalize';
 
 export type Rating = 'forgot' | 'hard' | 'got_it';
@@ -42,8 +43,6 @@ export const STALE_LEARNING_DAYS = 14;
 /** Spoken answers looked at, and how many overrides tip the default to typing. */
 export const OVERRIDE_WINDOW = 10;
 export const OVERRIDE_LIMIT = 3;
-/** "Next scene" is offered when at most this many items are still waiting (the scene gate's threshold). */
-export const NEXT_SCENE_MAX_WAITING = 8;
 
 const DAY_MS = 86_400_000;
 
@@ -457,7 +456,15 @@ export interface SittingSummary {
 
 export function summarize(
   state: SessionState,
-  opts: { dueRemaining: number; sittingSize: number },
+  opts: {
+    dueRemaining: number;
+    sittingSize: number;
+    /**
+     * Fragile items (the gate's predicate) still due after this sitting. When
+     * omitted, every item still waiting counts, which is the cautious default.
+     */
+    fragileRemaining?: number;
+  },
 ): SittingSummary {
   const all = Object.values(state.progress);
   const lockedIn = all.filter((p) => p.firstDone && p.known === true).length;
@@ -474,8 +481,22 @@ export function summarize(
     parked,
     stillWaiting,
     sittings: stillWaiting === 0 ? 0 : Math.ceil(stillWaiting / Math.max(1, opts.sittingSize)),
-    canMoveOn: parked === 0 && stillWaiting <= NEXT_SCENE_MAX_WAITING,
+    canMoveOn: parked === 0 && (opts.fragileRemaining ?? stillWaiting) <= GATE_THRESHOLD,
   };
+}
+
+/** The gate's fragile predicate: still in the learning steps, or on an interval of 3 days or less. */
+export function isFragile(item: Pick<SittingItem, 'learningStep' | 'intervalDays'>): boolean {
+  return item.learningStep < 2 || item.intervalDays <= 3;
+}
+
+/**
+ * Fragile items still due once this sitting is done: the uncapped fragile total
+ * minus the sitting's items that were fragile when it loaded (the sitting can
+ * also hold mature catch-up items, so its size is not the number to subtract).
+ */
+export function fragileRemaining(fragileDueTotal: number, sitting: readonly SittingItem[]): number {
+  return Math.max(0, fragileDueTotal - sitting.filter(isFragile).length);
 }
 
 // ---------------------------------------------------------------------------
@@ -505,9 +526,52 @@ export function meaningKeys(en: string): string[] {
     .filter(Boolean);
 }
 
+const BARE_PRONOUN = /^(i|you|he|she|it|we|they)$/;
+
+/**
+ * Meaning keys for deciding two glosses are the SAME meaning: bracketed
+ * qualifiers are kept (as part of their key), because "is (right now / state)"
+ * is not "is". A bare pronoun beside other keys ("he / she lives") is a
+ * distributed subject, not a synonym, so such a gloss stays one key.
+ */
+function alternateKeys(en: string): string[] {
+  const parts: string[] = [];
+  let depth = 0;
+  let cur = '';
+  for (const ch of en) {
+    if (ch === '(') depth++;
+    else if (ch === ')') depth = Math.max(0, depth - 1);
+    if (depth === 0 && (ch === '/' || ch === ';' || ch === ',')) {
+      parts.push(cur);
+      cur = '';
+    } else {
+      cur += ch;
+    }
+  }
+  parts.push(cur);
+  const norm = (t: string) =>
+    normalizeForCompare(t)
+      .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  const keys = parts.map((p) => norm(p).replace(/^(to|the|a|an) /, '')).filter(Boolean);
+  if (keys.length > 1 && keys.some((k) => BARE_PRONOUN.test(k))) return [norm(en)];
+  return keys;
+}
+
+/**
+ * Two glosses mean the same thing: equal key sets, or (only when neither has a
+ * bracketed qualifier) one a subset of the other, as "bye" and "goodbye / bye".
+ * Sharing one key is not enough: "he" is not "he / she lives".
+ */
 export function sameMeaning(a: string, b: string): boolean {
-  const keys = new Set(meaningKeys(a));
-  return meaningKeys(b).some((k) => keys.has(k));
+  const ka = new Set(alternateKeys(a));
+  const kb = new Set(alternateKeys(b));
+  if (ka.size === 0 || kb.size === 0) return false;
+  const subset = (x: Set<string>, y: Set<string>) => [...x].every((k) => y.has(k));
+  if (subset(ka, kb) && subset(kb, ka)) return true;
+  if (a.includes('(') || b.includes('(')) return false;
+  return subset(ka, kb) || subset(kb, ka);
 }
 
 interface PoolWord {

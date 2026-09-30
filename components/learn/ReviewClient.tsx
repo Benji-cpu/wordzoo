@@ -31,6 +31,7 @@ import {
   completeTeach,
   createSession,
   hashSeed,
+  fragileRemaining,
   interleave,
   isFinished,
   mulberry32,
@@ -68,6 +69,8 @@ interface ReviewClientProps {
   languageCode?: string | null;
   /** Words + phrases due in this language, UNCAPPED (the sitting is capped). */
   dueTotal?: number;
+  /** Fragile items due (the scene gate's predicate), UNCAPPED: decides "Next scene". */
+  fragileDueTotal?: number;
   /** Words + phrases in one full sitting, for "N still waiting ≈ D sittings". */
   sittingSize?: number;
   /** The learner's first name: shown in phrases but never required in an answer. */
@@ -101,31 +104,84 @@ export function ReviewClient(props: ReviewClientProps) {
   const hasDue = dueWords.length + duePhrases.length > 0;
 
   if (!hasDue && !practice) {
-    return (
-      <div className="flex flex-col items-center justify-center flex-1 min-h-[60vh] animate-spring-in max-w-md mx-auto text-center">
-        <Fox pose="proud" size="lg" aria-label="All caught up" />
-        <h2 className="text-2xl font-bold text-foreground mb-1 mt-2">All caught up!</h2>
-        <p className="text-text-secondary mb-6 max-w-xs">
-          {practiceWords.length > 0
-            ? `No reviews due right now. You can practise ${practiceWords.length} words if you'd like.`
-            : 'Nothing to review yet. Learn new words to grow your queue.'}
-        </p>
-        {practiceWords.length > 0 ? (
-          <ThumbButton onClick={() => setPractice(true)} size="lg" variant="primary" fullWidth={false}>
-            Practice now ({practiceWords.length} words)
-          </ThumbButton>
-        ) : (
-          <Link href="/paths" className="block w-full">
-            <ThumbButton size="lg" variant="primary">
-              Go to Learning Paths
-            </ThumbButton>
-          </Link>
-        )}
-      </div>
-    );
+    return <NothingDue practiceCount={practiceWords.length} languageCode={props.languageCode ?? null} onPractice={() => setPractice(true)} />;
   }
 
   return <Sitting key={practice ? 'practice' : 'review'} {...props} practice={practice} />;
+}
+
+/** The fetch behind the can-do: the first due can-do, or null when none / it failed. */
+async function fetchDueCanDo(): Promise<DueCanDo | null> {
+  const signal = typeof AbortSignal.timeout === 'function' ? AbortSignal.timeout(CAN_DO_TIMEOUT_MS) : undefined;
+  try {
+    const r = await fetch('/api/can-dos/due?limit=1', { signal });
+    const json = r.ok ? await r.json() : null;
+    return Array.isArray(json?.data) ? ((json.data[0] as DueCanDo | undefined) ?? null) : null;
+  } catch {
+    return null;
+  }
+}
+
+function CaughtUp({ practiceCount, onPractice }: { practiceCount: number; onPractice: () => void }) {
+  return (
+    <div className="flex flex-col items-center justify-center flex-1 min-h-[60vh] animate-spring-in max-w-md mx-auto text-center">
+      <Fox pose="proud" size="lg" aria-label="All caught up" />
+      <h2 className="text-2xl font-bold text-foreground mb-1 mt-2">All caught up!</h2>
+      <p className="text-text-secondary mb-6 max-w-xs">
+        {practiceCount > 0
+          ? `No reviews due right now. You can practise ${practiceCount} words if you'd like.`
+          : 'Nothing to review yet. Learn new words to grow your queue.'}
+      </p>
+      {practiceCount > 0 ? (
+        <ThumbButton onClick={onPractice} size="lg" variant="primary" fullWidth={false}>
+          Practice now ({practiceCount} words)
+        </ThumbButton>
+      ) : (
+        <Link href="/paths" className="block w-full">
+          <ThumbButton size="lg" variant="primary">
+            Go to Learning Paths
+          </ThumbButton>
+        </Link>
+      )}
+    </div>
+  );
+}
+
+/**
+ * No word or phrase is due, but a can-do may be (it is offered once its scene's
+ * items are known, which is exactly when nothing else is due). Show it before
+ * the caught-up screen; none, a failed fetch, or a settled test all end there.
+ */
+function NothingDue({
+  practiceCount,
+  languageCode,
+  onPractice,
+}: {
+  practiceCount: number;
+  languageCode: string | null;
+  onPractice: () => void;
+}) {
+  const [canDo, setCanDo] = useState<'loading' | 'none' | DueCanDo>('loading');
+  useEffect(() => {
+    let live = true;
+    void fetchDueCanDo().then((first) => {
+      if (live) setCanDo(first ?? 'none');
+    });
+    return () => {
+      live = false;
+    };
+  }, []);
+
+  if (canDo === 'loading') return <Notice text="One moment…" />;
+  if (canDo === 'none') return <CaughtUp practiceCount={practiceCount} onPractice={onPractice} />;
+  return (
+    <CanDoTest
+      key={canDo.can_do_id}
+      canDo={canDo}
+      languageCode={languageCode ?? 'pt'}
+      onSettled={() => setCanDo('none')}
+    />
+  );
 }
 
 type CanDoState = 'idle' | 'none' | DueCanDo;
@@ -144,6 +200,7 @@ function Sitting({
   phraseWordMap = NO_PHRASE_MAP,
   languageCode = null,
   dueTotal,
+  fragileDueTotal,
   sittingSize = 20,
   learnerName = null,
   sceneId = null,
@@ -319,14 +376,7 @@ function Sitting({
     if (!settled || canDoRequested.current) return;
     canDoRequested.current = true;
     if (practice) return;
-    const signal = typeof AbortSignal.timeout === 'function' ? AbortSignal.timeout(CAN_DO_TIMEOUT_MS) : undefined;
-    fetch('/api/can-dos/due?limit=1', { signal })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((json) => {
-        const first = Array.isArray(json?.data) ? (json.data[0] as DueCanDo | undefined) : undefined;
-        setCanDo(first ?? 'none');
-      })
-      .catch(() => setCanDo('none'));
+    void fetchDueCanDo().then((first) => setCanDo(first ?? 'none'));
   }, [settled, practice]);
 
   // ---- insight (spacing effect), as before --------------------------------
@@ -380,7 +430,11 @@ function Sitting({
     }
     return (
       <ReviewComplete
-        summary={summarize(state, { dueRemaining, sittingSize })}
+        summary={summarize(state, {
+          dueRemaining,
+          sittingSize,
+          fragileRemaining: fragileDueTotal == null ? undefined : fragileRemaining(fragileDueTotal, sittingItems),
+        })}
         practice={practice}
         sceneId={sceneId}
       />

@@ -66,6 +66,42 @@ export async function getNewContentGate(userId: string, sceneId: string): Promis
   };
 }
 
+/**
+ * Fragile items due now in a language (the gate's predicate, without the scene
+ * exclusion): what the review end screen weighs before offering "Next scene".
+ * A null language counts every language, like the review queue itself.
+ */
+export async function getFragileDueTotal(userId: string, languageId: string | null): Promise<number> {
+  const [words, phrases] = await Promise.all([
+    sql`
+      SELECT COUNT(*)::int AS count
+      FROM user_words uw
+      JOIN words w ON w.id = uw.word_id
+      WHERE uw.user_id = ${userId}
+        AND (${languageId}::uuid IS NULL OR w.language_id = ${languageId}::uuid)
+        AND uw.next_review_at <= NOW()
+        AND uw.status <> 'new'
+        AND (uw.learning_step < 2 OR uw.interval_days <= 3)
+    `,
+    sql`
+      SELECT COUNT(*)::int AS count
+      FROM user_phrases up
+      JOIN scene_phrases sp ON sp.id = up.phrase_id
+      JOIN scenes s ON s.id = sp.scene_id
+      JOIN paths p ON p.id = s.path_id
+      WHERE up.user_id = ${userId}
+        AND (${languageId}::uuid IS NULL OR p.language_id = ${languageId}::uuid)
+        AND up.next_review_at <= NOW()
+        AND up.status <> 'new'
+        AND (up.learning_step < 2 OR up.interval_days <= 3)
+    `,
+  ]);
+  return (
+    ((words[0] as { count: number } | undefined)?.count ?? 0) +
+    ((phrases[0] as { count: number } | undefined)?.count ?? 0)
+  );
+}
+
 /** Scenes the learner finished in the last PACE_WINDOW_DAYS days on this path. */
 export async function getRecentSceneCompletions(
   userId: string,

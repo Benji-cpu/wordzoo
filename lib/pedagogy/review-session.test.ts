@@ -31,6 +31,7 @@ import {
   settlePost,
   startNext,
   summarize,
+  fragileRemaining,
   tooManyOverrides,
   type ItemKind,
   type QueueEntry,
@@ -524,6 +525,42 @@ describe('summary', () => {
   });
 });
 
+describe('summary: moving on follows the fragile items, not everything due', () => {
+  const item = (id: string, learningStep: number, intervalDays: number) => ({
+    key: `word:${id}`,
+    kind: 'word' as const,
+    id,
+    learningStep,
+    intervalDays,
+    lastReviewedAt: null,
+    timesReviewed: 3,
+  });
+
+  it('30 mature items due and no fragile ones still lets the learner move on', () => {
+    let s = createSession({ items: words(2), source: 'review', now: NOW });
+    s = answer(s, 'got_it', { known: true }).state;
+    s = answer(s, 'got_it', { known: true }).state;
+    const sum = summarize(s, { dueRemaining: 10, sittingSize: 20, fragileRemaining: 0 });
+    expect(sum.stillWaiting).toBe(10);
+    expect(sum.canMoveOn).toBe(true);
+  });
+
+  it('fragile items left over hold "Next scene" back at the gate threshold', () => {
+    let s = createSession({ items: words(2), source: 'review', now: NOW });
+    s = answer(s, 'got_it', { known: true }).state;
+    s = answer(s, 'got_it', { known: true }).state;
+    expect(summarize(s, { dueRemaining: 9, sittingSize: 20, fragileRemaining: 8 }).canMoveOn).toBe(true);
+    expect(summarize(s, { dueRemaining: 9, sittingSize: 20, fragileRemaining: 9 }).canMoveOn).toBe(false);
+  });
+
+  it('fragileRemaining subtracts only the sitting items that were fragile at load', () => {
+    const sitting = [item('a', 0, 0), item('b', 2, 3), item('c', 3, 30), item('d', 4, 12)];
+    // a (learning) and b (interval <= 3) were fragile; c and d were mature catch-up
+    expect(fragileRemaining(10, sitting)).toBe(8);
+    expect(fragileRemaining(1, sitting)).toBe(0);
+  });
+});
+
 describe('text helpers', () => {
   it('blankWords blanks whole missed words, accent-insensitively, and keeps punctuation', () => {
     expect(blankWords('Eu gosto muito de café!', ['muito', 'cafe'])).toBe('Eu gosto _____ de ____!');
@@ -537,6 +574,29 @@ describe('text helpers', () => {
     expect(meaningKeys('the house')).toEqual(['house']);
     expect(sameMeaning('goodbye / bye', 'bye')).toBe(true);
     expect(sameMeaning('to eat', 'to drink')).toBe(false);
+  });
+
+  it('same meaning needs the same gloss, not one shared word', () => {
+    expect(sameMeaning('is (right now / state)', 'is / he-she-it is')).toBe(false); // está vs é
+    expect(sameMeaning('he / she lives', 'he')).toBe(false); // mora vs ele
+    expect(sameMeaning('he / she speaks', 'he')).toBe(false); // fala vs ele
+    expect(sameMeaning('is located / is (stays)', 'is (right now / state)')).toBe(false); // fica vs está
+    expect(sameMeaning('return (round trip)', 'return')).toBe(false);
+    expect(sameMeaning('he / she lives', 'he / she lives')).toBe(true);
+    expect(sameMeaning('is (right now / state)', 'is (right now / state)')).toBe(true);
+    expect(sameMeaning('goodbye / bye', 'bye')).toBe(true);
+    expect(sameMeaning('bye', 'goodbye / bye')).toBe(true);
+  });
+
+  it('alternates leave different words with an overlapping gloss out', () => {
+    const pool = [
+      { id: 'a', text: 'está', meaning_en: 'is (right now / state)' },
+      { id: 'b', text: 'é', meaning_en: 'is / he-she-it is' },
+      { id: 'c', text: 'ele', meaning_en: 'he' },
+      { id: 'd', text: 'mora', meaning_en: 'he / she lives' },
+      { id: 'e', text: 'fala', meaning_en: 'he / she speaks' },
+    ];
+    for (const w of pool) expect(alternateTexts(w, pool)).toEqual([]);
   });
 
   it('alternates are other learned words with the same meaning, not the word itself', () => {

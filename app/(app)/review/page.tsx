@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { getReviewSitting, REVIEW_SITTING } from '@/lib/srs/engine';
 import { getAllLearnedWordsForPractice, getWordFamilies, getUserActivePath, getLanguageById } from '@/lib/db/queries';
 import { getPhraseWordsWithMnemonics } from '@/lib/db/scene-flow-queries';
+import { getFragileDueTotal } from '@/lib/db/gate-queries';
 import { getInsightState } from '@/lib/db/insight-queries';
 import { getUserProfile } from '@/lib/db/queries';
 import {
@@ -46,12 +47,13 @@ export default async function ReviewPage({
   // One sitting (REVIEW_SITTING), in the order the engine composes it. The
   // uncapped totals come along too, so the end screen can say how much is
   // still waiting instead of pretending the queue is empty.
-  const [sitting, learnedWords, insightState, language, profile] = await Promise.all([
+  const [sitting, learnedWords, insightState, language, profile, fragileDueTotal] = await Promise.all([
     getReviewSitting(session.user.id, languageId, { priorityScene }),
     getAllLearnedWordsForPractice(session.user.id, WORD_POOL_LIMIT, languageId),
     getInsightState(session.user.id),
     languageId ? getLanguageById(languageId) : Promise.resolve(null),
     getUserProfile(session.user.id),
+    getFragileDueTotal(session.user.id, languageId),
   ]);
   const dueWords = sitting.words;
   const practiceWords = learnedWords.slice(0, PRACTICE_SITTING);
@@ -124,6 +126,7 @@ export default async function ReviewPage({
         phraseWordMap={phraseWordMap}
         languageCode={language?.code ?? null}
         dueTotal={sitting.dueWordTotal + sitting.duePhraseTotal}
+        fragileDueTotal={fragileDueTotal}
         sittingSize={REVIEW_SITTING.words + REVIEW_SITTING.phrases}
         learnerName={learnerIdentity.firstName}
         sceneId={priorityScene}

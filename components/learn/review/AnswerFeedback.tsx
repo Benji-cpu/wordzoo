@@ -120,11 +120,11 @@ export function AnswerFeedback({
 
       <div className="flex flex-col gap-2">
         {canOverride && !overridden && onOverride && (
-          <ThumbButton variant="ghost" onClick={onOverride}>
+          <ThumbButton variant="ghost" aria-label="I said it right" onClick={onOverride}>
             I said it right
           </ThumbButton>
         )}
-        <ThumbButton variant="primary" size="lg" onClick={onContinue}>
+        <ThumbButton variant="primary" size="lg" aria-label="Continue" onClick={onContinue}>
           Continue
         </ThumbButton>
       </div>

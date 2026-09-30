@@ -66,7 +66,7 @@ export function ReviewComplete({ summary, practice = false, sceneId = null }: Re
     title = 'Not locked in yet';
     subtitle =
       parked > 0
-        ? `${parked} ${parked === 1 ? 'item is' : 'items are'} parked for next time. They stay due and come first.`
+        ? `${parked} ${parked === 1 ? 'item is' : 'items are'} parked. They stay due for next time.`
         : `${stillWaiting} still waiting, ${sittingsLabel(sittings)}. Another round keeps them coming back.`;
   }
 

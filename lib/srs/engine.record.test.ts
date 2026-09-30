@@ -104,6 +104,30 @@ describe('recordReview', () => {
     expect(q.updateWordSRS.mock.calls[0][1].status).toBe('mastered');
   });
 
+  it('a correct review never lowers a stored mastered/reviewing status, even from a trip-capped interval', async () => {
+    const trip = new Date(Date.now() + 30 * DAY).toISOString().slice(0, 10);
+    const capped = row({ status: 'mastered', interval_days: 10, trip_date: trip, last_reviewed_at: new Date(Date.now() - 10 * DAY), next_review_at: new Date(Date.now() - 1000) });
+    q.getOrCreateUserWord.mockResolvedValue(capped);
+    const res = await recordReview('u', 'w', 'production', 'got_it', 'review');
+    expect(res.reason).toBe('review_advance');
+    expect(q.updateWordSRS.mock.calls[0][1].status).toBe('mastered');
+
+    q.getOrCreateUserWord.mockResolvedValue({ ...capped, status: 'reviewing', interval_days: 3, last_reviewed_at: new Date(Date.now() - 3 * DAY) });
+    await recordReview('u', 'w', 'production', 'hard', 'review');
+    expect(q.updateWordSRS.mock.calls[1][1].status).toBe('reviewing');
+  });
+
+  it('a correct review still promotes, and a lapse still demotes', async () => {
+    q.getOrCreateUserWord.mockResolvedValue(row({ status: 'learning', interval_days: 15, last_reviewed_at: new Date(Date.now() - 15 * DAY) }));
+    await recordReview('u', 'w', 'production', 'got_it', 'review');
+    expect(q.updateWordSRS.mock.calls[0][1].status).toBe('mastered');
+
+    q.getOrCreateUserWord.mockResolvedValue(row({ status: 'mastered', interval_days: 12, last_reviewed_at: new Date(Date.now() - 12 * DAY) }));
+    const res = await recordReview('u', 'w', 'production', 'forgot', 'review');
+    expect(res.isCorrect).toBe(false);
+    expect(q.updateWordSRS.mock.calls[1][1].status).toBe('learning');
+  });
+
   it('writes the review event with presentation and an explicit created_at, even outside a request (after() throws)', async () => {
     q.getOrCreateUserWord.mockResolvedValue(row());
     await recordReview('u', 'w', 'production', 'got_it', 'review', 2);

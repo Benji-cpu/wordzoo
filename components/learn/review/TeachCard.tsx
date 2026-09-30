@@ -58,7 +58,7 @@ export function TeachCard({ view, languageCode, onContinue }: TeachCardProps) {
         </div>
       )}
 
-      <ThumbButton variant="primary" size="lg" onClick={onContinue}>
+      <ThumbButton variant="primary" size="lg" aria-label="Continue" onClick={onContinue}>
         Continue
       </ThumbButton>
     </div>
