@@ -17,6 +17,7 @@ interface PathDetailClientProps {
   languageCode: string | null;
   sceneMastery: SceneMasteryRow[];
   wordStats: PathWordStats;
+  nextSceneGate?: { open: boolean; fragileDue: number } | null;
 }
 
 function tierSuffix(type: Path['type']): string {
@@ -39,6 +40,7 @@ export function PathDetailClient({
   languageCode,
   sceneMastery,
   wordStats,
+  nextSceneGate = null,
 }: PathDetailClientProps) {
   const router = useRouter();
   const habitat = habitatFromLanguageCode(languageCode);
@@ -106,7 +108,7 @@ export function PathDetailClient({
       )}
 
       {/* Journey Map — unchanged */}
-      <PathJourneyMap sceneMastery={sceneMastery} pathId={path.id} />
+      <PathJourneyMap sceneMastery={sceneMastery} pathId={path.id} nextSceneGate={nextSceneGate} />
     </div>
   );
 }

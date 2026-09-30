@@ -8,6 +8,8 @@ import {
   getLanguageById,
   upsertUserPath,
 } from '@/lib/db/queries';
+import { getNewContentGate } from '@/lib/db/gate-queries';
+import { isSceneComplete } from '@/lib/utils/scene-progress';
 import { PathDetailClient } from './PathDetailClient';
 
 interface PageProps {
@@ -37,6 +39,11 @@ export default async function PathDetailPage({ params }: PageProps) {
     getLanguageById(path.language_id),
   ]);
 
+  // The map shows the next scene as "after a practice round" when the gate
+  // would hold it back; same rule the learn page enforces.
+  const nextScene = sceneMastery.find((s) => !isSceneComplete(s));
+  const nextSceneGate = nextScene ? await getNewContentGate(userId, nextScene.id) : null;
+
   return (
     <PathDetailClient
       path={path}
@@ -44,6 +51,7 @@ export default async function PathDetailPage({ params }: PageProps) {
       languageCode={language?.code ?? null}
       sceneMastery={sceneMastery}
       wordStats={wordStats}
+      nextSceneGate={nextSceneGate}
     />
   );
 }
