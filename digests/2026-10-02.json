@@ -1,0 +1,3639 @@
+{
+  "project": "wordzoo",
+  "today": "2026-10-02",
+  "startedAt": "2026-10-01T18:54:47.981Z",
+  "finishedAt": "2026-10-01T18:54:49.466Z",
+  "feedback": {
+    "byStatus": {
+      "actioned": 145,
+      "dismissed": 1,
+      "new": 16
+    },
+    "newLast24h": 16,
+    "pendingRows": [
+      {
+        "id": "b5fd946f-3581-40c9-aae2-df0a79b39d06",
+        "user_id": "b16a9e8f-1bd8-4de1-8fab-c4622da01d57",
+        "message": "Like my review step like I don't really remember any of these things I haven't been back in this app in a long time so the app should like realize that and not have me go through so much repetitive learning out of things that I don't remember you know what I mean you need to be handheld when you don't remember things basically you need to like repeat the section sure it will come back to you but you need to kind of stop from scratch if you haven't been attentive to that for a long time",
+        "page_url": "https://wordzoo.vercel.app/review",
+        "page_title": "WordZoo",
+        "viewport_width": 384,
+        "viewport_height": 647,
+        "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Mobile Safari/537.36",
+        "activity_trail": [
+          {
+            "t": 0,
+            "kind": "route",
+            "detail": "/review"
+          },
+          {
+            "t": 4.8,
+            "kind": "click",
+            "detail": "button: I don't know"
+          },
+          {
+            "t": 9.3,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 17.2,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 49.7,
+            "kind": "click",
+            "detail": "button: Send"
+          }
+        ],
+        "status": "new",
+        "created_at": "2026-09-30T23:31:07.865Z",
+        "user_email": "profbenjo@gmail.com",
+        "user_name": "Ben Hemson-Struthers"
+      },
+      {
+        "id": "befc8199-63f8-4322-8a60-e2f101a405ca",
+        "user_id": "b16a9e8f-1bd8-4de1-8fab-c4622da01d57",
+        "message": "Also if I get something wrong I don't know maybe I give a hint it's just like it's hard if I if you don't know what the answer is because not only do you progress and not have an opportunity to repeat it but there's no hint or anything",
+        "page_url": "https://wordzoo.vercel.app/review",
+        "page_title": "WordZoo",
+        "viewport_width": 384,
+        "viewport_height": 647,
+        "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Mobile Safari/537.36",
+        "activity_trail": [
+          {
+            "t": 695.2,
+            "kind": "click",
+            "detail": "button: Check"
+          },
+          {
+            "t": 708,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 713,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 718.4,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 729.5,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 732.7,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 737,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 738.5,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 743,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 745.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 748.5,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 764.9,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 787.7,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 797.6,
+            "kind": "click",
+            "detail": "button: I don't know"
+          },
+          {
+            "t": 801.9,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 803.6,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 812.5,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 819.3,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 824.3,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 829.9,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 835.2,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 844.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 848.7,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 852.4,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 855.4,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 860.6,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 865.2,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 870.2,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 875.8,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 883.7,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 887.5,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 891.5,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 893.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 897,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 912.2,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 921.4,
+            "kind": "click",
+            "detail": "button: Show me"
+          },
+          {
+            "t": 928.5,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 944.1,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 952.4,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 959.9,
+            "kind": "click",
+            "detail": "button: I don't know"
+          },
+          {
+            "t": 995.1,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 1013.4,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 1015.2,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 1019.4,
+            "kind": "click",
+            "detail": "button: I don't know"
+          },
+          {
+            "t": 1021.6,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 1031.3,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 1084.2,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 1097.5,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 1104.8,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 1122.4,
+            "kind": "click",
+            "detail": "button: Send"
+          }
+        ],
+        "status": "new",
+        "created_at": "2026-09-30T23:25:25.287Z",
+        "user_email": "profbenjo@gmail.com",
+        "user_name": "Ben Hemson-Struthers"
+      },
+      {
+        "id": "a9b1047b-1de3-4146-82ec-9e6aa01bdf8b",
+        "user_id": "b16a9e8f-1bd8-4de1-8fab-c4622da01d57",
+        "message": ", it seems like now you've made it so that the only learning mode is with speaking that was never the goal the goal is to have a little bit of diversity with the majority of the learning being speaking you can also like drag and drop words so it's easy but like I prefer the speaking and it's just like why did you suddenly say you just got like super dog-minded like oh we have to do it this way this is the only way to do it then asked for this and now that's the word of God it was a sick offensive response you should be working with diversity here and applying the best learning approaches I don't know why why you just everything is now spoken",
+        "page_url": "https://wordzoo.vercel.app/review",
+        "page_title": "WordZoo",
+        "viewport_width": 384,
+        "viewport_height": 647,
+        "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Mobile Safari/537.36",
+        "activity_trail": [
+          {
+            "t": 687.3,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 688.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 693.2,
+            "kind": "click",
+            "detail": "button: Type instead"
+          },
+          {
+            "t": 695.2,
+            "kind": "click",
+            "detail": "button: Check"
+          },
+          {
+            "t": 708,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 713,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 718.4,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 729.5,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 732.7,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 737,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 738.5,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 743,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 745.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 748.5,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 764.9,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 787.7,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 797.6,
+            "kind": "click",
+            "detail": "button: I don't know"
+          },
+          {
+            "t": 801.9,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 803.6,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 812.5,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 819.3,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 824.3,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 829.9,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 835.2,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 844.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 848.7,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 852.4,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 855.4,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 860.6,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 865.2,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 870.2,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 875.8,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 883.7,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 887.5,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 891.5,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 893.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 897,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 912.2,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 921.4,
+            "kind": "click",
+            "detail": "button: Show me"
+          },
+          {
+            "t": 928.5,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 944.1,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 952.4,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 959.9,
+            "kind": "click",
+            "detail": "button: I don't know"
+          },
+          {
+            "t": 995.1,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 1013.4,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 1015.2,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 1019.4,
+            "kind": "click",
+            "detail": "button: I don't know"
+          },
+          {
+            "t": 1021.6,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 1031.3,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 1084.2,
+            "kind": "click",
+            "detail": "button: Send"
+          }
+        ],
+        "status": "new",
+        "created_at": "2026-09-30T23:24:48.767Z",
+        "user_email": "profbenjo@gmail.com",
+        "user_name": "Ben Hemson-Struthers"
+      },
+      {
+        "id": "98cb3fdd-5928-4f43-b80d-34e27f379851",
+        "user_id": "b16a9e8f-1bd8-4de1-8fab-c4622da01d57",
+        "message": "So I got this wrong but it didn't give me a chance to practice it again and I think if I get it wrong I should maybe practice the breakdown of the words again and you know you should be encouraged to learn and not just move on if you get things wrong",
+        "page_url": "https://wordzoo.vercel.app/review",
+        "page_title": "WordZoo",
+        "viewport_width": 384,
+        "viewport_height": 647,
+        "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Mobile Safari/537.36",
+        "activity_trail": [
+          {
+            "t": 646.4,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 650.7,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 654.1,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 662.6,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 667,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 687.3,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 688.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 693.2,
+            "kind": "click",
+            "detail": "button: Type instead"
+          },
+          {
+            "t": 695.2,
+            "kind": "click",
+            "detail": "button: Check"
+          },
+          {
+            "t": 708,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 713,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 718.4,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 729.5,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 732.7,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 737,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 738.5,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 743,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 745.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 748.5,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 764.9,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 787.7,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 797.6,
+            "kind": "click",
+            "detail": "button: I don't know"
+          },
+          {
+            "t": 801.9,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 803.6,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 812.5,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 819.3,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 824.3,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 829.9,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 835.2,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 844.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 848.7,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 852.4,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 855.4,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 860.6,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 865.2,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 870.2,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 875.8,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 883.7,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 887.5,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 891.5,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 893.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 897,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 912.2,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 921.4,
+            "kind": "click",
+            "detail": "button: Show me"
+          },
+          {
+            "t": 928.5,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 944.1,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 952.4,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 959.9,
+            "kind": "click",
+            "detail": "button: I don't know"
+          },
+          {
+            "t": 995.1,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 1013.4,
+            "kind": "click",
+            "detail": "button: Send"
+          }
+        ],
+        "status": "new",
+        "created_at": "2026-09-30T23:23:39.126Z",
+        "user_email": "profbenjo@gmail.com",
+        "user_name": "Ben Hemson-Struthers"
+      },
+      {
+        "id": "2a5a2aa9-b4e0-40fa-8590-db7bc689dd83",
+        "user_id": "b16a9e8f-1bd8-4de1-8fab-c4622da01d57",
+        "message": "It would have been better if this image had the fee car on the left because that comes first and the Pepto on the right because I come second",
+        "page_url": "https://wordzoo.vercel.app/review",
+        "page_title": "WordZoo",
+        "viewport_width": 384,
+        "viewport_height": 647,
+        "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Mobile Safari/537.36",
+        "activity_trail": [
+          {
+            "t": 628.7,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 633.3,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 638.3,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 642.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 646.4,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 650.7,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 654.1,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 662.6,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 667,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 687.3,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 688.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 693.2,
+            "kind": "click",
+            "detail": "button: Type instead"
+          },
+          {
+            "t": 695.2,
+            "kind": "click",
+            "detail": "button: Check"
+          },
+          {
+            "t": 708,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 713,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 718.4,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 729.5,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 732.7,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 737,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 738.5,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 743,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 745.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 748.5,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 764.9,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 787.7,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 797.6,
+            "kind": "click",
+            "detail": "button: I don't know"
+          },
+          {
+            "t": 801.9,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 803.6,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 812.5,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 819.3,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 824.3,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 829.9,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 835.2,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 844.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 848.7,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 852.4,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 855.4,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 860.6,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 865.2,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 870.2,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 875.8,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 883.7,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 887.5,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 891.5,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 893.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 897,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 912.2,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 921.4,
+            "kind": "click",
+            "detail": "button: Show me"
+          },
+          {
+            "t": 928.5,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 944.1,
+            "kind": "click",
+            "detail": "button: Send"
+          }
+        ],
+        "status": "new",
+        "created_at": "2026-09-30T23:22:28.410Z",
+        "user_email": "profbenjo@gmail.com",
+        "user_name": "Ben Hemson-Struthers"
+      },
+      {
+        "id": "57b117e3-38e3-4df8-ad04-50f1440c1d2b",
+        "user_id": "b16a9e8f-1bd8-4de1-8fab-c4622da01d57",
+        "message": "Again they're even on this page which is a lot simpler there's still too many options it you could have it done in a way that like the we don't need to have finished for now maybe there's a back button on the top left it is like really discreet but most users can just click their back button I even think that would be better",
+        "page_url": "https://wordzoo.vercel.app/review",
+        "page_title": "WordZoo",
+        "viewport_width": 384,
+        "viewport_height": 647,
+        "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Mobile Safari/537.36",
+        "activity_trail": [
+          {
+            "t": 379.9,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 383.7,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 385.7,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 390.4,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 393.4,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 396.2,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 398,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 402.7,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 409.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 414.4,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 420,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 429.4,
+            "kind": "click",
+            "detail": "button: I don't know"
+          },
+          {
+            "t": 433.7,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 445.7,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 457.7,
+            "kind": "click",
+            "detail": "button: Show me"
+          },
+          {
+            "t": 468.3,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 473.5,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 484.1,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 491.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 508.3,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 544.2,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 548,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 571,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 586,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 609.3,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 628.7,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 633.3,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 638.3,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 642.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 646.4,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 650.7,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 654.1,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 662.6,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 667,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 687.3,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 688.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 693.2,
+            "kind": "click",
+            "detail": "button: Type instead"
+          },
+          {
+            "t": 695.2,
+            "kind": "click",
+            "detail": "button: Check"
+          },
+          {
+            "t": 708,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 713,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 718.4,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 729.5,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 732.7,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 737,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 738.5,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 743,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 745.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 748.5,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 764.9,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 787.7,
+            "kind": "click",
+            "detail": "button: Send"
+          }
+        ],
+        "status": "new",
+        "created_at": "2026-09-30T23:19:51.498Z",
+        "user_email": "profbenjo@gmail.com",
+        "user_name": "Ben Hemson-Struthers"
+      },
+      {
+        "id": "a7801fb1-9209-4ffb-85f7-95ada84aa824",
+        "user_id": "b16a9e8f-1bd8-4de1-8fab-c4622da01d57",
+        "message": "No the word association like now the speak to understand like tap and say button is just not picking up what I've been saying",
+        "page_url": "https://wordzoo.vercel.app/review",
+        "page_title": "WordZoo",
+        "viewport_width": 384,
+        "viewport_height": 647,
+        "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Mobile Safari/537.36",
+        "activity_trail": [
+          {
+            "t": 216.5,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 218.6,
+            "kind": "click",
+            "detail": "button: Speak"
+          },
+          {
+            "t": 245.1,
+            "kind": "click",
+            "detail": "button: Stop"
+          },
+          {
+            "t": 253,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 266.1,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 313.8,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 318.3,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 325.7,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 330.5,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 333.8,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 337.6,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 341.8,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 369.8,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 372.8,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 378,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 379.9,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 383.7,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 385.7,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 390.4,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 393.4,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 396.2,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 398,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 402.7,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 409.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 414.4,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 420,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 429.4,
+            "kind": "click",
+            "detail": "button: I don't know"
+          },
+          {
+            "t": 433.7,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 445.7,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 457.7,
+            "kind": "click",
+            "detail": "button: Show me"
+          },
+          {
+            "t": 468.3,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 473.5,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 484.1,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 491.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 508.3,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 544.2,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 548,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 571,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 586,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 609.3,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 628.7,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 633.3,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 638.3,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 642.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 646.4,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 650.7,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 654.1,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 662.6,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 667,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 687.3,
+            "kind": "click",
+            "detail": "button: Send"
+          }
+        ],
+        "status": "new",
+        "created_at": "2026-09-30T23:18:10.474Z",
+        "user_email": "profbenjo@gmail.com",
+        "user_name": "Ben Hemson-Struthers"
+      },
+      {
+        "id": "d200e08d-9b53-4281-9bf9-9b8004fb5cfa",
+        "user_id": "b16a9e8f-1bd8-4de1-8fab-c4622da01d57",
+        "message": "So these weird associations were built with an older model which is just not as good and I think they could be rebuilt with Opus 5.5 to just get slightly better results",
+        "page_url": "https://wordzoo.vercel.app/review",
+        "page_title": "WordZoo",
+        "viewport_width": 384,
+        "viewport_height": 647,
+        "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Mobile Safari/537.36",
+        "activity_trail": [
+          {
+            "t": 155.6,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 163.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 168.8,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 173.6,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 178.6,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 184.5,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 186,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 189.8,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 196.8,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 216.5,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 218.6,
+            "kind": "click",
+            "detail": "button: Speak"
+          },
+          {
+            "t": 245.1,
+            "kind": "click",
+            "detail": "button: Stop"
+          },
+          {
+            "t": 253,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 266.1,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 313.8,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 318.3,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 325.7,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 330.5,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 333.8,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 337.6,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 341.8,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 369.8,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 372.8,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 378,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 379.9,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 383.7,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 385.7,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 390.4,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 393.4,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 396.2,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 398,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 402.7,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 409.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 414.4,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 420,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 429.4,
+            "kind": "click",
+            "detail": "button: I don't know"
+          },
+          {
+            "t": 433.7,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 445.7,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 457.7,
+            "kind": "click",
+            "detail": "button: Show me"
+          },
+          {
+            "t": 468.3,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 473.5,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 484.1,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 491.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 508.3,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 544.2,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 548,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 571,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 586,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 609.3,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 628.7,
+            "kind": "click",
+            "detail": "button: Send"
+          }
+        ],
+        "status": "new",
+        "created_at": "2026-09-30T23:17:11.864Z",
+        "user_email": "profbenjo@gmail.com",
+        "user_name": "Ben Hemson-Struthers"
+      },
+      {
+        "id": "419bd5c9-e71a-400f-9301-35be35589bc1",
+        "user_id": "b16a9e8f-1bd8-4de1-8fab-c4622da01d57",
+        "message": "Another issue with this page is again like the word text associations are super messy and complicated like you've highlighted all the all these words and some are associations some are the some of that is a super confusing what I'm looking at and what's the translation and why",
+        "page_url": "https://wordzoo.vercel.app/review",
+        "page_title": "WordZoo",
+        "viewport_width": 384,
+        "viewport_height": 647,
+        "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Mobile Safari/537.36",
+        "activity_trail": [
+          {
+            "t": 141.2,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 151,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 154.2,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 155.6,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 163.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 168.8,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 173.6,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 178.6,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 184.5,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 186,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 189.8,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 196.8,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 216.5,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 218.6,
+            "kind": "click",
+            "detail": "button: Speak"
+          },
+          {
+            "t": 245.1,
+            "kind": "click",
+            "detail": "button: Stop"
+          },
+          {
+            "t": 253,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 266.1,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 313.8,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 318.3,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 325.7,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 330.5,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 333.8,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 337.6,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 341.8,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 369.8,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 372.8,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 378,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 379.9,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 383.7,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 385.7,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 390.4,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 393.4,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 396.2,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 398,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 402.7,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 409.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 414.4,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 420,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 429.4,
+            "kind": "click",
+            "detail": "button: I don't know"
+          },
+          {
+            "t": 433.7,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 445.7,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 457.7,
+            "kind": "click",
+            "detail": "button: Show me"
+          },
+          {
+            "t": 468.3,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 473.5,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 484.1,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 491.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 508.3,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 544.2,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 548,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 571,
+            "kind": "click",
+            "detail": "button: Send"
+          }
+        ],
+        "status": "new",
+        "created_at": "2026-09-30T23:16:15.146Z",
+        "user_email": "profbenjo@gmail.com",
+        "user_name": "Ben Hemson-Struthers"
+      },
+      {
+        "id": "2a4fc224-3dde-4beb-b729-5f1b5f967511",
+        "user_id": "b16a9e8f-1bd8-4de1-8fab-c4622da01d57",
+        "message": "This way too much classroom this page again even when the words of being said like fine it's good to hear to be fed back what you heard but we don't need this like it's in Brazil Portuguese and all this other clutter it's like if you look at Duolingo is super simple the only things you can do are like fill in what's required our app has a bit more complexity because of the learning mnemonics but really this is just full of crap and it's super distracting",
+        "page_url": "https://wordzoo.vercel.app/review",
+        "page_title": "WordZoo",
+        "viewport_width": 384,
+        "viewport_height": 647,
+        "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Mobile Safari/537.36",
+        "activity_trail": [
+          {
+            "t": 118.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 137.4,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 141.2,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 151,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 154.2,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 155.6,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 163.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 168.8,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 173.6,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 178.6,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 184.5,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 186,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 189.8,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 196.8,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 216.5,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 218.6,
+            "kind": "click",
+            "detail": "button: Speak"
+          },
+          {
+            "t": 245.1,
+            "kind": "click",
+            "detail": "button: Stop"
+          },
+          {
+            "t": 253,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 266.1,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 313.8,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 318.3,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 325.7,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 330.5,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 333.8,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 337.6,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 341.8,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 369.8,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 372.8,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 378,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 379.9,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 383.7,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 385.7,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 390.4,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 393.4,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 396.2,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 398,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 402.7,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 409.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 414.4,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 420,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 429.4,
+            "kind": "click",
+            "detail": "button: I don't know"
+          },
+          {
+            "t": 433.7,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 445.7,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 457.7,
+            "kind": "click",
+            "detail": "button: Show me"
+          },
+          {
+            "t": 468.3,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 473.5,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 484.1,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 491.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 508.3,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 544.2,
+            "kind": "click",
+            "detail": "button: Send"
+          }
+        ],
+        "status": "new",
+        "created_at": "2026-09-30T23:15:48.510Z",
+        "user_email": "profbenjo@gmail.com",
+        "user_name": "Ben Hemson-Struthers"
+      },
+      {
+        "id": "51f457d8-5e61-468b-b187-0147400d51a4",
+        "user_id": "b16a9e8f-1bd8-4de1-8fab-c4622da01d57",
+        "message": "So I was going through these and I it was so easy to skip three things by accident when I got them wrong",
+        "page_url": "https://wordzoo.vercel.app/review",
+        "page_title": "WordZoo",
+        "viewport_width": 384,
+        "viewport_height": 647,
+        "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Mobile Safari/537.36",
+        "activity_trail": [
+          {
+            "t": 92.2,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 97,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 110.7,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 118.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 137.4,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 141.2,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 151,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 154.2,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 155.6,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 163.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 168.8,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 173.6,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 178.6,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 184.5,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 186,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 189.8,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 196.8,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 216.5,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 218.6,
+            "kind": "click",
+            "detail": "button: Speak"
+          },
+          {
+            "t": 245.1,
+            "kind": "click",
+            "detail": "button: Stop"
+          },
+          {
+            "t": 253,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 266.1,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 313.8,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 318.3,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 325.7,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 330.5,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 333.8,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 337.6,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 341.8,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 369.8,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 372.8,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 378,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 379.9,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 383.7,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 385.7,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 390.4,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 393.4,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 396.2,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 398,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 402.7,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 409.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 414.4,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 420,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 429.4,
+            "kind": "click",
+            "detail": "button: I don't know"
+          },
+          {
+            "t": 433.7,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 445.7,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 457.7,
+            "kind": "click",
+            "detail": "button: Show me"
+          },
+          {
+            "t": 468.3,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 473.5,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 484.1,
+            "kind": "click",
+            "detail": "button: Send"
+          }
+        ],
+        "status": "new",
+        "created_at": "2026-09-30T23:14:48.263Z",
+        "user_email": "profbenjo@gmail.com",
+        "user_name": "Ben Hemson-Struthers"
+      },
+      {
+        "id": "5be332cc-a48b-49a9-88bf-a35f6c62062c",
+        "user_id": "b16a9e8f-1bd8-4de1-8fab-c4622da01d57",
+        "message": "You're the same here it says the deer eats a sign that turns right which is this kind of confusing it's like I might like what am I learning deer eats and my learning right what what's the association between the two it's just a bit weird like one is a translation and one is Association and they look like they're supposed to be the same thing",
+        "page_url": "https://wordzoo.vercel.app/review",
+        "page_title": "WordZoo",
+        "viewport_width": 384,
+        "viewport_height": 647,
+        "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Mobile Safari/537.36",
+        "activity_trail": [
+          {
+            "t": 0,
+            "kind": "route",
+            "detail": "/review"
+          },
+          {
+            "t": 5.9,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 9.7,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 14.9,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 21.9,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 25.3,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 30,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 49.5,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 52.3,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 64.3,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 70.7,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 92.2,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 97,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 110.7,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 118.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 137.4,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 141.2,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 151,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 154.2,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 155.6,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 163.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 168.8,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 173.6,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 178.6,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 184.5,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 186,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 189.8,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 196.8,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 216.5,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 218.6,
+            "kind": "click",
+            "detail": "button: Speak"
+          },
+          {
+            "t": 245.1,
+            "kind": "click",
+            "detail": "button: Stop"
+          },
+          {
+            "t": 253,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 266.1,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 313.8,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 318.3,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 325.7,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 330.5,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 333.8,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 337.6,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 341.8,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 369.8,
+            "kind": "click",
+            "detail": "button: Send"
+          }
+        ],
+        "status": "new",
+        "created_at": "2026-09-30T23:12:52.764Z",
+        "user_email": "profbenjo@gmail.com",
+        "user_name": "Ben Hemson-Struthers"
+      },
+      {
+        "id": "2c88a808-12a6-4551-8fbe-c8d331831c79",
+        "user_id": "b16a9e8f-1bd8-4de1-8fab-c4622da01d57",
+        "message": "So this is not really consistency in how the words being presented When I See This I see the word VR v e e r and then turn left and like why are those two highlighted it it should be if you know I don't know the same things should be highlighted Maybe it's like it's like one is a Association in terms of like highlight and what I'm supposed to learn from the text while it's showing there",
+        "page_url": "https://wordzoo.vercel.app/review",
+        "page_title": "WordZoo",
+        "viewport_width": 384,
+        "viewport_height": 647,
+        "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Mobile Safari/537.36",
+        "activity_trail": [
+          {
+            "t": 0,
+            "kind": "route",
+            "detail": "/review"
+          },
+          {
+            "t": 5.9,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 9.7,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 14.9,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 21.9,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 25.3,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 30,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 49.5,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 52.3,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 64.3,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 70.7,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 92.2,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 97,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 110.7,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 118.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 137.4,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 141.2,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 151,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 154.2,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 155.6,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 163.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 168.8,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 173.6,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 178.6,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 184.5,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 186,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 189.8,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 196.8,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 216.5,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 218.6,
+            "kind": "click",
+            "detail": "button: Speak"
+          },
+          {
+            "t": 245.1,
+            "kind": "click",
+            "detail": "button: Stop"
+          },
+          {
+            "t": 253,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 266.1,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 313.8,
+            "kind": "click",
+            "detail": "button: Send"
+          }
+        ],
+        "status": "new",
+        "created_at": "2026-09-30T23:11:58.182Z",
+        "user_email": "profbenjo@gmail.com",
+        "user_name": "Ben Hemson-Struthers"
+      },
+      {
+        "id": "434cc436-e10e-4980-ac6f-360daad21f27",
+        "user_id": "b16a9e8f-1bd8-4de1-8fab-c4622da01d57",
+        "message": "it's it's it's it's a it's a bit it's a bit confusing it's a bit confusing it's a bit confusing it's a bit confusing how it's a bit confusing how to it's a bit confusing how to look look at look at the look at the look at the look at the words look at the words here look at the words here look at the words here because look at the words here because look at the words here because everything look at the words here because everything look at the words here because everything look at the words here because everything look at the words here because everything if look at the words here because everything if I look at the words here because everything if I type look at the words here because everything if I type look at the words here because everything if I type look at the words here because everything if I type look at the words here because everything if I type in look at the words here because everything if I type in the look at the words here because everything if I type in the message look at the words here because everything if I type in the message the the the text the text the text with the text with the text with the text with the the text with the speech the text with the speech the text with the speech the text with the speech the text with the speech the text with the speech the text with the speech seems the text with the speech seems to the text with the speech seems to like the text with the speech seems to like the text with the speech seems to like the text with the speech seems to like the text with the speech seems to like the text with the speech seems to like double the text with the speech seems to like double the text with the speech seems to like double the text with the speech seems to like double up the text with the speech seems to like double up what's written",
+        "page_url": "https://wordzoo.vercel.app/review",
+        "page_title": "WordZoo",
+        "viewport_width": 384,
+        "viewport_height": 647,
+        "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Mobile Safari/537.36",
+        "activity_trail": [
+          {
+            "t": 0,
+            "kind": "route",
+            "detail": "/review"
+          },
+          {
+            "t": 5.9,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 9.7,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 14.9,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 21.9,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 25.3,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 30,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 49.5,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 52.3,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 64.3,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 70.7,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 92.2,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 97,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 110.7,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 118.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 137.4,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 141.2,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 151,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 154.2,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 155.6,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 163.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 168.8,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 173.6,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 178.6,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 184.5,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 186,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 189.8,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 196.8,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 216.5,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 218.6,
+            "kind": "click",
+            "detail": "button: Speak"
+          },
+          {
+            "t": 245.1,
+            "kind": "click",
+            "detail": "button: Stop"
+          }
+        ],
+        "status": "new",
+        "created_at": "2026-09-30T23:10:56.903Z",
+        "user_email": "profbenjo@gmail.com",
+        "user_name": "Ben Hemson-Struthers"
+      },
+      {
+        "id": "3ea4d2c8-8389-4987-a358-3fbcdb5262a8",
+        "user_id": "b16a9e8f-1bd8-4de1-8fab-c4622da01d57",
+        "message": "it's it's it's it's a it's a bit it's a bit confusing it's a bit confusing it's a bit confusing it's a bit confusing how it's a bit confusing how to it's a bit confusing how to look look at look at the look at the look at the look at the words look at the words here look at the words here look at the words here because look at the words here because look at the words here because everything look at the words here because everything look at the words here because everything look at the words here because everything look at the words here because everything if look at the words here because everything if I look at the words here because everything if I type look at the words here because everything if I type look at the words here because everything if I type look at the words here because everything if I type look at the words here because everything if I type in look at the words here because everything if I type in the look at the words here because everything if I type in the message look at the words here because everything if I type in the message the the the text the text the text with the text with the text with the text with the the text with the speech the text with the speech the text with the speech the text with the speech the text with the speech the text with the speech the text with the speech seems the text with the speech seems to the text with the speech seems to like the text with the speech seems to like the text with the speech seems to like the text with the speech seems to like the text with the speech seems to like the text with the speech seems to like double the text with the speech seems to like double the text with the speech seems to like double the text with the speech seems to like double up the text with the speech seems to like double up what's written",
+        "page_url": "https://wordzoo.vercel.app/review",
+        "page_title": "WordZoo",
+        "viewport_width": 384,
+        "viewport_height": 647,
+        "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Mobile Safari/537.36",
+        "activity_trail": [
+          {
+            "t": 0,
+            "kind": "route",
+            "detail": "/review"
+          },
+          {
+            "t": 5.9,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 9.7,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 14.9,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 21.9,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 25.3,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 30,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 49.5,
+            "kind": "click",
+            "detail": "button: Send"
+          },
+          {
+            "t": 52.3,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 64.3,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 70.7,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 92.2,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 97,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 110.7,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 118.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 137.4,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 141.2,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 151,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 154.2,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 155.6,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 163.1,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 168.8,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 173.6,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 178.6,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 184.5,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 186,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 189.8,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 196.8,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 216.5,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 218.6,
+            "kind": "click",
+            "detail": "button: Speak"
+          },
+          {
+            "t": 245.1,
+            "kind": "click",
+            "detail": "button: Stop"
+          }
+        ],
+        "status": "new",
+        "created_at": "2026-09-30T23:10:55.619Z",
+        "user_email": "profbenjo@gmail.com",
+        "user_name": "Ben Hemson-Struthers"
+      },
+      {
+        "id": "6cfb62c2-d5ca-4cc6-9317-0806c5575a23",
+        "user_id": "b16a9e8f-1bd8-4de1-8fab-c4622da01d57",
+        "message": "I have to scroll up and down on these pages to interact with them which is quite a hassle that's a big problem with any page for me to be able to clearly didn't move through things and these pages are very classed with all sorts of crap",
+        "page_url": "https://wordzoo.vercel.app/review",
+        "page_title": "WordZoo",
+        "viewport_width": 384,
+        "viewport_height": 647,
+        "user_agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Mobile Safari/537.36",
+        "activity_trail": [
+          {
+            "t": 0,
+            "kind": "route",
+            "detail": "/review"
+          },
+          {
+            "t": 5.9,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 9.7,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 14.9,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 21.9,
+            "kind": "click",
+            "detail": "button: "
+          },
+          {
+            "t": 25.3,
+            "kind": "click",
+            "detail": "button: Continue"
+          },
+          {
+            "t": 30,
+            "kind": "click",
+            "detail": "button: Feedback"
+          },
+          {
+            "t": 49.5,
+            "kind": "click",
+            "detail": "button: Send"
+          }
+        ],
+        "status": "new",
+        "created_at": "2026-09-30T23:07:32.771Z",
+        "user_email": "profbenjo@gmail.com",
+        "user_name": "Ben Hemson-Struthers"
+      }
+    ]
+  },
+  "health": {
+    "stuckMnemonicsLast72h": 1,
+    "overdueReviews": 28,
+    "userBacklog": [
+      {
+        "email_masked": "pro***",
+        "activeLanguage": "pt",
+        "dueWords": 20,
+        "duePhrases": 11,
+        "learningItems": 3
+      }
+    ],
+    "spendLast24h": [],
+    "pedagogy": {
+      "cueAccuracy": [],
+      "cueAccuracy30": [],
+      "checkpoints": {
+        "started": 0,
+        "passed": 0,
+        "failed": 0,
+        "pass_rate_pct": null,
+        "avg_remediation_loops": 0
+      },
+      "retention": [
+        {
+          "interval_bucket": "<1d (learning)",
+          "reviews": 33,
+          "correct": 20,
+          "retention_pct": 60.6
+        },
+        {
+          "interval_bucket": "1d",
+          "reviews": 4,
+          "correct": 1,
+          "retention_pct": 25
+        },
+        {
+          "interval_bucket": "4-7d",
+          "reviews": 2,
+          "correct": 2,
+          "retention_pct": 100
+        },
+        {
+          "interval_bucket": "15-30d",
+          "reviews": 1,
+          "correct": 1,
+          "retention_pct": 100
+        },
+        {
+          "interval_bucket": "31d+",
+          "reviews": 14,
+          "correct": 13,
+          "retention_pct": 92.9
+        }
+      ],
+      "overdue": [
+        {
+          "bucket": "due now",
+          "words": 2,
+          "phrases": 1
+        },
+        {
+          "bucket": "8d+ late",
+          "words": 28,
+          "phrases": 27
+        }
+      ],
+      "consolidation": [
+        {
+          "exposure": 1,
+          "words": 163,
+          "phrases": 75,
+          "reached_pct": 98.3
+        },
+        {
+          "exposure": 2,
+          "words": 114,
+          "phrases": 54,
+          "reached_pct": 69.4
+        },
+        {
+          "exposure": 3,
+          "words": 79,
+          "phrases": 40,
+          "reached_pct": 49.2
+        },
+        {
+          "exposure": 4,
+          "words": 47,
+          "phrases": 16,
+          "reached_pct": 26
+        },
+        {
+          "exposure": 5,
+          "words": 26,
+          "phrases": 13,
+          "reached_pct": 16.1
+        },
+        {
+          "exposure": 6,
+          "words": 19,
+          "phrases": 11,
+          "reached_pct": 12.4
+        }
+      ],
+      "scheduleHealth": {
+        "max_interval_days": 365,
+        "p95_interval_days": 365,
+        "items_over_365d": 0,
+        "items_over_4x_age": 0,
+        "mean_ease": 2.516,
+        "items_at_min_ease": 0,
+        "leeches": 0
+      }
+    }
+  },
+  "errors": []
+}
