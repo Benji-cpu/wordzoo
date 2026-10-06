@@ -1,0 +1,137 @@
+{
+  "project": "wordzoo",
+  "today": "2026-10-07",
+  "startedAt": "2026-10-06T18:54:47.857Z",
+  "finishedAt": "2026-10-06T18:54:49.285Z",
+  "feedback": {
+    "byStatus": {
+      "actioned": 145,
+      "dismissed": 1,
+      "reviewed": 16
+    },
+    "newLast24h": 0,
+    "pendingRows": []
+  },
+  "health": {
+    "stuckMnemonicsLast72h": 1,
+    "overdueReviews": 42,
+    "userBacklog": [
+      {
+        "email_masked": "pro***",
+        "activeLanguage": "pt",
+        "dueWords": 33,
+        "duePhrases": 15,
+        "learningItems": 3
+      }
+    ],
+    "spendLast24h": [],
+    "pedagogy": {
+      "cueAccuracy": [],
+      "cueAccuracy30": [],
+      "checkpoints": {
+        "started": 0,
+        "passed": 0,
+        "failed": 0,
+        "pass_rate_pct": null,
+        "avg_remediation_loops": 0
+      },
+      "retention": [
+        {
+          "interval_bucket": "<1d (learning)",
+          "reviews": 33,
+          "correct": 20,
+          "retention_pct": 60.6
+        },
+        {
+          "interval_bucket": "1d",
+          "reviews": 4,
+          "correct": 1,
+          "retention_pct": 25
+        },
+        {
+          "interval_bucket": "4-7d",
+          "reviews": 2,
+          "correct": 2,
+          "retention_pct": 100
+        },
+        {
+          "interval_bucket": "15-30d",
+          "reviews": 1,
+          "correct": 1,
+          "retention_pct": 100
+        },
+        {
+          "interval_bucket": "31d+",
+          "reviews": 14,
+          "correct": 13,
+          "retention_pct": 92.9
+        }
+      ],
+      "overdue": [
+        {
+          "bucket": "1-2d late",
+          "words": 1,
+          "phrases": 0
+        },
+        {
+          "bucket": "3-7d late",
+          "words": 14,
+          "phrases": 5
+        },
+        {
+          "bucket": "8d+ late",
+          "words": 28,
+          "phrases": 27
+        }
+      ],
+      "consolidation": [
+        {
+          "exposure": 1,
+          "words": 163,
+          "phrases": 75,
+          "reached_pct": 98.3
+        },
+        {
+          "exposure": 2,
+          "words": 114,
+          "phrases": 54,
+          "reached_pct": 69.4
+        },
+        {
+          "exposure": 3,
+          "words": 79,
+          "phrases": 40,
+          "reached_pct": 49.2
+        },
+        {
+          "exposure": 4,
+          "words": 47,
+          "phrases": 16,
+          "reached_pct": 26
+        },
+        {
+          "exposure": 5,
+          "words": 26,
+          "phrases": 13,
+          "reached_pct": 16.1
+        },
+        {
+          "exposure": 6,
+          "words": 19,
+          "phrases": 11,
+          "reached_pct": 12.4
+        }
+      ],
+      "scheduleHealth": {
+        "max_interval_days": 365,
+        "p95_interval_days": 365,
+        "items_over_365d": 0,
+        "items_over_4x_age": 0,
+        "mean_ease": 2.516,
+        "items_at_min_ease": 0,
+        "leeches": 0
+      }
+    }
+  },
+  "errors": []
+}
