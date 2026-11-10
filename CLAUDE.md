@@ -1,266 +1,29 @@
 # WordZoo
 
-Language learning SaaS with AI-generated keyword mnemonics, spaced repetition, a tutor, and Stripe billing. Built with Next.js 16, React 19, Neon Postgres, and Tailwind CSS v4.
+Language learning with keyword mnemonics, spaced repetition, a tutor and Stripe billing. Ben's own tool first.
 
-## Tech Stack
-
-- **Framework**: Next.js 16 (App Router), React 19, TypeScript
-- **Database**: Neon Postgres (serverless) via raw SQL (`@neondatabase/serverless`)
-- **Styling**: Tailwind CSS v4 + shadcn/ui
-- **Auth**: NextAuth v5 beta (Google OAuth, database sessions, `@auth/neon-adapter`)
-- **AI**: Google Gemini 2.5 Flash, falling back to 2.5 Flash-Lite (`@google/genai`)
-- **Images**: Stability AI
-- **Payments**: Stripe (subscriptions + one-time purchases)
+- **Live at:** https://wordzoo.vercel.app (Vercel project `wordzoo`). No lead chat.
+- **Repo:** `Benji-cpu/wordzoo`, branch `main`. A push to `main` deploys. The git link has dropped before, so confirm with `npx vercel ls wordzoo --prod`.
+- **Stack:** Next.js 16, React 19, Neon Postgres with raw SQL through `lib/db/client.ts` (no ORM), NextAuth v5 beta (Google, database sessions), Gemini 2.5 Flash, Stability AI, Stripe. Zod is imported from `'zod/v4'`.
 
 ## Commands
 
-- `npm run dev` — starts on **port 8000** (not 3000)
-- `npm run build` — production build
-- `npm run lint` — ESLint
-- `npm run db:migrate` — run migrations (`lib/db/migrate.ts`)
-- `npm run db:seed` — seed base data
-- `npm run db:seed-mnemonics` — seed AI-generated mnemonics
-- `npm run db:seed-audio` — generate TTS audio (`--mode=words|narrations|dialogues|phrases|all`, `--only=word1,word2`, `--force`)
-- `npm run db:seed-expanded` — seed expanded Indonesian content (Units 1-5, 19 scenes, ~231 words).
-  Pass `--lang=` for the others: `npx tsx lib/db/seed-expanded.ts --lang=pt` (Portuguese, Units 1-5,
-  20 scenes, 233 words), `--lang=es`. Idempotent — it upserts on the ids in `lib/db/content/<lang>/`.
-  A dialogue or phrase whose text changed loses its `audio_url`, so follow it with
-  `npm run db:seed-audio -- --mode=all --lang=<lang>` or the line plays silent-then-browser-voice.
-- `npm test` — Vitest unit tests (`lib/**/*.test.ts`): `lib/srs/engine.test.ts` (the scheduler), `lib/pedagogy/leitner.test.ts` (the drill queue), `lib/pedagogy/normalize.test.ts` (typo tolerance and conversation answer matching), `lib/daily-dose/daily-dose.test.ts` (the written Daily Dose: one card a day, sentence parity). Pure modules only — `engine.test.ts` mocks the DB layer.
-- `npm run test:e2e` — Playwright smoke (`tests/e2e/learn-loop.spec.ts`): the `/try` demo and the first scene as a non-admin, on a phone viewport. Needs `npm run dev` already on :8000 (it never starts one). Launches the installed Google Chrome headless (`channel: 'chrome'`) because the Playwright browser download is blocked on this machine; `PW_CHROME=<binary>` overrides.
-- **Tests are required for `lib/srs/`, `lib/pedagogy/` and anything touching access control.** The old "no tests" rule was reversed on 2026-09-16 — it had already cost a paywall bypass, a public-mnemonic leak and a preview-deploy auth bypass. Playwright MCP is still the tool for exploratory checks during development; the spec file is the regression net.
+- `npm run dev` (port 8000), `npm run build`, `npm run lint`, `npm test` (Vitest), `npm run test:e2e` (needs the dev server on 8000; it uses the installed Chrome).
+- New database changes: add the DDL to the bottom of `lib/db/schema.ts` and write an idempotent `lib/db/apply-<name>.ts`, run with `npx tsx`. `npm run db:migrate` cannot run against the existing database.
+- Content: `npm run db:seed-expanded` (add `--lang=pt` or `--lang=es`), then `npm run db:seed-audio -- --mode=all --lang=<lang>`.
+- Test login: `/api/auth/test-login`. Off in production and on any Vercel deploy.
 
-**One-off migrations** are `npx tsx lib/db/apply-<name>.ts` — never an npm script. `npm run db:migrate` runs the whole of `schema.ts` as one statement and aborts on a pre-existing constraint conflict, so it is effectively unrunnable against an existing DB. Add new DDL to the bottom of `schema.ts` (with a why-comment) *and* write a targeted, idempotent `apply-*.ts`.
+## How it works
 
-## Deployment
+- Fixed content (Daily Dose, conversation answers, mnemonics) is written into the repo ahead of time. Gemini runs only where a learner is waiting: the tutor, the after-session evaluation and certification.
+- Every Gemini call goes through `lib/ai/gemini.ts`, which owns the model chain and the failure handling.
+- Every route that calls Gemini, makes an image, makes speech or writes to Blob claims budget first with `guardSpend` (`lib/spend-guard.ts`). An unmetered route once filled and suspended the Blob store.
+- `verifySceneAccess` is the paywall check. It is called in both the page and the API route.
+- Tests cover `lib/srs/`, `lib/pedagogy/` and access control.
+- Admins are the addresses in `ADMIN_EMAILS` (both of Ben's Gmail addresses). Admins bypass spend limits.
+- The text-to-speech key belongs to Google Cloud project `473497770902`, account `mystechcards@gmail.com`.
+- Vercel crons: `reset-usage`, `check-subscriptions`, `daily-reminders`, and the prepare step of the paused nightly routine.
 
-- **Platform**: Vercel
-- **Project**: `wordzoo`
-- **Production URL**: https://wordzoo.vercel.app
-- **Shipping mode**: direct-to-production for everything — interactive sessions AND scheduled routines. Commit on `main` and push. No PRs. See master `Code/CLAUDE.md` "Shipping Standard."
-- **Pushing to `main` deploys (again, as of 2026-09-27).** From 2026-09-16 the git link was
-  `sourceless` and pushes built nothing; on 2026-09-27 a push built `02517be` within seconds, and
-  the nightly digest push built too. Don't assume either way — **confirm every push**:
-  `npx vercel ls wordzoo --prod`, then `npx vercel inspect <url> --logs | grep Commit:` must show
-  your SHA. If nothing builds, the fallback is `npx vercel deploy --prod --yes` from a clean
-  `git worktree add --detach <scratch> origin/main` with `.vercel/` copied in (it never uploads
-  untracked files). Both draw on the team-wide Hobby cap of 100 deploys/day; on
-  `api-deployments-free-per-day` stop and wait — don't loop.
+## Older notes
 
-## Cron Jobs
-
-The nightly feedback triage runs as a **two-stage pipeline** with `digests/YYYY-MM-DD.json` in the repo as the message bus between Vercel and the Claude trigger sandbox. Vercel cron does all DB / network work; the Claude trigger only synthesizes from the JSON. This is forced by the Anthropic sandbox proxy, which blocks every host except `github.com` (custom domains too — verified against The Programme's `theprogramme.fit`). All HTTP cron routes verify `Authorization: Bearer ${CRON_SECRET}` and return 401 without it.
-
-| Job | Backend | Schedule (UTC) | Endpoint / file |
-|-----|---------|----------------|-----------------|
-| `reset-usage` | Vercel Cron | `0 0 * * *` | `/api/cron/reset-usage` |
-| `check-subscriptions` | Vercel Cron | `0 3 * * *` | `/api/cron/check-subscriptions` |
-| `daily-reminders` | Vercel Cron | `0 9 * * *` (≈17:00 Bali) | `/api/cron/daily-reminders` — retention emails (streak nudges weekdays, weekly recap Sundays); the count is the next review sitting in the learner's active language, and due-review nudges stop after 90 days of silence; no-ops without `RESEND_API_KEY` |
-| `nightly-routine` (prepare) | Vercel Cron | `0 18 * * *` (runs 18:00–19:00 UTC, ≈02:xx Bali — see note) | `/api/cron/nightly-routine` |
-| `nightly-routine` (synth) | Claude Code remote agent | `32 19 * * *` (≈03:32 Bali) | `.claude/agents/nightly-routine.md` |
-
-**Hobby-plan crons fire at an unspecified minute inside their hour.** For 14 straight nights the prepare route ran at 19:44 UTC against a `27 19` schedule, 12 minutes AFTER the 19:32 trigger, and 12 of 14 mornings were `triage: missing digest` stubs. It is scheduled at `0 18` so its worst case (18:59) still lands before the trigger. Do not move it back into the 19:xx hour, and do not read a stub as a PAT failure until you have checked `digests/` for a file written after the trigger fired.
-
-The Vercel prepare step queries Neon, builds the digest payload (status counts + last-24h count + full pending feedback rows + health metrics), and writes it to `digests/YYYY-MM-DD.json` on `main` via the GitHub Contents API. It also marks the bundled rows as `status='reviewed'` so they don't recur. The Claude trigger fires 5 min later, clones the repo, reads today's JSON, synthesizes a markdown triage report (priority/standard/noise buckets + clustering), and commits `feedback-log/YYYY-MM-DD.md` plus an optional single-file low-risk fix directly to `main`. Vercel auto-deploys on push. Trigger registered in claude.ai (https://claude.ai/code/scheduled).
-
-## Trigger Maintenance
-
-Two scheduling backbones, two ownership models — keep them straight:
-
-**(a) Claude Code remote trigger** (the nightly-routine synth step). Managed from this CLI via the `schedule` skill + `RemoteTrigger` tool — `list`, `get`, `update`, `run` all work in-session (no curl, no OAuth juggling). Cannot delete from CLI; for deletion go to https://claude.ai/code/scheduled. Current trigger: `trig_01Dnx4XZjFoduw1SEfio9vPy` (cron `32 19 * * *`). The trigger prompt MUST stay a thin shim that points at `.claude/agents/nightly-routine.md` — every behaviour change belongs in the agent file, not the prompt. After editing the agent file, re-read the trigger prompt and update it if the two have drifted. The trigger no longer needs `CRON_SECRET`; it never makes HTTPS calls except `git push origin main`.
-
-**(b) Vercel Cron jobs** (`reset-usage`, `check-subscriptions`, `daily-reminders`, `nightly-routine` prepare). `generate-info-byte` was retired on 2026-09-29 — Daily Dose is written ahead (see below). Managed in `vercel.json` and deployed on push to `main`. No CLI surface — schedule changes ship via a normal commit. Health is verifiable from anywhere with `curl -o /dev/null -w "%{http_code}" https://wordzoo.vercel.app/api/cron/<name>` — a deployed, middleware-protected route returns 401 without auth, which is the green signal. The `nightly-routine` route additionally requires `GITHUB_PAT_REPO_WRITE` in Vercel env (fine-grained PAT scoped to `Benji-cpu/wordzoo` with Contents: write).
-
-Failure playbook (look in `feedback-log/*.md` and Vercel runtime logs):
-
-- **Sandbox egress is permanent** — github.com is the only reachable host from the trigger sandbox. The architecture is git-as-bus: Vercel writes `digests/*.json`, the trigger reads it. Anthropic GH issues #41565 / #50146 / #52982 track the underlying limitation; until they ship configurable allowlists, do NOT bring back curl-from-the-trigger — it will return `403 host_not_allowed`.
-- **`triage: missing digest` stub commit** — Vercel-side `/api/cron/nightly-routine` didn't run or errored. Curl the route from your Mac with `Authorization: Bearer $CRON_SECRET`; inspect `errors[]` and `digestWritten` in the response. Most common cause: `GITHUB_PAT_REPO_WRITE` missing/expired/wrong scope in Vercel envs.
-- **401 from `/api/cron/*`** — `CRON_SECRET` mismatch between Vercel envs and (for the prepare route) the Vercel cron caller — Vercel auto-supplies its own header for crons it owns, so this only matters for manual curls.
-- **5xx from the prepare route** — Neon down or query change broke. The route uses `safe()` wrappers; partial failures return 200 with non-empty `errors[]`. Hard 500 means a top-level throw — check Vercel logs.
-- **Sandbox can't push to GitHub** — git identity wasn't configured (the trigger prompt and agent file both set `user.name` / `user.email` before commit; verify those `git config` lines are still present after edits).
-
-## Capability Layer (can-dos)
-
-Progress is measured as capability, not throughput. A **can-do** is one communicative act ("I can ask a driver how much a ride costs"), certified by a single **delayed (≥48h), unaided** production test.
-
-- **Tables**: `can_dos` (content) + `user_can_dos` (per-user state). `user_can_dos.eligible_at` carries both the 48h gate and the post-failure cooldown; it is anchored to `user_scene_progress.completed_at`, never `NOW()`, so replaying a scene can't push a learner's own test out.
-- **Content pipeline** — the statements live in git, not just the DB:
-  1. `npx tsx lib/db/generate-can-dos.ts --language=id --append` — AI-drafts into `lib/db/content/can-dos/<lang>.ts`. Refuses to overwrite without `--force`; `--append` only fills scenes with no can-dos yet.
-     Portuguese skipped this step: its 60 statements are hand-authored one file per unit (`can-dos/pt-unit1.ts` … `pt-unit5.ts`), with `can-dos/pt.ts` doing nothing but concatenating them in path order. Drafting is a convenience, not the contract — a hand-written unit file is the same shape and seeds identically.
-  2. **Hand-edit the file.** This is the point of the pipeline. Check `prompt_en` never contains the target-language answer, and opt into `must_include` deliberately (it ships empty — a wrong lemma rejects a valid answer before the grader runs, with no appeal).
-  3. `npx tsx lib/db/seed-can-dos.ts --language=id` — idempotent upsert on deterministic ids. It also **backfills `user_can_dos` for scenes a learner already finished**, anchored to that scene's own `completed_at` exactly as the live unlock is. Without it, can-dos authored after someone completed a scene would never reach them: the only other unlock path fires at scene completion, which has already happened.
-- **`CAN_DO_DELAY_HOURS` lives in `lib/db/can-do-delay.ts`, not in `can-do-queries.ts`.** A seeder runs `dotenv.config()` in its body, but ES imports are hoisted above it — so importing anything that reaches `lib/db/client.ts` (which reads `DATABASE_URL` at module load) kills the script before its own first line. Keep constants a seeder needs in a module with no DB import.
-- **Grading**: `POST /api/can-dos/[canDoId]/certify` is **STRICT** (model-graded, reference loaded server-side). In-lesson conversation practice is its opposite, ACCEPT-AND-COACH, and is matched locally (see Conversation practice). Never give the certifier the lesson's leniency — one function with two contradictory failure semantics is how a silently lenient certifier ships. Ambiguity and every error path resolve to `unclear`, never `pass`; `unclear` costs no strike and no cooldown.
-- **`CanDoTest` must stay unaided**: no hints, chips, reveal, target-language audio, romanization, autocomplete or spellcheck before the verdict. Answering by voice (pt-BR mic, `SpeakAnswer`) is not an aid — it is the goal; the transcript lands in an editable box. `ConversationBlock` ships hints on purpose — that's practice. The absence of scaffolding *is* the measurement.
-- **Certify never dead-ends** (30 Sep): an already-certified or resting can-do returns 200 with `alreadySettled`, the attempt write only applies `WHERE status='unlocked' AND eligible_at <= NOW()`, and `{ gaveUp: true }` ("I don't know — show me") skips the grader, costs no strike, rests 12 h and puts the scene's phrases back into review. Pure decisions live in `lib/pedagogy/can-do-certify.ts`.
-- **Can-dos wait for the scene to be known**: `getDueCanDos` skips a can-do while any of its scene's words or phrases is learning (`learning_step < 2`) or overdue. The review sitting offers at most one, after the word and phrase cards.
-
-## Daily Dose and conversation practice (written ahead)
-
-- **Daily Dose** is read from `lib/daily-dose/<lang>/` by `getDailyDose()` (UTC date). Portuguese has one card a day for 29 Sep – 20 Dec 2026 (`pt/part1.ts` … `part4.ts`); outside that range it cycles, never blank. A language with no file shows no card. The `info_bytes` table and its old rows stay, unread. Each level's Portuguese and English must split into the same number of sentences (`InfoByteCard` interleaves them) — `daily-dose.test.ts` enforces it, so run `npm test` after editing.
-- **Conversation practice** is authored per scene in `lib/learn/conversation-data.ts` (Indonesian) and `lib/learn/conversations/pt-family.ts` (the seven pt family scenes); every other scene is derived from its dialogue. Typed turns are graded by `matchAnyAnswer` (`lib/pedagogy/normalize.ts`) against `target` + `accept[]` — accent-, case- and punctuation-insensitive with length-scaled typo tolerance. A miss on a free-production turn shows "a natural way to say it" and moves on. When authoring, list the other right answers in `accept`; a turn without them only accepts its target.
-
-## Pedagogy invariants
-
-- **The drill has an exit.** `lib/pedagogy/leitner.ts` parks an item after `MAX_TRIES_PER_ITEM` (6) presentations as a *wrong* completion instead of re-queueing it; the review queue owns it from there. Before this a learner who needed the reveal every time was re-queued forever (80 presentations, 0 locked in — the "learning stopped" feedback). Do not raise the cap without a reason measured in `pedagogy_events`.
-- **An item is known when it is recalled, not when it is shown** (30 Sep 2026, Ben: "until I remember the content you shouldn't move on"). The rules live in the doc comment above `schedule()` in `lib/srs/engine.ts`; the ones easiest to undo by accident:
-  - Due is `now >= next_review_at` (30 s tolerance). Never `last_reviewed_at + interval` — that made relearning stall.
-  - Learning items (`learning_step < 2`) graduate on one correct recall from the review queue (1 day); `hard` keeps them learning; **ease never moves while learning**; a 15 s floor stops a double post graduating anything.
-  - Late credit counts at most the item's own interval (`min(delay, interval)`). Crediting the whole gap sent 13 of Ben's words from 6–105 days to 365 on 4-second self-rated "Easy" taps (29 Sep).
-  - Any miss that isn't a real lapse (scene/tutor/practice source, a not-due review, a can-do give-up) shrinks a graduated interval to 30%; it never keeps or lengthens it.
-  - **Trip-aware**: while `users.trip_date` is ahead, intervals cap at a third of the days left (7–30, spread downward) and nothing is due after trip − 3 days; `status` comes from the uncapped interval so the cap never demotes "mastered". `setUserTrip` re-applies the cap (`applyTripIntervalCap`).
-  - Writes are compare-and-set on the millisecond-truncated `last_reviewed_at`; counters are atomic and bump once per sitting (`presentation` 1).
-- **The due queue is weakest-first**: just-parked items last, a lock-in scene (`/review?scene=`) first, then learning items, shortest interval, oldest due; with more than 40 due, ~30% of the sitting goes to the most-overdue mature items (`lib/srs/sitting.ts`). "Probable wins first" starved Ben's weak items behind 12 known words.
-- **Review is attempt-first** (`lib/pedagogy/review-session.ts`): say it (pt-BR mic), type it, or hear it and pick the meaning; "I don't know" on every card; no self-rating and no Easy button. The rating is derived from the answer; a listening pick is `hard` and never graduates on its own; "I said it right" (mic mishearing) is `hard`. A card that isn't known comes back ≥5 cards and ≥20 s later, max 3 presentations, then it's parked. Phrases score on content words (function words and names don't count); a partial phrase gets a gap drill then the whole phrase, and ONE rating at the end.
-- **New content waits for fragile items** (`lib/db/gate-queries.ts`, `lib/pedagogy/gate.ts`): a scene that hasn't started opens when ≤8 fragile items (learning, or interval ≤3 days, due now, in the scene's language, excluding its own items) are due; otherwise `GateNotice` sends to /review with "Start the scene anyway" (`?anyway=1`). Mature items never block.
-- **The pt path is ordered for the trip**: the family scenes follow the four finished ones (sort_order in `lib/db/content/pt/unit*.ts`; `lib/db/apply-pt-trip-order.ts` writes it to the DB).
-- Typed cues own their reveal timing (see MEMORY.md) — report a miss only after the learner dismisses the reveal.
-
-## Measurement (`/admin/pedagogy`)
-
-The only surface that reads `pedagogy_events` and divides `times_correct / times_reviewed`. Queries live in `lib/db/pedagogy-queries.ts` (full-path import — not in the `lib/db/index.ts` barrel).
-
-- **7-day recall** is the dashboard line (`getWeekRecall`): the viewer's own reviews of items unanswered for 7+ days, keyed on the event's `daysAway`. Not `priorIntervalDays` — after a break a 1-day item is answered 50 days late and still reads "1d".
-- **One review sitting** is `REVIEW_SITTING` in `lib/srs/engine.ts` (14 words + 6 phrases first-pass cards, re-asks on top, plus ≤1 can-do), composed by `getReviewSitting`. The review page, the dashboard card and the reminder email all read it; don't reintroduce a second number.
-- `srs_review_recorded` is emitted **server-side** from `lib/srs/engine.ts`, not via `fireTelemetry`. Lifetime counters can't be bucketed by the interval a review happened at, so the retention curve needs a per-review event.
-- `PedagogyEvent` in `lib/pedagogy/telemetry.ts` must stay in exact sync with the actual `fireTelemetry` call sites — the admin page renders one row per event name, so a declared-but-never-emitted member is a permanent zero that reads as a real measurement.
-- Leech thresholds on the admin page must match `LEECH_MIN_REVIEWS` / `LEECH_ACCURACY` in `lib/srs/engine.ts`.
-- `pedagogy_events` is unbounded (the telemetry route has no rate limit); `/api/cron/reset-usage` prunes it at 90 days, and the nightly digest keeps a permanent summary in `digests/*.json`.
-- **Health numbers exclude test accounts** (`@wordzoo.dev`) and count backlog only in each learner's active path language (`lib/db/real-users.ts`); `health.userBacklog` has one masked line per real learner. The retention curve counts only review-source answers that advanced (re-asks aren't retention samples).
-
-## Feedback Module
-
-- `app_feedback` table — status enum: `'new' | 'reviewed' | 'actioned' | 'dismissed'` (close to the cross-project standard `new | reviewed | resolved | dismissed`; "actioned" diverges — see MEMORY.md)
-- API: `POST /api/feedback` (auth required, screenshot via `/api/feedback/screenshot`)
-- Admin: `/api/admin/app-feedback/*` routes plus admin UI for triage
-
-## Architecture
-
-- **Route groups**: `(app)/` (authed pages), `(auth)/` (login/signup), `try/` (public demo)
-- **API routes**: `app/api/` — REST handlers, all protected by middleware except `/api/auth/*`, `/api/billing/webhook`, `/api/cron/*`
-- **Service layer**: `lib/services/` — business logic (billing, tutor, mnemonic, path, community, sync, etc.)
-- **DB layer**: `lib/db/queries.ts` + `lib/db/community-queries.ts` — raw SQL via `@neondatabase/serverless`
-- **AI layer**: `lib/ai/` — Gemini client (`gemini.ts`), prompt templates (`prompts.ts`, `tutor-prompts.ts`)
-- **SRS engine**: `lib/srs/` — spaced repetition scheduling
-
-## Code Conventions
-
-- **API responses**: Always `NextResponse.json<ApiResponse<T>>({ data, error })` — never bare objects
-- **Validation**: Zod schemas in `types/api.ts`. Import Zod as `import { z } from 'zod/v4'` (NOT `'zod'`)
-- **Database**: Raw SQL with tagged template literals (`sql\`...\``). No ORM. UUID primary keys.
-- **Route handlers**: Validate with Zod → delegate to service layer → return `ApiResponse`
-- **Imports**: Use `@/` path alias for all project imports
-
-## Pacing and reveals
-
-**Never write a bare `setTimeout(fn, 900)` in a component.** Every timed beat comes from
-`lib/ui/pace.ts` through the `usePace()` hook — `beat('dwellCorrect')`, `beat('shake')`,
-`beat('tapAdvance')`, `beat('toast')`, `beat('linePause')`. Three separate ideas of how long a
-moment is (CSS tokens, framer-motion literals, loose integers) is what this replaced.
-
-- **`useReveal()`** (`components/ui/Reveal.tsx`) is how information arrives: staged beats, a pace
-  that quickens with `unitIndex`, a tap that lands every remaining beat, and auto-scroll to
-  `affordanceRef`. Use it instead of writing another phase state machine. **Destructure its
-  return** (`const { beat, ready } = useReveal(...)`) — the react-hooks/refs rule flags property
-  access on the object because it carries a ref.
-- **`ladder(...gaps)`** builds a reveal from the gaps between beats, not absolute times, so
-  inserting a beat does not mean retyping every number after it.
-- **`MOTION`** mirrors the `--duration-*` tokens in `globals.css`. Change one, change both —
-  `lib/ui/pace.test.ts` parses the CSS and fails if they drift.
-- **Reduced motion is handled in the hook**, not only in CSS: `usePace` returns 0 for every
-  duration. The `@media (prefers-reduced-motion)` block only flattens animations.
-- **The `/try` demo keeps its own hand-tuned multipliers** and must stay exactly as it is — it is
-  the one sequence a stranger is judged on. Verify any change to `WordReveal` by sampling the
-  beats in a browser; they land at 1000/2000/2500/3500/4000/4500ms.
-
-## Auth
-
-Google OAuth via NextAuth v5 beta (`next-auth@5.0.0-beta.30`) with Neon adapter. Session strategy is `database` (not JWT). Auth config is in `lib/auth.ts`. Middleware (`middleware.ts`) protects API routes only — page protection uses `auth()` server-side.
-
-## Test Login (E2E)
-
-All projects require `/api/auth/test-login` for Playwright testing:
-- Returns 404 when `NODE_ENV === 'production'` **or `process.env.VERCEL` is set** — the route mints a session for any email (creating the user if absent, including an `ADMIN_EMAILS` address), so gating on `NODE_ENV` alone left it open on preview deploys
-- Creates a dev-only session via NextAuth; works locally on `:8000`
-- Enables E2E browser testing without real OAuth flows
-
-## AI Integration
-
-Gemini 2.5 Flash via `@google/genai` SDK (NOT `@google-ai/generativelanguage`). Client in `lib/ai/gemini.ts`. Prompt templates in `lib/ai/prompts.ts`, `tutor-prompts.ts`.
-
-**Gemini stays only where a person is waiting on the answer** (Ben, 28 Sep 2026: off Gemini wherever possible, free tier only where needed): the tutor chat and guided session, the after-session evaluation, can-do certification, and regenerate-from-feedback. Fixed content is written ahead into the repo by Claude instead — Daily Dose (`lib/daily-dose/`), conversation answers (`lib/learn/conversations/`), mnemonics (`lib/db/content/<lang>/mnemonics-*.ts`). Deleted 2026-09-29: the Daily Dose cron, the conversation grader, and on-demand/custom/regenerate mnemonic generation. Don't add a new model call for content that can be written once.
-
-**Every Gemini call goes through `lib/ai/gemini.ts`** — never construct a `GoogleGenAI` client elsewhere. That module owns the model chain and the failure contract:
-
-- **Model chain**: `gemini-2.5-flash` → `gemini-2.5-flash-lite` on failure. They draw on separate quota pools, so the fallback survives primary exhaustion. Do not hardcode a model at a call site.
-- **Retry**: transient failures (429/5xx/timeout) retry once on the same model, honouring Gemini's own `retryDelay`. A backoff longer than 2s fails over to the next model instead of stalling the request — a user-facing call must never wait out a 40s quota window.
-- **Failures throw `AiUnavailableError`** with a client-safe `.message`, an HTTP `.status`, and `.retryable`. Routes should `if (isAiUnavailable(error))` and return those directly rather than collapsing everything into a generic 500. Raw upstream errors leak quota/project details — never echo them.
-- **Empty completions are treated as failures**, not valid answers. 2.5-flash is a thinking model and can spend its whole `maxOutputTokens` reasoning; conversational calls (`generateChat`, `generateChatStream`) therefore run with `thinkingBudget: 0`.
-- **Never persist user input before the model call succeeds.** See `sendMessage` in `lib/services/tutor-service.ts`: the learner's turn is written only once the stream is live, so a failed send leaves no orphan row and is safe to retry verbatim.
-
-## Billing
-
-Stripe handles subscriptions (monthly/yearly) only. Free tier has daily limits: 5 words, 3 tutor messages, 300s hands-free, 2 mnemonic regenerations. Usage resets daily via `/api/cron/reset-usage`. Logic in `lib/services/billing-service.ts`.
-
-## Spend Guard (required for every AI / image / TTS / Blob route)
-
-**Any route that calls Gemini, generates an image, synthesizes TTS, or writes to Blob MUST claim budget first.** These operations cost real money, and an unmetered one already filled and suspended the Blob store once (see `docs/2026-08-02-product-evaluation.md`).
-
-```ts
-const guard = await guardSpend('mnemonic_regenerate');     // + { feature: 'regenerate_mnemonic' } to also gate on billing
-if (!guard.ok) return guard.response;                       // pre-built 401 / 429 / 403
-// ... guard.userId is the authenticated user
-```
-
-- `lib/spend-guard.ts` — auth-aware route wrappers (`guardSpend`, `guardAnonymousSpend`). Does auth → admin bypass → durable claim → optional `checkAccess`.
-- `lib/spend-ledger.ts` — the pure primitive (`claimSpend`, `SPEND_LIMITS`, `clientIp`). **Edge routes must import from here** — spend-guard pulls in NextAuth and the billing service.
-- Budgets live in `SPEND_LIMITS`. Adding a `SpendKind` to the union is required; the closed union makes a typo a compile error rather than a silently unlimited endpoint.
-- Backed by the `spend_events` table via one atomic conditional INSERT, so concurrent lambdas serialize through Postgres. Pruned to 30 days by `/api/cron/reset-usage`; rolled up per kind into the nightly digest as `health.spendLast24h`.
-- **`lib/rate-limit.ts` is deprecated** — its in-memory token bucket was per-lambda and effectively unlimited. It now only re-exports `clientIp`.
-- **Admins bypass every guard.** To exercise a limit, use a non-admin account or temporarily clear `ADMIN_EMAILS`.
-
-## Access Control
-
-- **`verifySceneAccess(sceneId, userId)`** is the entitlement check: premade → always; own custom/studio → always; own **travel** pack → scene `sort_order = 0` free, rest requires a `purchases` row; anyone else's path → never. Call it in *both* the page and the API route — the page-level omission was a full paywall bypass.
-- **`verifyPathAccess`** deliberately does NOT consult `purchases` — a travel path is owned by its buyer, so gating the path would lock them out of the page that sells the upgrade.
-- **Deleted 27 Sep 2026 on Ben's yes** (WordZoo is his own tool): Path Studio, custom paths (incl. the tutor's "Build a Path" mode), travel packs + `/trip`, and mnemonic sharing (`/word/[id]`, `/api/share/*`). Old URLs redirect in `next.config.ts`. Their tables (`studio_*`, `path_builder_drafts`, `purchases`, `mnemonic_shares`) and the one `travel` path row stay; `/paths` lists premade paths only. The access checks above are unchanged. `/api/trip` stays: it is the settings trip (destination + date) that the dashboard reads.
-- Admin gating is `isAdminEmail()` / `adminEmails()` from **`lib/auth/admin.ts`** (dependency-free, lowercases both sides). Never re-implement the `ADMIN_EMAILS` split inline — the old inline copies were case-sensitive and diverged from the billing service.
-- Route bodies: use `readJson(request)` from **`lib/api/request.ts`**, not bare `await request.json()` (which 500s on a malformed body).
-- External calls (Gemini, image gen, TTS, Blob `put`) must carry `AbortSignal.timeout(...)`.
-
-## Gotchas
-
-- **Zod v4**: Must import from `'zod/v4'`, not `'zod'` — the package uses the v4 subpath export
-- **Port 8000**: Dev server and `AUTH_URL`/`NEXTAUTH_URL` use port 8000
-- **No ORM**: All DB access is raw SQL via `sql` tagged templates from `lib/db/client.ts`
-- **NextAuth v5 beta**: Uses `auth()` not `getServerSession()`. Middleware wraps `auth()` callback pattern. Adapter is `@auth/neon-adapter`.
-
-## Environment Variables
-
-`DATABASE_URL`, `AUTH_SECRET`, `AUTH_URL`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`, `GOOGLE_GEMINI_API_KEY`, `GOOGLE_CLOUD_TTS_API_KEY`, `STABILITY_AI_API_KEY`, `BLOB_READ_WRITE_TOKEN`, `STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_PRICE_MONTHLY`, `STRIPE_PRICE_YEARLY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_APP_URL`, `CRON_SECRET` (also set as GitHub repo secret), `ADMIN_EMAILS`, `GITHUB_PAT_REPO_WRITE` (fine-grained PAT scoped to `Benji-cpu/wordzoo` with `Contents: write` — used by `/api/cron/nightly-routine` to write `digests/YYYY-MM-DD.json`). `.env.example` documents all of them.
-
-**`PEDAGOGY_V2_SLICES`** only gates `conversation`, `tutor` and `speech` now. The five drill slices (`distractors`, `production`, `mastery`, `restructure`, `cloze`) are permanently on in `lib/pedagogy/flags.ts` and the legacy word → mnemonic → quiz loop was deleted from `SceneFlowClient` on 2026-09-16; there is no env value that brings it back. Set `PEDAGOGY_V2_SLICES=conversation` to turn the conversation interludes on for everyone (admins always have them); they cost nothing, since answers are matched locally.
-
-**Optional:** `RESEND_API_KEY`, `EMAIL_FROM` — the retention email system (`/api/cron/daily-reminders`, `lib/services/email-service.ts`) is fully wired but skips every send (cron stays green) until `RESEND_API_KEY` is set in Vercel. `EMAIL_FROM` defaults to Resend's test sender (`onboarding@resend.dev`, delivers only to the Resend account owner) until a sending domain is verified. `ADMIN_EMAIL` — reserved for the nightly digest email.
-
-**`ADMIN_EMAILS`** is comma-separated and gates `/admin/*` pages and `/api/admin/*` routes via `app/(app)/admin/layout.tsx`. If unset, admin pages refuse all users. Must include both `b.hemsonstruthers@gmail.com` and `profbenjo@gmail.com` (Benji's two power-user accounts).
-
-## Post-Change Verification
-
-After ANY code or database change, verify the core user flow with Playwright MCP before declaring done:
-1. Navigate to `localhost:8000/api/auth/test-login` to authenticate
-2. Verify dashboard loads at `/` with "Continue Learning" card
-3. Click through to a learn page — verify it loads without 404
-4. Navigate to `/paths` — verify path cards are clickable
-5. Navigate to `/review` — verify it loads
-
-Never rely solely on code reading or database queries — always verify visually with Playwright.
-
-## MCP Servers
-
-All MCP servers are configured in `~/.claude.json` under the WordZoo project-scoped config (not committed). Superpowers is a Claude Code plugin (configured in `.claude/settings.json`), not an MCP server.
-
-- **Playwright** — stdio, browser automation, accessibility snapshots, screenshots
-- **Neon** — HTTP, database schema inspection, SQL queries, branch management
-- **Stripe** — HTTP/OAuth, product/price management, subscription inspection, doc search
-- **Vercel** — HTTP/OAuth, deployment status, logs, env var management
+`docs/claude-md-2026-11-10.md` is this file as it was before 10 Nov 2026 (pedagogy, pacing, env vars, the routine pipeline). Look a fact up there; its rules no longer apply.
